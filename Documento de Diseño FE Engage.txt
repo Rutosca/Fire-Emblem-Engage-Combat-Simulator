@@ -1,0 +1,109 @@
+Documento de Diseño: FE Engage Tactical Assistant
+
+1. El Reto Principal y Filosofía de Diseño
+
+El desafío técnico combina Observabilidad Parcial y Explosión Combinatoria. Tras iterar el diseño, se descarta el uso de Visión por Computador para interpretar semánticamente el mapa. En su lugar, el sistema funcionará como un Gemelo Digital Interactivo (Digital Twin) alimentado por mapas pre-diseñados en Tiled.
+
+La filosofía central es Cero Predicción, 100% Reacción: La IA no intenta adivinar qué hará el enemigo en turnos futuros. El jugador replica los movimientos reales en el Gemelo, y la IA analiza el estado exacto actual.
+
+2. Estrategia de Entrada de Datos (UI/UX)
+
+Fase A: El Barracón (Setup pre-batalla)
+
+El usuario configura su "Roster" indicando clases y niveles.
+
+Selecciona el Capítulo y la Dificultad (Normal/Difícil/Extremo). Nota crucial de arquitectura: El Capítulo dicta la disponibilidad y calcula los stats del jugador (Stats Base + [Crecimientos × Nivel]), mientras que la Dificultad escala exclusivamente las estadísticas y la cantidad de unidades del bando enemigo.
+
+Capturas (OCR Seguro): En el futuro, se podrán subir capturas solo de las pantallas de estadísticas para que un modelo OCR lea los números exactos si el usuario no quiere escribirlos, dejando la IA visual para tareas fiables (leer etiquetas) y no abstractas.
+
+Fase B: El Tablero Táctico (Flujo de Juego)
+
+La interacción sigue un bucle determinista sin huecos de incertidumbre:
+
+Auto-Deploy: Al cargar el mapa, el sistema lee el archivo JSON (exportado de Tiled) y pre-coloca terreno, objetos y enemigos iniciales.
+
+Recomendación: El backend cruza datos y sugiere la mejor jugada inicial.
+
+Ejecución y Reflejo: El jugador hace el movimiento en el juego real, ve cómo responde el enemigo, y arrastra las piezas en la interfaz Web para reflejar ese nuevo estado.
+
+Edición Mínima (Mid-game): Durante el combate, los stats base no se tocan. Al hacer clic en una unidad, la interfaz solo permite editar HP Actual y Estados Alterados (buffs/debuffs/break), reduciendo la fricción al mínimo.
+
+3. Motor de Mapas (Integración con Tiled)
+
+Los mapas no se dibujan por código, se diseñan visualmente en la herramienta Tiled y se exportan como JSON. El backend (Python) parsea este JSON usando sus propiedades nativas:
+
+Tile Layers (Capas de Terreno): Cada casilla tiene propiedades explícitas (type: "obstacle", walkable: false, evasion_bonus: 30). El código no interpreta colores, lee booleanos y enteros directos.
+
+Object Layers (Capas de Objetos): Elementos interactivos (Cofres, Ballestas, Puertas) son "Objetos" independientes. Tienen propiedades como usable_by: "both". Esto permite al backend saber instantáneamente dónde hay puntos de interés táctico.
+
+4. Motor de Análisis (Backend Python)
+
+Enrutador de Intenciones (Router): Evalúa si la consulta requiere RAG (texto) o SQL (matemáticas) para evitar alucinaciones en cálculos.
+
+Calculadora Determinista (SQL + Math Engine):
+
+Extrae rangos de amenaza (Threat Assessment) calculando qué casillas alcanzan los enemigos en el turno actual.
+
+Ejecuta un Motor de Combate Avanzado: Diferencia entre daño físico (Fuerza) y mágico (Magia), aplica el modificador del Triángulo de Armas (y la mecánica de Ruptura/Break), y computa las tasas de Acierto (Hit vs. Avoid) y Crítico. Un veredicto real requiere evaluar probabilidades, no solo daño bruto.
+
+Buscador RAG (Consejero Semántico): Busca en guías indexadas consejos estratégicos narrativos (ej. "Cuidado con los refuerzos del sur en el turno 5"), manteniendo un límite estricto de confianza según avanzan los turnos.
+
+Gestión de Probabilidades (RNG) en el Asistente Táctico
+
+El problema que has identificado es crítico: La varianza estadística puede destruir una estrategia perfecta. Si la IA recomienda un movimiento que depende de un crítico del 15% o de esquivar un golpe con un 80% de evasión, está jugando a la ruleta rusa con las unidades del jugador.
+
+1. Por qué no volvemos al Árbol de Decisiones Global
+
+Podría parecer que necesitamos calcular todas las ramas ("¿Qué pasa si acierto? ¿Qué pasa si fallo? ¿Qué pasa si hago crítico?"), lo que nos devolvería al problema de la explosión combinatoria.
+
+Pero hay una trampa: no necesitamos calcular el árbol para todo el mapa, solo necesitamos calcular el Riesgo Local (Risk Assessment) de esa acción específica. La IA no predice qué pasará en 3 turnos si fallas; la IA evalúa si el movimiento actual te deja "Vendido" (Dead on Arrival) en el turno enemigo inmediato.
+
+2. La Filosofía del "Peor Caso" (Worst-Case Scenario)
+
+Un buen jugador de Fire Emblem (y nuestro Asistente) no planea basándose en los críticos, planea basándose en que todo va a salir mal. El motor matemático debe adoptar estas tres reglas de evaluación:
+
+Regla de Letalidad Inversa: "¿Si mi ataque falla (o no hace crítico), mi unidad muere en el contraataque o en el turno enemigo?" Si la respuesta es SÍ, es una jugada de Alto Riesgo.
+
+Regla del "Kill Seguro": Un enemigo solo se considera "muerto" en el simulador si el jugador tiene un 100% de Hit y hace daño suficiente sin depender de críticos. Si el Hit es del 95%, el enemigo está "vivo" para el plan B.
+
+Capitalización del RNG Positivo (El Crítico a favor): Como mencionaste en tu partida, si haces un crítico inesperado y matas al enemigo antes de tiempo, eso no rompe tu partida, te ahorra una acción. La IA simplemente recalcula el tablero en el siguiente paso asumiendo que tienes una unidad libre extra.
+
+3. Implementación Práctica: Modificadores de Riesgo en el Backend
+
+En lugar de darle al LLM solo los números crudos, nuestro motor en Python debe procesar la probabilidad y devolver "Etiquetas de Riesgo" (Flags).
+
+Ejemplo de lo que calcularía el Backend:
+
+Ataque de Alear contra Jefe. Hit: 85%. Daño: Letal.
+
+Riesgo de contraataque del Jefe. Hit: 40%. Daño: Letal para Alear.
+
+Veredicto del Motor: {"estado": "riesgo_critico", "motivo": "Si el 85% falla, Alear tiene un 40% de probabilidades de morir"}.
+
+Ejemplo de cómo respondería el Asistente (LLM) usando ese veredicto:
+
+"Comandante, Alear puede liquidar al Jefe, pero dependemos de un 85% de acierto. Si fallamos, hay casi un 50% de probabilidades de perder a Alear en el contraataque. ¿Tienes a un mago con Bastón Rescatar o un Emblema que garantice el golpe? Si no, te sugiero un enfoque más conservador."
+
+4. Opciones de Perfil Estratégico (Agresivo vs Conservador)
+
+Podemos incluir un ajuste en el "Barracón" donde el usuario elija su perfil:
+
+Modo Iron-Man / Seguro: La IA descarta y te prohíbe mentalmente cualquier jugada que tenga un >1% de probabilidad de muerte de una unidad aliada.
+
+Modo Kamikaze / Speedrun: La IA busca la ruta más rápida, incluso si requiere depender de esquivas del 30% ("Estrategia de evasión de Yunaka/Corrin").
+
+5. El Secreto del RNG (Random Number Generator) y la Cronogema
+
+1. ¿Cómo funciona realmente la aleatoriedad en el juego?
+Al iniciar un turno o capítulo, Fire Emblem genera una semilla (Seed) con una secuencia fija de números aleatorios ocultos. Realizar un ataque consume números de esta lista fija (ej: 2 números para acierto/crítico).
+
+Usar la Cronogema (Time Crystal) revierte el tiempo pero NO regenera la semilla. Repetir exactamente la misma acción producirá el mismo resultado de forma 100% determinista.
+
+2. Manipulación de RNG ("Quemar RNs")
+Si el jugador realiza otra acción de combate previa con un aliado (o fuerza una tirada diferente de dado), esa acción consume los primeros números "malos" de la lista. El ataque posterior consumirá los siguientes números de la semilla, alterando el resultado (transformando un fallo en acierto o crítico).
+
+3. Flujo en el Asistente Táctico
+Integraremos el estado "Cronogema Usada" en la interfaz. Cuando el usuario indique que ha fallado una acción y ha rebobinado:
+- El backend registrará una flag `rng_semilla_bloqueada: true` para esa acción específica.
+- El Asistente NUNCA sugerirá repetir la misma tirada directamente.
+- En su lugar, el Asistente recomendará: "El destino de esa tirada está fijado por la semilla. Realiza primero una acción de bajo riesgo o soporte con otra unidad para 'quemar' los RNs malos y altera la secuencia antes de volver a atacar."

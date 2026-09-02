@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FE Engage — Tactical Assistant</title>
+  <meta name="description" content="Asistente táctico para Fire Emblem Engage. Calcula amenazas, riesgos y peor caso de movimiento enemigo en dificultad Extremo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────── -->
+<header>
+  <h1>⚔ FE Engage — Tactical Assistant</h1>
+  <div id="turno-badge">Turno <span>1</span> · Fase Jugador</div>
+</header>
+
+<!-- ── Layout ─────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- Área del mapa táctico -->
+  <div id="mapa-wrapper">
+    <!-- Barra de herramientas del mapa -->
+    <div id="mapa-toolbar">
+      <div class="toolbar-group">
+        <button id="btn-add-aliado" class="btn-tool btn-blue">+ Añadir Aliado</button>
+        <button id="btn-add-enemigo" class="btn-tool btn-red">+ Añadir Enemigo</button>
+      </div>
+      <div class="toolbar-group">
+        <button id="btn-preset-cap7" class="btn-tool btn-gold" title="Carga las posiciones y enemigos iniciales de Tiled">📍 Preset Cap. 7</button>
+        <button id="btn-limpiar" class="btn-tool btn-dark" title="Elimina todas las fichas del tablero">🗑 Limpiar Fichas</button>
+      </div>
+    </div>
+
+    <!-- Contenedor del grid -->
+    <div id="mapa-container">
+      <div id="mapa-grid"></div>
+    </div>
+  </div>
+
+  <!-- Panel lateral de análisis táctico -->
+  <aside id="panel-analisis">
+    <header>Análisis Táctico</header>
+
+    <div id="analisis-scroll"></div>
+
+    <div id="botones-bar">
+      <!-- Selector de perfil de riesgo -->
+      <select id="perfil-select" title="Perfil de riesgo">
+        <option value="seguro">🛡 Perfil: Seguro (Iron-Man)</option>
+        <option value="agresivo">⚡ Perfil: Agresivo (Speedrun)</option>
+      </select>
+
+      <!-- Botón principal: lanza el análisis del LLM -->
+      <button id="btn-analizar">🔍 Analizar</button>
+
+      <!-- Cronogema (Deshacer ilimitado / Time Crystal) -->
+      <button id="btn-deshacer" class="btn-cronogema" title="Deshacer la última acción (Ctrl+Z)">⏱️ Cronogema (Deshacer)</button>
+
+      <!-- Botón de turno enemigo: primero activa modo arrastre, luego confirma -->
+      <button id="btn-turno-fin">Turno Enemigo ✓</button>
+
+      <!-- Reactivar acciones de turno -->
+      <button id="btn-reactivar" class="btn-reactivar" title="Reactivar turno de aliados">↺ Reactivar Acciones</button>
+
+      <!-- Gestión de Escuadrón del Jugador -->
+      <div class="squad-btn-group">
+        <button id="btn-desplegar-squad" class="btn-squad" title="Desplegar tu escuadrón guardado con sus niveles, objetos y potenciadores">🛡️ Desplegar Mi Escuadrón</button>
+        <button id="btn-guardar-squad" class="btn-squad-sec" title="Guardar la plantilla actual de tus aliados">💾 Guardar Escuadrón</button>
+      </div>
+
+      <!-- Exportar / Importar Partida -->
+      <div class="partida-btn-group">
+        <button id="btn-exportar-partida" class="btn-partida" title="Descargar archivo JSON con el estado de la partida">📤 Exportar Partida</button>
+        <label for="input-importar-partida" class="btn-partida btn-partida-label" title="Cargar partida desde archivo JSON">📥 Importar Partida</label>
+        <input type="file" id="input-importar-partida" accept=".json" style="display: none;">
+      </div>
+
+      <!-- Reset -->
+      <button id="btn-reset">↺ Reiniciar tablero</button>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ── Modal Emergente de Configuración de Unidad ─────────────────────── -->
+<div id="modal-backdrop" class="modal-backdrop hidden">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Configurar Unidad</h2>
+      <button id="btn-modal-close" class="modal-close-btn">&times;</button>
+    </div>
+
+    <form id="form-unidad" onsubmit="return false;">
+      <input type="hidden" id="f-x" value="0">
+      <input type="hidden" id="f-y" value="0">
+      <input type="hidden" id="f-edit-original-name" value="">
+
+      <!-- Selector de Bando -->
+      <div class="form-row">
+        <label>Bando / Tipo de Tropa:</label>
+        <div class="radio-toggle-group">
+          <label class="radio-label">
+            <input type="radio" name="f-es-aliado" id="f-bando-aliado" value="true" checked>
+            <span class="badge-aliado">🛡 Aliado (Azul)</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="f-es-aliado" id="f-bando-enemigo" value="false">
+            <span class="badge-enemigo">⚔ Enemigo (Rojo)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Nombre -->
+      <div class="form-row">
+        <label for="f-nombre">Nombre de la Unidad:</label>
+        <input type="text" id="f-nombre" list="list-personajes" placeholder="Ej: Alear, Louis, Arquero 1..." required autocomplete="off">
+        <datalist id="list-personajes"></datalist>
+      </div>
+
+      <!-- Clase y Nivel -->
+      <div class="form-cols">
+        <div class="form-row flex-2">
+          <label for="f-clase">Clase / Subclase:</label>
+          <input type="text" id="f-clase" list="list-clases" placeholder="Ej: Divine Dragon, Paladin, Wyvern Knight..." autocomplete="off">
+          <datalist id="list-clases"></datalist>
+        </div>
+        <div class="form-row flex-1">
+          <label for="f-nivel">Nivel:</label>
+          <input type="number" id="f-nivel" min="1" max="40" value="10">
+        </div>
+      </div>
+
+      <!-- Vida (HP Actual / HP Máximo) -->
+      <div class="form-cols" style="align-items: flex-end;">
+        <div class="form-row flex-1">
+          <label for="f-hp-actual">HP Actual:</label>
+          <input type="number" id="f-hp-actual" min="0" max="99" value="30">
+        </div>
+        <div class="form-row flex-1">
+          <label for="f-hp-max">HP Máximo:</label>
+          <input type="number" id="f-hp-max" min="1" max="99" value="30">
+        </div>
+        <div class="form-row flex-1" style="padding-bottom: 2px;">
+          <div class="hp-quick-btns">
+            <button type="button" id="btn-hp-pocion" class="btn-hp-tool btn-green" title="Curar +15 HP (Poción)">✚+15</button>
+            <button type="button" id="btn-hp-full" class="btn-hp-tool btn-blue" title="Restaurar HP Máximo">Max</button>
+            <button type="button" id="btn-hp-menos5" class="btn-hp-tool btn-red" title="Restar -5 HP">-5</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas de Combate Derivadas (Ataque, Precisión, Evasión, Crítico, AS, Esquiva) -->
+      <div class="combat-stats-section">
+        <div class="combat-stats-header">
+          <label>⚔️ Estadísticas de Combate (Auto-calculadas en vivo o editables):</label>
+        </div>
+        <div class="combat-stats-grid">
+          <div class="cstat-input-item" title="Ataque Total = Fuerza/Magia + Mt Arma + Bonos">
+            <span class="cstat-lbl" id="label-cstat-atk">ATK (Ataque)</span>
+            <input type="number" id="f-cstat-atk" min="0" max="999" value="15">
+          </div>
+          <div class="cstat-input-item" title="Precisión = Hit Arma + (2 * DES) + (SUE / 2)">
+            <span class="cstat-lbl">HIT (Precisión)</span>
+            <input type="number" id="f-cstat-hit" min="0" max="999" value="100">
+          </div>
+          <div class="cstat-input-item" title="Evasión = (2 * AS) + (SUE / 2)">
+            <span class="cstat-lbl">AVO (Evasión)</span>
+            <input type="number" id="f-cstat-avo" min="0" max="999" value="25">
+          </div>
+          <div class="cstat-input-item" title="Crítico = Crit Arma + (DES / 2)">
+            <span class="cstat-lbl">CRIT (Crítico)</span>
+            <input type="number" id="f-cstat-crit" min="0" max="100" value="5">
+          </div>
+          <div class="cstat-input-item" title="Esquiva de Críticos = Suerte">
+            <span class="cstat-lbl">DDG (Esquiva)</span>
+            <input type="number" id="f-cstat-ddg" min="0" max="99" value="5">
+          </div>
+          <div class="cstat-input-item" title="Velocidad de Ataque = VEL - max(0, Peso Arma - COR)">
+            <span class="cstat-lbl">AS (Vel. Atk)</span>
+            <input type="number" id="f-cstat-as" min="0" max="99" value="10">
+          </div>
+          <div class="cstat-input-item" title="Rango de alcance del arma">
+            <span class="cstat-lbl">RNG (Rango)</span>
+            <input type="text" id="f-cstat-rng" value="1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas de Atributos Básicos Directas -->
+      <div class="stats-direct-section">
+        <div class="stats-header-row">
+          <label>Atributos Básicos de la Unidad (Auto-calculados o editables):</label>
+        </div>
+        <div class="stats-inputs-grid">
+          <div class="stat-input-item">
+            <span class="stat-lbl">FUE</span>
+            <input type="number" id="f-stat-str" min="0" max="99" value="10">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">MAG</span>
+            <input type="number" id="f-stat-mag" min="0" max="99" value="0">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">DES</span>
+            <input type="number" id="f-stat-dex" min="0" max="99" value="10">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">VEL</span>
+            <input type="number" id="f-stat-spd" min="0" max="99" value="10">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">DEF</span>
+            <input type="number" id="f-stat-def" min="0" max="99" value="8">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">RES</span>
+            <input type="number" id="f-stat-res" min="0" max="99" value="5">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">SUE</span>
+            <input type="number" id="f-stat-lck" min="0" max="99" value="5">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl">COR</span>
+            <input type="number" id="f-stat-bld" min="1" max="99" value="7">
+          </div>
+          <div class="stat-input-item">
+            <span class="stat-lbl" style="color: #64b5f6;">MOV</span>
+            <input type="number" id="f-stat-mov" min="1" max="15" value="4">
+          </div>
+        </div>
+
+        <!-- Potenciadores Rápidos (+1 Botas, +5 Túnica, +2 Gota, etc.) -->
+        <div class="boosters-section">
+          <label class="boosters-label">Potenciadores Permanentes / Temporales:</label>
+          <div class="boosters-btn-grid">
+            <button type="button" class="btn-booster" data-stat="mov" data-val="1" data-nom="Botas (+1 MOV)" title="Botas permanentes (+1 Movimiento)">👟 +1 Botas</button>
+            <button type="button" class="btn-booster" data-stat="hp" data-val="5" data-nom="Túnica (+5 HP)" title="Túnica angelical (+5 HP Máx)">❤️ +5 Túnica</button>
+            <button type="button" class="btn-booster" data-stat="str" data-val="2" data-nom="Gota (+2 FUE)" title="Gota de energía (+2 Fuerza)">⚔️ +2 Gota</button>
+            <button type="button" class="btn-booster" data-stat="mag" data-val="2" data-nom="Polvo (+2 MAG)" title="Polvo espiritual (+2 Magia)">✨ +2 Polvo</button>
+            <button type="button" class="btn-booster" data-stat="dex" data-val="2" data-nom="Libro (+2 DES)" title="Libro secreto (+2 Destreza)">🎯 +2 Libro</button>
+            <button type="button" class="btn-booster" data-stat="spd" data-val="2" data-nom="Ala (+2 VEL)" title="Ala veloz (+2 Velocidad)">💨 +2 Ala</button>
+            <button type="button" class="btn-booster" data-stat="def" data-val="2" data-nom="Escudo (+2 DEF)" title="Escudo dragón (+2 Defensa)">🛡️ +2 Escudo</button>
+            <button type="button" class="btn-booster" data-stat="res" data-val="2" data-nom="Talismán (+2 RES)" title="Talismán (+2 Resistencia)">🔮 +2 Talismán</button>
+            <button type="button" class="btn-booster" data-stat="lck" data-val="2" data-nom="Icono (+2 SUE)" title="Icono de la Diosa (+2 Suerte)">🍀 +2 Icono</button>
+            <button type="button" class="btn-booster" data-stat="tonico" data-val="2" data-nom="Tónico (+2 Stats)" title="Tónico temporal (+2)">🧪 +2 Tónico</button>
+          </div>
+          <div id="potenciadores-badge-list" class="potenciadores-badges"></div>
+        </div>
+      </div>
+
+      <!-- Arma Principal con Forja y Grabado de Emblema -->
+      <div class="form-cols" style="align-items: flex-end; gap: 8px;">
+        <div class="form-row flex-3">
+          <label for="f-arma">Arma Principal:</label>
+          <input type="text" id="f-arma" list="list-armas" placeholder="Ej: Liberation, Armorslayer, Iron Lance, Bolganone..." autocomplete="off">
+          <datalist id="list-armas"></datalist>
+        </div>
+        <div class="form-row flex-1" style="max-width: 90px;">
+          <label for="f-arma-forja" title="Nivel de forja / refinamiento">+ Mejora:</label>
+          <select id="f-arma-forja" style="padding: 6px 8px; width: 100%;">
+            <option value="0">+0</option>
+            <option value="1">+1</option>
+            <option value="2">+2</option>
+            <option value="3">+3</option>
+            <option value="4">+4</option>
+            <option value="5">+5</option>
+          </select>
+        </div>
+        <div class="form-row flex-2">
+          <label for="f-arma-grabado" title="Grabado de Emblema en la herrería">Grabado / Marca:</label>
+          <select id="f-arma-grabado" style="padding: 6px 8px; width: 100%;">
+            <option value="">(Sin grabado)</option>
+            <option value="Marth">Marth (Comienzos) [Mt+1 Hit+10 Crit+10 Avo+5 Ddg+5]</option>
+            <option value="Sigurd">Sigurd (Cruzada) [Mt+1 Wt-1 Avo+20]</option>
+            <option value="Celica">Celica (Ecos) [Mt-1 Wt-1 Ddg+50]</option>
+            <option value="Micaiah">Micaiah (Aurora) [Mt-3 Wt-1 Avo+40 Ddg+20]</option>
+            <option value="Roy">Roy (León) [Mt+2 Wt+8 Avo-30]</option>
+            <option value="Leif">Leif (Genealogía) [Mt+1 Wt+1 Hit+20 Avo+10]</option>
+            <option value="Lucina">Lucina (Despertar) [Mt-1 Wt-1 Hit+30 Avo+30]</option>
+            <option value="Lyn">Lyn (Llama) [Mt-3 Wt-2 Hit+40 Crit+20]</option>
+            <option value="Ike">Ike (Fulgor) [Mt+3 Wt+15]</option>
+            <option value="Byleth">Byleth (Academia) [Wt+2 Hit+30 Crit+10 Avo+10 Ddg+30]</option>
+            <option value="Corrin">Corrin (Destino) [Mt-2 Crit+30 Avo+10 Ddg+30]</option>
+            <option value="Eirika">Eirika (Sagrada) [Hit+40 Crit+20 Avo-20 Ddg-20]</option>
+            <option value="Alear">Alear (Dragón) [Mt-1 Wt-1 Hit+20 Crit+20 Avo+20 Ddg+20]</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sección exclusiva para Aliados -->
+      <div id="seccion-aliado-extra">
+        <!-- Emblema y Fusión -->
+        <div class="form-cols" style="align-items: flex-end;">
+          <div class="form-row flex-2">
+            <label for="f-emblema">Emblema Equipado (Opcional):</label>
+            <input type="text" id="f-emblema" list="list-emblemas" placeholder="Ej: Marth, Edelgard, Tiki, Hector, Byleth..." autocomplete="off">
+            <datalist id="list-emblemas"></datalist>
+          </div>
+          <div class="form-row flex-1" style="padding-bottom: 6px;">
+            <label class="radio-label" style="justify-content: center;" id="label-fusion">
+              <input type="checkbox" id="f-fusion"> ⚡ Activar Fusión
+            </label>
+          </div>
+        </div>
+
+        <!-- Pasivas y Objetos / Pociones — ahora son listas de chips -->
+        <div class="form-cols">
+          <div class="form-row flex-1">
+            <label>Habilidades Pasivas:</label>
+            <div class="chip-container" id="chips-pasivas" tabindex="0"></div>
+            <div class="chip-input-row">
+              <input type="text" id="f-pasivas" list="list-pasivas" placeholder="Escribe y pulsa Enter..." autocomplete="off">
+              <datalist id="list-pasivas"></datalist>
+            </div>
+          </div>
+          <div class="form-row flex-1">
+            <label>Inventario (armas, objetos):</label>
+            <div class="chip-container" id="chips-inventario" tabindex="0"></div>
+            <div class="chip-input-row">
+              <input type="text" id="f-inventario" list="list-inventario" placeholder="Escribe y pulsa Enter..." autocomplete="off">
+              <datalist id="list-inventario"></datalist>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Posición en mapa -->
+      <div class="form-row pos-indicator">
+        <span>📍 Posición en el mapa: (<b id="label-pos-x">0</b>, <b id="label-pos-y">0</b>)</span>
+      </div>
+
+      <!-- Botones del modal -->
+      <div class="modal-footer">
+        <button type="button" id="btn-modal-eliminar" class="btn-danger hidden">Eliminar Ficha</button>
+        <div class="footer-right">
+          <button type="button" id="btn-modal-cancelar" class="btn-secondary">Cancelar</button>
+          <button type="button" id="btn-modal-guardar" class="btn-primary">Guardar Unidad</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/static/gemelo.js"></script>
+</body>
+</html>

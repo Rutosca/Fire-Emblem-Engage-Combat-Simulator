@@ -1,0 +1,152 @@
+[
+  {
+    "nombre": "Vander",
+    "es_aliado": true,
+    "es_verde": false,
+    "es_fijo": false,
+    "ha_actuado": false,
+    "x": 1,
+    "y": 7,
+    "mov": 6,
+    "es_volador": false,
+    "viva": true,
+    "hp_actual": 40,
+    "hp_max": 40,
+    "pct_hp": 100,
+    "energia_emblema": 6,
+    "max_energia_emblema": 6,
+    "turnos_fusion": 0,
+    "en_fusion": false,
+    "clase_id": "JID_パラディン",
+    "clase_nombre": "Paladin",
+    "nivel": 1,
+    "emblema_id": "",
+    "emblema_nombre": "",
+    "habilidades": [],
+    "inventario": [
+      {
+        "id": "IID_銀の斧",
+        "nombre": "Silver Axe",
+        "arma": "Silver Axe",
+        "nombre_base": "Silver Axe",
+        "refine_lvl": 0,
+        "grabado": null,
+        "tipo": "Hacha",
+        "mt": 16,
+        "wt": 15,
+        "hit": 70,
+        "crit": 0,
+        "avo_bonus": 0,
+        "ddg_bonus": 0,
+        "rango": [
+          1
+        ],
+        "es_magica": false,
+        "efectividades": [],
+        "usos": null,
+        "usos_max": null,
+        "es_engage": false,
+        "equipada": true
+      },
+      {
+        "id": "IID_ノーアトゥーン",
+        "nombre": "Nóatún",
+        "arma": "Nóatún",
+        "nombre_base": "Nóatún",
+        "refine_lvl": 0,
+        "grabado": null,
+        "tipo": "Hacha",
+        "mt": 14,
+        "wt": 10,
+        "hit": 75,
+        "crit": 0,
+        "avo_bonus": 0,
+        "ddg_bonus": 0,
+        "rango": [
+          1
+        ],
+        "es_magica": false,
+        "efectividades": [],
+        "usos": null,
+        "usos_max": null,
+        "es_engage": false,
+        "equipada": false
+      },
+      {
+        "id": "IID_鉄の斧",
+        "nombre": "Iron Axe",
+        "arma": "Iron Axe",
+        "nombre_base": "Iron Axe",
+        "refine_lvl": 0,
+        "grabado": null,
+        "tipo": "Hacha",
+        "mt": 9,
+        "wt": 10,
+        "hit": 80,
+        "crit": 0,
+        "avo_bonus": 0,
+        "ddg_bonus": 0,
+        "rango": [
+          1
+        ],
+        "es_magica": false,
+        "efectividades": [],
+        "usos": null,
+        "usos_max": null,
+        "es_engage": false,
+        "equipada": false
+      },
+      {
+        "id": "IID_傷薬",
+        "nombre": "Poción (3)",
+        "arma": "Poción (3)",
+        "nombre_base": "Poción",
+        "refine_lvl": 0,
+        "grabado": null,
+        "tipo": "Objeto",
+        "mt": 15,
+        "wt": 0,
+        "hit": 0,
+        "crit": 0,
+        "avo_bonus": 0,
+        "ddg_bonus": 0,
+        "rango": [
+          0
+        ],
+        "es_magica": false,
+        "efectividades": [],
+        "usos": 3,
+        "usos_max": 3,
+        "es_engage": false,
+        "equipada": false
+      }
+    ],
+    "potenciadores_usados": [],
+    "tiene_stats": true,
+    "tiene_arma": true,
+    "stats": {
+      "hp": 40,
+      "hp_actual": 40,
+      "fuerza": 11,
+      "magia": 5,
+      "destreza": 10,
+      "velocidad": 8,
+      "defensa": 10,
+      "resistencia": 8,
+      "suerte": 6,
+      "complexion": 8,
+      "es_lord": false
+    },
+    "arma_equipada": {
+      "nombre": "Silver Axe",
+      "tipo": "Hacha",
+      "mt": 16,
+      "wt": 15,
+      "hit": 70,
+      "crit": 0,
+      "rango": [
+        1
+      ]
+    }
+  }
+]
