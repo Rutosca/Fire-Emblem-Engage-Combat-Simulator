@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M020",
+  "dispos_id": "M020",
+  "terrain_id": "MapTerrain_M020",
+  "field_id": "Fld_M020",
+  "script_bmap": "M020",
+  "script_encount": "M020_Encount",
+  "script_kizuna": "M020_Kizuna",
+  "nivel_recomendado": 28,
+  "siguiente_capitulo": "CID_M021",
+  "nacion": "NID_イルシオン",
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P01_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "２０章　イルシオン城内",
+  "nombre_en": "Chapter 20: The Fell & the Divine",
+  "titulo_capitulo": "ChapterTitleIrcion",
+  "flag": 63,
+  "gmap_spot": "M020"
+}

@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M024",
+  "dispos_id": "M024",
+  "terrain_id": "MapTerrain_M024",
+  "field_id": "Fld_M024",
+  "script_bmap": "M024",
+  "script_encount": "M024_Encount",
+  "script_kizuna": "M024_Kizuna",
+  "nivel_recomendado": 36,
+  "siguiente_capitulo": "CID_M025",
+  "nacion": "NID_グラドロン",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P09",
+  "bgm_enemigo": "BGM_Field_E04",
+  "nombre_japones": "２４章　グラドロン２",
+  "nombre_en": "Chapter 24: Recollections",
+  "titulo_capitulo": "ChapterTitleGradlon",
+  "flag": 59,
+  "gmap_spot": "M024"
+}

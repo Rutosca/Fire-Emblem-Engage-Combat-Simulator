@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M015",
+  "dispos_id": "M015",
+  "terrain_id": "MapTerrain_M015",
+  "field_id": "Fld_M015",
+  "script_bmap": "M015",
+  "script_encount": "M015_Encount",
+  "script_kizuna": "M015_Kizuna",
+  "nivel_recomendado": 19,
+  "siguiente_capitulo": "CID_M016",
+  "nacion": "NID_ソルム",
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P06",
+  "bgm_enemigo": "BGM_Field_E01",
+  "nombre_japones": "１５章　北の城塞",
+  "nombre_en": "Chapter 15: Recursive Rings",
+  "titulo_capitulo": "ChapterTitleSolum",
+  "flag": 187,
+  "gmap_spot": "M015"
+}

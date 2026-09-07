@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M023",
+  "dispos_id": "M023",
+  "terrain_id": "MapTerrain_M023",
+  "field_id": "Fld_M023",
+  "script_bmap": "M023",
+  "script_encount": "M023_Encount",
+  "script_kizuna": "M023_Kizuna",
+  "nivel_recomendado": 34,
+  "siguiente_capitulo": "CID_M024",
+  "nacion": "NID_グラドロン",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P09",
+  "bgm_enemigo": "BGM_Field_E04",
+  "nombre_japones": "２３章　グラドロン１",
+  "nombre_en": "Chapter 23: The Four Hounds",
+  "titulo_capitulo": "ChapterTitleGradlon",
+  "flag": 59,
+  "gmap_spot": "M023"
+}

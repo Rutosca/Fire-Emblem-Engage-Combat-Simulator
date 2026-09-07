@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M022",
+  "dispos_id": "M022",
+  "terrain_id": "MapTerrain_M022",
+  "field_id": "Fld_M022",
+  "script_bmap": "M022",
+  "script_encount": "M022_Encount",
+  "script_kizuna": "M022_Kizuna",
+  "nivel_recomendado": 32,
+  "siguiente_capitulo": "CID_M023",
+  "nacion": "NID_リトス",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P09",
+  "bgm_enemigo": "BGM_Field_E04",
+  "nombre_japones": "２２章　神竜王城（瓦礫）",
+  "nombre_en": "Chapter 22: The Fell-God War",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 185,
+  "gmap_spot": "M021M022"
+}

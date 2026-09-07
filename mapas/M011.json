@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M011",
+  "dispos_id": "M011",
+  "terrain_id": "MapTerrain_M011",
+  "field_id": "Fld_M011",
+  "script_bmap": "M011",
+  "script_encount": "M011_Encount",
+  "script_kizuna": "M011_Kizuna",
+  "nivel_recomendado": 13,
+  "siguiente_capitulo": "CID_M012",
+  "nacion": "NID_イルシオン",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P05",
+  "bgm_enemigo": "BGM_Field_P05",
+  "nombre_japones": "１１章　イルシオン国境",
+  "nombre_en": "Chapter 11: Retreat",
+  "titulo_capitulo": "ChapterTitleIrcion",
+  "flag": 177,
+  "gmap_spot": "M011"
+}

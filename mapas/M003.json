@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M003",
+  "dispos_id": "M003",
+  "terrain_id": "MapTerrain_M003",
+  "field_id": "Fld_M003",
+  "script_bmap": "M003",
+  "script_encount": null,
+  "script_kizuna": "M003_Kizuna",
+  "nivel_recomendado": 3,
+  "siguiente_capitulo": "CID_M004",
+  "nacion": null,
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P01_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "３章　神竜王城の指輪の間",
+  "nombre_en": "Chapter 3: Hostilities",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 24,
+  "gmap_spot": null
+}

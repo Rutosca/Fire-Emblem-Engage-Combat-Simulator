@@ -9,190 +9,16 @@ import json
 import csv
 import re
 
+from constants import JAPANESE_FALLBACK_TERMS, TIPO_ARMA_KIND, MOVE_TYPE_MAP, SID_A_EFECTIVIDAD
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATAMINE_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata")
 TRANS_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "translations")
 
 USEN_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_message", "us", "usen", "csv")
 
-JAPANESE_FALLBACK_TERMS = {
-    "通常黒": "Dark",
-    "通常": "Standard",
-    "シンクロ専用黒": "Sync (Dark)",
-    "シンクロ専用": "Sync",
-    "敵エンゲージ技ダメージ軽減": "Engage Attack Guard",
-    "主人公": "Divine One",
-    "王族": "Royalty",
-    "リーダー": "Leader",
-    "立往生": "Immobilized",
-    "不死身": "Immortal",
-    "死亡会話存在敵": "Boss Unit",
-    "強制死亡": "Trigger Death",
-    "リベラシオン装備可能": "Liberation Usable",
-    "ヴィレグランツ装備可能": "Wille Glanz Usable",
-    "ミセリコルデ装備可能": "Misericorde Usable",
-    "オヴスキュリテ装備可能": "Obscurite Usable",
-    "轟雷発動可能": "Dire Thunder Usable",
-    "カウンター": "Counter",
-    "迅走": "Gallop",
-    "重唱": "Echo",
-    "増幅": "Augment",
-    "超越": "Transcendence",
-    "順応": "Adaptable",
-    "絆盾": "Bonded Shield",
-    "残像": "Illusions",
-    "先生": "Instruct",
-    "呪縛": "Dreadful Aura",
-    "双聖": "Sacred Twins",
-    "アイクエンゲージスキル": "Laguz Friend",
-    "デモ用": "Demo",
-    "視線設定用": "Camera Setup",
-    "タイトル用": "Title",
-    "リュール男": "Alear (M)",
-    "リュール女": "Alear (F)",
-    "雑魚": "Minion",
-    "イベント": "Event",
-    "ソードペガサス": "Sword Pegasus",
-    "ランスアーマー": "Lance Armor",
-    "ソードアーマー": "Sword Armor",
-    "ランスファイター": "Lance Fighter",
-    "アクスナイト": "Axe Knight",
-    "アーチャー": "Archer",
-    "マージ": "Mage",
-    "モンク": "Monk",
-    "ドラゴンナイト": "Wyvern Knight",
-    "ブレイブヒーロー": "Hero",
-    "スレイプニル下級": "Wingamer",
-    "ティラユール下級": "Lord",
-    "与ダメ上昇": "(Damage Boost)",
-    "被ダメ軽減": "(Damage Reduction)",
-    "ダメージ５０％": "(50% Damage)",
-    "ダメージ50%減": "(50% DR)",
-    "ダメージ60%減": "(60% DR)",
-    "竜族効果": "(Dragon Effect)",
-    "隠密効果": "(Covert Effect)",
-    "隠密 効果": "(Covert Effect)",
-    "飛行 効果": "(Flier Effect)",
-    "発動終了チェック": "(End Check)",
-    "発動終了": "(End)",
-    "発動チェック": "(Check)",
-    "発動済み": "(Triggered)",
-    "効果": "(Effect)",
-    "発動可能": "Usable",
-    "お金入手": "Gold Acquisition",
-    "アイギスの盾": "Aegis Shield",
-    "特効": "Slayer",
-    "回避": "Avo",
-    "攻撃力上昇": "Atk Boost",
-    "踊り": "Dance",
-    "手加減": "Mercy",
-    "気功": "Qi Adept",
-    "ブレス": "Dragon Breath",
-    "相手の防御力無視": "Ignore Def/Res",
-    "チェインアタック許可": "Chain Attack Allowed",
-    "ダイムサンダ": "Dire Thunder",
-    "ギガスカリバー": "Gigascalibur",
-    "業火": "Hellfire",
-    "旋風": "Whirlwind",
-    "エンゲージ技": "Engage Attack",
-    "汎用設定": "General",
-    "オフェンス時武器": "Offense Weapon",
-    "オフェンス": "Offense",
-    "アシュナード": "Ashnard",
-    "アスタルテ": "Ashera",
-    "イドゥン": "Idunn",
-    "エフラム": "Ephraim",
-    "隠蔽": "Stealth",
-    "命中": "Hit",
-    "必殺": "Crit",
-    "魔力": "Mag",
-    "ダメージ": "Damage",
-    "軽減": "Reduction",
-    "加算": "Bonus",
-    "増強": "Boost",
-    "速さ": "Spd",
-    "攻撃速度": "Attack Speed",
-    "撃破経験": "Defeat EXP",
-    "経験": "EXP",
-    "スキル": "Skill",
-    "武器": "Weapon",
-    "確率補正": "Rate Mod",
-    "攻撃時": "On Attack",
-    "竜族": "Dragon",
-    "以心": "Unity",
-    "日輪": "Solar Brace",
-    "月光": "Luna",
-    "太陽": "Sol",
-    "天空": "Aether",
-    "砲撃中無効": "Cannon Immune",
-    "チェインアタック命中率": "Chain Attack Hit Rate",
-    "追加エンゲージ武器": "Extra Engage Weapon",
-    "巻き込み無効化": "Friendly Fire Immune",
-    "神将": "Divine General",
-    "フォルクヴァング": "Folkvangr",
-    "紋章士": "Emblem",
-    "エンゲージ": "Engage",
-    "重装": "Armored",
-    "騎馬": "Cavalry",
-    "飛行": "Flying",
-    "連携": "Backup",
-    "隠密": "Covert",
-    "魔道": "Mystic",
-    "射程": "Range",
-    "移動": "Move",
-    "周囲": "Adjacent",
-    "味方": "Allies",
-    "敵": "Enemies",
-    "リュール": "Alear",
-    "ベレト": "Byleth",
-    "アイク": "Ike",
-    "マルス": "Marth",
-    "シグルド": "Sigurd",
-    "セリカ": "Celica",
-    "ミカヤ": "Micaiah",
-    "ロイ": "Roy",
-    "リーフ": "Leif",
-    "ルキナ": "Lucina",
-    "リン": "Lyn",
-    "エイリーク": "Eirika",
-    "カムイ": "Corrin",
-    "ブレイク": "Break",
-    "防御時": "On Defense",
-    "無効化": "Nullify",
-    "魔法": "Magic",
-    "絆の指輪": "Bond Ring",
-    "共同": "Co-op",
-    "撃目": "Hit",
-    "判定": "Check",
-    "追撃": "Follow-Up",
-    "足狙い": "Leg Strike",
-    "弱点変化": "Weakness Shift",
-    "攻撃属性": "Atk Attribute",
-    "ロプトウス": "Loptr",
-    "メディウス": "Medeus",
-    "ディミトリ": "Dimitri",
-    "エーデルガルト": "Edelgard",
-    "クロード": "Claude",
-    "ヘクトル": "Hector",
-    "セロ": "Soren",
-    "カミラ": "Camilla",
-    "クロム": "Chrom",
-    "ヴェロニカ": "Veronica",
-    "チキ": "Tiki",
-    "チェインガード許可": "Chain Guard Allowed",
-    "弓砲台": "Ballista",
-    "魔砲台": "Magic Cannon",
-    "毒": "Poison",
-    "猛毒": "Deadly Poison",
-    "劇毒": "Severe Poison",
-    "沈黙": "Silence",
-    "弱体化": "Debuff",
-    "気絶": "Stun",
-    "強化": "Buff",
-    "スマッシュ": "Smash",
-    "確率被ダメ半減": "Halve Damage (Chance)",
-    "必中": "Sure Strike",
-}
+
+
 
 def to_int(val, default=0):
     if val is None:
@@ -205,8 +31,40 @@ def to_int(val, default=0):
     except ValueError:
         return default
 
+# Ficheros fuente cuyo timestamp se comprueba para invalidar la caché
+_CACHE_SOURCES = [USEN_DIR, TRANS_DIR]
+_CACHE_FILE = os.path.join(BASE_DIR, "traducciones_cache.json")
+
+
+def _cache_valida() -> bool:
+    """Devuelve True si la caché existe y es más reciente que todas las fuentes."""
+    if not os.path.exists(_CACHE_FILE):
+        return False
+    cache_mtime = os.path.getmtime(_CACHE_FILE)
+    for src in _CACHE_SOURCES:
+        if not os.path.exists(src):
+            continue
+        for root, _, files in os.walk(src):
+            for f in files:
+                if os.path.getmtime(os.path.join(root, f)) > cache_mtime:
+                    return False
+    return True
+
+
 def cargar_traducciones():
-    """Carga mapeo completo de identificadores a nombres oficiales en inglés."""
+    """Carga mapeo completo de identificadores a nombres oficiales en inglés.
+
+    En la primera ejecución construye el diccionario leyendo todos los CSV y lo
+    guarda en traducciones_cache.json.  En ejecuciones posteriores, si ninguno
+    de los archivos fuente ha cambiado, carga directamente la caché (mucho más
+    rápido).
+    """
+    # — Caché rápida -------------------------------------------------------
+    if _cache_valida():
+        print("[caché] Traducciones cargadas desde traducciones_cache.json")
+        with open(_CACHE_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+
     traducciones = {}
 
     # 1. Cargar todas las traducciones oficiales en inglés (fe_assets_message/us/usen/csv)
@@ -277,6 +135,11 @@ def cargar_traducciones():
         for pfx in ["PID_", "JID_", "IID_", "SID_", "GID_", "MID_"]:
             traducciones[f"{pfx}{jp_term}"] = en_term
 
+    # — Guardar caché para próximas ejecuciones ------------------------------
+    with open(_CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(traducciones, f, ensure_ascii=False)
+    print(f"[caché] Traducciones compiladas y guardadas ({len(traducciones)} entradas)")
+
     return traducciones
 
 def parsear_xml_generico(filepath):
@@ -301,20 +164,7 @@ def parsear_xml_generico(filepath):
 
     return filas
 
-# Mapeo oficial de Kind en FE Engage
-TIPO_ARMA_KIND = {
-    "1": "Espada",
-    "2": "Lanza",
-    "3": "Hacha",
-    "4": "Arco",
-    "5": "Daga",
-    "6": "Tomo",
-    "7": "Bastón",
-    "8": "Artes",
-    "9": "Especial",
-    "10": "Objeto",
-    "11": "Accesorio",
-}
+# TIPO_ARMA_KIND importado de constants.py
 
 def limpiar_nombre(ident, name_tag, trans):
     """Obtiene un nombre legible en inglés a partir del identificador de mensaje."""

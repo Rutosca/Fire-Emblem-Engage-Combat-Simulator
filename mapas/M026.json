@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M026",
+  "dispos_id": "M026",
+  "terrain_id": "MapTerrain_M026",
+  "field_id": "Fld_M026",
+  "script_bmap": "M026",
+  "script_encount": null,
+  "script_kizuna": null,
+  "nivel_recomendado": 40,
+  "siguiente_capitulo": null,
+  "nacion": null,
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P12",
+  "bgm_enemigo": "BGM_Field_P12",
+  "nombre_japones": "終章　リトス上空",
+  "nombre_en": "Endgame: The Last Engage",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 51,
+  "gmap_spot": null
+}

@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M007",
+  "dispos_id": "M007",
+  "terrain_id": "MapTerrain_M007",
+  "field_id": "Fld_M007",
+  "script_bmap": "M007",
+  "script_encount": "M007_Encount",
+  "script_kizuna": "M007_Kizuna",
+  "nivel_recomendado": 7,
+  "siguiente_capitulo": "CID_M008",
+  "nacion": "NID_ブロディア",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P03",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "７章　ブロディア大橋",
+  "nombre_en": "Chapter 7: Dark Emblem",
+  "titulo_capitulo": "ChapterTitleBrodia",
+  "flag": 59,
+  "gmap_spot": "M007"
+}

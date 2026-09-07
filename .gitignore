@@ -1,1 +1,6 @@
-FE17-DOC-main
+FE17-DOC-main/
+.env
+venv/
+.vscode/
+__pycache__/
+*.pyc

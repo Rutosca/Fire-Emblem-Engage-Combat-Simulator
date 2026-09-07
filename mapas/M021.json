@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M021",
+  "dispos_id": "M021",
+  "terrain_id": "MapTerrain_M021",
+  "field_id": "Fld_M021",
+  "script_bmap": "M021",
+  "script_encount": "M021_Encount",
+  "script_kizuna": "M021_Kizuna",
+  "nivel_recomendado": 30,
+  "siguiente_capitulo": "CID_M022",
+  "nacion": "NID_リトス",
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P09",
+  "bgm_enemigo": "BGM_Field_E04",
+  "nombre_japones": "２１章　神竜王城",
+  "nombre_en": "Chapter 21: The Return",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 195,
+  "gmap_spot": "M021M022"
+}

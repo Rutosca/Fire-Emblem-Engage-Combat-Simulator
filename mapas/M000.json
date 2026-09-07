@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M000",
+  "dispos_id": "M000",
+  "terrain_id": "MapTerrain_M000",
+  "field_id": "Fld_M000",
+  "script_bmap": "M000",
+  "script_encount": null,
+  "script_kizuna": null,
+  "nivel_recomendado": 1,
+  "siguiente_capitulo": "CID_M001",
+  "nacion": null,
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P00_Heavy",
+  "bgm_enemigo": "BGM_Field_P00_Heavy",
+  "nombre_japones": "序章　1000年前の回想",
+  "nombre_en": "Prologue: Awake at Last",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 256,
+  "gmap_spot": null
+}

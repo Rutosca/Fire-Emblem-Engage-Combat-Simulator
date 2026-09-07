@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M017",
+  "dispos_id": "M017",
+  "terrain_id": "MapTerrain_M017",
+  "field_id": "Fld_M017",
+  "script_bmap": "M017",
+  "script_encount": "M017_Encount",
+  "script_kizuna": "M017_Kizuna",
+  "nivel_recomendado": 23,
+  "siguiente_capitulo": "CID_M018",
+  "nacion": "NID_フィレネ",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P08_M017",
+  "bgm_enemigo": "BGM_Field_P08_M017",
+  "nombre_japones": "１７章　風車の村（荒廃）",
+  "nombre_en": "Chapter 17: Engaging the Commander",
+  "titulo_capitulo": "ChapterTitleFilene",
+  "flag": 187,
+  "gmap_spot": "M017"
+}

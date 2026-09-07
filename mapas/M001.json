@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M001",
+  "dispos_id": "M001",
+  "terrain_id": "MapTerrain_M001",
+  "field_id": "Fld_M001",
+  "script_bmap": "M001",
+  "script_encount": null,
+  "script_kizuna": "M001_Kizuna",
+  "nivel_recomendado": 1,
+  "siguiente_capitulo": "CID_M002",
+  "nacion": null,
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P01",
+  "bgm_enemigo": "BGM_Field_E01",
+  "nombre_japones": "１章　リトスの草原",
+  "nombre_en": "Chapter 1: Awake at Last",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 264,
+  "gmap_spot": null
+}

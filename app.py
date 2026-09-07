@@ -6,7 +6,7 @@ API REST Flask que conecta la UI del Gemelo con el motor de cálculo.
 from flask import Flask, jsonify, request, render_template, abort
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from estado_tablero import EstadoTablero, FichaUnidad
-from lector_de_mapas_tiled import MapaTactico
+from lector_de_mapas import MapaTactico
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock
 
 import os
@@ -28,8 +28,9 @@ app = Flask(__name__)
 # Estado global del tablero (singleton por sesión Flask)
 # =============================================================================
 
-# Intentar cargar el mapa del capítulo 7 si existe; si no, mapa de llanuras
-_ruta_mapa = os.path.join(os.path.dirname(__file__), "cap7_emblema_oscuro.json")
+# Cargar el JSON de mapa del capítulo 7 (formato datamine, generado por generar_mapas.py)
+_ruta_mapa = os.path.join(os.path.dirname(__file__), "mapas", "M007.json")
+
 _mapa = MapaTactico(_ruta_mapa)
 tablero = EstadoTablero(mapa=_mapa)
 
@@ -48,6 +49,127 @@ def cargar_catalogo():
             print(f"Aviso al cargar catalogo_engage.json: {e}")
 
 cargar_catalogo()
+
+# =============================================================================
+# Diccionario Oficial de Grabados de Emblema (Datamine God.xml) y Refinado
+# =============================================================================
+
+GRABADOS_EMBLEMA = {
+    "marth": {"nombre": "Marth", "emblema": "Comienzos", "mt": 1, "wt": 0, "hit": 10, "crit": 10, "avo": 5, "ddg": 5},
+    "sigurd": {"nombre": "Sigurd", "emblema": "Cruzada", "mt": 1, "wt": -1, "hit": 0, "crit": 0, "avo": 20, "ddg": 0},
+    "celica": {"nombre": "Celica", "emblema": "Ecos", "mt": -1, "wt": -1, "hit": 0, "crit": 0, "avo": 0, "ddg": 50},
+    "micaiah": {"nombre": "Micaiah", "emblema": "Aurora", "mt": -3, "wt": -1, "hit": 0, "crit": 0, "avo": 40, "ddg": 20},
+    "roy": {"nombre": "Roy", "emblema": "León", "mt": 2, "wt": 8, "hit": 0, "crit": 0, "avo": -30, "ddg": 0},
+    "leif": {"nombre": "Leif", "emblema": "Genealogía", "mt": 1, "wt": 1, "hit": 20, "crit": 0, "avo": 10, "ddg": 0},
+    "lucina": {"nombre": "Lucina", "emblema": "Despertar", "mt": -1, "wt": -1, "hit": 30, "crit": 0, "avo": 30, "ddg": 0},
+    "lyn": {"nombre": "Lyn", "emblema": "Llama", "mt": -3, "wt": -2, "hit": 40, "crit": 20, "avo": 0, "ddg": 0},
+    "ike": {"nombre": "Ike", "emblema": "Fulgor", "mt": 3, "wt": 15, "hit": 0, "crit": 0, "avo": 0, "ddg": 0},
+    "byleth": {"nombre": "Byleth", "emblema": "Academia", "mt": 0, "wt": 2, "hit": 30, "crit": 10, "avo": 10, "ddg": 30},
+    "corrin": {"nombre": "Corrin", "emblema": "Destino", "mt": -2, "wt": 0, "hit": 0, "crit": 30, "avo": 10, "ddg": 30},
+    "eirika": {"nombre": "Eirika", "emblema": "Sagrada", "mt": 0, "wt": 0, "hit": 40, "crit": 20, "avo": -20, "ddg": -20},
+    "ephraim": {"nombre": "Ephraim", "emblema": "Sagrada", "mt": 0, "wt": 0, "hit": 40, "crit": 20, "avo": -20, "ddg": -20},
+    "alear": {"nombre": "Alear", "emblema": "Dragón", "mt": -1, "wt": -1, "hit": 20, "crit": 20, "avo": 20, "ddg": 20},
+}
+
+REFINES_GENERICOS = {
+    1: {"mt": 1, "hit": 5, "crit": 0, "wt": 0},
+    2: {"mt": 2, "hit": 5, "crit": 5, "wt": 0},
+    3: {"mt": 3, "hit": 10, "crit": 5, "wt": -1},
+    4: {"mt": 4, "hit": 10, "crit": 10, "wt": -1},
+    5: {"mt": 5, "hit": 15, "crit": 10, "wt": -2},
+}
+
+def parsear_arma_string(raw_str):
+    """
+    Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
+    """
+    if not raw_str:
+        return None
+    raw_str = str(raw_str).strip()
+
+    # 1. Detectar grabado de emblema entre paréntesis: (Marth), (Sigurd), etc.
+    grabado_info = None
+    m_grab = re.search(r'\(([^)]+)\)', raw_str)
+    limpio = raw_str
+    if m_grab:
+        grab_nom = m_grab.group(1).lower().strip()
+        grab_nom = grab_nom.replace("grabado de", "").replace("marca de", "").replace("engrave", "").strip()
+        for k, v in GRABADOS_EMBLEMA.items():
+            if k in grab_nom or grab_nom in k or v["emblema"].lower() in grab_nom:
+                grabado_info = v
+                break
+        limpio = re.sub(r'\([^)]+\)', '', limpio).strip()
+
+    # 2. Detectar nivel de refinamiento (+1..+5)
+    refine_lvl = 0
+    m_ref = re.search(r'\+(\d+)', limpio)
+    if m_ref:
+        refine_lvl = min(5, max(1, int(m_ref.group(1))))
+        limpio = re.sub(r'\+\d+', '', limpio).strip()
+
+    # 3. Buscar arma base en el catálogo
+    base_aid = limpio
+    ainfo = _catalogo.get("armas", {}).get(base_aid)
+    if not ainfo and base_aid:
+        base_norm = normalizar_texto(base_aid)
+        for k, v in _catalogo.get("armas", {}).items():
+            if normalizar_texto(v.get("nombre", "")) == base_norm or normalizar_texto(k) == base_norm:
+                ainfo = v
+                base_aid = k
+                break
+
+    if not ainfo:
+        return None
+
+    base_mt = int(ainfo.get("mt", 5))
+    base_wt = int(ainfo.get("wt", 5))
+    base_hit = int(ainfo.get("hit", 80))
+    base_crit = int(ainfo.get("crit", 0))
+
+    # Aplicar refinamiento
+    ref_mod = REFINES_GENERICOS.get(refine_lvl, {"mt": 0, "hit": 0, "crit": 0, "wt": 0})
+    mt_calc = base_mt + ref_mod["mt"]
+    wt_calc = max(0, base_wt + ref_mod["wt"])
+    hit_calc = base_hit + ref_mod["hit"]
+    crit_calc = base_crit + ref_mod["crit"]
+
+    # Aplicar grabado
+    avo_bonus = 0
+    ddg_bonus = 0
+    if grabado_info:
+        mt_calc += grabado_info["mt"]
+        wt_calc = max(0, wt_calc + grabado_info["wt"])
+        hit_calc += grabado_info["hit"]
+        crit_calc += grabado_info["crit"]
+        avo_bonus += grabado_info["avo"]
+        ddg_bonus += grabado_info["ddg"]
+
+    nombre_base = ainfo.get("nombre", base_aid)
+    nombre_formateado = nombre_base
+    if refine_lvl > 0:
+        nombre_formateado += f"+{refine_lvl}"
+    if grabado_info:
+        nombre_formateado += f" ({grabado_info['nombre']})"
+
+    return {
+        "id": ainfo.get("id", base_aid),
+        "nombre": nombre_formateado,
+        "nombre_base": nombre_base,
+        "refine_lvl": refine_lvl,
+        "grabado": grabado_info["nombre"] if grabado_info else None,
+        "mt": max(0, mt_calc),
+        "wt": max(0, wt_calc),
+        "hit": hit_calc,
+        "crit": max(0, crit_calc),
+        "avo_bonus": avo_bonus,
+        "ddg_bonus": ddg_bonus,
+        "tipo": ainfo.get("tipo", "Espada"),
+        "rango": ainfo.get("rango", [1]),
+        "es_magica": ainfo.get("es_magica", False),
+        "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
+        "usos_max": ainfo.get("usos_max"),
+    }
+
 
 @app.route("/api/catalogo/recargar", methods=["POST", "GET"])
 def recargar_catalogo_endpoint():
@@ -736,15 +858,13 @@ def eliminar_unidad():
 
 _cargador_dispos = CargadorDisposEngage()
 
-@app.route("/api/preset/<capitulo_id>", methods=["POST"])
-@app.route("/api/preset/capitulo7", methods=["POST"])
-def cargar_preset_capitulo(capitulo_id="M007"):
-    """
-    Carga el despliegue oficial desde dispos/ del datamine de Engage para el capítulo solicitado.
-    """
-    data = request.get_json(silent=True) or {}
-    dificultad = data.get("dificultad", "Extremo")
 
+def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
+    """
+    Nucleo reutilizable de despliegue: limpia el tablero y carga las unidades
+    del capitulo indicado desde los XMLs de dispos/ del datamine.
+    Devuelve un dict con el resultado listo para jsonify.
+    """
     tablero.fichas.clear()
     tablero.turno_actual = 1
     tablero.fase = "jugador"
@@ -752,17 +872,53 @@ def cargar_preset_capitulo(capitulo_id="M007"):
     unidades_dispos = _cargador_dispos.cargar_capitulo(capitulo_id, dificultad)
     if not unidades_dispos:
         num = tablero.cargar_spawns_desde_mapa()
-        return jsonify({"ok": True, "mensaje": f"Cargados {num} spawns desde Tiled", "fichas": [f.como_dict() for f in tablero.fichas.values()]})
+        return {
+            "ok": True,
+            "mensaje": f"Sin dispos para {capitulo_id}; cargados {num} spawns del mapa",
+            "fichas": [f.como_dict() for f in tablero.fichas.values()]
+        }
 
     for u in unidades_dispos:
         ficha = resolver_unidad_con_catalogo(u)
         tablero.registrar_unidad(ficha)
 
-    return jsonify({
+    return {
         "ok": True,
-        "mensaje": f"Cargado despliegue oficial de {capitulo_id} ({len(unidades_dispos)} unidades) en dificultad {dificultad}",
+        "mensaje": f"Despliegue de {capitulo_id} ({len(unidades_dispos)} unidades) en {dificultad}",
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
-    })
+    }
+
+
+def _auto_despliegue_inicial():
+    """
+    Si el mapa cargado al arranque es formato datamine, despliega automaticamente
+    las unidades del capitulo correspondiente en dificultad Extremo.
+    """
+    if not getattr(_mapa, "es_datamine", False):
+        return
+    dispos_id = getattr(_mapa, "dispos_id", None)
+    if not dispos_id:
+        return
+    try:
+        resultado = _desplegar_capitulo(dispos_id, "Extremo")
+        print(f"[Auto-despliegue] {len(tablero.fichas)} unidades cargadas para {dispos_id} (Extremo)")
+    except Exception as e:
+        print(f"[Auto-despliegue] Error al cargar {dispos_id}: {e}")
+
+
+# Auto-despliegue de unidades en el arranque si el mapa es de datamine
+_auto_despliegue_inicial()
+
+
+@app.route("/api/preset/<capitulo_id>", methods=["POST"])
+@app.route("/api/preset/capitulo7", methods=["POST"])
+def cargar_preset_capitulo(capitulo_id="M007"):
+    """
+    Carga el despliegue oficial desde dispos/ del datamine de Engage para el capitulo solicitado.
+    """
+    data = request.get_json(silent=True) or {}
+    dificultad = data.get("dificultad", "Extremo")
+    return jsonify(_desplegar_capitulo(capitulo_id, dificultad))
 
 @app.route("/api/unidad/rango_movimiento", methods=["GET"])
 def obtener_rango_movimiento():
@@ -893,132 +1049,7 @@ def registrar_muerte():
     return jsonify({"ok": True, "nombre": nombre})
 
 
-# =============================================================================
-# Diccionario Oficial de Grabados de Emblema (Datamine God.xml) y Refinado
-# =============================================================================
 
-GRABADOS_EMBLEMA = {
-    "marth": {"nombre": "Marth", "emblema": "Comienzos", "mt": 1, "wt": 0, "hit": 10, "crit": 10, "avo": 5, "ddg": 5},
-    "sigurd": {"nombre": "Sigurd", "emblema": "Cruzada", "mt": 1, "wt": -1, "hit": 0, "crit": 0, "avo": 20, "ddg": 0},
-    "celica": {"nombre": "Celica", "emblema": "Ecos", "mt": -1, "wt": -1, "hit": 0, "crit": 0, "avo": 0, "ddg": 50},
-    "micaiah": {"nombre": "Micaiah", "emblema": "Aurora", "mt": -3, "wt": -1, "hit": 0, "crit": 0, "avo": 40, "ddg": 20},
-    "roy": {"nombre": "Roy", "emblema": "León", "mt": 2, "wt": 8, "hit": 0, "crit": 0, "avo": -30, "ddg": 0},
-    "leif": {"nombre": "Leif", "emblema": "Genealogía", "mt": 1, "wt": 1, "hit": 20, "crit": 0, "avo": 10, "ddg": 0},
-    "lucina": {"nombre": "Lucina", "emblema": "Despertar", "mt": -1, "wt": -1, "hit": 30, "crit": 0, "avo": 30, "ddg": 0},
-    "lyn": {"nombre": "Lyn", "emblema": "Llama", "mt": -3, "wt": -2, "hit": 40, "crit": 20, "avo": 0, "ddg": 0},
-    "ike": {"nombre": "Ike", "emblema": "Fulgor", "mt": 3, "wt": 15, "hit": 0, "crit": 0, "avo": 0, "ddg": 0},
-    "byleth": {"nombre": "Byleth", "emblema": "Academia", "mt": 0, "wt": 2, "hit": 30, "crit": 10, "avo": 10, "ddg": 30},
-    "corrin": {"nombre": "Corrin", "emblema": "Destino", "mt": -2, "wt": 0, "hit": 0, "crit": 30, "avo": 10, "ddg": 30},
-    "eirika": {"nombre": "Eirika", "emblema": "Sagrada", "mt": 0, "wt": 0, "hit": 40, "crit": 20, "avo": -20, "ddg": -20},
-    "ephraim": {"nombre": "Ephraim", "emblema": "Sagrada", "mt": 0, "wt": 0, "hit": 40, "crit": 20, "avo": -20, "ddg": -20},
-    "alear": {"nombre": "Alear", "emblema": "Dragón", "mt": -1, "wt": -1, "hit": 20, "crit": 20, "avo": 20, "ddg": 20},
-}
-
-REFINES_GENERICOS = {
-    1: {"mt": 1, "hit": 5, "crit": 0, "wt": 0},
-    2: {"mt": 2, "hit": 5, "crit": 5, "wt": 0},
-    3: {"mt": 3, "hit": 10, "crit": 5, "wt": -1},
-    4: {"mt": 4, "hit": 10, "crit": 10, "wt": -1},
-    5: {"mt": 5, "hit": 15, "crit": 10, "wt": -2},
-}
-
-def parsear_arma_string(raw_str):
-    """
-    Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
-    Ejemplos:
-      - 'Libération'
-      - 'Libération+2'
-      - 'Libération (Marth)'
-      - 'Libération+2 (Marth)'
-      - 'Iron Sword +3 (Sigurd)'
-    Retorna un diccionario con los datos completos del arma mejorada.
-    """
-    if not raw_str:
-        return None
-    raw_str = str(raw_str).strip()
-
-    # 1. Detectar grabado de emblema entre paréntesis: (Marth), (Sigurd), etc.
-    grabado_info = None
-    m_grab = re.search(r'\(([^)]+)\)', raw_str)
-    limpio = raw_str
-    if m_grab:
-        grab_nom = m_grab.group(1).lower().strip()
-        grab_nom = grab_nom.replace("grabado de", "").replace("marca de", "").replace("engrave", "").strip()
-        for k, v in GRABADOS_EMBLEMA.items():
-            if k in grab_nom or grab_nom in k or v["emblema"].lower() in grab_nom:
-                grabado_info = v
-                break
-        limpio = re.sub(r'\([^)]+\)', '', limpio).strip()
-
-    # 2. Detectar nivel de refinamiento (+1..+5)
-    refine_lvl = 0
-    m_ref = re.search(r'\+(\d+)', limpio)
-    if m_ref:
-        refine_lvl = min(5, max(1, int(m_ref.group(1))))
-        limpio = re.sub(r'\+\d+', '', limpio).strip()
-
-    # 3. Buscar arma base en el catálogo
-    base_aid = limpio
-    ainfo = _catalogo.get("armas", {}).get(base_aid)
-    if not ainfo and base_aid:
-        base_norm = normalizar_texto(base_aid)
-        for k, v in _catalogo.get("armas", {}).items():
-            if normalizar_texto(v.get("nombre", "")) == base_norm or normalizar_texto(k) == base_norm:
-                ainfo = v
-                base_aid = k
-                break
-
-    if not ainfo:
-        return None
-
-    base_mt = int(ainfo.get("mt", 5))
-    base_wt = int(ainfo.get("wt", 5))
-    base_hit = int(ainfo.get("hit", 80))
-    base_crit = int(ainfo.get("crit", 0))
-
-    # Aplicar refinamiento
-    ref_mod = REFINES_GENERICOS.get(refine_lvl, {"mt": 0, "hit": 0, "crit": 0, "wt": 0})
-    mt_calc = base_mt + ref_mod["mt"]
-    wt_calc = max(0, base_wt + ref_mod["wt"])
-    hit_calc = base_hit + ref_mod["hit"]
-    crit_calc = base_crit + ref_mod["crit"]
-
-    # Aplicar grabado
-    avo_bonus = 0
-    ddg_bonus = 0
-    if grabado_info:
-        mt_calc += grabado_info["mt"]
-        wt_calc = max(0, wt_calc + grabado_info["wt"])
-        hit_calc += grabado_info["hit"]
-        crit_calc += grabado_info["crit"]
-        avo_bonus += grabado_info["avo"]
-        ddg_bonus += grabado_info["ddg"]
-
-    nombre_base = ainfo.get("nombre", base_aid)
-    nombre_formateado = nombre_base
-    if refine_lvl > 0:
-        nombre_formateado += f"+{refine_lvl}"
-    if grabado_info:
-        nombre_formateado += f" ({grabado_info['nombre']})"
-
-    return {
-        "id": ainfo.get("id", base_aid),
-        "nombre": nombre_formateado,
-        "nombre_base": nombre_base,
-        "refine_lvl": refine_lvl,
-        "grabado": grabado_info["nombre"] if grabado_info else None,
-        "mt": max(0, mt_calc),
-        "wt": max(0, wt_calc),
-        "hit": hit_calc,
-        "crit": max(0, crit_calc),
-        "avo_bonus": avo_bonus,
-        "ddg_bonus": ddg_bonus,
-        "tipo": ainfo.get("tipo", "Espada"),
-        "rango": ainfo.get("rango", [1]),
-        "es_magica": ainfo.get("es_magica", False),
-        "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
-        "usos_max": ainfo.get("usos_max"),
-    }
 
 # ── Helper global: construir Arma desde datos de catálogo / inventario ──────
 def _arma_desde_item(item_dict):
@@ -1745,27 +1776,18 @@ def limpiar_tablero():
 @app.route("/api/reset", methods=["POST"])
 def reset():
     """
-    Reinicia el tablero al estado inicial (Turno 1, Fase Jugador, Spawns del Capítulo 7).
+    Reinicia el tablero al estado inicial (Turno 1, Fase Jugador, Spawns del capitulo activo).
     """
     tablero.guardar_snapshot()
-    tablero.limpiar()
-    tablero.turno_actual = 1
-    tablero.fase = "jugador"
-    
-    unidades_dispos = _cargador_dispos.cargar_capitulo("M007", "Extremo")
-    if not unidades_dispos:
-        tablero.cargar_spawns_desde_mapa()
-    else:
-        for u in unidades_dispos:
-            ficha = resolver_unidad_con_catalogo(u)
-            tablero.registrar_unidad(ficha)
-
+    cap_id = getattr(_mapa, "dispos_id", "M007") or "M007"
+    resultado = _desplegar_capitulo(cap_id, "Extremo")
+    nombre_cap = getattr(_mapa, "nombre_en", cap_id)
     return jsonify({
         "ok": True,
-        "mensaje": f"Tablero reiniciado al Turno 1 con el Capítulo 7 ({len(tablero.fichas)} unidades).",
+        "mensaje": f"Tablero reiniciado al Turno 1 con {nombre_cap} ({len(tablero.fichas)} unidades).",
         "fase": tablero.fase,
         "turno": tablero.turno_actual,
-        "fichas": [f.como_dict() for f in tablero.fichas.values()]
+        "fichas": resultado["fichas"]
     })
 
 
@@ -1775,6 +1797,7 @@ def reset():
 
 if __name__ == "__main__":
     print("=== FE Engage Tactical Assistant ===")
-    print(f"Mapa cargado: {_mapa.ancho}x{_mapa.alto}")
+    capitulo_info = getattr(_mapa, 'nombre_en', None) or getattr(_mapa, 'cid', 'Tiled')
+    print(f"Mapa cargado: {_mapa.ancho}x{_mapa.alto} | {capitulo_info}")
     print("Servidor en http://localhost:5000")
     app.run(debug=True, port=5000)

@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M016",
+  "dispos_id": "M016",
+  "terrain_id": "MapTerrain_M016",
+  "field_id": "Fld_M016",
+  "script_bmap": "M016",
+  "script_encount": "M016_Encount",
+  "script_kizuna": "M016_Kizuna",
+  "nivel_recomendado": 21,
+  "siguiente_capitulo": "CID_M017",
+  "nacion": "NID_ソルム",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P06",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "１６章　ソルム国境",
+  "nombre_en": "Chapter 16: The Horrors of War",
+  "titulo_capitulo": "ChapterTitleSolum",
+  "flag": 59,
+  "gmap_spot": "M016"
+}

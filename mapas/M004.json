@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M004",
+  "dispos_id": "M004",
+  "terrain_id": "MapTerrain_M004",
+  "field_id": "Fld_M004",
+  "script_bmap": "M004",
+  "script_encount": "M004_Encount",
+  "script_kizuna": "M004_Kizuna",
+  "nivel_recomendado": 4,
+  "siguiente_capitulo": "CID_M005",
+  "nacion": "NID_フィレネ",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P02",
+  "bgm_enemigo": "BGM_Field_E01",
+  "nombre_japones": "４章　風車の村",
+  "nombre_en": "Chapter 4: A Land in Bloom",
+  "titulo_capitulo": "ChapterTitleFilene",
+  "flag": 41,
+  "gmap_spot": "M004"
+}

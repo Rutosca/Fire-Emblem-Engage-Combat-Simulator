@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M013",
+  "dispos_id": "M013",
+  "terrain_id": "MapTerrain_M013",
+  "field_id": "Fld_M013",
+  "script_bmap": "M013",
+  "script_encount": "M013_Encount",
+  "script_kizuna": "M013_Kizuna",
+  "nivel_recomendado": 15,
+  "siguiente_capitulo": "CID_M014",
+  "nacion": "NID_ソルム",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P06",
+  "bgm_enemigo": "BGM_Field_E01",
+  "nombre_japones": "１３章　ソルムのオアシス",
+  "nombre_en": "Chapter 13: The Sentinels",
+  "titulo_capitulo": "ChapterTitleSolum",
+  "flag": 63,
+  "gmap_spot": "M013"
+}

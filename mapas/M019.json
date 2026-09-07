@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M019",
+  "dispos_id": "M019",
+  "terrain_id": "MapTerrain_M019",
+  "field_id": "Fld_M019",
+  "script_bmap": "M019",
+  "script_encount": "M019_Encount",
+  "script_kizuna": "M019_Kizuna",
+  "nivel_recomendado": 27,
+  "siguiente_capitulo": "CID_M020",
+  "nacion": "NID_イルシオン",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P01_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "１９章　イルシオン港町",
+  "nombre_en": "Chapter 19: The Dead Town",
+  "titulo_capitulo": "ChapterTitleIrcion",
+  "flag": 59,
+  "gmap_spot": "M019"
+}

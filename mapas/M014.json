@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M014",
+  "dispos_id": "M014",
+  "terrain_id": "MapTerrain_M014",
+  "field_id": "Fld_M014",
+  "script_bmap": "M014",
+  "script_encount": "M014_Encount",
+  "script_kizuna": "M014_Kizuna",
+  "nivel_recomendado": 17,
+  "siguiente_capitulo": "CID_M015",
+  "nacion": "NID_ソルム",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P06_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "１４章　ソルム城内",
+  "nombre_en": "Chapter 14: The Heroes of the Oasis",
+  "titulo_capitulo": "ChapterTitleSolum",
+  "flag": 187,
+  "gmap_spot": "M014"
+}

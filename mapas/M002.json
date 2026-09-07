@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M002",
+  "dispos_id": "M002",
+  "terrain_id": "MapTerrain_M002",
+  "field_id": "Fld_M002",
+  "script_bmap": "M002",
+  "script_encount": null,
+  "script_kizuna": "M002_Kizuna",
+  "nivel_recomendado": 2,
+  "siguiente_capitulo": "CID_M003",
+  "nacion": null,
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P01",
+  "bgm_enemigo": "BGM_Field_E02",
+  "nombre_japones": "２章　神竜王城の前庭",
+  "nombre_en": "Chapter 2: Queen Lumera",
+  "titulo_capitulo": "ChapterTitleLithos",
+  "flag": 264,
+  "gmap_spot": null
+}

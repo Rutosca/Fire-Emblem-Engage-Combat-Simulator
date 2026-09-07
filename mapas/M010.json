@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M010",
+  "dispos_id": "M010",
+  "terrain_id": "MapTerrain_M010",
+  "field_id": "Fld_M010",
+  "script_bmap": "M010",
+  "script_encount": "M010_Encount",
+  "script_kizuna": "M010_Kizuna",
+  "nivel_recomendado": 11,
+  "siguiente_capitulo": "CID_M011",
+  "nacion": "NID_イルシオン",
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P04",
+  "bgm_enemigo": "BGM_Field_P04",
+  "nombre_japones": "１０章　イルシオン大教会",
+  "nombre_en": "Chapter 10: The Fell Dragon Sombron",
+  "titulo_capitulo": "ChapterTitleIrcion",
+  "flag": 195,
+  "gmap_spot": "M010"
+}

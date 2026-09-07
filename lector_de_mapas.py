@@ -44,20 +44,64 @@ class MapaTactico:
         self.ancho = 0
         self.alto = 0
         self.grid: List[List[Terreno]] = []
-        self.entidades: List[EntidadMapa] = [] # LISTA DE SPAWNS Y OBJETOS
+        self.es_datamine = False
+        self.cid: Optional[str] = None
+        self.dispos_id: Optional[str] = None
+        self.terrain_id: Optional[str] = None
+        self.entidades: List[EntidadMapa] = []
         self._cargar_mapa()
+
+    def _init_llanuras(self, ancho: int, alto: int):
+        """Inicializa el grid con Terreno generico de llanura."""
+        self.ancho = ancho
+        self.alto = alto
+        self.grid = [[Terreno() for _ in range(self.alto)] for _ in range(self.ancho)]
+
+    def _cargar_datamine(self, data: dict):
+        """
+        Lee un JSON generado por generar_mapas.py (formato datamine).
+        Almacena la metadata del capitulo como atributos de instancia y crea
+        un grid de llanuras. Las dimensiones reales del mapa no estan en el
+        datamine, asi que usamos un placeholder hasta que se integre Terrain.xml.
+        """
+        self.cid = data.get("cid")
+        self.dispos_id = data.get("dispos_id")
+        self.terrain_id = data.get("terrain_id")
+        self.field_id = data.get("field_id")
+        self.script_bmap = data.get("script_bmap")
+        self.nivel = data.get("nivel_recomendado", 1)
+        self.nombre_en = data.get("nombre_en")
+        self.nombre_japones = data.get("nombre_japones")
+        self.siguiente = data.get("siguiente_capitulo")
+        self.nacion = data.get("nacion")
+        self.entorno = data.get("entorno_sonido")
+        self.flag = data.get("flag", 0)
+        self.gmap_spot = data.get("gmap_spot")
+        self.es_datamine = True
+
+        # Placeholder: grid 24x17 (dimensiones del cap7 original)
+        self._init_llanuras(24, 17)
+        print(f"[Datamine] Mapa cargado: {self.cid} ({self.nombre_en}) | dispos: {self.dispos_id}")
 
     def _cargar_mapa(self):
         try:
             with open(self.filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
         except FileNotFoundError:
-            print(f"Error: No se encontro el archivo {self.filepath}")
-            # Crear un mapa de llanuras por defecto para pruebas
-            self.ancho, self.alto = 16, 24
-            self.grid = [[Terreno() for _ in range(self.alto)] for _ in range(self.ancho)]
+            print(f"Aviso: No se encontro el archivo {self.filepath}. Usando mapa de llanuras.")
+            self._init_llanuras(16, 24)
             return
 
+        # -----------------------------------------------------------------------
+        # Formato DATAMINE (generado por generar_mapas.py)
+        # -----------------------------------------------------------------------
+        if "cid" in data:
+            self._cargar_datamine(data)
+            return
+
+        # -----------------------------------------------------------------------
+        # Formato TILED (legacy)
+        # -----------------------------------------------------------------------
         self.ancho = data['width']
         self.alto = data['height']
         

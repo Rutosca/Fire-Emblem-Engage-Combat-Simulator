@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M008",
+  "dispos_id": "M008",
+  "terrain_id": "MapTerrain_M008",
+  "field_id": "Fld_M008",
+  "script_bmap": "M008",
+  "script_encount": "M008_Encount",
+  "script_kizuna": "M008_Kizuna",
+  "nivel_recomendado": 8,
+  "siguiente_capitulo": "CID_M009",
+  "nacion": "NID_ブロディア",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P03_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "８章　ブロディア城内",
+  "nombre_en": "Chapter 8: The Kingdom of Brodia",
+  "titulo_capitulo": "ChapterTitleBrodia",
+  "flag": 59,
+  "gmap_spot": "M008"
+}

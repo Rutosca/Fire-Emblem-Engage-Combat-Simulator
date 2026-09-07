@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M018",
+  "dispos_id": "M018",
+  "terrain_id": "MapTerrain_M018",
+  "field_id": "Fld_M018",
+  "script_bmap": "M018",
+  "script_encount": "M018_Encount",
+  "script_kizuna": "M018_Kizuna",
+  "nivel_recomendado": 25,
+  "siguiente_capitulo": "CID_M019",
+  "nacion": "NID_イルシオン",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P01_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "１８章　航路",
+  "nombre_en": "Chapter 18: The Cold Voyage",
+  "titulo_capitulo": "ChapterTitleIrcion",
+  "flag": 59,
+  "gmap_spot": "M018"
+}

@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M005",
+  "dispos_id": "M005",
+  "terrain_id": "MapTerrain_M005",
+  "field_id": "Fld_M005",
+  "script_bmap": "M005",
+  "script_encount": "M005_Encount",
+  "script_kizuna": "M005_Kizuna",
+  "nivel_recomendado": 5,
+  "siguiente_capitulo": "CID_M006",
+  "nacion": "NID_フィレネ",
+  "entorno_sonido": "Castle",
+  "bgm_jugador": "BGM_Field_P02_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "５章　フィレネ城内",
+  "nombre_en": "Chapter 5: Retaking the Castle",
+  "titulo_capitulo": "ChapterTitleFilene",
+  "flag": 187,
+  "gmap_spot": "M005"
+}

@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M006",
+  "dispos_id": "M006",
+  "terrain_id": "MapTerrain_M006",
+  "field_id": "Fld_M006",
+  "script_bmap": "M006",
+  "script_encount": "M006_Encount",
+  "script_kizuna": "M006_Kizuna",
+  "nivel_recomendado": 6,
+  "siguiente_capitulo": "CID_M007",
+  "nacion": "NID_フィレネ",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P02",
+  "bgm_enemigo": "BGM_Field_E01",
+  "nombre_japones": "６章　フィレネ国境",
+  "nombre_en": "Chapter 6: The Stolen Ring",
+  "titulo_capitulo": "ChapterTitleFilene",
+  "flag": 63,
+  "gmap_spot": "M006"
+}

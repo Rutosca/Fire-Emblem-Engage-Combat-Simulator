@@ -1,0 +1,20 @@
+{
+  "cid": "CID_M009",
+  "dispos_id": "M009",
+  "terrain_id": "MapTerrain_M009",
+  "field_id": "Fld_M009",
+  "script_bmap": "M009",
+  "script_encount": "M009_Encount",
+  "script_kizuna": "M009_Kizuna",
+  "nivel_recomendado": 10,
+  "siguiente_capitulo": "CID_M010",
+  "nacion": "NID_ブロディア",
+  "entorno_sonido": "Outdoor",
+  "bgm_jugador": "BGM_Field_P03_Heavy",
+  "bgm_enemigo": "BGM_Field_E03",
+  "nombre_japones": "９章　ブロディア国境",
+  "nombre_en": "Chapter 9: A Clash of Forces",
+  "titulo_capitulo": "ChapterTitleBrodia",
+  "flag": 187,
+  "gmap_spot": "M009"
+}
