@@ -3,7 +3,7 @@ import base64
 import zlib
 import struct
 from dataclasses import dataclass
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 # Tiled usa los 3 bits más significativos de cada GID para indicar
 # transformaciones (flip horizontal, vertical y diagonal/rotación 90°).
@@ -161,11 +161,12 @@ class MapaTactico:
                     tipo_nombre = str(props.get('tipo', 'Desconocido')).lower()
 
                     # Defaults automáticos de Engage según el tipo si no están explícitos
-                    def_avo = 30 if tipo_nombre in ('curacion', 'fortaleza', 'trono') else props.get('avo', 0)
-                    def_dfn = 1 if tipo_nombre in ('curacion', 'fortaleza') else (2 if tipo_nombre == 'trono' else props.get('dfn', 0))
-                    def_curacion = 10 if tipo_nombre in ('curacion', 'fortaleza', 'trono') else props.get('curacion_turno', 0)
-                    def_antirruptura = True if tipo_nombre in ('curacion', 'fortaleza', 'trono') else props.get('es_antirruptura', False)
-                    def_recarga = True if tipo_nombre in ('recarga', 'emblema', 'pozo_energia') else props.get('es_recarga_emblema', False)
+                    es_baluarte = tipo_nombre in ('curacion', 'fortaleza', 'trono')
+                    def_avo = 30 if es_baluarte else props.get('avo', 0)
+                    def_dfn = (2 if tipo_nombre == 'trono' else 1) if es_baluarte else props.get('dfn', 0)
+                    def_curacion = 10 if es_baluarte else props.get('curacion_turno', 0)
+                    def_antirruptura = es_baluarte or props.get('es_antirruptura', False)
+                    def_recarga = tipo_nombre in ('recarga', 'emblema', 'pozo_energia') or props.get('es_recarga_emblema', False)
 
                     self.grid[x][y] = Terreno(
                         nombre=props.get('tipo', 'Desconocido'),

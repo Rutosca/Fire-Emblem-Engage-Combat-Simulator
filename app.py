@@ -108,16 +108,7 @@ def parsear_arma_string(raw_str):
         limpio = re.sub(r'\+\d+', '', limpio).strip()
 
     # 3. Buscar arma base en el catálogo
-    base_aid = limpio
-    ainfo = _catalogo.get("armas", {}).get(base_aid)
-    if not ainfo and base_aid:
-        base_norm = normalizar_texto(base_aid)
-        for k, v in _catalogo.get("armas", {}).items():
-            if normalizar_texto(v.get("nombre", "")) == base_norm or normalizar_texto(k) == base_norm:
-                ainfo = v
-                base_aid = k
-                break
-
+    base_aid, ainfo = _buscar_en_catalogo("armas", limpio)
     if not ainfo:
         return None
 
@@ -169,6 +160,22 @@ def parsear_arma_string(raw_str):
         "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
         "usos_max": ainfo.get("usos_max"),
     }
+
+
+def _buscar_en_catalogo(categoria: str, texto: str):
+    """
+    Búsqueda fuzzy en _catalogo[categoria] por ID exacto o nombre normalizado.
+    Devuelve (key, item_dict) o (None, None) si no lo encuentra.
+    """
+    datos = _catalogo.get(categoria, {})
+    if texto in datos:
+        return texto, datos[texto]
+    texto_norm = normalizar_texto(texto)
+    for k, v in datos.items():
+        if normalizar_texto(v.get("nombre", "")) == texto_norm or normalizar_texto(k) == texto_norm:
+            return k, v
+    return None, None
+
 
 
 @app.route("/api/catalogo/recargar", methods=["POST", "GET"])
@@ -552,7 +559,6 @@ def resolver_unidad_con_catalogo(data):
 
         data["habilidades"] = habilidades_existentes
 
-    import re
     re_usos = re.compile(r"^(.*?)(?:\s*(?:\((\d+)(?:\/\d+)?\)|x(\d+)))?\s*$")
 
     for item in inventario_raw:
@@ -624,14 +630,9 @@ def resolver_unidad_con_catalogo(data):
                     ddg_bonus=parsed_w.get("ddg_bonus", 0),
                 )
         else:
-            ainfo = _catalogo.get("armas", {}).get(base_aid) if base_aid else None
-            if not ainfo and base_aid:
-                base_norm = normalizar_texto(base_aid)
-                for k, v in _catalogo.get("armas", {}).items():
-                    if normalizar_texto(v.get("nombre", "")) == base_norm or normalizar_texto(k) == base_norm:
-                        ainfo = v
-                        base_aid = k
-                        break
+            base_aid_k, ainfo = _buscar_en_catalogo("armas", base_aid) if base_aid else (None, None)
+            if base_aid_k:
+                base_aid = base_aid_k
 
             if ainfo:
                 nombre_final = ainfo.get("nombre", "Arma")
