@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from motor_calculo import Unidad, Arma
-    from lector_de_mapas_tiled import MapaTactico
+    from lector_de_mapas import MapaTactico
 
 
 # =============================================================================
@@ -49,6 +49,7 @@ class FichaUnidad:
     es_verde: bool = False             # True para aliados que se unen en turno 1 (Alcryst, Citrinne, Lapis)
     es_fijo: bool = False              # True si su posición no puede cambiarse en preparación (Alear, verdes)
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
+    cargas_ruptura: int = 0            # Cargas de Ruptura (Break): 1 = no puede contraatacar en el siguiente combate
 
     def __post_init__(self):
         if self.stats:
@@ -73,6 +74,8 @@ class FichaUnidad:
             "es_verde": self.es_verde,
             "es_fijo": self.es_fijo,
             "ha_actuado": self.ha_actuado,
+            "cargas_ruptura": self.cargas_ruptura,
+            "en_ruptura": self.cargas_ruptura > 0,
             "x": self.x,
             "y": self.y,
             "mov": self.mov,
@@ -337,9 +340,11 @@ class EstadoTablero:
     # ── Gestión de Acciones de Turno ─────────────────────────────────────
 
     def reiniciar_acciones_turno(self) -> None:
-        """Reactiva las acciones de todas las unidades vivas al inicio de turno."""
+        """Reactiva las acciones de todas las unidades vivas y limpia la ruptura de aliados al inicio de turno."""
         for f in self.fichas.values():
             f.ha_actuado = False
+            if f.es_aliado:
+                f.cargas_ruptura = 0
 
     def alternar_actuado(self, nombre: str) -> bool:
         """Alterna el estado de acción (ha_actuado) de una unidad."""
@@ -353,7 +358,7 @@ class EstadoTablero:
     def avanzar_turno(self) -> None:
         """
         Registra el fin del turno enemigo y prepara el siguiente turno del jugador.
-        Reactiva todas las acciones de los aliados.
+        Reactiva todas las acciones de los aliados y limpia estados temporales.
         """
         self.guardar_snapshot()
         self.turno_actual += 1
@@ -361,9 +366,12 @@ class EstadoTablero:
         self.reiniciar_acciones_turno()
 
     def iniciar_fase_enemigo(self) -> None:
-        """Marca que estamos en la fase de movimiento enemigo (el jugador arrastra tokens)."""
+        """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""
         self.guardar_snapshot()
         self.fase = "enemigo"
+        for f in self.fichas.values():
+            if not f.es_aliado:
+                f.cargas_ruptura = 0
 
     # ── Serialización ────────────────────────────────────────────────────
 

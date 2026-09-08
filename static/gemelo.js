@@ -143,6 +143,7 @@ function crearToken(ficha) {
   if (ficha.es_fijo) claseBando += " fijo";
   if (ficha.en_fusion || ficha.turnos_fusion > 0) claseBando += " fusion";
   if (ficha.ha_actuado) claseBando += " actuado";
+  if (ficha.en_ruptura || ficha.cargas_ruptura > 0) claseBando += " en-ruptura";
   tok.className = `token ${claseBando}`;
   tok.dataset.nombre = ficha.nombre;
   tok.textContent = ficha.nombre[0].toUpperCase();
@@ -154,6 +155,14 @@ function crearToken(ficha) {
     badge.title = "Fusión con Emblema Activa";
     tok.appendChild(badge);
   }
+
+  if (ficha.en_ruptura || ficha.cargas_ruptura > 0) {
+    const breakBadge = document.createElement("span");
+    breakBadge.className = "token-break-badge";
+    breakBadge.textContent = "💔";
+    breakBadge.title = "Ruptura (Break): Desarmado para contraataques";
+    tok.appendChild(breakBadge);
+  }
   
   const hpMax = ficha.hp_max || (ficha.stats ? ficha.stats.hp : 30);
   const hpActual = ficha.hp_actual !== undefined ? ficha.hp_actual : hpMax;
@@ -163,6 +172,7 @@ function crearToken(ficha) {
   if (ficha.arma_equipada) desc += `\nArma: ${ficha.arma_equipada.nombre} (Mt ${ficha.arma_equipada.mt}, Rango ${ficha.arma_equipada.rango.join('-')})`;
   if (ficha.emblema_nombre) desc += `\nEmblema: ${ficha.emblema_nombre}`;
   if (ficha.ha_actuado) desc += `\n✓ [HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
+  if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n💔 [RUPTURA ACTIVA: No puede contraatacar]`;
   if (ficha.en_fusion || ficha.turnos_fusion > 0) desc += `\n⚡ [MODO ENGAGE ACTIVO: Fusión con ${ficha.emblema_nombre || 'Emblema'}]`;
   tok.title = desc;
 
@@ -1254,12 +1264,21 @@ function initModalEvents() {
   $("btn-add-enemigo").addEventListener("click", () => abrirModalCreacion(16, 8, false));
   
   $("btn-preset-cap7").addEventListener("click", async () => {
-    const res = await api("/api/preset/capitulo7", "POST");
+    const selDif = $("select-dificultad");
+    const dificultad = selDif ? selDif.value : "Hard";
+    const res = await api("/api/preset/capitulo7", "POST", { dificultad });
     if (res.ok && res.fichas) {
       actualizarTokens(res.fichas);
-      mostrarToast(res.mensaje || "Preset oficial del Capítulo 7 cargado.", "ok");
+      mostrarToast(`📍 ${res.mensaje || "Preset cargado con éxito"}`, "ok");
+      setTimeout(lanzarAnalisis, 250);
     }
   });
+
+  if ($("select-dificultad")) {
+    $("select-dificultad").addEventListener("change", () => {
+      $("btn-preset-cap7").click();
+    });
+  }
 
   $("btn-limpiar").addEventListener("click", async () => {
     const res = await api("/api/tablero/limpiar", "POST", {});
@@ -1465,6 +1484,20 @@ async function ejecutarJugada(r) {
     toastMsg = `💥 ${atk.nombre} atacó a ${dfn.nombre} con ${r.arma_recomendada || 'Arma'} (${atkInfo.daño_total_ronda} dmg) → ¡${dfn.nombre} DERROTADO!`;
   } else {
     toastMsg = `⚔️ ${atk.nombre} infligió ${atkInfo.daño_total_ronda} dmg a ${dfn.nombre}. Queda en ${dfn.hp_actual}/${dfn.hp_max} HP.`;
+  }
+
+  const resComb = c && c.resultado ? c.resultado : {};
+  if (resComb.aplica_ruptura && !kill && !(smash && smash.rompio_por_choque)) {
+    toastMsg += ` 💔 ¡Ruptura! ${dfn.nombre} pierde la guardia (no podrá contraatacar).`;
+  }
+
+  const smash = c && c.resultado ? c.resultado.smash : null;
+  if (smash && smash.ocurrido) {
+    if (smash.empujado && smash.nueva_pos) {
+      toastMsg += ` 🔨 ¡Smash! ${dfn.nombre} empujado a (${smash.nueva_pos[0]}, ${smash.nueva_pos[1]}).`;
+    } else if (smash.rompio_por_choque) {
+      toastMsg += ` 🔨 ¡Smash! ${dfn.nombre} chocó contra obstáculo y sufrió RUPTURA (Break).`;
+    }
   }
 
   if (atkInfo && atkInfo.puede_canter) {

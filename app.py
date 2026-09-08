@@ -157,6 +157,7 @@ def parsear_arma_string(raw_str):
         "tipo": ainfo.get("tipo", "Espada"),
         "rango": ainfo.get("rango", [1]),
         "es_magica": ainfo.get("es_magica", False),
+        "es_smash": bool(ainfo.get("es_smash", False)),
         "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
         "usos_max": ainfo.get("usos_max"),
     }
@@ -182,6 +183,25 @@ def _buscar_en_catalogo(categoria: str, texto: str):
 def recargar_catalogo_endpoint():
     cargar_catalogo()
     return jsonify({"ok": True, "armas": len(_catalogo.get('armas', {})), "emblemas": len(_catalogo.get('emblemas', {}))})
+
+
+@app.route("/api/mapa/recargar", methods=["POST", "GET"])
+def recargar_mapa_endpoint():
+    """Recarga el JSON del mapa activo en caliente, sin reiniciar el servidor.
+    Util durante el desarrollo: edita en Tiled, exporta, llama a este endpoint."""
+    global _mapa, tablero
+    try:
+        _mapa = MapaTactico(_ruta_mapa)
+        tablero.mapa = _mapa
+        tipos = {}
+        for x in range(_mapa.ancho):
+            for y in range(_mapa.alto):
+                t = _mapa.grid[x][y]
+                tipos[t.nombre] = tipos.get(t.nombre, 0) + 1
+        print(f"[Mapa recargado] {_mapa.ancho}x{_mapa.alto} | tipos: {tipos}")
+        return jsonify({"ok": True, "ancho": _mapa.ancho, "alto": _mapa.alto, "tipos": tipos})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 # =============================================================================
@@ -408,15 +428,15 @@ def resolver_unidad_con_catalogo(data):
             calc_bld = join_stats.get("bld", 5)
         else:
             lvl_diff = max(0, nivel - 1)
-            calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + int((c_growths.get("hp", 0)  + p_growths.get("hp", 45)) * lvl_diff / 100.0)
-            calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + int((c_growths.get("str", 0) + p_growths.get("str", 30)) * lvl_diff / 100.0)
-            calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + int((c_growths.get("mag", 0) + p_growths.get("mag", 15)) * lvl_diff / 100.0)
-            calc_dex = c_bases.get("dex", 0) + p_bases.get("dex", 5)  + int((c_growths.get("dex", 0) + p_growths.get("dex", 35)) * lvl_diff / 100.0)
-            calc_spd = c_bases.get("spd", 0) + p_bases.get("spd", 6)  + int((c_growths.get("spd", 0) + p_growths.get("spd", 35)) * lvl_diff / 100.0)
-            calc_def = c_bases.get("def", 0) + p_bases.get("def", 5)  + int((c_growths.get("def", 0) + p_growths.get("def", 25)) * lvl_diff / 100.0)
-            calc_res = c_bases.get("res", 0) + p_bases.get("res", 2)  + int((c_growths.get("res", 0) + p_growths.get("res", 20)) * lvl_diff / 100.0)
-            calc_lck = c_bases.get("lck", 0) + p_bases.get("lck", 4)  + int((c_growths.get("lck", 0) + p_growths.get("lck", 25)) * lvl_diff / 100.0)
-            calc_bld = c_bases.get("bld", 0) + p_bases.get("bld", 5)  + int((c_growths.get("bld", 0) + p_growths.get("bld", 5))  * lvl_diff / 100.0)
+            calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + round((c_growths.get("hp", 0)  + p_growths.get("hp", 45)) * lvl_diff / 100.0)
+            calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + round((c_growths.get("str", 0) + p_growths.get("str", 30)) * lvl_diff / 100.0)
+            calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + round((c_growths.get("mag", 0) + p_growths.get("mag", 15)) * lvl_diff / 100.0)
+            calc_dex = c_bases.get("dex", 0) + p_bases.get("dex", 5)  + round((c_growths.get("dex", 0) + p_growths.get("dex", 35)) * lvl_diff / 100.0)
+            calc_spd = c_bases.get("spd", 0) + p_bases.get("spd", 6)  + round((c_growths.get("spd", 0) + p_growths.get("spd", 35)) * lvl_diff / 100.0)
+            calc_def = c_bases.get("def", 0) + p_bases.get("def", 5)  + round((c_growths.get("def", 0) + p_growths.get("def", 25)) * lvl_diff / 100.0)
+            calc_res = c_bases.get("res", 0) + p_bases.get("res", 2)  + round((c_growths.get("res", 0) + p_growths.get("res", 20)) * lvl_diff / 100.0)
+            calc_lck = c_bases.get("lck", 0) + p_bases.get("lck", 4)  + round((c_growths.get("lck", 0) + p_growths.get("lck", 25)) * lvl_diff / 100.0)
+            calc_bld = c_bases.get("bld", 0) + p_bases.get("bld", 5)  + round((c_growths.get("bld", 0) + p_growths.get("bld", 5))  * lvl_diff / 100.0)
     else:
         # Enemigo o unidad genérica
         p_bases = p_info.get("base_stats", {}) if p_info else {}
@@ -611,6 +631,7 @@ def resolver_unidad_con_catalogo(data):
                 "usos": usos_actual,
                 "usos_max": usos_max,
                 "es_engage": es_eng,
+                "es_smash": parsed_w.get("es_smash", False),
                 "equipada": es_eq,
             }
             inventario_resuelto.append(item_dict)
@@ -628,6 +649,7 @@ def resolver_unidad_con_catalogo(data):
                     efectividades=parsed_w["efectividades"],
                     avo_bonus=parsed_w.get("avo_bonus", 0),
                     ddg_bonus=parsed_w.get("ddg_bonus", 0),
+                    es_smash=parsed_w.get("es_smash", False),
                 )
         else:
             base_aid_k, ainfo = _buscar_en_catalogo("armas", base_aid) if base_aid else (None, None)
@@ -639,6 +661,12 @@ def resolver_unidad_con_catalogo(data):
                 usos_max = ainfo.get("usos_max")
                 usos_actual = usos_override if (usos_override is not None) else usos_max
                 display_nombre = f"{nombre_final} ({usos_actual})" if (usos_max and usos_max > 1) else nombre_final
+
+                es_smash_val = bool(ainfo.get("es_smash", False))
+                if not es_smash_val:
+                    n_low = (nombre_final or "").lower()
+                    if any(w in n_low for w in ("blade", "gran espada", "greatlance", "gran lanza", "greataxe", "gran hacha", "georgios", "venomous", "ukonvasara", "carnwenhan", "aymr")):
+                        es_smash_val = True
 
                 item_dict = {
                     "id": ainfo.get("id", base_aid),
@@ -652,6 +680,7 @@ def resolver_unidad_con_catalogo(data):
                     "crit": ainfo.get("crit", 0),
                     "rango": ainfo.get("rango", [1]),
                     "es_magica": ainfo.get("es_magica", False),
+                    "es_smash": es_smash_val,
                     "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
                     "usos": usos_actual,
                     "usos_max": usos_max,
@@ -671,6 +700,7 @@ def resolver_unidad_con_catalogo(data):
                         tipo=ainfo.get("tipo", "Espada"),
                         rango=ainfo.get("rango", [1]),
                         efectividades=ainfo.get("efectividades", []),
+                        es_smash=es_smash_val,
                     )
             else:
                 inventario_resuelto.append({
@@ -860,7 +890,7 @@ def eliminar_unidad():
 _cargador_dispos = CargadorDisposEngage()
 
 
-def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
+def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
     """
     Nucleo reutilizable de despliegue: limpia el tablero y carga las unidades
     del capitulo indicado desde los XMLs de dispos/ del datamine.
@@ -893,7 +923,7 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
 def _auto_despliegue_inicial():
     """
     Si el mapa cargado al arranque es formato datamine, despliega automaticamente
-    las unidades del capitulo correspondiente en dificultad Extremo.
+    las unidades del capitulo correspondiente en dificultad Hard (Difícil).
     """
     if not getattr(_mapa, "es_datamine", False):
         return
@@ -901,8 +931,8 @@ def _auto_despliegue_inicial():
     if not dispos_id:
         return
     try:
-        resultado = _desplegar_capitulo(dispos_id, "Extremo")
-        print(f"[Auto-despliegue] {len(tablero.fichas)} unidades cargadas para {dispos_id} (Extremo)")
+        resultado = _desplegar_capitulo(dispos_id, "Hard")
+        print(f"[Auto-despliegue] {len(tablero.fichas)} unidades cargadas para {dispos_id} (Hard)")
     except Exception as e:
         print(f"[Auto-despliegue] Error al cargar {dispos_id}: {e}")
 
@@ -913,12 +943,15 @@ _auto_despliegue_inicial()
 
 @app.route("/api/preset/<capitulo_id>", methods=["POST"])
 @app.route("/api/preset/capitulo7", methods=["POST"])
-def cargar_preset_capitulo(capitulo_id="M007"):
+def cargar_preset_capitulo(capitulo_id=None):
     """
     Carga el despliegue oficial desde dispos/ del datamine de Engage para el capitulo solicitado.
+    Si no se especifica capitulo_id, usa el del mapa activo o por defecto M007.
     """
     data = request.get_json(silent=True) or {}
-    dificultad = data.get("dificultad", "Extremo")
+    dificultad = data.get("dificultad", "Hard")
+    if not capitulo_id:
+        capitulo_id = getattr(_mapa, "dispos_id", None) or "M007"
     return jsonify(_desplegar_capitulo(capitulo_id, dificultad))
 
 @app.route("/api/unidad/rango_movimiento", methods=["GET"])
@@ -1076,12 +1109,19 @@ def _arma_desde_item(item_dict):
             efectividades=parsed["efectividades"],
             avo_bonus=parsed["avo_bonus"],
             ddg_bonus=parsed["ddg_bonus"],
+            es_smash=parsed.get("es_smash", False),
         )
 
     tipo_raw = item_dict.get("tipo", "Espada")
     TIPOS_VALIDOS = {'Espada', 'Hacha', 'Lanza', 'Artes', 'Arco', 'Tomo', 'Daga'}
     if tipo_raw in ("Bastón", "Objeto", "Accesorio", "Especial") or tipo_raw not in TIPOS_VALIDOS:
         return None
+
+    es_smash = bool(item_dict.get("es_smash", False))
+    if not es_smash:
+        n_low = nombre_raw.lower()
+        if any(w in n_low for w in ("blade", "gran espada", "greatlance", "gran lanza", "greataxe", "gran hacha", "georgios", "venomous", "ukonvasara", "carnwenhan", "aymr")):
+            es_smash = True
 
     return Arma(
         nombre=nombre_raw,
@@ -1095,6 +1135,7 @@ def _arma_desde_item(item_dict):
         efectividades=item_dict.get("efectividades", []),
         avo_bonus=int(item_dict.get("avo_bonus", 0)),
         ddg_bonus=int(item_dict.get("ddg_bonus", 0)),
+        es_smash=es_smash,
     )
 
 def encontrar_pos_ataque_optima(aliado, enemigo, arma):
@@ -1250,6 +1291,8 @@ def ejecutar_combate():
     t_atk = _mapa.grid[f_atk.x][f_atk.y]
     t_def = _mapa.grid[f_def.x][f_def.y]
 
+    casillas_ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre not in (f_atk.nombre, f_def.nombre)}
+
     combate = CalculadoraEngage.simular_combate(
         atacante=f_atk.stats,
         defensor=f_def.stats,
@@ -1262,7 +1305,12 @@ def ejecutar_combate():
             curacion_turno=getattr(t_def, 'curacion_turno', 0),
             es_antirruptura=getattr(t_def, 'es_antirruptura', False)),
         distancia=dist_combate,
-        aliados_apoyo_backup=aliados_backup
+        aliados_apoyo_backup=aliados_backup,
+        pos_atk=(f_atk.x, f_atk.y),
+        pos_def=(f_def.x, f_def.y),
+        mapa=_mapa,
+        casillas_ocupadas=casillas_ocupadas,
+        defensor_en_ruptura=(getattr(f_def, 'cargas_ruptura', 0) > 0),
     )
 
     res = combate["resultado"]
@@ -1272,6 +1320,24 @@ def ejecutar_combate():
     # Aplicar HP resultante en el estado mutable del tablero
     tablero.modificar_hp(nombre_def, hp_def_final)
     tablero.modificar_hp(nombre_atk, hp_atk_final)
+
+    # Efecto Smash: empuje físico de 1 casilla o ruptura si choca contra obstáculo
+    smash_res = res.get("smash", {})
+    if smash_res.get("empujado") and smash_res.get("nueva_pos") and hp_def_final > 0:
+        nueva_x, nueva_y = smash_res["nueva_pos"]
+        tablero.mover_unidad(nombre_def, nueva_x, nueva_y)
+
+    # Gestión canónica de Ruptura (Break) en FE Engage:
+    # 1. Si en este combate sufre ruptura (por ventaja de armas o choque contra obstáculo):
+    #    f_def.cargas_ruptura = 1 (no podrá contraatacar en el siguiente combate en que sea atacado).
+    # 2. Si ya estaba en ruptura previa y sobrevivió a este combate sin nueva ruptura:
+    #    consume la carga de ruptura (f_def.cargas_ruptura = max(0, f_def.cargas_ruptura - 1)),
+    #    de modo que en un 3er combate ya podrá contraatacar con normalidad.
+    if hp_def_final > 0:
+        if res.get("aplica_ruptura") or smash_res.get("rompio_por_choque"):
+            f_def.cargas_ruptura = 1
+        elif getattr(f_def, 'cargas_ruptura', 0) > 0:
+            f_def.cargas_ruptura = max(0, f_def.cargas_ruptura - 1)
 
     # Marcar atacante como que ha actuado este turno si es aliado
     if f_atk.es_aliado:
@@ -1509,6 +1575,7 @@ def analizar():
                             perfil=perfil,
                             cronogema_usada=cronogema,
                             contexto_mapa=contexto,
+                            defensor_en_ruptura=(getattr(aliado, 'cargas_ruptura', 0) > 0),
                         )
 
                         mult_eff, desc_eff = CalculadoraEngage.calcular_efectividad(enemigo.arma, aliado.stats)
@@ -1594,6 +1661,7 @@ def analizar():
                         distancia=dist_combate,
                         perfil=perfil,
                         cronogema_usada=cronogema,
+                        defensor_en_ruptura=(getattr(enemigo, 'cargas_ruptura', 0) > 0),
                     )
 
                     verd = v["veredicto"]
@@ -1664,12 +1732,18 @@ def analizar():
             else:
                 resultado_tag = f"→ {enemigo.nombre} queda en {hp_enemigo_tras}/{hp_enemigo_ini} HP"
 
-            # Datos del golpe
-            golpe_txt = f"{golpes}x{dpp}"
-            if follow_up:
-                golpe_txt = f"x2 follow-up ({golpe_txt}={dtotal} dmg)"
+            # Datos del golpe con desglose matemático exacto
+            tiene_ds = atk_f.get("tiene_divine_speed", False)
+            if follow_up and tiene_ds:
+                dmg_ds = max(1, math.floor(dpp * 0.50))
+                golpe_txt = f"2x{dpp} + {dmg_ds} (Velocidad Divina) = {dpp * 2 + dmg_ds} dmg"
+            elif follow_up:
+                golpe_txt = f"2x{dpp} = {dpp * 2} dmg (Follow-up)"
+            elif tiene_ds:
+                dmg_ds = max(1, math.floor(dpp * 0.50))
+                golpe_txt = f"1x{dpp} + {dmg_ds} (Velocidad Divina) = {dpp + dmg_ds} dmg"
             else:
-                golpe_txt = f"{golpe_txt} = {dtotal} dmg"
+                golpe_txt = f"1x{dpp} = {dpp} dmg"
 
             # Riesgo para el aliado
             nivel_riesgo = verd.get("nivel_riesgo", "bajo")
@@ -1778,17 +1852,30 @@ def limpiar_tablero():
 def reset():
     """
     Reinicia el tablero al estado inicial (Turno 1, Fase Jugador, Spawns del capitulo activo).
+    - Mapa Datamine: recarga dispos desde el XML del capitulo.
+    - Mapa Tiled: limpia el tablero y carga los spawns de la capa de objetos del mapa.
     """
     tablero.guardar_snapshot()
-    cap_id = getattr(_mapa, "dispos_id", "M007") or "M007"
-    resultado = _desplegar_capitulo(cap_id, "Extremo")
-    nombre_cap = getattr(_mapa, "nombre_en", cap_id)
+    cap_id = getattr(_mapa, "dispos_id", None)
+    if cap_id:
+        # Mapa Datamine: despliegue normal desde XML de dispos
+        resultado = _desplegar_capitulo(cap_id, "Extremo")
+        nombre_cap = getattr(_mapa, "nombre_en", cap_id)
+        fichas_result = resultado["fichas"]
+    else:
+        # Mapa Tiled (o cualquier mapa sin dispos_id)
+        tablero.fichas.clear()
+        tablero.turno_actual = 1
+        tablero.fase = "jugador"
+        num = tablero.cargar_spawns_desde_mapa()
+        nombre_cap = getattr(_mapa, "filepath", "Mapa Tiled").split("/")[-1].split("\\")[-1]
+        fichas_result = [f.como_dict() for f in tablero.fichas.values()]
     return jsonify({
         "ok": True,
         "mensaje": f"Tablero reiniciado al Turno 1 con {nombre_cap} ({len(tablero.fichas)} unidades).",
         "fase": tablero.fase,
         "turno": tablero.turno_actual,
-        "fichas": resultado["fichas"]
+        "fichas": fichas_result
     })
 
 

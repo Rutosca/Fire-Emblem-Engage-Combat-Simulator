@@ -255,6 +255,7 @@ def compilar():
             "SID_異形特効": "monstruo",
         }
         equip_sids_raw = it.get("EquipSids", "")
+        es_smash = ("SID_スマッシュ" in equip_sids_raw or "smash" in equip_sids_raw.lower())
         efectividades = []
         for sid in equip_sids_raw.split(";"):
             sid = sid.strip()
@@ -295,6 +296,7 @@ def compilar():
             "ddg": ddg,
             "rango": rango,
             "es_magica": es_magica,
+            "es_smash": es_smash,
             "precio": to_int(it.get("Price")),
             "usos_max": usos_max,
             "efectividades": efectividades,  # e.g. ["volador"], ["acorazado", "caballería"]

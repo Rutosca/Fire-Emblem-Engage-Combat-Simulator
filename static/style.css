@@ -566,6 +566,35 @@ header h1 {
   pointer-events: none;
 }
 
+/* Ruptura (Break) activo */
+.token.en-ruptura {
+  border-color: #ff3b69 !important;
+  box-shadow: 0 0 12px rgba(255, 59, 105, 0.8), inset 0 0 8px rgba(255, 59, 105, 0.5) !important;
+  animation: breakPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes breakPulse {
+  0% { transform: scale(1); filter: brightness(0.9); }
+  100% { transform: scale(1.04); filter: brightness(1.2); }
+}
+
+.token-break-badge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  font-size: 11px;
+  background: #1e1015;
+  border: 1px solid #ff3b69;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(255, 59, 105, 0.8);
+  pointer-events: none;
+}
+
 /* Mini barra de vida (HP) sobre el token */
 .token-hp-bar {
   position: absolute;

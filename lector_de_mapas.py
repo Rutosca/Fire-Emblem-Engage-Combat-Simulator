@@ -106,16 +106,27 @@ class MapaTactico:
         self.alto = data['height']
         
         # 1. Extraer las propiedades de TODOS los Tilesets
-        # Tiled guarda las propiedades de cada tile en el bloque tilesets -> tiles.
-        # Un mapa puede tener múltiples tilesets (terreno base, decoración, objetos…).
-        # Cada tileset tiene su propio 'firstgid', por lo que iteramos todos.
+        # Tiled puede exportar en dos formatos segun la version:
+        #   - Moderno (>=1.2): tilesets -> tiles[] -> properties[]
+        #   - Legacy  (1.1):   tilesets -> tileproperties {id_str: {key: val}}
+        # Soportamos ambos.
         propiedades_tiles = {}
         for tileset in data.get('tilesets', []):
             primer_gid = tileset.get('firstgid', 1)
+
+            # Formato MODERNO: array "tiles" con lista "properties"
             for tile in tileset.get('tiles', []):
                 tile_id = tile['id'] + primer_gid
                 props_dict = {p['name']: p['value'] for p in tile.get('properties', [])}
-                propiedades_tiles[tile_id] = props_dict
+                if props_dict:
+                    propiedades_tiles[tile_id] = props_dict
+
+            # Formato LEGACY: dict "tileproperties" con {id_str: {key: val}}
+            for id_str, props_dict in tileset.get('tileproperties', {}).items():
+                tile_id = int(id_str) + primer_gid
+                # El formato legacy ya tiene valores Python nativos (bool, int, str)
+                if tile_id not in propiedades_tiles:  # el formato moderno tiene prioridad
+                    propiedades_tiles[tile_id] = dict(props_dict)
         # 2. Leer las capas del mapa (Tile Layers y Object Layers)
         capas_terreno = [layer for layer in data['layers'] if layer['type'] == 'tilelayer']
         capas_objetos = [layer for layer in data['layers'] if layer['type'] == 'objectgroup']
@@ -163,7 +174,7 @@ class MapaTactico:
                     # Defaults automáticos de Engage según el tipo si no están explícitos
                     es_baluarte = tipo_nombre in ('curacion', 'fortaleza', 'trono')
                     def_avo = 30 if es_baluarte else props.get('avo', 0)
-                    def_dfn = (2 if tipo_nombre == 'trono' else 1) if es_baluarte else props.get('dfn', 0)
+                    def_dfn = (2 if tipo_nombre == 'trono' else 0) if es_baluarte else props.get('dfn', 0)
                     def_curacion = 10 if es_baluarte else props.get('curacion_turno', 0)
                     def_antirruptura = es_baluarte or props.get('es_antirruptura', False)
                     def_recarga = tipo_nombre in ('recarga', 'emblema', 'pozo_energia') or props.get('es_recarga_emblema', False)

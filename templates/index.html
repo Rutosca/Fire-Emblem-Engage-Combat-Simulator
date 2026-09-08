@@ -30,7 +30,12 @@
         <button id="btn-add-enemigo" class="btn-tool btn-red">+ Añadir Enemigo</button>
       </div>
       <div class="toolbar-group">
-        <button id="btn-preset-cap7" class="btn-tool btn-gold" title="Carga las posiciones y enemigos iniciales de Tiled">📍 Preset Cap. 7</button>
+        <select id="select-dificultad" class="form-select" style="padding:4px 8px;font-size:12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;" title="Dificultad de la campaña para stats enemigas">
+          <option value="Hard" selected>🛡️ Difícil (Hard)</option>
+          <option value="Extremo">💀 Extremo (Maddening)</option>
+          <option value="Normal">⚔️ Normal</option>
+        </select>
+        <button id="btn-preset-cap7" class="btn-tool btn-gold" title="Carga las posiciones y enemigos iniciales según la dificultad">📍 Preset Cap. 7</button>
         <button id="btn-limpiar" class="btn-tool btn-dark" title="Elimina todas las fichas del tablero">🗑 Limpiar Fichas</button>
       </div>
     </div>

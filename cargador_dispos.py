@@ -237,6 +237,13 @@ class CargadorDisposEngage:
                         "es_drop": drop
                     })
 
+            # Alear despliega canónicamente con Libération y Poción si el slot de dispos no lista armas
+            if pid == "PID_リュール" and not inventario:
+                inventario = [
+                    {"id": "IID_リベラシオン", "nombre": "Libération", "arma": "Libération", "equipada": True, "es_drop": False},
+                    {"id": "IID_傷薬", "nombre": "Poción", "arma": "Poción", "equipada": False, "es_drop": False}
+                ]
+
             # Nombre de la unidad
             if force_int == 0 and not pid:
                 slot_jugador += 1

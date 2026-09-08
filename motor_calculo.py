@@ -59,6 +59,7 @@ class Arma:
     efectividades: list = field(default_factory=list)  # e.g. ["volador", "acorazado"]
     avo_bonus: int = 0  # Bonus de Evasión (ej. Grabados de Emblema)
     ddg_bonus: int = 0  # Bonus de Esquive de Crítico (Dodge)
+    es_smash: bool = False  # True si es arma pesada (Smash): ataca de segundo, sin follow-up, empuja 1 casilla
 
 
 @dataclass
@@ -178,7 +179,7 @@ class CalculadoraEngage:
         return 1, None
 
     @classmethod
-    def _stats_de_golpe(cls, atacante, arma, defensor, arma_def, terreno):
+    def _stats_de_golpe(cls, atacante, arma, defensor, arma_def, terreno, es_iniciador: bool = True):
         """
         Calcula las estadísticas de un golpe individual del atacante al defensor integrando
         efectividades (Mt × 3), pasivas (Resonancia, Pulsera Lunar, Gentileza) y estilos de combate.
@@ -244,9 +245,9 @@ class CalculadoraEngage:
 
         atk_efectivo = atk_base
 
-        # Estadística defensiva
+        # Estadística defensiva (la magia ataca a RES e ignora los bonos de defensa física del terreno)
         if arma.es_magica:
-            stat_defensiva = defensor.resistencia + terreno_dfn
+            stat_defensiva = defensor.resistencia
         else:
             stat_defensiva = defensor.defensa + terreno_dfn
 
@@ -277,15 +278,22 @@ class CalculadoraEngage:
         tipo_def_arma = arma_def.tipo if arma_def else None
         tiene_ventaja = cls.ventaja_triangulo(arma.tipo, tipo_def_arma)
 
-        # Inmunidad a Break: si el defensor está en terreno antirruptura O es de clase Acorazada
+        # Inmunidad a Break: si el defensor está en terreno antirruptura O es de clase Acorazada.
+        # REGLA FUNDAMENTAL DE FE ENGAGE: Solo un ataque INICIADO con ventaja de armas puede causar Ruptura.
+        # Un contraataque NUNCA puede infligir Ruptura (ni siquiera con ventaja de armas).
         es_antirruptura = getattr(terreno, 'es_antirruptura', False)
         es_acorazado = estilo_def in ('acorazado', 'armored') or getattr(defensor, 'tipo_movimiento', '') == 'acorazado'
-        inflige_ruptura = tiene_ventaja and daño > 0 and not es_antirruptura and not es_acorazado
+        inflige_ruptura = es_iniciador and tiene_ventaja and daño > 0 and not es_antirruptura and not es_acorazado
 
         # Detección de pasivas adicionales
         tiene_canter = any('canter' in h or 'galopada' in h or '再移動' in h for h in habs_atk) or 'sigurd' in emblema_atk or 'シグルド' in emblema_atk
         tiene_alacrity = any('alacrity' in h or 'alacritad' in h or '攻め立て' in h for h in habs_atk) or 'lyn' in emblema_atk or 'リン' in emblema_atk
-        tiene_divine_speed = any('divine speed' in h or 'velocidad divina' in h or '神速' in h for h in habs_atk) or 'marth' in emblema_atk or 'マルス' in emblema_atk
+        # Velocidad Divina (Divine Speed) es la Habilidad de Fusión de Marth: solo activa en modo Engage
+        es_engage_activo = getattr(atacante, 'en_fusion', False) or (getattr(atacante, 'turnos_fusion_restantes', 0) > 0)
+        tiene_divine_speed = es_engage_activo and (
+            any('divine speed' in h or 'velocidad divina' in h or '神速' in h for h in habs_atk)
+            or 'marth' in emblema_atk or 'マルス' in emblema_atk
+        )
         tiene_hold_out = any('hold out' in h or 'aguante' in h or '踏ん張り' in h for h in habs_def) or 'roy' in emblema_def or 'ロイ' in emblema_def
 
         return {
@@ -297,7 +305,7 @@ class CalculadoraEngage:
             "prob_critico": prob_critico,
             "tiene_ventaja": tiene_ventaja,
             "inflige_ruptura": inflige_ruptura,
-            "antirruptura_bloqueo_break": tiene_ventaja and daño > 0 and (es_antirruptura or es_acorazado),
+            "antirruptura_bloqueo_break": es_iniciador and tiene_ventaja and daño > 0 and (es_antirruptura or es_acorazado),
             "efectividad_activa": desc_efectividad,
             "multiplicador_efectividad": mult_mt_efectividad,
             "recoil_hp": recoil_hp,
@@ -312,15 +320,23 @@ class CalculadoraEngage:
     @classmethod
     def simular_combate(cls, atacante, defensor, arma_atk, arma_def=None,
                         terreno_atk=None, terreno_def=None, distancia=1,
-                        aliados_apoyo_backup=None):
+                        aliados_apoyo_backup=None,
+                        pos_atk=None, pos_def=None, mapa=None, casillas_ocupadas=None,
+                        defensor_en_ruptura: bool = False):
         """
         Simula el intercambio completo siguiendo la secuencia determinista de FE Engage:
           1. Chain Attacks de aliados de apoyo (Backup) cercanos (10% HP max c/u)
-          2. Atacante golpea (y golpe extra de Divine Speed si activa) → Ruptura
-          3. Si Alacrity activa y hay follow-up, el atacante hace follow-up ANTES del contraataque
-          4. Defensor contraataca (si vivo, en rango y no roto)
-          5. Follow-ups restantes
-          6. Efectos de retroceso (Resonancia) y salvación letal (Hold Out)
+          2. Gestión de Armas Pesadas (Smash):
+             - Si el atacante usa arma Smash y el defensor no, el defensor contraataca PRIMERO.
+             - Las armas Smash NUNCA pueden realizar follow-up.
+             - Si acierta un ataque Smash, empuja al rival 1 casilla. Si choca contra obstáculo o unidad,
+               ¡provoca RUPTURA (Break) incluso a acorazados!
+             - Un contraataque NUNCA inflige ruptura: el atacante ejecutará su golpe Smash siempre que sobreviva.
+          3. Atacante golpea (y golpe extra de Divine Speed si activa) → Ruptura (si ventaja de armas)
+          4. Si Alacrity activa y hay follow-up, el atacante hace follow-up ANTES del contraataque
+          5. Defensor contraataca (si vivo, en rango y no roto)
+          6. Follow-ups restantes
+          7. Efectos de retroceso (Resonancia) y salvación letal (Hold Out)
         """
         terreno_atk = terreno_atk or Terreno()
         terreno_def = terreno_def or Terreno()
@@ -337,24 +353,27 @@ class CalculadoraEngage:
                 f"Rango válido: {arma_atk.rango}"
             )
 
-        stats_atk = cls._stats_de_golpe(atacante, arma_atk, defensor, arma_def, terreno_def)
+        stats_atk = cls._stats_de_golpe(atacante, arma_atk, defensor, arma_def, terreno_def, es_iniciador=True)
 
-        puede_contra = arma_def is not None and distancia in arma_def.rango
+        puede_contra = (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
         stats_def = None
         if puede_contra:
-            stats_def = cls._stats_de_golpe(defensor, arma_def, atacante, arma_atk, terreno_atk)
+            stats_def = cls._stats_de_golpe(defensor, arma_def, atacante, arma_atk, terreno_atk, es_iniciador=False)
+
+        es_smash_atk = getattr(arma_atk, 'es_smash', False)
+        es_smash_def = getattr(arma_def, 'es_smash', False) if arma_def else False
 
         diff_as_atk = stats_atk["as_atk"] - stats_atk["as_def"]
-        follow_up_atk = diff_as_atk >= 5
-        follow_up_def = puede_contra and (stats_atk["as_def"] - stats_atk["as_atk"]) >= 5
+        follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk)
+        follow_up_def = puede_contra and ((stats_atk["as_def"] - stats_atk["as_atk"]) >= 5) and (not es_smash_def)
 
         # Alacrity (Lyn): si AS >= rival + 9 (o +4), follow-up va antes del contraataque
-        activa_alacrity = stats_atk.get("tiene_alacrity", False) and diff_as_atk >= 9
+        activa_alacrity = stats_atk.get("tiene_alacrity", False) and diff_as_atk >= 9 and follow_up_atk
 
         hp_atk = atacante.hp
         hp_def = defensor.hp
         hp_def_max = getattr(defensor, 'hp_max', defensor.hp) or defensor.hp
-        defensor_roto = False
+        defensor_roto = defensor_en_ruptura
         atacante_roto = False
         secuencia = []
         chain_dmg_total = 0
@@ -375,47 +394,124 @@ class CalculadoraEngage:
                 chain_dmg_total += dmg_chain
                 registrar(apoyo.nombre, "chain_attack", dmg_chain, hp_def)
 
-        # 2. Ataque principal del atacante
-        if hp_def > 0:
-            hp_def -= stats_atk["daño"]
-            defensor_roto = stats_atk["inflige_ruptura"]
-            registrar(atacante.nombre, "ataque", stats_atk["daño"], hp_def)
+        # 2. Secuencia según propiedad Smash:
+        # En FE Engage, las armas Smash atacan de segundo ("strike second") si el rival puede contraatacar
+        # y no usa también un arma Smash.
+        if es_smash_atk and puede_contra and not es_smash_def:
+            # ── Defensor contraataca PRIMERO (prioridad por arma Smash del rival) ──
+            if hp_def > 0 and stats_def:
+                hp_atk -= stats_def["daño"]
+                # En FE Engage, un contraataque NUNCA inflige Ruptura al atacante
+                registrar(defensor.nombre, "contraataque (prioridad sobre Smash)", stats_def["daño"], hp_atk)
 
-            # Golpe extra de Divine Speed (Marth)
-            if stats_atk.get("tiene_divine_speed") and hp_def > 0:
-                dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
-                hp_def -= dmg_divine
-                registrar(atacante.nombre, "divine_speed", dmg_divine, hp_def)
+            # ── Atacante ejecuta su golpe Smash (si sobrevive al contraataque) ──
+            if hp_atk > 0 and hp_def > 0:
+                hp_def -= stats_atk["daño"]
+                if stats_atk["inflige_ruptura"]:
+                    defensor_roto = True
+                registrar(atacante.nombre, "ataque (smash)", stats_atk["daño"], hp_def)
 
-        # 3. Follow-up anticipado por Alacrity
-        if activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0 and not atacante_roto:
-            hp_def -= stats_atk["daño"]
-            registrar(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"], hp_def)
+                if stats_atk.get("tiene_divine_speed") and hp_def > 0:
+                    dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
+                    hp_def -= dmg_divine
+                    registrar(atacante.nombre, "divine_speed", dmg_divine, hp_def)
 
-        # 4. Contraataque del defensor (si vivo, en rango y no roto)
-        if puede_contra and hp_def > 0 and not defensor_roto and stats_def:
-            hp_atk -= stats_def["daño"]
-            atacante_roto = stats_def["inflige_ruptura"]
-            registrar(defensor.nombre, "contraataque", stats_def["daño"], hp_atk)
+            # ── Follow-up del defensor si doblaba, atacante sigue vivo y defensor no quedó roto ──
+            if follow_up_def and hp_def > 0 and hp_atk > 0 and not defensor_roto and stats_def:
+                hp_atk -= stats_def["daño"]
+                registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
 
-        # 5. Follow-up regular del atacante (si no se ejecutó por Alacrity)
-        if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0 and not atacante_roto:
-            hp_def -= stats_atk["daño"]
-            registrar(atacante.nombre, "follow-up", stats_atk["daño"], hp_def)
+        else:
+            # ── Secuencia estándar (sin Smash del atacante, o ambos con Smash) ──
+            # 2a. Ataque principal del atacante
+            if hp_def > 0:
+                tipo_atk_str = "ataque (smash)" if es_smash_atk else "ataque"
+                hp_def -= stats_atk["daño"]
+                if stats_atk["inflige_ruptura"]:
+                    defensor_roto = True
+                registrar(atacante.nombre, tipo_atk_str, stats_atk["daño"], hp_def)
 
-        # 6. Follow-up del defensor
-        if follow_up_def and hp_def > 0 and hp_atk > 0 and not defensor_roto and stats_def:
-            hp_atk -= stats_def["daño"]
-            registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
+                # Golpe extra de Divine Speed (Marth)
+                if stats_atk.get("tiene_divine_speed") and hp_def > 0:
+                    dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
+                    hp_def -= dmg_divine
+                    registrar(atacante.nombre, "divine_speed", dmg_divine, hp_def)
 
-        # 7. Recoil de HP por Resonancia
+            # 2b. Follow-up anticipado por Alacrity
+            if activa_alacrity and hp_atk > 0 and hp_def > 0:
+                hp_def -= stats_atk["daño"]
+                registrar(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"], hp_def)
+
+            # 2c. Contraataque del defensor (si vivo, en rango y no roto)
+            if puede_contra and hp_def > 0 and not defensor_roto and stats_def:
+                tipo_contra_str = "contraataque (smash)" if es_smash_def else "contraataque"
+                hp_atk -= stats_def["daño"]
+                # Un contraataque NUNCA inflige Ruptura
+                registrar(defensor.nombre, tipo_contra_str, stats_def["daño"], hp_atk)
+
+            # 2d. Follow-up regular del atacante (si no se ejecutó por Alacrity)
+            if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0:
+                hp_def -= stats_atk["daño"]
+                registrar(atacante.nombre, "follow-up", stats_atk["daño"], hp_def)
+
+            # 2e. Follow-up del defensor
+            if follow_up_def and hp_def > 0 and hp_atk > 0 and not defensor_roto and stats_def:
+                hp_atk -= stats_def["daño"]
+                registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
+
+        # 3. Recoil de HP por Resonancia
         recoil = stats_atk.get("recoil_hp", 0)
         if recoil > 0 and hp_atk > 1:
             hp_atk = max(1, hp_atk - recoil)
 
-        # 8. Hold Out (Roy): si defensor recibía daño letal pero tenía HP >= 30%
+        # 4. Hold Out (Roy): si defensor recibía daño letal pero tenía HP >= 30%
         if stats_atk.get("tiene_hold_out") and hp_def <= 0 and defensor.hp >= math.floor(hp_def_max * 0.30):
             hp_def = 1
+
+        # 5. Cálculo espacial de Smash (Knockback / Ruptura por impacto)
+        smash_info = {
+            "es_smash": es_smash_atk,
+            "ocurrido": False,
+            "empujado": False,
+            "nueva_pos": None,
+            "bloqueado": False,
+            "rompio_por_choque": False,
+        }
+
+        # Ocurre si el atacante asestó su golpe Smash
+        if es_smash_atk and any(s["actor"] == atacante.nombre and "smash" in s["tipo"] for s in secuencia):
+            smash_info["ocurrido"] = True
+            if pos_atk is not None and pos_def is not None:
+                dx = pos_def[0] - pos_atk[0]
+                dy = pos_def[1] - pos_atk[1]
+                step_x = 1 if dx > 0 else (-1 if dx < 0 else 0)
+                step_y = 1 if dy > 0 else (-1 if dy < 0 else 0)
+                dest_x = pos_def[0] + step_x
+                dest_y = pos_def[1] + step_y
+
+                bloqueado = False
+                if mapa is not None:
+                    if not (0 <= dest_x < mapa.ancho and 0 <= dest_y < mapa.alto):
+                        bloqueado = True
+                    else:
+                        t = mapa.grid[dest_x][dest_y]
+                        es_vol = getattr(defensor, 'tipo_movimiento', '') == 'volador'
+                        caminable = getattr(t, 'volable', True) if es_vol else getattr(t, 'caminable', True)
+                        if not caminable:
+                            bloqueado = True
+
+                if casillas_ocupadas is not None and (dest_x, dest_y) in casillas_ocupadas:
+                    bloqueado = True
+
+                if bloqueado:
+                    smash_info["bloqueado"] = True
+                    smash_info["rompio_por_choque"] = True
+                    defensor_roto = True  # ¡El choque contra obstáculo rompe guardia incondicionalmente!
+                else:
+                    smash_info["empujado"] = True
+                    smash_info["nueva_pos"] = [dest_x, dest_y]
+            else:
+                smash_info["empujado"] = True
 
         hp_atk_final = max(0, hp_atk)
         hp_def_final = max(0, hp_def)
@@ -437,12 +533,13 @@ class CalculadoraEngage:
                 "tiene_follow_up": follow_up_atk,
                 "recoil_hp": recoil,
                 "puede_canter": stats_atk.get("tiene_canter", False),
+                "es_smash": es_smash_atk,
             },
             "defensor": {
                 "nombre": defensor.nombre,
                 "hp_inicial": defensor.hp,
                 "puede_contraatacar": puede_contra,
-                "contraataque_anulado_por_ruptura": defensor_roto and puede_contra,
+                "contraataque_anulado_por_ruptura": (defensor_en_ruptura or (defensor_roto and puede_contra)) and not (es_smash_atk and not es_smash_def),
                 "daño_por_golpe": stats_def["daño"] if stats_def else 0,
                 "daño_critico": stats_def["daño_critico"] if stats_def else 0,
                 "precision": stats_def["precision"] if stats_def else 0,
@@ -450,19 +547,22 @@ class CalculadoraEngage:
                 "golpes_en_ronda": golpes_def,
                 "daño_total_ronda": (stats_def["daño"] * golpes_def) if stats_def else 0,
                 "tiene_follow_up": follow_up_def,
+                "es_smash": es_smash_def,
             },
             "resultado": {
                 "hp_atacante_final": hp_atk_final,
                 "hp_defensor_final": hp_def_final,
                 "atacante_mata": hp_def_final <= 0,
                 "defensor_mata": hp_atk_final <= 0,
-                "aplica_ruptura": defensor_roto,
-                "sufre_ruptura": atacante_roto,
-                "antirruptura_bloqueo_break": stats_atk.get("antirruptura_bloqueo_break", False),
+                "aplica_ruptura": bool(stats_atk.get("inflige_ruptura", False) or smash_info.get("rompio_por_choque", False)),
+                "defensor_roto": defensor_roto,
+                "sufre_ruptura": False,
+                "antirruptura_bloqueo_break": stats_atk.get("antirruptura_bloqueo_break", False) and not smash_info["rompio_por_choque"],
                 "chain_attacks_daño": chain_dmg_total,
                 "puede_canter": stats_atk.get("tiene_canter", False),
                 "recoil_hp": recoil,
                 "secuencia": secuencia,
+                "smash": smash_info,
             },
             "alertas_tacticas": {
                 "peligro_letal": hp_atk_final <= 0,
@@ -472,33 +572,28 @@ class CalculadoraEngage:
                 "defensor_en_peligro": 0 < hp_def_final <= defensor.hp * 0.25,
                 "daño_cero": stats_atk["daño"] == 0,
                 "contraataque_bloqueado": defensor_roto or not puede_contra,
+                "es_smash": es_smash_atk,
+                "smash_empujado": smash_info["empujado"],
+                "smash_rompio_por_choque": smash_info["rompio_por_choque"],
             },
         }
 
     # ── Validación ──────────────────────────────────────────────────────
 
-    @staticmethod
-    def _validar_unidad(unidad, nombre_param="unidad"):
-        """Valida que el argumento sea una instancia de Unidad."""
+    @classmethod
+    def _validar_unidad(cls, unidad, rol: str) -> None:
         if not isinstance(unidad, Unidad):
             raise TypeError(
-                f"'{nombre_param}' debe ser instancia de Unidad, "
-                f"se recibió {type(unidad).__name__}. "
-                f"Usa Unidad(nombre=..., hp=..., fuerza=..., ...) para crearla."
+                f"El {rol} debe ser una instancia de Unidad. "
+                f"Recibido: {type(unidad).__name__}"
             )
 
-    @staticmethod
-    def _validar_arma(arma):
-        """Valida que el argumento sea una instancia de Arma con tipo válido."""
+    @classmethod
+    def _validar_arma(cls, arma) -> None:
         if not isinstance(arma, Arma):
             raise TypeError(
-                f"Se esperaba instancia de Arma, se recibió {type(arma).__name__}. "
-                f"Usa Arma(nombre=..., mt=..., ...) para crearla."
-            )
-        if arma.tipo not in TIPOS_ARMA_VALIDOS:
-            raise ValueError(
-                f"Tipo de arma '{arma.tipo}' no válido. "
-                f"Tipos válidos: {sorted(TIPOS_ARMA_VALIDOS)}"
+                f"El arma debe ser una instancia de Arma. "
+                f"Recibido: {type(arma).__name__}"
             )
 
     @classmethod
@@ -527,7 +622,7 @@ class CalculadoraEngage:
     def evaluar_riesgo(cls, atacante, defensor, arma_atk, arma_def=None,
                        terreno_atk=None, terreno_def=None, distancia=1,
                        perfil="seguro", cronogema_usada=False,
-                       contexto_mapa=None):
+                       contexto_mapa=None, defensor_en_ruptura: bool = False):
         """
         Envuelve simular_combate() y genera un veredicto de riesgo
         con etiquetas semánticas para consumo del LLM.
@@ -543,6 +638,7 @@ class CalculadoraEngage:
                            usa el peor caso espacial real (posición óptima del
                            enemigo según su MOV y el terreno) en lugar de la
                            heurística de distancia interna.
+            defensor_en_ruptura: True si el defensor ya está sufriendo Ruptura al iniciar.
         """
         if perfil not in ("seguro", "agresivo"):
             raise ValueError(
@@ -553,6 +649,7 @@ class CalculadoraEngage:
         combate = cls.simular_combate(
             atacante, defensor, arma_atk, arma_def,
             terreno_atk, terreno_def, distancia,
+            defensor_en_ruptura=defensor_en_ruptura,
         )
 
         atk = combate["atacante"]

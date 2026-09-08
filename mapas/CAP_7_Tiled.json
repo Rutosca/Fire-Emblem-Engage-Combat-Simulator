@@ -120,6 +120,14 @@
                 }
             },
          "tilewidth":32
+        }, 
+        {
+         "firstgid":865,
+         "source":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Grass_pipo.json"
+        }, 
+        {
+         "firstgid":1393,
+         "source":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Dirt_pipo.json"
         }],
  "tilewidth":32,
  "type":"map",
