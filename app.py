@@ -29,7 +29,7 @@ app = Flask(__name__)
 # =============================================================================
 
 # Cargar el JSON de mapa del capítulo 7 (formato datamine, generado por generar_mapas.py)
-_ruta_mapa = os.path.join(os.path.dirname(__file__), "mapas", "M007.json")
+_ruta_mapa = os.path.join(os.path.dirname(__file__), "mapas", "CAP_7_Tiled.json")
 
 _mapa = MapaTactico(_ruta_mapa)
 tablero = EstadoTablero(mapa=_mapa)
