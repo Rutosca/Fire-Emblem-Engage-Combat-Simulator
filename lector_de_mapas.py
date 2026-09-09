@@ -1,9 +1,19 @@
 import json
+import os
 import base64
 import zlib
 import struct
 from dataclasses import dataclass
 from typing import List, Optional
+
+_RUTA_CANONICO = os.path.join(os.path.dirname(__file__), "datos_canonicos_engage.json")
+_CANONICO_TERRENOS = {}
+if os.path.exists(_RUTA_CANONICO):
+    try:
+        with open(_RUTA_CANONICO, "r", encoding="utf-8") as f:
+            _CANONICO_TERRENOS = json.load(f).get("terrenos", {})
+    except Exception:
+        pass
 
 # Tiled usa los 3 bits más significativos de cada GID para indicar
 # transformaciones (flip horizontal, vertical y diagonal/rotación 90°).
@@ -170,22 +180,33 @@ class MapaTactico:
                 if gid in propiedades_tiles:
                     props = propiedades_tiles[gid]
                     tipo_nombre = str(props.get('tipo', 'Desconocido')).lower()
+                    tid_nombre = str(props.get('tid', '')).lower()
+                    name_nombre = str(props.get('name', '')).lower()
+
+                    # Consulta a datos canónicos de Engage (Terrain.xml extraído)
+                    t_canon = _CANONICO_TERRENOS.get(tipo_nombre) or _CANONICO_TERRENOS.get(tid_nombre) or _CANONICO_TERRENOS.get(name_nombre)
+                    if not t_canon and _CANONICO_TERRENOS:
+                        for k, v in _CANONICO_TERRENOS.items():
+                            if k.lower() in (tipo_nombre, tid_nombre, name_nombre):
+                                t_canon = v
+                                break
 
                     # Defaults automáticos de Engage según el tipo si no están explícitos
-                    es_baluarte = tipo_nombre in ('curacion', 'fortaleza', 'trono')
-                    def_avo = 30 if es_baluarte else props.get('avo', 0)
-                    def_dfn = (2 if tipo_nombre == 'trono' else 0) if es_baluarte else props.get('dfn', 0)
-                    def_curacion = 10 if es_baluarte else props.get('curacion_turno', 0)
-                    def_antirruptura = es_baluarte or props.get('es_antirruptura', False)
+                    es_baluarte = tipo_nombre in ('curacion', 'fortaleza', 'trono', 'baluarte', 'tiledefense')
+                    def_avo = t_canon.get('avoid', 30 if es_baluarte else 0) if t_canon else (30 if es_baluarte else props.get('avo', 0))
+                    def_dfn = t_canon.get('defense', 0) if t_canon else ((2 if tipo_nombre == 'trono' else 0) if es_baluarte else props.get('dfn', 0))
+                    def_curacion = t_canon.get('heal_turno', 10 if es_baluarte else 0) if t_canon else (10 if es_baluarte else props.get('curacion_turno', 0))
+                    def_antirruptura = t_canon.get('es_antirruptura', es_baluarte) if t_canon else (es_baluarte or props.get('es_antirruptura', False))
+                    def_coste = t_canon.get('coste_mov', 1) if t_canon else props.get('coste_mov', 1)
                     def_recarga = tipo_nombre in ('recarga', 'emblema', 'pozo_energia') or props.get('es_recarga_emblema', False)
 
                     self.grid[x][y] = Terreno(
-                        nombre=props.get('tipo', 'Desconocido'),
-                        caminable=props.get('caminable', True),
+                        nombre=props.get('tipo', t_canon.get('nombre', 'Desconocido') if t_canon else 'Desconocido'),
+                        caminable=props.get('caminable', not t_canon.get('combate_prohibido', False) if t_canon else True),
                         volable=props.get('volable', True),
                         avo=props.get('avo', def_avo),
                         dfn=props.get('dfn', def_dfn),
-                        coste_mov=props.get('coste_mov', 1),
+                        coste_mov=props.get('coste_mov', def_coste),
                         curacion_turno=props.get('curacion_turno', def_curacion),
                         es_antirruptura=props.get('es_antirruptura', def_antirruptura),
                         es_recarga_emblema=props.get('es_recarga_emblema', def_recarga)

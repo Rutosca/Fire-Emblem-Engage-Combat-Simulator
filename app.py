@@ -14,6 +14,7 @@ import re
 import math
 import json
 import unicodedata
+from collections import deque
 from cargador_dispos import CargadorDisposEngage
 
 def normalizar_texto(texto):
@@ -21,6 +22,10 @@ def normalizar_texto(texto):
     if not texto:
         return ""
     return unicodedata.normalize('NFKD', str(texto)).encode('ASCII', 'ignore').decode('utf-8').lower()
+
+def round_half_up(val):
+    """Redondeo aritmético estándar (Round Half Up) usado en el motor de FE Engage."""
+    return math.floor(float(val) + 0.5)
 
 app = Flask(__name__)
 
@@ -34,12 +39,25 @@ _ruta_mapa = os.path.join(os.path.dirname(__file__), "mapas", "CAP_7_Tiled.json"
 _mapa = MapaTactico(_ruta_mapa)
 tablero = EstadoTablero(mapa=_mapa)
 
-# Cargar catálogo maestro oficial de Fire Emblem Engage
-_ruta_catalogo = os.path.join(os.path.dirname(__file__), "catalogo_engage.json")
+# Cargar catálogo maestro oficial de Fire Emblem Engage y Datos Canónicos
+_ruta_catalogo_json = os.path.join(os.path.dirname(__file__), "json", "catalogo_engage.json")
+_ruta_catalogo = _ruta_catalogo_json if os.path.exists(_ruta_catalogo_json) else os.path.join(os.path.dirname(__file__), "catalogo_engage.json")
+
+_ruta_canonico_json = os.path.join(os.path.dirname(__file__), "json", "datos_canonicos_engage.json")
+_ruta_canonico = _ruta_canonico_json if os.path.exists(_ruta_canonico_json) else os.path.join(os.path.dirname(__file__), "datos_canonicos_engage.json")
 _catalogo = {}
+_canonico = {}
 
 def cargar_catalogo():
-    global _catalogo
+    global _catalogo, _canonico
+    if os.path.exists(_ruta_canonico):
+        try:
+            with open(_ruta_canonico, "r", encoding="utf-8") as f:
+                _canonico = json.load(f)
+            print(f"[OK] Datos Canónicos cargados: {len(_canonico.get('terrenos', {}))} terrenos, {len(_canonico.get('armas', {}))} armas, {len(_canonico.get('habilidades', {}))} habilidades, {len(_canonico.get('clases', {}))} clases")
+        except Exception as e:
+            print(f"Aviso al cargar datos_canonicos_engage.json: {e}")
+
     if os.path.exists(_ruta_catalogo):
         try:
             with open(_ruta_catalogo, "r", encoding="utf-8") as f:
@@ -353,6 +371,20 @@ def resolver_unidad_con_catalogo(data):
     # Offsets de stats por dificultad (OffsetL/H/N del Person.xml)
     p_offset_diff = data.get("p_offset", {})
 
+    # Preservar el estado de acción del turno (ha_actuado) y ruptura si la unidad ya está en el tablero
+    unidad_previa = None
+    if 'tablero' in globals() and tablero and hasattr(tablero, 'fichas'):
+        unidad_previa = tablero.fichas.get(nombre)
+
+    if "ha_actuado" in data and data["ha_actuado"] is not None:
+        ha_actuado = bool(data["ha_actuado"])
+    elif unidad_previa is not None:
+        ha_actuado = bool(unidad_previa.ha_actuado)
+    else:
+        ha_actuado = False
+
+    cargas_ruptura = int(data.get("cargas_ruptura", unidad_previa.cargas_ruptura if unidad_previa else 0))
+
     clase_id = data.get("clase_id", "")
     clase_info = _catalogo.get("clases", {}).get(clase_id) if clase_id else None
 
@@ -428,15 +460,15 @@ def resolver_unidad_con_catalogo(data):
             calc_bld = join_stats.get("bld", 5)
         else:
             lvl_diff = max(0, nivel - 1)
-            calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + round((c_growths.get("hp", 0)  + p_growths.get("hp", 45)) * lvl_diff / 100.0)
-            calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + round((c_growths.get("str", 0) + p_growths.get("str", 30)) * lvl_diff / 100.0)
-            calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + round((c_growths.get("mag", 0) + p_growths.get("mag", 15)) * lvl_diff / 100.0)
-            calc_dex = c_bases.get("dex", 0) + p_bases.get("dex", 5)  + round((c_growths.get("dex", 0) + p_growths.get("dex", 35)) * lvl_diff / 100.0)
-            calc_spd = c_bases.get("spd", 0) + p_bases.get("spd", 6)  + round((c_growths.get("spd", 0) + p_growths.get("spd", 35)) * lvl_diff / 100.0)
-            calc_def = c_bases.get("def", 0) + p_bases.get("def", 5)  + round((c_growths.get("def", 0) + p_growths.get("def", 25)) * lvl_diff / 100.0)
-            calc_res = c_bases.get("res", 0) + p_bases.get("res", 2)  + round((c_growths.get("res", 0) + p_growths.get("res", 20)) * lvl_diff / 100.0)
-            calc_lck = c_bases.get("lck", 0) + p_bases.get("lck", 4)  + round((c_growths.get("lck", 0) + p_growths.get("lck", 25)) * lvl_diff / 100.0)
-            calc_bld = c_bases.get("bld", 0) + p_bases.get("bld", 5)  + round((c_growths.get("bld", 0) + p_growths.get("bld", 5))  * lvl_diff / 100.0)
+            calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + round_half_up((c_growths.get("hp", 0)  + p_growths.get("hp", 45)) * lvl_diff / 100.0)
+            calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + round_half_up((c_growths.get("str", 0) + p_growths.get("str", 30)) * lvl_diff / 100.0)
+            calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + round_half_up((c_growths.get("mag", 0) + p_growths.get("mag", 15)) * lvl_diff / 100.0)
+            calc_dex = c_bases.get("dex", 0) + p_bases.get("dex", 5)  + round_half_up((c_growths.get("dex", 0) + p_growths.get("dex", 35)) * lvl_diff / 100.0)
+            calc_spd = c_bases.get("spd", 0) + p_bases.get("spd", 6)  + round_half_up((c_growths.get("spd", 0) + p_growths.get("spd", 35)) * lvl_diff / 100.0)
+            calc_def = c_bases.get("def", 0) + p_bases.get("def", 5)  + round_half_up((c_growths.get("def", 0) + p_growths.get("def", 25)) * lvl_diff / 100.0)
+            calc_res = c_bases.get("res", 0) + p_bases.get("res", 2)  + round_half_up((c_growths.get("res", 0) + p_growths.get("res", 20)) * lvl_diff / 100.0)
+            calc_lck = c_bases.get("lck", 0) + p_bases.get("lck", 4)  + round_half_up((c_growths.get("lck", 0) + p_growths.get("lck", 25)) * lvl_diff / 100.0)
+            calc_bld = c_bases.get("bld", 0) + p_bases.get("bld", 5)  + round_half_up((c_growths.get("bld", 0) + p_growths.get("bld", 5))  * lvl_diff / 100.0)
     else:
         # Enemigo o unidad genérica
         p_bases = p_info.get("base_stats", {}) if p_info else {}
@@ -460,18 +492,26 @@ def resolver_unidad_con_catalogo(data):
                 c_growths = {stat: max(0, base_g.get(stat, 0) + normal_g.get(stat, 0))
                              for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]}
 
+        # Si es enemigo y tiene crecimientos personales únicos (ej. jefes con nombre propio como Hortensia),
+        # sus crecimientos en el datamine ya son completos (no se suman a los crecimientos genéricos de clase)
+        if not es_aliado and p_growths and any(v > 0 for v in p_growths.values()):
+            final_growths = p_growths
+        else:
+            final_growths = {stat: c_growths.get(stat, 0) + (p_growths.get(stat, 0) if es_aliado else 0)
+                             for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]}
+
         lvl_ups = max(0, nivel - 1 + auto_grow_extra)
         lvl_factor = lvl_ups / 100.0
 
-        calc_hp  = c_bases.get("hp", 20)  + p_offset_diff.get("hp",  0) + int((c_growths.get("hp",  45) + p_growths.get("hp",  0)) * lvl_factor)
-        calc_str = c_bases.get("str", 6)  + p_offset_diff.get("str", 0) + int((c_growths.get("str", 30) + p_growths.get("str", 0)) * lvl_factor)
-        calc_mag = c_bases.get("mag", 0)  + p_offset_diff.get("mag", 0) + int((c_growths.get("mag", 15) + p_growths.get("mag", 0)) * lvl_factor)
-        calc_dex = c_bases.get("dex", 5)  + p_offset_diff.get("dex", 0) + int((c_growths.get("dex", 35) + p_growths.get("dex", 0)) * lvl_factor)
-        calc_spd = c_bases.get("spd", 6)  + p_offset_diff.get("spd", 0) + int((c_growths.get("spd", 35) + p_growths.get("spd", 0)) * lvl_factor)
-        calc_def = c_bases.get("def", 5)  + p_offset_diff.get("def", 0) + int((c_growths.get("def", 25) + p_growths.get("def", 0)) * lvl_factor)
-        calc_res = c_bases.get("res", 2)  + p_offset_diff.get("res", 0) + int((c_growths.get("res", 20) + p_growths.get("res", 0)) * lvl_factor)
-        calc_lck = c_bases.get("lck", 4)  + p_offset_diff.get("lck", 0) + int((c_growths.get("lck", 25) + p_growths.get("lck", 0)) * lvl_factor)
-        calc_bld = c_bases.get("bld", 5)  + p_offset_diff.get("bld", 0) + int((c_growths.get("bld",  5) + p_growths.get("bld", 0)) * lvl_factor)
+        calc_hp  = c_bases.get("hp", 20)  + p_offset_diff.get("hp",  0) + round_half_up(final_growths.get("hp",  45) * lvl_factor)
+        calc_str = c_bases.get("str", 6)  + p_offset_diff.get("str", 0) + round_half_up(final_growths.get("str", 30) * lvl_factor)
+        calc_mag = c_bases.get("mag", 0)  + p_offset_diff.get("mag", 0) + round_half_up(final_growths.get("mag", 15) * lvl_factor)
+        calc_dex = c_bases.get("dex", 5)  + p_offset_diff.get("dex", 0) + round_half_up(final_growths.get("dex", 35) * lvl_factor)
+        calc_spd = c_bases.get("spd", 6)  + p_offset_diff.get("spd", 0) + round_half_up(final_growths.get("spd", 35) * lvl_factor)
+        calc_def = c_bases.get("def", 5)  + p_offset_diff.get("def", 0) + round_half_up(final_growths.get("def", 25) * lvl_factor)
+        calc_res = c_bases.get("res", 2)  + p_offset_diff.get("res", 0) + round_half_up(final_growths.get("res", 20) * lvl_factor)
+        calc_lck = c_bases.get("lck", 4)  + p_offset_diff.get("lck", 0) + round_half_up(final_growths.get("lck", 25) * lvl_factor)
+        calc_bld = c_bases.get("bld", 5)  + p_offset_diff.get("bld", 0) + round_half_up(final_growths.get("bld",  5) * lvl_factor)
 
     # Clamping de estadísticas a valores válidos no negativos
     calc_hp  = max(1, calc_hp)
@@ -499,10 +539,22 @@ def resolver_unidad_con_catalogo(data):
 
     en_fusion = bool(data.get("en_fusion", False)) or int(data.get("turnos_fusion", 0)) > 0
     es_lord = data.get("es_lord", False) or "alear" in nombre.lower()
-    es_volador = (style == "Flier" or "wyvern" in str(clase_info).lower() or "pegasus" in str(clase_info).lower() or data.get("es_volador", False))
+
+    tipo_mov_c = str(clase_info.get("tipo_movimiento", "")).lower() if clase_info else ""
+    c_nombre_c = str(clase_info.get("nombre", "")).lower() if clase_info else ""
+    c_jid_c = str(clase_id).lower()
+    estilo_str_c = str(style).lower()
+
+    es_volador = (
+        estilo_str_c in ("flier", "volador", "飛行スタイル", "飛行", "flying")
+        or tipo_mov_c in ("volador", "flier", "flying")
+        or any(w in c_nombre_c for w in ["flier", "pegas", "wyvern", "griffin", "grifo", "wing tamer", "sleipnir", "lindwurm", "melusine"])
+        or any(w in c_jid_c for w in ["ペガサス", "ドラゴンナイト", "グリフォン", "スレイプニル", "リンドブルム", "メリュジーヌ", "flier", "wyvern", "pegas"])
+        or bool(data.get("es_volador", False))
+    )
 
     # tipo_movimiento y estilo_combate vienen de la clase del personaje
-    tipo_movimiento = clase_info.get("tipo_movimiento", "infantería") if clase_info else data.get("tipo_movimiento", "infantería")
+    tipo_movimiento = "volador" if es_volador else (clase_info.get("tipo_movimiento", "infantería") if clase_info else data.get("tipo_movimiento", "infantería"))
     estilo_combate = clase_info.get("estilo_combate") or clase_info.get("style", "Infantería") if clase_info else data.get("estilo_combate", "Infantería")
     emb_nom = emblema_info.get("nombre", "") if emblema_info else data.get("emblema_nombre", "")
     habs_lista = list(data.get("habilidades", []))
@@ -520,6 +572,43 @@ def resolver_unidad_con_catalogo(data):
         for sig_hab in ["Canter", "Galopada", "Momentum", "助走", "再移動"]:
             if sig_hab not in habs_lista and sig_hab in ["Canter", "Momentum"]:
                 habs_lista.append(sig_hab)
+
+    # Enriquecer habilidades personales y de clase desde datos canónicos
+    if _canonico:
+        p_canon = _canonico.get("personajes", {}).get(pid) or _canonico.get("personajes", {}).get(normalizar_texto(nombre))
+        if p_canon:
+            for sid in p_canon.get("common_sids", []):
+                if sid not in habs_lista:
+                    habs_lista.append(sid)
+                s_nom = _canonico.get("habilidades", {}).get(sid, {}).get("nombre")
+                if s_nom and s_nom not in habs_lista:
+                    habs_lista.append(s_nom)
+            if dificultad in ("difícil", "dificil", "hard", "extremo", "lunatic", "maddening"):
+                for sid in p_canon.get("hard_sids", []):
+                    if sid not in habs_lista:
+                        habs_lista.append(sid)
+                    s_nom = _canonico.get("habilidades", {}).get(sid, {}).get("nombre")
+                    if s_nom and s_nom not in habs_lista:
+                        habs_lista.append(s_nom)
+            if dificultad in ("extremo", "lunatic", "maddening"):
+                for sid in p_canon.get("lunatic_sids", []):
+                    if sid not in habs_lista:
+                        habs_lista.append(sid)
+                    s_nom = _canonico.get("habilidades", {}).get(sid, {}).get("nombre")
+                    if s_nom and s_nom not in habs_lista:
+                        habs_lista.append(s_nom)
+
+        c_canon = _canonico.get("clases", {}).get(clase_id) or _canonico.get("clases", {}).get(normalizar_texto(clase_info.get("nombre", "") if clase_info else ""))
+        if c_canon:
+            if not estilo_combate or estilo_combate in ("Infantería", "infantería", "None", ""):
+                estilo_combate = c_canon.get("estilo_combate", estilo_combate)
+            for sid in c_canon.get("skills", []):
+                if sid not in habs_lista:
+                    habs_lista.append(sid)
+            if dificultad in ("extremo", "lunatic", "maddening") and c_canon.get("lunatic_skill"):
+                ls = c_canon.get("lunatic_skill")
+                if ls not in habs_lista:
+                    habs_lista.append(ls)
 
     stats_obj = Unidad(
         nombre=nombre,
@@ -543,6 +632,10 @@ def resolver_unidad_con_catalogo(data):
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
+    val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
+    val_lider_3h = data.get("lider_tres_casas") or (getattr(unidad_previa, 'lider_tres_casas', None) if unidad_previa else "Dimitri") or "Dimitri"
+    setattr(stats_obj, 'nivel_veneno', val_veneno)
+    setattr(stats_obj, 'lider_tres_casas', val_lider_3h)
 
     # Resolver arma principal / inventario
     inventario_raw = list(data.get("inventario", []))
@@ -734,6 +827,9 @@ def resolver_unidad_con_catalogo(data):
         es_volador=es_volador,
         hp_max=hp_m,
         hp_actual=hp_a,
+        hp_stock=int(data.get("hp_stock", 0)),
+        ha_actuado=ha_actuado,
+        cargas_ruptura=cargas_ruptura,
         energia_emblema=int(data.get("energia_emblema", 6)),
         max_energia_emblema=6,
         turnos_fusion=3 if en_fusion else int(data.get("turnos_fusion", 0)),
@@ -746,6 +842,8 @@ def resolver_unidad_con_catalogo(data):
         habilidades=data.get("habilidades", []),
         inventario=inventario_resuelto,
         potenciadores_usados=list(data.get("potenciadores_usados", [])),
+        nivel_veneno=val_veneno,
+        lider_tres_casas=val_lider_3h,
     )
     return ficha
 
@@ -923,7 +1021,7 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
 def _auto_despliegue_inicial():
     """
     Si el mapa cargado al arranque es formato datamine, despliega automaticamente
-    las unidades del capitulo correspondiente en dificultad Hard (Difícil).
+    las unidades del capitulo correspondiente en dificultad Extremo (Maddening).
     """
     if not getattr(_mapa, "es_datamine", False):
         return
@@ -931,8 +1029,8 @@ def _auto_despliegue_inicial():
     if not dispos_id:
         return
     try:
-        resultado = _desplegar_capitulo(dispos_id, "Hard")
-        print(f"[Auto-despliegue] {len(tablero.fichas)} unidades cargadas para {dispos_id} (Hard)")
+        resultado = _desplegar_capitulo(dispos_id, "Extremo")
+        print(f"[Auto-despliegue] {len(tablero.fichas)} unidades cargadas para {dispos_id} (Extremo)")
     except Exception as e:
         print(f"[Auto-despliegue] Error al cargar {dispos_id}: {e}")
 
@@ -949,7 +1047,7 @@ def cargar_preset_capitulo(capitulo_id=None):
     Si no se especifica capitulo_id, usa el del mapa activo o por defecto M007.
     """
     data = request.get_json(silent=True) or {}
-    dificultad = data.get("dificultad", "Hard")
+    dificultad = data.get("dificultad", "Extremo")
     if not capitulo_id:
         capitulo_id = getattr(_mapa, "dispos_id", None) or "M007"
     return jsonify(_desplegar_capitulo(capitulo_id, dificultad))
@@ -1138,48 +1236,149 @@ def _arma_desde_item(item_dict):
         es_smash=es_smash,
     )
 
-def encontrar_pos_ataque_optima(aliado, enemigo, arma):
+def encontrar_pos_ataque_optima(aliado, enemigo, arma, analizador=None):
     """
-    Encuentra la mejor casilla (x, y) a la que puede moverse el aliado para atacar al enemigo con el arma dada.
-    Prioriza:
-    1. Si la posición actual ya está en rango válido del arma -> quedarse en (aliado.x, aliado.y).
-    2. Casillas dentro de su rango de MOV donde la distancia al enemigo esté en arma.rango.
-    3. Mayor bonificación de terreno (DFN/AVO) y menor distancia recorrida.
+    Encuentra la mejor casilla (x, y) libre a la que puede moverse el aliado para atacar al enemigo con el arma dada.
+    Reglas oficiales de Fire Emblem Engage:
+    1. Si la posición actual del aliado ya está en rango válido del arma -> quedarse en [aliado.x, aliado.y].
+    2. Movimiento por BFS respetando costes de terreno y obstáculos:
+       - Los enemigos vivos bloquean el paso físico como muros (salvo pasiva Pass / Traspasar).
+       - Se puede transitar a través de aliados vivos.
+       - La casilla de destino final no puede estar ocupada por ninguna otra unidad viva (aliada ni enemiga).
+    3. De las casillas libres alcanzables donde la distancia al enemigo esté en arma.rango:
+       Prioriza bonificación de terreno (DFN*15 + AVO) y menor distancia recorrida.
+    4. Si NO existe ninguna casilla física libre y alcanzable -> devuelve None (no puede atacar este turno).
     """
     dist_actual = abs(aliado.x - enemigo.x) + abs(aliado.y - enemigo.y)
     r_arma = arma.rango if (arma and arma.rango) else [1]
     if dist_actual in r_arma:
         return [aliado.x, aliado.y]
 
-    mejores = []
+    # Casillas de enemigos vivos que bloquean el paso
+    enemigos_bloqueo = {(f.x, f.y) for f in tablero.obtener_enemigos() if f.viva and f.nombre != enemigo.nombre}
+    enemigos_bloqueo.add((enemigo.x, enemigo.y))
+
+    # Casillas ocupadas por cualquier otra unidad viva (no pueden ser casilla final de llegada)
+    todas_ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre}
+
+    # Verificar si el aliado tiene la habilidad Pass / Traspasar (Thief)
+    habs_aliado = [str(h).lower() for h in (getattr(aliado, 'habilidades', []) or [])]
+    tiene_pass = any('pass' in h or 'traspasar' in h or 'すり抜け' in h for h in habs_aliado) or ('thief' in getattr(aliado, 'clase_nombre', '').lower())
+
     ancho = _mapa.ancho
     alto = _mapa.alto
+    es_volador = getattr(aliado, 'es_volador', False)
 
-    ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre}
-
-    for dx in range(-aliado.mov, aliado.mov + 1):
-        for dy in range(-aliado.mov, aliado.mov + 1):
-            coste_pasos = abs(dx) + abs(dy)
-            if coste_pasos > aliado.mov:
-                continue
-            nx = aliado.x + dx
-            ny = aliado.y + dy
-            if 0 <= nx < ancho and 0 <= ny < alto:
-                if (nx, ny) in ocupadas:
+    # Si hay analizador de amenazas disponible, usar su BFS con casillas_bloqueadas
+    if analizador is not None:
+        u_mock = UnidadMock(
+            x=aliado.x,
+            y=aliado.y,
+            mov=aliado.mov,
+            es_volador=es_volador,
+            arma=ArmaMock(rango=r_arma)
+        )
+        setattr(u_mock, 'tiene_pass', tiene_pass)
+        casillas_alcanzables = analizador.calcular_casillas_alcanzables(
+            u_mock,
+            casillas_bloqueadas=enemigos_bloqueo
+        )
+    else:
+        # Búsqueda BFS directa
+        cola = deque([(aliado.x, aliado.y, aliado.mov)])
+        visitados = {(aliado.x, aliado.y): aliado.mov}
+        direcciones = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        while cola:
+            cx, cy, mov_restante = cola.popleft()
+            for dx, dy in direcciones:
+                nx, ny = cx + dx, cy + dy
+                if not (0 <= nx < ancho and 0 <= ny < alto):
+                    continue
+                if not tiene_pass and (nx, ny) in enemigos_bloqueo:
                     continue
                 t = _mapa.grid[nx][ny]
-                if not (t.volable if getattr(aliado, 'es_volador', False) else t.caminable):
-                    continue
-                d_ene = abs(nx - enemigo.x) + abs(ny - enemigo.y)
-                if d_ene in r_arma:
-                    score = (t.dfn * 15) + t.avo - coste_pasos
-                    mejores.append((score, [nx, ny]))
+                volable = getattr(t, 'volable', True)
+                caminable = getattr(t, 'caminable', True)
+                coste = 1 if es_volador and volable else (getattr(t, 'coste_mov', 1) if caminable else 999)
+                nuevo_mov = mov_restante - coste
+                if nuevo_mov >= 0 and nuevo_mov > visitados.get((nx, ny), -1):
+                    visitados[(nx, ny)] = nuevo_mov
+                    cola.append((nx, ny, nuevo_mov))
+        casillas_alcanzables = set(visitados.keys())
+
+    mejores = []
+    for (nx, ny) in casillas_alcanzables:
+        # Una unidad no puede terminar su turno sobre otra unidad
+        if (nx, ny) in todas_ocupadas:
+            continue
+        d_ene = abs(nx - enemigo.x) + abs(ny - enemigo.y)
+        if d_ene in r_arma:
+            t = _mapa.grid[nx][ny]
+            coste_pasos = abs(nx - aliado.x) + abs(ny - aliado.y)
+            score = (t.dfn * 15) + t.avo - coste_pasos
+            mejores.append((score, [nx, ny]))
 
     if mejores:
         mejores.sort(key=lambda x: x[0], reverse=True)
         return mejores[0][1]
 
-    return [aliado.x, aliado.y]
+    # Si no hay ninguna casilla libre válida alcanzable, NO puede atacar
+    return None
+
+
+# ── Detección de Unidades de Apoyo (Backup / 連携) ──────────────────────────
+BACKUP_CLASSES = {
+    'sword fighter', 'lance fighter', 'axe fighter',
+    'swordmaster', 'halberdier', 'berserker', 'warrior', 'hero',
+    'mirmidon', 'mirmidón', 'lancero', 'luchador', 'alabardero', 'guerrero', 'heroe', 'héroe'
+}
+
+def es_unidad_backup(ficha_o_stats) -> bool:
+    """
+    Determina si una unidad es de estilo Backup (De apoyo / 連携) en Fire Emblem Engage.
+    """
+    if not ficha_o_stats:
+        return False
+    stats = getattr(ficha_o_stats, 'stats', ficha_o_stats)
+    clase = str(getattr(ficha_o_stats, 'clase_nombre', '') or getattr(stats, 'clase_nombre', '') or '').lower().strip()
+    estilo = str(getattr(stats, 'estilo_combate', '') or getattr(ficha_o_stats, 'estilo_combate', '') or '').lower().strip()
+    nombre = str(getattr(ficha_o_stats, 'nombre', '') or getattr(stats, 'nombre', '') or '').lower().strip()
+
+    if any(k in estilo for k in ('apoyo', 'backup', '連', '携')):
+        return True
+    if clase in BACKUP_CLASSES:
+        return True
+    if 'lapis' in nombre:
+        return True
+    return False
+
+def obtener_aliados_backup(atacante_ficha, defensor_ficha):
+    """
+    Retorna la lista de fichas compañeras vivas que pueden realizar Chain Attack contra defensor_ficha.
+    Reglas FE Engage:
+      - Mismo bando que el atacante (aliado o enemigo).
+      - Unidad de estilo Backup (De apoyo / 連携).
+      - En rango de su arma equipada respecto a la posición del defensor.
+      - Viva y distinta del atacante y del defensor.
+    """
+    if atacante_ficha.es_aliado:
+        companeros = tablero.obtener_aliados()
+    else:
+        companeros = tablero.obtener_enemigos()
+
+    apoyos = []
+    for c in companeros:
+        if not c.viva or c.nombre in (atacante_ficha.nombre, defensor_ficha.nombre):
+            continue
+        if not c.stats or not c.arma:
+            continue
+        if not es_unidad_backup(c):
+            continue
+        dist_c = abs(c.x - defensor_ficha.x) + abs(c.y - defensor_ficha.y)
+        r_c = c.arma.rango if (c.arma and c.arma.rango) else [1]
+        if dist_c in r_c:
+            apoyos.append(c)
+    return apoyos
 
 
 # =============================================================================
@@ -1256,10 +1455,14 @@ def ejecutar_combate():
     # Guardar snapshot antes de la acción para la Cronogema
     tablero.guardar_snapshot()
 
-    # 1. Posición de ataque: si viene pos_destino válida, mover al atacante
+    # 1. Posición de ataque: si viene pos_destino válida, mover al atacante tras validar ocupación
     if pos_destino and isinstance(pos_destino, (list, tuple)) and len(pos_destino) == 2:
         nx, ny = int(pos_destino[0]), int(pos_destino[1])
-        tablero.mover_unidad(nombre_atk, nx, ny)
+        if (nx, ny) != (f_atk.x, f_atk.y):
+            otra = [f for f in tablero.fichas.values() if f.viva and f.nombre != f_atk.nombre and f.x == nx and f.y == ny]
+            if otra:
+                return jsonify({"error": f"La casilla ({nx}, {ny}) está ocupada por {otra[0].nombre}. No se puede atacar desde ahí."}), 400
+            tablero.mover_unidad(nombre_atk, nx, ny)
 
     # 2. Equipar arma
     if nombre_arma:
@@ -1272,21 +1475,28 @@ def ejecutar_combate():
                     f_atk.arma = a_obj
                 break
 
-    # 3. Detectar aliados de apoyo (Backup) cercanos al enemigo para Chain Attacks
-    aliados_backup = []
-    for a in tablero.obtener_aliados():
-        if a.viva and a.nombre != f_atk.nombre and a.stats and a.arma:
-            st = getattr(a.stats, 'estilo_combate', '') or ''
-            if st in ('De apoyo', 'Backup') or a.clase_nombre in ('Sword Fighter', 'Hero', 'Berserker', 'Warrior', 'Halberdier') or 'lapis' in a.nombre.lower():
-                d_a = abs(a.x - f_def.x) + abs(a.y - f_def.y)
-                r_a = a.arma.rango if (a.arma and a.arma.rango) else [1]
-                if d_a in r_a:
-                    aliados_backup.append(a.stats)
+    # 3. Detectar aliados de apoyo (Backup) cercanos al objetivo para Chain Attacks
+    apoyos_fichas = obtener_aliados_backup(f_atk, f_def)
+    aliados_backup = [a.stats for a in apoyos_fichas]
 
     # 4. Distancia y terrenos
     dist = abs(f_atk.x - f_def.x) + abs(f_atk.y - f_def.y)
     r_arma = f_atk.arma.rango if (f_atk.arma and f_atk.arma.rango) else [1]
-    dist_combate = dist if dist in r_arma else r_arma[0]
+
+    # Si no se pasó pos_destino y la unidad no está en rango desde su casilla actual:
+    if dist not in r_arma and not pos_destino:
+        pos_sug = encontrar_pos_ataque_optima(f_atk, f_def, f_atk.arma)
+        if pos_sug is not None and pos_sug != [f_atk.x, f_atk.y]:
+            tablero.mover_unidad(nombre_atk, pos_sug[0], pos_sug[1])
+            dist = abs(f_atk.x - f_def.x) + abs(f_atk.y - f_def.y)
+
+    # Si tras verificar/mover NO está en rango válido del arma, RECHAZAR el combate
+    if dist not in r_arma:
+        return jsonify({
+            "error": f"El atacante {f_atk.nombre} en ({f_atk.x}, {f_atk.y}) no alcanza al objetivo {f_def.nombre} en ({f_def.x}, {f_def.y}) con {f_atk.arma.nombre} (distancia actual {dist}, rango de arma {r_arma}). No hay casilla libre válida."
+        }), 400
+
+    dist_combate = dist
 
     t_atk = _mapa.grid[f_atk.x][f_atk.y]
     t_def = _mapa.grid[f_def.x][f_def.y]
@@ -1321,6 +1531,12 @@ def ejecutar_combate():
     tablero.modificar_hp(nombre_def, hp_def_final)
     tablero.modificar_hp(nombre_atk, hp_atk_final)
 
+    # Aplicar efecto de Veneno si corresponde
+    if res.get("aplica_veneno") and hp_def_final > 0:
+        f_def.nivel_veneno = min(3, max(0, getattr(f_def, 'nivel_veneno', 0)) + 1)
+        if f_def.stats:
+            setattr(f_def.stats, 'nivel_veneno', f_def.nivel_veneno)
+
     # Efecto Smash: empuje físico de 1 casilla o ruptura si choca contra obstáculo
     smash_res = res.get("smash", {})
     if smash_res.get("empujado") and smash_res.get("nueva_pos") and hp_def_final > 0:
@@ -1328,11 +1544,6 @@ def ejecutar_combate():
         tablero.mover_unidad(nombre_def, nueva_x, nueva_y)
 
     # Gestión canónica de Ruptura (Break) en FE Engage:
-    # 1. Si en este combate sufre ruptura (por ventaja de armas o choque contra obstáculo):
-    #    f_def.cargas_ruptura = 1 (no podrá contraatacar en el siguiente combate en que sea atacado).
-    # 2. Si ya estaba en ruptura previa y sobrevivió a este combate sin nueva ruptura:
-    #    consume la carga de ruptura (f_def.cargas_ruptura = max(0, f_def.cargas_ruptura - 1)),
-    #    de modo que en un 3er combate ya podrá contraatacar con normalidad.
     if hp_def_final > 0:
         if res.get("aplica_ruptura") or smash_res.get("rompio_por_choque"):
             f_def.cargas_ruptura = 1
@@ -1356,6 +1567,42 @@ def ejecutar_combate():
         "atacante": f_atk.como_dict(),
         "defensor": f_def.como_dict(),
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
+    })
+
+@app.route("/api/unidad/alternar_lider_tres_casas", methods=["POST"])
+def api_alternar_lider_tres_casas():
+    """Alterna el líder activo del Emblema de las Tres Casas (Edelgard / Dimitri / Claude)."""
+    data = request.get_json(force=True) or {}
+    nombre = data.get("nombre")
+    lider = data.get("lider")
+    if not nombre:
+        return jsonify({"error": "Falta campo nombre"}), 400
+    tablero.guardar_snapshot()
+    nuevo = tablero.alternar_lider_tres_casas(nombre, lider)
+    f = tablero.obtener_ficha(nombre)
+    return jsonify({
+        "ok": True,
+        "lider_activo": nuevo,
+        "ficha": f.como_dict() if f else None,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()]
+    })
+
+@app.route("/api/unidad/ajustar_veneno", methods=["POST"])
+def api_ajustar_veneno():
+    """Modifica directamente el nivel de veneno (0..3) de una unidad."""
+    data = request.get_json(force=True) or {}
+    nombre = data.get("nombre")
+    nivel = data.get("nivel_veneno", 0)
+    if not nombre:
+        return jsonify({"error": "Falta campo nombre"}), 400
+    tablero.guardar_snapshot()
+    nuevo = tablero.ajustar_nivel_veneno(nombre, nivel)
+    f = tablero.obtener_ficha(nombre)
+    return jsonify({
+        "ok": True,
+        "nivel_veneno": nuevo,
+        "ficha": f.como_dict() if f else None,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
 @app.route("/api/unidad/ajustar_hp", methods=["POST"])
@@ -1558,6 +1805,9 @@ def analizar():
                         t_def = _mapa.grid[aliado.x][aliado.y]
                         t_atk = _mapa.grid[enemigo.x][enemigo.y]
 
+                        apoyos_enemigos = obtener_aliados_backup(enemigo, aliado)
+                        aliados_backup_stats = [e.stats for e in apoyos_enemigos]
+
                         veredicto = CalculadoraEngage.evaluar_riesgo(
                             atacante=enemigo.stats,
                             defensor=aliado.stats,
@@ -1576,6 +1826,7 @@ def analizar():
                             cronogema_usada=cronogema,
                             contexto_mapa=contexto,
                             defensor_en_ruptura=(getattr(aliado, 'cargas_ruptura', 0) > 0),
+                            aliados_apoyo_backup=aliados_backup_stats,
                         )
 
                         mult_eff, desc_eff = CalculadoraEngage.calcular_efectividad(enemigo.arma, aliado.stats)
@@ -1584,13 +1835,22 @@ def analizar():
                             eff_tag += " [✨ Magia penetra Armadura]"
 
                         verd = veredicto["veredicto"]
-                        daño_e = verd.get("combate", veredicto.get("combate", {}))
                         combate_e = veredicto.get("combate", {})
                         atk_e = combate_e.get("atacante", {})
-                        hp_aliado_tras = combate_e.get("resultado", {}).get("hp_defensor_final", aliado.stats.hp)
+                        res_e = combate_e.get("resultado", {})
+                        hp_aliado_tras = res_e.get("hp_defensor_final", aliado.stats.hp)
+
+                        chain_attacks_e = res_e.get("chain_attacks", [])
+                        chain_e_txt = ""
+                        if chain_attacks_e:
+                            chain_parts_e = [
+                                f"La unidad {ca['nombre']} puede realizar ataque en cadena contra {aliado.nombre} haciendo {ca['daño']} de daño (80% Hit)."
+                                for ca in chain_attacks_e
+                            ]
+                            chain_e_txt = "⚔️ Chain Attack enemigo: " + " ".join(chain_parts_e) + " Y luego el ataque del enemigo. "
 
                         rec_texto = (
-                            f"⚠️ AMENAZA: {enemigo.nombre} → {aliado.nombre}{eff_tag} | "
+                            f"⚠️ AMENAZA: {chain_e_txt}{enemigo.nombre} → {aliado.nombre}{eff_tag} | "
                             f"Daño: {atk_e.get('daño_total_ronda', '?')} ({atk_e.get('golpes_en_ronda','?')}x{atk_e.get('daño_por_golpe','?')}) | "
                             f"Hit: {atk_e.get('precision','?')}% | "
                             f"{aliado.nombre} quedaría en {hp_aliado_tras}/{aliado.stats.hp} HP. "
@@ -1606,6 +1866,7 @@ def analizar():
                             "enemigo": enemigo.nombre,
                             "distancia_combate": dist_combate,
                             "veredicto": verd,
+                            "chain_attacks": chain_attacks_e,
                             "recomendacion": rec_texto,
                         })
                 except Exception:
@@ -1622,6 +1883,7 @@ def analizar():
             mejor_veredicto = None
             mejor_arma = None
             mejor_nota = ""
+            mejor_pos = None
             mejor_score = -1  # kill_seguro=3, kill_probable=2, daño_alto=1, daño_cero=-1
 
             for (arma_candidata, es_engage, nota_arma) in todas_armas:
@@ -1630,20 +1892,26 @@ def analizar():
                 if dist > alcance:
                     continue  # Fuera de alcance con esta arma
 
-                # Distancia de combate óptima para esta arma
-                dist_combate = min(
-                    (d for d in arma_candidata.rango if d <= dist),
-                    default=None
-                )
-                if dist_combate is None:
+                # Validar existencia de casilla física libre alcanzable por BFS
+                pos_candidata = encontrar_pos_ataque_optima(aliado, enemigo, arma_candidata, analizador=analizador)
+                if pos_candidata is None:
+                    continue  # No hay casilla física libre alcanzable desde la que atacar con esta arma
+
+                # Distancia real de combate desde la casilla candidata
+                dist_combate = abs(pos_candidata[0] - enemigo.x) + abs(pos_candidata[1] - enemigo.y)
+                if dist_combate not in (arma_candidata.rango or [1]):
                     continue
 
                 # TeleRagnarok: solo si kill seguro (demasiado riesgo)
                 is_tele = "ragnarok" in arma_candidata.nombre.lower()
 
+                # Detectar aliados de apoyo (Backup) cercanos al enemigo para Chain Attacks
+                apoyos_aliados = obtener_aliados_backup(aliado, enemigo)
+                aliados_backup_stats = [a.stats for a in apoyos_aliados]
+
                 try:
                     t_def = _mapa.grid[enemigo.x][enemigo.y]
-                    t_atk = _mapa.grid[aliado.x][aliado.y]
+                    t_atk = _mapa.grid[pos_candidata[0]][pos_candidata[1]]
 
                     v = CalculadoraEngage.evaluar_riesgo(
                         atacante=aliado.stats,
@@ -1662,6 +1930,7 @@ def analizar():
                         perfil=perfil,
                         cronogema_usada=cronogema,
                         defensor_en_ruptura=(getattr(enemigo, 'cargas_ruptura', 0) > 0),
+                        aliados_apoyo_backup=aliados_backup_stats,
                     )
 
                     verd = v["veredicto"]
@@ -1694,6 +1963,7 @@ def analizar():
                         mejor_veredicto = v
                         mejor_arma = arma_candidata
                         mejor_nota = nota_arma
+                        mejor_pos = pos_candidata
 
                 except Exception:
                     continue
@@ -1769,12 +2039,25 @@ def analizar():
             if mejor_nota:
                 bonus_txt += f" | {mejor_nota}"
 
-            pos_sug = encontrar_pos_ataque_optima(aliado, enemigo, mejor_arma)
+            pos_sug = mejor_pos if mejor_pos is not None else encontrar_pos_ataque_optima(aliado, enemigo, mejor_arma, analizador=analizador)
+            if pos_sug is None:
+                continue
+
             pos_txt = f"📍 Mover a ({pos_sug[0]},{pos_sug[1]}) · " if (pos_sug[0] != aliado.x or pos_sug[1] != aliado.y) else "📍 En rango directo · "
+
+            # Desglose de Chain Attack si aplica
+            chain_attacks = res_f.get("chain_attacks", [])
+            chain_txt = ""
+            if chain_attacks:
+                chain_parts = [
+                    f"La unidad {ca['nombre']} puede realizar ataque en cadena contra el enemigo {enemigo.nombre} haciendo {ca['daño']} de daño (80% Hit)."
+                    for ca in chain_attacks
+                ]
+                chain_txt = "⚔️ Chain Attack: " + " ".join(chain_parts) + " Y luego el ataque normal del aliado. "
 
             # Recomendación final
             rec_texto = (
-                f"🎯 {aliado.nombre} → usa {mejor_arma.nombre}{eff_tag} contra {enemigo.nombre} | "
+                f"{chain_txt}🎯 {aliado.nombre} → usa {mejor_arma.nombre}{eff_tag} contra {enemigo.nombre} | "
                 f"{pos_txt}{golpe_txt} | Hit {precision}% | {resultado_tag}{riesgo_txt}{bonus_txt}"
             )
 
@@ -1786,6 +2069,7 @@ def analizar():
                 "arma_recomendada": mejor_arma.nombre,
                 "pos_sugerida": pos_sug,
                 "veredicto": verd,
+                "chain_attacks": chain_attacks,
                 "recomendacion": rec_texto,
             })
 

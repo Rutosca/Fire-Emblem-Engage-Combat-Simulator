@@ -46,41 +46,47 @@
     </div>
   </div>
 
-  <!-- Panel lateral de análisis táctico -->
+  <!-- Panel lateral de análisis táctico (Pantalla fija, análisis móvil) -->
   <aside id="panel-analisis">
-    <header>Análisis Táctico</header>
+    <div class="panel-header">
+      <div class="panel-header-title">
+        <span>📊 Análisis Táctico</span>
+        <span id="analisis-badge-count" class="badge-count hidden">0</span>
+      </div>
+      <div class="panel-header-sub">Recomendaciones del Gemelo Digital</div>
+    </div>
 
     <div id="analisis-scroll"></div>
 
     <div id="botones-bar">
+      <!-- Botón principal: lanza el análisis -->
+      <button id="btn-analizar" title="Calcular jugadas y amenazas tácticas">🔍 Analizar Turno</button>
+
       <!-- Selector de perfil de riesgo -->
       <select id="perfil-select" title="Perfil de riesgo">
-        <option value="seguro">🛡 Perfil: Seguro (Iron-Man)</option>
-        <option value="agresivo">⚡ Perfil: Agresivo (Speedrun)</option>
+        <option value="seguro">🛡 Seguro (Iron-Man)</option>
+        <option value="agresivo">⚡ Agresivo (Speedrun)</option>
       </select>
 
-      <!-- Botón principal: lanza el análisis del LLM -->
-      <button id="btn-analizar">🔍 Analizar</button>
-
       <!-- Cronogema (Deshacer ilimitado / Time Crystal) -->
-      <button id="btn-deshacer" class="btn-cronogema" title="Deshacer la última acción (Ctrl+Z)">⏱️ Cronogema (Deshacer)</button>
+      <button id="btn-deshacer" class="btn-cronogema" title="Deshacer la última acción (Ctrl+Z)">⏱️ Deshacer</button>
 
       <!-- Botón de turno enemigo: primero activa modo arrastre, luego confirma -->
       <button id="btn-turno-fin">Turno Enemigo ✓</button>
 
       <!-- Reactivar acciones de turno -->
-      <button id="btn-reactivar" class="btn-reactivar" title="Reactivar turno de aliados">↺ Reactivar Acciones</button>
+      <button id="btn-reactivar" class="btn-reactivar" title="Reactivar turno de aliados">↺ Reactivar</button>
 
       <!-- Gestión de Escuadrón del Jugador -->
       <div class="squad-btn-group">
-        <button id="btn-desplegar-squad" class="btn-squad" title="Desplegar tu escuadrón guardado con sus niveles, objetos y potenciadores">🛡️ Desplegar Mi Escuadrón</button>
-        <button id="btn-guardar-squad" class="btn-squad-sec" title="Guardar la plantilla actual de tus aliados">💾 Guardar Escuadrón</button>
+        <button id="btn-desplegar-squad" class="btn-squad" title="Desplegar tu escuadrón guardado con sus niveles, objetos y potenciadores">🛡️ Desplegar Escuadrón</button>
+        <button id="btn-guardar-squad" class="btn-squad-sec" title="Guardar la plantilla actual de tus aliados">💾 Guardar</button>
       </div>
 
       <!-- Exportar / Importar Partida -->
       <div class="partida-btn-group">
-        <button id="btn-exportar-partida" class="btn-partida" title="Descargar archivo JSON con el estado de la partida">📤 Exportar Partida</button>
-        <label for="input-importar-partida" class="btn-partida btn-partida-label" title="Cargar partida desde archivo JSON">📥 Importar Partida</label>
+        <button id="btn-exportar-partida" class="btn-partida" title="Descargar archivo JSON con el estado de la partida">📤 Exportar</button>
+        <label for="input-importar-partida" class="btn-partida btn-partida-label" title="Cargar partida desde archivo JSON">📥 Importar</label>
         <input type="file" id="input-importar-partida" accept=".json" style="display: none;">
       </div>
 

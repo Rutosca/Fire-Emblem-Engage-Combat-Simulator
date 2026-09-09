@@ -76,16 +76,22 @@ class AnalizadorAmenaza:
             return getattr(terreno, 'coste_mov', getattr(terreno, 'coste', 1))
         return 999
 
-    def calcular_casillas_alcanzables(self, unidad: UnidadMock) -> Set[Tuple[int, int]]:
+    def calcular_casillas_alcanzables(
+        self,
+        unidad: UnidadMock,
+        casillas_bloqueadas: Optional[Set[Tuple[int, int]]] = None
+    ) -> Set[Tuple[int, int]]:
         """
         Paso 1: Calcula las casillas a las que la unidad puede Moverse (Rango Azul).
+        - casillas_bloqueadas (ej. enemigos sin pasiva Pass/Traspasar) actúan como muros infranqueables.
         """
         # Formato de la cola: (x, y, movimiento_restante)
         cola = deque([(unidad.x, unidad.y, unidad.movimiento_max)])
         
         # Diccionario para guardar el máximo movimiento con el que hemos llegado a una casilla
-        # Esto evita bucles infinitos y asegura que encontramos la ruta más barata
         visitados = {(unidad.x, unidad.y): unidad.movimiento_max}
+        bloqueadas = casillas_bloqueadas or set()
+        tiene_pass = getattr(unidad, 'tiene_pass', False)
         
         direcciones = [(0, 1), (1, 0), (0, -1), (-1, 0)] # Arriba, Derecha, Abajo, Izquierda
 
@@ -95,6 +101,10 @@ class AnalizadorAmenaza:
             for dx, dy in direcciones:
                 nx, ny = cx + dx, cy + dy
                 
+                # Unidades enemigas bloquean el paso físico salvo que tenga pasiva Pass / Traspasar
+                if not tiene_pass and (nx, ny) in bloqueadas:
+                    continue
+
                 coste = self._obtener_coste_terreno(nx, ny, unidad.es_volador)
                 nuevo_mov = mov_restante - coste
                 

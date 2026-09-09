@@ -196,14 +196,14 @@ class CalculadoraEngage:
         terreno_avo = terreno.avo
         terreno_dfn = terreno.dfn
 
-        # Estilo Espía (Covert): duplica bonos de terreno
-        if estilo_def in ('espía', 'espia', 'covert'):
+        # Estilo Espía (Covert / 隠密): duplica bonos de terreno
+        if any(term in estilo_def for term in ('espía', 'espia', 'covert', '隠密')):
             terreno_avo *= 2
             terreno_dfn *= 2
 
-        # Estilo Místico (Mystical): ataques mágicos ignoran la DFN de terreno del defensor
-        if estilo_atk in ('místico', 'mistico', 'mystical') and arma.es_magica:
-            terreno_dfn = 0
+        # Estilo Místico (Mystical / 魔法 / 魔道): ataques mágicos ignoran los bonos de evasión (Avoid) de terreno del defensor
+        if any(term in estilo_atk for term in ('místico', 'mistico', 'mystical', 'magic', '魔法', '魔道')) and (arma.es_magica or arma.tipo == 'Tomo'):
+            terreno_avo = 0
 
         # Velocidad de ataque de ambos bandos
         as_atk = cls.calcular_velocidad_ataque(
@@ -223,15 +223,20 @@ class CalculadoraEngage:
 
         # Efectividad en FE Engage: triplica el Weapon Might (Mt × 3)
         mult_mt_efectividad, desc_efectividad = cls.calcular_efectividad(arma, defensor)
+        # Pasiva defensiva: Inmunidad a efectividades (Stalwart / 特効耐性)
+        if any('特効耐性' in h or 'stalwart' in h for h in habs_def):
+            mult_mt_efectividad = 1
+            desc_efectividad = None
+
         mt_efectivo = arma.mt * mult_mt_efectividad
 
         atk_base = stat_ofensiva + mt_efectivo
 
-        # Pasiva: Resonancia / Resonance (Celica): +2 ATK (+3 en Resonance+) si usa Tomo y HP >= 2
+        # Pasiva: Resonancia / Resonance (Celica): +2 ATK (+3 en Resonance+) estrictamente si usa Tomo y HP >= 2
         recoil_hp = 0
-        es_tomo_o_magia = (arma.tipo == 'Tomo' or arma.es_magica)
+        es_tomo = (arma.tipo in ('Tomo', 'Tome'))
         tiene_resonance = any('resonance' in h or 'resonancia' in h or '共鳴' in h for h in habs_atk) or 'celica' in emblema_atk or 'セリカ' in emblema_atk
-        if tiene_resonance and es_tomo_o_magia:
+        if tiene_resonance and es_tomo:
             if atacante.hp >= 2:
                 bonus_res = 3 if any('+' in h for h in habs_atk if 'reson' in h) else 2
                 atk_base += bonus_res
@@ -243,6 +248,34 @@ class CalculadoraEngage:
             pct_lunar = 0.30 if any('+' in h for h in habs_atk if 'lunar' in h) else 0.20
             atk_base += math.floor(defensor.defensa * pct_lunar)
 
+        # Pasiva: Weapon Sync / Sincronía Armamentística (Edelgard / Tres Casas): +5 ATK (+7 en +) al iniciar combate
+        tiene_weapon_sync = any('weapon sync' in h or 'sincronia' in h or 'sincronía' in h or '武器シンクロ' in h for h in habs_atk)
+        if tiene_weapon_sync and es_iniciador:
+            bonus_ws = 7 if any('+' in h for h in habs_atk if 'sync' in h or 'sincron' in h) else 5
+            aplica_ws = False
+            if getattr(atacante, 'turnos_fusion_restantes', 0) > 0 or getattr(atacante, 'en_fusion', False):
+                aplica_ws = True
+            else:
+                # Comprobar si coincide con el líder activo de Tres Casas o con el emblema principal
+                lider_3h = getattr(atacante, 'lider_tres_casas', 'Dimitri') or 'Dimitri'
+                lider_3h_str = str(lider_3h).lower()
+                tipo_a = arma.tipo.lower() if arma.tipo else ""
+                es_emblema_3h = ('edelgard' in emblema_atk or 'three houses' in emblema_atk or 'tres casas' in emblema_atk or 'brazalete' in emblema_atk)
+                if es_emblema_3h:
+                    if 'dimitri' in lider_3h_str:
+                        aplica_ws = ('lanza' in tipo_a or 'lance' in tipo_a)
+                    elif 'edelgard' in lider_3h_str:
+                        aplica_ws = ('hacha' in tipo_a or 'axe' in tipo_a)
+                    elif 'claude' in lider_3h_str:
+                        aplica_ws = ('arco' in tipo_a or 'bow' in tipo_a)
+                    else:
+                        aplica_ws = ('lanza' in tipo_a or 'lance' in tipo_a or 'hacha' in tipo_a or 'axe' in tipo_a or 'arco' in tipo_a or 'bow' in tipo_a)
+                elif tiene_weapon_sync:
+                    # Habilidad Weapon Sync con otro emblema: coincide si el arma es del tipo del emblema
+                    aplica_ws = True
+            if aplica_ws:
+                atk_base += bonus_ws
+
         atk_efectivo = atk_base
 
         # Estadística defensiva (la magia ataca a RES e ignora los bonos de defensa física del terreno)
@@ -251,8 +284,11 @@ class CalculadoraEngage:
         else:
             stat_defensiva = defensor.defensa + terreno_dfn
 
-        # Daño por golpe base
+        # Daño por golpe base (+ amplificación por Veneno acumulado en el defensor: +1 por cada nivel de veneno 1..3)
+        nivel_veneno = max(0, min(3, int(getattr(defensor, 'nivel_veneno', 0) or 0)))
         daño = max(0, atk_efectivo - stat_defensiva)
+        if daño > 0:
+            daño += nivel_veneno
 
         # Pasiva: Gentility / Gentileza (Eirika) en el defensor: reduce daño recibido en 3 (o 5 con +)
         tiene_gentility = any('gentility' in h or 'gentileza' in h or '優風' in h for h in habs_def) or 'eirika' in emblema_def or 'エイリーク' in emblema_def
@@ -260,17 +296,32 @@ class CalculadoraEngage:
             red_gent = 5 if any('+' in h for h in habs_def if 'gentil' in h) else 3
             daño = max(0, daño - red_gent)
 
+        # Pasiva de Lunatic/Extremo en jefes: Veteran+ / 熟練者＋ (reduce daño final en 20%)
+        if any('熟練者' in h or 'veteran' in h for h in habs_def) and daño > 0:
+            daño = math.floor(daño * 0.8)
+
         # Bonificaciones de evasión y esquive de crítico en el arma del defensor
         avo_bonus_arma = getattr(arma_def, 'avo_bonus', 0) if arma_def else 0
         ddg_bonus_arma = getattr(arma_def, 'ddg_bonus', 0) if arma_def else 0
 
+        # Modificadores de precisión y crítico de pasivas personales
+        hit_mod_pasivas = 0
+        crit_mod_pasivas = 0
+        # Diamant: Fair Fight / 真っ向勝負 (+15 Hit a atacante y defensor si inicia)
+        if es_iniciador and arma_def and any('真っ向勝負' in h or 'fair fight' in h for h in habs_atk):
+            hit_mod_pasivas += 15
+        # Lapis: Share Spoils / 戦果委譲 (+10 Hit, +10 Crit)
+        if any('戦果委譲' in h or 'share spoils' in h for h in habs_atk):
+            hit_mod_pasivas += 10
+            crit_mod_pasivas += 10
+
         # Precisión (Hit vs Avoid)
-        hit = cls.calcular_hit(atacante.destreza, atacante.suerte, arma.hit)
+        hit = cls.calcular_hit(atacante.destreza, atacante.suerte, arma.hit) + hit_mod_pasivas
         avoid = cls.calcular_avoid(as_def, defensor.suerte, terreno_avo) + avo_bonus_arma
         precision = max(0, min(100, hit - avoid))
 
         # Críticos (Crit vs Dodge)
-        crit = cls.calcular_crit(atacante.destreza, arma.crit)
+        crit = cls.calcular_crit(atacante.destreza, arma.crit) + crit_mod_pasivas
         dodge = cls.calcular_dodge(defensor.suerte) + ddg_bonus_arma
         prob_critico = max(0, min(100, crit - dodge))
 
@@ -282,7 +333,7 @@ class CalculadoraEngage:
         # REGLA FUNDAMENTAL DE FE ENGAGE: Solo un ataque INICIADO con ventaja de armas puede causar Ruptura.
         # Un contraataque NUNCA puede infligir Ruptura (ni siquiera con ventaja de armas).
         es_antirruptura = getattr(terreno, 'es_antirruptura', False)
-        es_acorazado = estilo_def in ('acorazado', 'armored') or getattr(defensor, 'tipo_movimiento', '') == 'acorazado'
+        es_acorazado = any(term in estilo_def for term in ('acorazado', 'armored', '重装')) or getattr(defensor, 'tipo_movimiento', '') in ('acorazado', 'armored')
         inflige_ruptura = es_iniciador and tiene_ventaja and daño > 0 and not es_antirruptura and not es_acorazado
 
         # Detección de pasivas adicionales
@@ -385,6 +436,7 @@ class CalculadoraEngage:
             })
 
         # 1. Chain Attacks de aliados de apoyo (Backup)
+        chain_attacks_info = []
         if aliados_apoyo_backup:
             for apoyo in aliados_apoyo_backup:
                 if hp_def <= 0:
@@ -392,7 +444,14 @@ class CalculadoraEngage:
                 dmg_chain = max(1, math.floor(hp_def_max * 0.10))
                 hp_def -= dmg_chain
                 chain_dmg_total += dmg_chain
-                registrar(apoyo.nombre, "chain_attack", dmg_chain, hp_def)
+                apoyo_nom = getattr(apoyo, 'nombre', 'Aliado')
+                registrar(apoyo_nom, "chain_attack", dmg_chain, hp_def)
+                chain_attacks_info.append({
+                    "nombre": apoyo_nom,
+                    "daño": dmg_chain,
+                    "precision": 80,
+                    "arma": getattr(getattr(apoyo, 'arma', None), 'nombre', 'Arma')
+                })
 
         # 2. Secuencia según propiedad Smash:
         # En FE Engage, las armas Smash atacan de segundo ("strike second") si el rival puede contraatacar
@@ -495,7 +554,7 @@ class CalculadoraEngage:
                         bloqueado = True
                     else:
                         t = mapa.grid[dest_x][dest_y]
-                        es_vol = getattr(defensor, 'tipo_movimiento', '') == 'volador'
+                        es_vol = (getattr(defensor, 'tipo_movimiento', '') == 'volador' or getattr(defensor, 'es_volador', False))
                         caminable = getattr(t, 'volable', True) if es_vol else getattr(t, 'caminable', True)
                         if not caminable:
                             bloqueado = True
@@ -520,6 +579,17 @@ class CalculadoraEngage:
         golpes_def = sum(1 for s in secuencia if s["actor"] == defensor.nombre)
         daño_total_atk = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre) + chain_dmg_total
 
+        # Efectos de Veneno (Dagas aplican Veneno si conectan al menos 1 golpe)
+        es_daga_atk = bool(arma_atk and (getattr(arma_atk, 'tipo', '') in ('Daga', 'Dagger') or 'daga' in str(arma_atk.nombre).lower() or 'dagger' in str(arma_atk.nombre).lower() or 'knife' in str(arma_atk.nombre).lower()))
+        aplica_veneno = bool(es_daga_atk and golpes_atk > 0 and stats_atk["precision"] > 0)
+        veneno_def_previo = max(0, min(3, int(getattr(defensor, 'nivel_veneno', 0) or 0)))
+        veneno_def_post = min(3, veneno_def_previo + (1 if aplica_veneno else 0))
+
+        daño_solo_atacante = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre)
+        mata_solo_atacante = (defensor.hp - daño_solo_atacante) <= 0
+        es_kill_seguro = (hp_def_final <= 0) and (stats_atk["precision"] == 100) and mata_solo_atacante
+        es_kill_probable = (hp_def_final <= 0) and not es_kill_seguro
+
         return {
             "atacante": {
                 "nombre": atacante.nombre,
@@ -534,10 +604,13 @@ class CalculadoraEngage:
                 "recoil_hp": recoil,
                 "puede_canter": stats_atk.get("tiene_canter", False),
                 "es_smash": es_smash_atk,
+                "efectividad_activa": stats_atk.get("efectividad_activa"),
+                "multiplicador_efectividad": stats_atk.get("multiplicador_efectividad"),
             },
             "defensor": {
                 "nombre": defensor.nombre,
                 "hp_inicial": defensor.hp,
+                "nivel_veneno": veneno_def_previo,
                 "puede_contraatacar": puede_contra,
                 "contraataque_anulado_por_ruptura": (defensor_en_ruptura or (defensor_roto and puede_contra)) and not (es_smash_atk and not es_smash_def),
                 "daño_por_golpe": stats_def["daño"] if stats_def else 0,
@@ -559,15 +632,18 @@ class CalculadoraEngage:
                 "sufre_ruptura": False,
                 "antirruptura_bloqueo_break": stats_atk.get("antirruptura_bloqueo_break", False) and not smash_info["rompio_por_choque"],
                 "chain_attacks_daño": chain_dmg_total,
+                "chain_attacks": chain_attacks_info,
                 "puede_canter": stats_atk.get("tiene_canter", False),
                 "recoil_hp": recoil,
+                "aplica_veneno": aplica_veneno,
+                "nivel_veneno_defensor_post": veneno_def_post,
                 "secuencia": secuencia,
                 "smash": smash_info,
             },
             "alertas_tacticas": {
                 "peligro_letal": hp_atk_final <= 0,
-                "kill_seguro": hp_def_final <= 0 and stats_atk["precision"] == 100,
-                "kill_probable": hp_def_final <= 0 and stats_atk["precision"] < 100,
+                "kill_seguro": es_kill_seguro,
+                "kill_probable": es_kill_probable,
                 "atacante_en_peligro": 0 < hp_atk_final <= atacante.hp * 0.25,
                 "defensor_en_peligro": 0 < hp_def_final <= defensor.hp * 0.25,
                 "daño_cero": stats_atk["daño"] == 0,
@@ -622,7 +698,8 @@ class CalculadoraEngage:
     def evaluar_riesgo(cls, atacante, defensor, arma_atk, arma_def=None,
                        terreno_atk=None, terreno_def=None, distancia=1,
                        perfil="seguro", cronogema_usada=False,
-                       contexto_mapa=None, defensor_en_ruptura: bool = False):
+                       contexto_mapa=None, defensor_en_ruptura: bool = False,
+                       aliados_apoyo_backup=None):
         """
         Envuelve simular_combate() y genera un veredicto de riesgo
         con etiquetas semánticas para consumo del LLM.
@@ -639,6 +716,7 @@ class CalculadoraEngage:
                            enemigo según su MOV y el terreno) en lugar de la
                            heurística de distancia interna.
             defensor_en_ruptura: True si el defensor ya está sufriendo Ruptura al iniciar.
+            aliados_apoyo_backup: lista de unidades aliadas de apoyo (Backup) en rango.
         """
         if perfil not in ("seguro", "agresivo"):
             raise ValueError(
@@ -649,6 +727,7 @@ class CalculadoraEngage:
         combate = cls.simular_combate(
             atacante, defensor, arma_atk, arma_def,
             terreno_atk, terreno_def, distancia,
+            aliados_apoyo_backup=aliados_apoyo_backup,
             defensor_en_ruptura=defensor_en_ruptura,
         )
 

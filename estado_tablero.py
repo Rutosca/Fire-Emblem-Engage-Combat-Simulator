@@ -50,6 +50,9 @@ class FichaUnidad:
     es_fijo: bool = False              # True si su posición no puede cambiarse en preparación (Alear, verdes)
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
     cargas_ruptura: int = 0            # Cargas de Ruptura (Break): 1 = no puede contraatacar en el siguiente combate
+    hp_stock: int = 0                  # Piedras resurrectoras / barras de vida extra (jefes)
+    nivel_veneno: int = 0              # Nivel de veneno (0..3): cada nivel aumenta en +1 todo daño recibido
+    lider_tres_casas: str = "Dimitri"  # Líder activo del brazalete Tres Casas ("Edelgard", "Dimitri", "Claude")
 
     def __post_init__(self):
         if self.stats:
@@ -58,6 +61,8 @@ class FichaUnidad:
                 self.hp_max = stat_hp
             if self.hp_actual <= 0:
                 self.hp_actual = self.hp_max
+            setattr(self.stats, 'nivel_veneno', self.nivel_veneno)
+            setattr(self.stats, 'lider_tres_casas', self.lider_tres_casas)
         elif self.hp_max <= 0:
             self.hp_max = 30
             self.hp_actual = 30
@@ -76,6 +81,8 @@ class FichaUnidad:
             "ha_actuado": self.ha_actuado,
             "cargas_ruptura": self.cargas_ruptura,
             "en_ruptura": self.cargas_ruptura > 0,
+            "nivel_veneno": max(0, min(3, self.nivel_veneno)),
+            "lider_tres_casas": self.lider_tres_casas,
             "x": self.x,
             "y": self.y,
             "mov": self.mov,
@@ -83,6 +90,7 @@ class FichaUnidad:
             "viva": self.viva and hp_a > 0,
             "hp_actual": hp_a,
             "hp_max": hp_m,
+            "hp_stock": self.hp_stock,
             "pct_hp": pct,
             "energia_emblema": self.energia_emblema,
             "max_energia_emblema": self.max_energia_emblema,
@@ -222,6 +230,23 @@ class EstadoTablero:
             for dup in duplicados:
                 del self.fichas[dup]
 
+        # Si la unidad ya existía en el tablero y había actuado este turno,
+        # asegurar que no pierda su turno gastado, veneno o líder de tres casas simplemente por editar stats/equipo
+        prev = self.fichas.get(ficha.nombre)
+        if prev and prev.ha_actuado and not getattr(ficha, '_ha_actuado_explicito', False):
+            ficha.ha_actuado = True
+        if prev and prev.cargas_ruptura > 0 and ficha.cargas_ruptura == 0:
+            ficha.cargas_ruptura = prev.cargas_ruptura
+        if prev and prev.nivel_veneno > 0 and ficha.nivel_veneno == 0:
+            ficha.nivel_veneno = prev.nivel_veneno
+            if ficha.stats:
+                setattr(ficha.stats, 'nivel_veneno', ficha.nivel_veneno)
+        if prev and hasattr(prev, 'lider_tres_casas') and prev.lider_tres_casas:
+            if not getattr(ficha, '_lider_tres_casas_explicito', False):
+                ficha.lider_tres_casas = prev.lider_tres_casas
+                if ficha.stats:
+                    setattr(ficha.stats, 'lider_tres_casas', ficha.lider_tres_casas)
+
         self.fichas[ficha.nombre] = ficha
 
     def registrar_muerte(self, nombre: str) -> None:
@@ -294,6 +319,31 @@ class EstadoTablero:
         ficha.x = nueva_x
         ficha.y = nueva_y
         return True
+
+    def alternar_lider_tres_casas(self, nombre: str, nuevo_lider: Optional[str] = None) -> Optional[str]:
+        """Alterna o establece el líder activo de Tres Casas (Edelgard, Dimitri, Claude)."""
+        f = self.fichas.get(nombre)
+        if not f:
+            return None
+        ciclo = ["Dimitri", "Edelgard", "Claude"]
+        if nuevo_lider and nuevo_lider in ciclo:
+            f.lider_tres_casas = nuevo_lider
+        else:
+            idx = ciclo.index(f.lider_tres_casas) if f.lider_tres_casas in ciclo else 0
+            f.lider_tres_casas = ciclo[(idx + 1) % len(ciclo)]
+        if f.stats:
+            setattr(f.stats, 'lider_tres_casas', f.lider_tres_casas)
+        return f.lider_tres_casas
+
+    def ajustar_nivel_veneno(self, nombre: str, nivel: int) -> int:
+        """Ajusta directamente el nivel de veneno (0..3) de una unidad."""
+        f = self.fichas.get(nombre)
+        if not f:
+            return 0
+        f.nivel_veneno = max(0, min(3, int(nivel)))
+        if f.stats:
+            setattr(f.stats, 'nivel_veneno', f.nivel_veneno)
+        return f.nivel_veneno
 
     # ── Consultas ────────────────────────────────────────────────────────
 

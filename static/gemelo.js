@@ -163,6 +163,14 @@ function crearToken(ficha) {
     breakBadge.title = "Ruptura (Break): Desarmado para contraataques";
     tok.appendChild(breakBadge);
   }
+
+  if (ficha.nivel_veneno > 0) {
+    const poisonBadge = document.createElement("span");
+    poisonBadge.className = "token-poison-badge";
+    poisonBadge.textContent = "☠️" + (ficha.nivel_veneno > 1 ? ficha.nivel_veneno : "");
+    poisonBadge.title = `Veneno Nivel ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} de daño en todos los ataques`;
+    tok.appendChild(poisonBadge);
+  }
   
   const hpMax = ficha.hp_max || (ficha.stats ? ficha.stats.hp : 30);
   const hpActual = ficha.hp_actual !== undefined ? ficha.hp_actual : hpMax;
@@ -171,6 +179,9 @@ function crearToken(ficha) {
   let desc = `${ficha.nombre} (${ficha.es_verde ? "Aliado Verde" : (ficha.es_aliado ? "Aliado" : "Enemigo")})\nHP: ${hpActual}/${hpMax} (${pct}%)\nClase: ${ficha.clase_nombre || "Desconocida"} | Nv: ${ficha.nivel || 1}`;
   if (ficha.arma_equipada) desc += `\nArma: ${ficha.arma_equipada.nombre} (Mt ${ficha.arma_equipada.mt}, Rango ${ficha.arma_equipada.rango.join('-')})`;
   if (ficha.emblema_nombre) desc += `\nEmblema: ${ficha.emblema_nombre}`;
+  const es3H = (ficha.emblema_nombre && (ficha.emblema_nombre.toLowerCase().includes("edelgard") || ficha.emblema_nombre.toLowerCase().includes("tres casas") || ficha.emblema_nombre.toLowerCase().includes("three houses")));
+  if (es3H && ficha.lider_tres_casas) desc += `\n👑 [Líder 3 Casas: ${ficha.lider_tres_casas}]`;
+  if (ficha.nivel_veneno > 0) desc += `\n☠️ [VENENO NIVEL ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} dmg de todo ataque]`;
   if (ficha.ha_actuado) desc += `\n✓ [HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n💔 [RUPTURA ACTIVA: No puede contraatacar]`;
   if (ficha.en_fusion || ficha.turnos_fusion > 0) desc += `\n⚡ [MODO ENGAGE ACTIVO: Fusión con ${ficha.emblema_nombre || 'Emblema'}]`;
@@ -859,11 +870,23 @@ async function guardarUnidadDesdeModal() {
   if (armaNombre) inventario.push({ arma: armaNombre, equipada: true });
   inventarioExtra.forEach(nombre_item => inventario.push({ arma: nombre_item, equipada: false }));
 
+  const fichaExistente = state.fichas[nombreOriginal || nombre];
+  const haActuado = fichaExistente ? !!fichaExistente.ha_actuado : false;
+  const cargasRuptura = fichaExistente ? (fichaExistente.cargas_ruptura || 0) : 0;
+  const esVolador = fichaExistente ? !!fichaExistente.es_volador : undefined;
+  const nivelVeneno = fichaExistente ? (fichaExistente.nivel_veneno || 0) : 0;
+  const lider3H = fichaExistente ? (fichaExistente.lider_tres_casas || "Dimitri") : "Dimitri";
+
   const payload = {
     nombre,
     es_aliado: esAliado,
     x, y,
     nivel,
+    ha_actuado: haActuado,
+    cargas_ruptura: cargasRuptura,
+    nivel_veneno: nivelVeneno,
+    lider_tres_casas: lider3H,
+    es_volador: esVolador,
     hp_actual: isNaN(hpActual) ? undefined : hpActual,
     hp_max: isNaN(hpMax) ? undefined : hpMax,
     clase_nombre: claseNombre,
@@ -1360,6 +1383,16 @@ async function lanzarAnalisis() {
   const perfil = $("perfil-select").value;
   const data = await api("/api/analizar", "POST", { perfil });
 
+  const countBadge = $("analisis-badge-count");
+  if (countBadge) {
+    if (data.resultados && data.resultados.length > 0) {
+      countBadge.textContent = data.resultados.length;
+      countBadge.classList.remove("hidden");
+    } else {
+      countBadge.classList.add("hidden");
+    }
+  }
+
   panel.innerHTML = "";
   if (!data.resultados || data.resultados.length === 0) {
     panel.innerHTML = '<p style="color:var(--text-dim);padding:8px;font-size:12px;">No hay unidades configuradas con stats y armas. Haz clic en el mapa para añadir fichas o pulsa [📍 Preset Cap. 7].</p>';
@@ -1582,6 +1615,24 @@ function renderResultado(container, r) {
     div.className = "peor-caso-box";
     div.innerHTML = `📍 <b>Peor caso IA:</b> atacará desde (${pe.pos_optima[0]}, ${pe.pos_optima[1]}) haciendo ${pe.daño_proyectado} de daño a dist. ${pe.distancia_ataque}.`;
     card.appendChild(div);
+  }
+
+  if (r.chain_attacks && r.chain_attacks.length > 0) {
+    const isEnemy = (r.tipo_analisis === "amenaza_enemiga");
+    const chainBox = document.createElement("div");
+    chainBox.className = `chain-attack-box ${isEnemy ? 'enemy-chain' : ''}`;
+    r.chain_attacks.forEach(ca => {
+      const item = document.createElement("div");
+      item.className = "chain-attack-item";
+      const targetName = isEnemy ? r.aliado : r.enemigo;
+      item.innerHTML = `⚔️ <b>Chain Attack (80% Hit):</b> La unidad <b>${ca.nombre}</b> puede realizar ataque en cadena contra <b>${targetName}</b> haciendo <b>${ca.daño} dmg</b> (10% HP).`;
+      chainBox.appendChild(item);
+    });
+    const sub = document.createElement("div");
+    sub.className = "chain-attack-sub";
+    sub.textContent = isEnemy ? "Y luego el ataque del enemigo:" : "Y luego el ataque normal del aliado:";
+    chainBox.appendChild(sub);
+    card.appendChild(chainBox);
   }
 
   if (r.recomendacion) {
