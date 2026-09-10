@@ -896,7 +896,8 @@ async function guardarUnidadDesdeModal() {
     mov: mov,
     potenciadores_usados: state.potenciadoresModal || [],
     stats: {
-      hp: hpMax,
+      hp: isNaN(hpActual) ? hpMax : hpActual,
+      hp_max: isNaN(hpMax) ? undefined : hpMax,
       fuerza: str,
       magia: mag,
       destreza: dex,
@@ -1570,6 +1571,35 @@ async function ejecutarAtaqueEnemigo(r) {
   setTimeout(lanzarAnalisis, 400);
 }
 
+async function ejecutarCuracion(r) {
+  if (r.pos_sugerida) {
+    await api(`/api/fichas/${encodeURIComponent(r.aliado)}/mover`, "POST", { x: r.pos_sugerida[0], y: r.pos_sugerida[1] });
+  }
+  const obj = state.fichas[r.objetivo];
+  if (obj) {
+    const cur = r.curacion_estimada || 10;
+    const nuevoHp = Math.min(obj.hp_max, (obj.hp_actual || obj.stats?.hp || 0) + cur);
+    const res = await api("/api/unidad/ajustar_hp", "POST", { nombre: r.objetivo, hp_actual: nuevoHp });
+    if (res.fichas) actualizarTokens(res.fichas);
+  }
+  await api("/api/unidad/alternar_actuado", "POST", { nombre: r.aliado });
+  mostrarToast(`🩹 ${r.aliado} usó ${r.baston} en ${r.objetivo} (+${r.curacion_estimada} HP)`, "ok");
+  setTimeout(lanzarAnalisis, 400);
+}
+
+async function ejecutarPocion(r) {
+  const ali = state.fichas[r.aliado];
+  if (ali) {
+    const cur = (r.item && r.item.toLowerCase().includes("elixir")) ? 15 : 10;
+    const nuevoHp = Math.min(ali.hp_max, (ali.hp_actual || ali.stats?.hp || 0) + cur);
+    const res = await api("/api/unidad/ajustar_hp", "POST", { nombre: r.aliado, hp_actual: nuevoHp });
+    if (res.fichas) actualizarTokens(res.fichas);
+  }
+  await api("/api/unidad/alternar_actuado", "POST", { nombre: r.aliado });
+  mostrarToast(`🧪 ${r.aliado} usó ${r.item} (+HP recuperados)`, "ok");
+  setTimeout(lanzarAnalisis, 400);
+}
+
 // ─── Render de resultados ──────────────────────────────────────────────────
 
 function renderResultado(container, r) {
@@ -1635,6 +1665,34 @@ function renderResultado(container, r) {
     card.appendChild(chainBox);
   }
 
+  // Pasivas activas de combate y proximidad
+  if (r.pasivas_activas && r.pasivas_activas.length > 0) {
+    const passBox = document.createElement("div");
+    passBox.className = "passivas-box";
+    passBox.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;padding:4px 8px;background:rgba(218,165,32,0.12);border-left:3px solid #daa520;border-radius:4px;font-size:11px;";
+    passBox.innerHTML = `<span style="font-weight:bold;color:#ffd700;">🌟 Pasivas:</span> ` +
+      r.pasivas_activas.map(p => `<span class="badge" style="background:#2a2510;border:1px solid #b8860b;color:#ffd700;padding:1px 6px;border-radius:3px;">${p}</span>`).join(" ");
+    card.appendChild(passBox);
+  }
+
+  // Bonificaciones de apoyo (C, B, A)
+  if (r.apoyos_activos && r.apoyos_activos.length > 0) {
+    const suppBox = document.createElement("div");
+    suppBox.className = "apoyos-box";
+    suppBox.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0;padding:4px 8px;background:rgba(70,130,180,0.12);border-left:3px solid #4682b4;border-radius:4px;font-size:11px;";
+    suppBox.innerHTML = `<span style="font-weight:bold;color:#87cefa;">🤝 Apoyos:</span> ` +
+      r.apoyos_activos.map(ap => `<span class="badge" style="background:#102030;border:1px solid #4682b4;color:#87cefa;padding:1px 6px;border-radius:3px;">${ap.aliado} (Rango ${ap.rango}): +${ap.hit} Hit, +${ap.avo} Avo</span>`).join(" ");
+    card.appendChild(suppBox);
+  }
+
+  // Banner especial táctico de Emblema
+  if (r.tactica_emblema === "burst") {
+    const embBox = document.createElement("div");
+    embBox.style.cssText = "margin:4px 0 6px 0;padding:4px 8px;background:linear-gradient(90deg, rgba(138,43,226,0.25), rgba(75,0,130,0.15));border-left:3px solid #9932cc;border-radius:4px;font-size:11px;font-weight:bold;color:#da70d6;";
+    embBox.innerHTML = `⚡ <b>BURST DE EMBLEMA SUGERIDO:</b> Fusión de Emblema lista para rematar al Jefe sin contraataque peligroso.`;
+    card.appendChild(embBox);
+  }
+
   if (r.recomendacion) {
     const p = document.createElement("p");
     p.className = "recomendacion-txt";
@@ -1658,6 +1716,28 @@ function renderResultado(container, r) {
     btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);
+    card.appendChild(actionBar);
+  } else if (r.tipo_analisis === "apoyo_curacion") {
+    const actionBar = document.createElement("div");
+    actionBar.className = "card-action-bar";
+    const btnHeal = document.createElement("button");
+    btnHeal.type = "button";
+    btnHeal.className = "btn-ejecutar-jugada";
+    btnHeal.style.background = "linear-gradient(135deg, #1e7e34, #28a745)";
+    btnHeal.innerHTML = `🩹 <b>Usar ${r.baston || 'Bastón'}</b> en ${r.objetivo} (+${r.curacion_estimada} HP)`;
+    btnHeal.addEventListener("click", () => ejecutarCuracion(r));
+    actionBar.appendChild(btnHeal);
+    card.appendChild(actionBar);
+  } else if (r.tipo_analisis === "uso_pocion") {
+    const actionBar = document.createElement("div");
+    actionBar.className = "card-action-bar";
+    const btnPot = document.createElement("button");
+    btnPot.type = "button";
+    btnPot.className = "btn-ejecutar-jugada";
+    btnPot.style.background = "linear-gradient(135deg, #d39e00, #ffc107);color:#111;";
+    btnPot.innerHTML = `🧪 <b>Usar ${r.item || 'Poción'}</b> (+HP)`;
+    btnPot.addEventListener("click", () => ejecutarPocion(r));
+    actionBar.appendChild(btnPot);
     card.appendChild(actionBar);
   } else if (r.tipo_analisis === "amenaza_enemiga") {
     const actionBar = document.createElement("div");

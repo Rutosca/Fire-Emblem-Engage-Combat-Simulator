@@ -20,14 +20,14 @@ class Unidad:
     """Representa una unidad con sus estadísticas de combate."""
     nombre: str
     hp: int
-    fuerza: int        # STR - Fuerza física
-    magia: int         # MAG - Poder mágico
-    destreza: int      # DEX - Destreza / Habilidad
-    velocidad: int     # SPD - Velocidad
-    defensa: int       # DEF - Defensa física
-    resistencia: int   # RES - Resistencia mágica
-    suerte: int        # LCK - Suerte
-    complexion: int    # BLD - Complexión (Build)
+    fuerza: int = 0        # STR - Fuerza física
+    magia: int = 0         # MAG - Poder mágico
+    destreza: int = 0      # DEX - Destreza / Habilidad
+    velocidad: int = 0     # SPD - Velocidad
+    defensa: int = 0       # DEF - Defensa física
+    resistencia: int = 0   # RES - Resistencia mágica
+    suerte: int = 0        # LCK - Suerte
+    complexion: int = 5    # BLD - Complexión (Build)
     es_lord: bool = False  # True si su muerte causa Game Over inmediato (ej. Alear)
     energia_emblema: int = 6         # Cargas actuales de Fusión de Emblema (0 a max)
     max_energia_emblema: int = 6     # Límite para activar la Fusión (normalmente 6)
@@ -38,11 +38,22 @@ class Unidad:
     hp_max: int = 0
     habilidades: list = field(default_factory=list)
     emblema_nombre: str = ""
+    emblema: str = ""
     estilo_combate: str = "Infantería"  # De apoyo (Backup), Acorazado (Armored), Espía (Covert), Místico (Mystical), etc.
+    bando: str = "aliado"
+    es_volador: bool = False
+    es_jefe: bool = False
+    en_fusion: bool = False
+    clase_nombre: str = ""
+    nivel_veneno: int = 0
 
     def __post_init__(self):
         if self.hp_max <= 0:
             self.hp_max = self.hp
+        if self.emblema and not self.emblema_nombre:
+            self.emblema_nombre = self.emblema
+        elif self.emblema_nombre and not self.emblema:
+            self.emblema = self.emblema_nombre
 
 
 @dataclass
@@ -50,14 +61,22 @@ class Arma:
     """Representa un arma con sus estadísticas y propiedades."""
     nombre: str
     mt: int             # Might - Potencia
-    wt: int             # Weight - Peso
-    hit: int            # Precisión base
-    crit: int           # Crítico base
-    es_magica: bool     # True = apunta a RES, False = apunta a DEF
-    tipo: str           # Espada, Hacha, Lanza, Artes, Arco, Tomo, Daga
+    wt: int = 0         # Weight - Peso
+    hit: int = 80       # Precisión base
+    crit: int = 0       # Crítico base
+    es_magica: bool = False  # True = apunta a RES, False = apunta a DEF
+    es_fisica: bool = True
+    tipo: str = "Espada"     # Espada, Hacha, Lanza, Artes, Arco, Tomo, Daga
     rango: list = field(default_factory=lambda: [1])
     efectividades: list = field(default_factory=list)  # e.g. ["volador", "acorazado"]
+    efectivo_contra: list = field(default_factory=list)
     avo_bonus: int = 0  # Bonus de Evasión (ej. Grabados de Emblema)
+
+    def __post_init__(self):
+        if self.efectivo_contra and not self.efectividades:
+            self.efectividades = list(self.efectivo_contra)
+        elif self.efectividades and not self.efectivo_contra:
+            self.efectivo_contra = list(self.efectividades)
     ddg_bonus: int = 0  # Bonus de Esquive de Crítico (Dodge)
     es_smash: bool = False  # True si es arma pesada (Smash): ataca de segundo, sin follow-up, empuja 1 casilla
 
@@ -88,6 +107,209 @@ TRIANGULO_ARMAS = {
     'Lanza': ['Espada'],
     'Artes': ['Arco', 'Tomo', 'Daga'],
 }
+
+
+# =============================================================================
+# Sistema Canónico de Apoyos de Fire Emblem Engage (SupportCalculator)
+# =============================================================================
+
+# Categorías de Apoyo oficiales (Serenes Forest / Datamine)
+# RANGOS: C, B, A (Entre aliados estrictamente no hay rango S)
+CATEGORIAS_APOYO = {
+    # Equilibrado (Balanced)
+    "alear": "balanced", "lueur": "balanced",
+    "chloé": "balanced", "chloe": "balanced",
+    "citrinne": "balanced", "citrinica": "balanced",
+    "kagetsu": "balanced", "merrin": "balanced", "lindon": "balanced",
+
+    # Enfocado en Acierto (Hit-focused)
+    "framme": "hit", "alcryst": "hit", "staluke": "hit",
+    "jade": "hit", "zelkov": "hit", "panette": "hit",
+    "rosado": "hit", "anna": "hit",
+
+    # Enfocado en Crítico (Critical-focused)
+    "clanne": "critical", "boucheron": "critical",
+    "louis": "critical", "diamant": "critical",
+    "bunet": "critical", "timerra": "critical",
+    "seadall": "critical", "jean": "critical",
+
+    # Enfocado en Evasión (Avoid-focused)
+    "vander": "avoid", "alfred": "avoid",
+    "yunaka": "avoid", "amber": "avoid",
+    "fogado": "avoid", "hortensia": "avoid", "saphir": "avoid",
+
+    # Enfocado en Esquive de Crítico (Dodge-focused)
+    "etie": "dodge", "céline": "dodge", "celine": "dodge",
+    "lapis": "dodge", "ivy": "dodge", "pandreo": "dodge",
+    "goldmary": "dodge", "veyle": "dodge",
+}
+
+TABLA_BONOS_APOYO = {
+    "balanced": {
+        "C": {"hit": 10, "avo": 5, "crit": 0, "ddg": 0},
+        "B": {"hit": 10, "avo": 5, "crit": 3, "ddg": 0},
+        "A": {"hit": 10, "avo": 5, "crit": 3, "ddg": 5},
+    },
+    "hit": {
+        "C": {"hit": 15, "avo": 0, "crit": 0, "ddg": 0},
+        "B": {"hit": 15, "avo": 5, "crit": 0, "ddg": 0},
+        "A": {"hit": 20, "avo": 5, "crit": 0, "ddg": 0},
+    },
+    "critical": {
+        "C": {"hit": 10, "avo": 0, "crit": 3, "ddg": 0},
+        "B": {"hit": 10, "avo": 0, "crit": 3, "ddg": 5},
+        "A": {"hit": 10, "avo": 0, "crit": 6, "ddg": 5},
+    },
+    "avoid": {
+        "C": {"hit": 10, "avo": 5, "crit": 0, "ddg": 0},
+        "B": {"hit": 10, "avo": 5, "crit": 3, "ddg": 0},
+        "A": {"hit": 10, "avo": 10, "crit": 3, "ddg": 0},
+    },
+    "dodge": {
+        "C": {"hit": 10, "avo": 0, "crit": 0, "ddg": 5},
+        "B": {"hit": 15, "avo": 0, "crit": 0, "ddg": 5},
+        "A": {"hit": 15, "avo": 0, "crit": 0, "ddg": 10},
+    },
+    "default": {
+        "C": {"hit": 10, "avo": 0, "crit": 0, "ddg": 0},
+        "B": {"hit": 10, "avo": 0, "crit": 0, "ddg": 0},
+        "A": {"hit": 10, "avo": 0, "crit": 0, "ddg": 0},
+    }
+}
+
+def obtener_genero_unidad(u) -> int:
+    """1: Masculino, 2: Femenino, 0: Indeterminado."""
+    if hasattr(u, 'genero') and u.genero in (1, 2):
+        return u.genero
+    nom = (getattr(u, 'nombre', '') or '').lower()
+    pid = (getattr(u, 'pid', '') or '').lower()
+    females = {
+        'céline', 'celine', 'chloé', 'chloe', 'yunaka', 'citrinne', 'citrinica',
+        'lapis', 'framme', 'etie', 'ivy', 'hortensia', 'timerra', 'panette',
+        'merrin', 'goldmary', 'veyle', 'anna', 'jade', 'saphir', 'lumera'
+    }
+    males = {
+        'alfred', 'louis', 'boucheron', 'clanne', 'vander', 'alcryst', 'staluke',
+        'diamant', 'amber', 'fogado', 'pandreo', 'bunet', 'seadall', 'kagetsu',
+        'zelkov', 'lindon', 'mauvier', 'jean', 'rosado', 'morion', 'hyacinth'
+    }
+    if any(f in nom or f in pid for f in females):
+        return 2
+    if any(m in nom or m in pid for m in males):
+        return 1
+    if 'alear' in nom or 'lueur' in nom:
+        return getattr(u, 'genero', 1)
+    return 0
+
+def distancia_entre_unidades(u1, u2) -> int:
+    """Distancia Manhattan entre dos unidades u objetos con x, y."""
+    x1, y1 = getattr(u1, 'x', 0), getattr(u1, 'y', 0)
+    x2, y2 = getattr(u2, 'x', 0), getattr(u2, 'y', 0)
+    return abs(x1 - x2) + abs(y1 - y2)
+
+def obtener_rango_apoyo(u1, u2) -> str:
+    """Devuelve 'C', 'B', 'A' o '' si no hay apoyo activo entre u1 y u2."""
+    nom1 = (getattr(u1, 'nombre', '') or '').lower()
+    nom2 = (getattr(u2, 'nombre', '') or '').lower()
+    
+    # Comprobar si hay apoyos explícitos definidos en el objeto u1 o u2
+    apoyos1 = getattr(u1, 'apoyos', None) or {}
+    if isinstance(apoyos1, dict):
+        for k, v in apoyos1.items():
+            if k.lower() in nom2 or nom2 in k.lower():
+                r = str(v).upper()
+                if r in ("C", "B", "A"):
+                    return r
+
+    apoyos2 = getattr(u2, 'apoyos', None) or {}
+    if isinstance(apoyos2, dict):
+        for k, v in apoyos2.items():
+            if k.lower() in nom1 or nom1 in k.lower():
+                r = str(v).upper()
+                if r in ("C", "B", "A"):
+                    return r
+
+    # Apoyos canónicos activos iniciales (Rango C) en Chapter 7
+    firene_vassals = {'alfred', 'céline', 'celine', 'chloé', 'chloe', 'louis', 'framme', 'clanne', 'vander', 'etie', 'boucheron'}
+    if ('alear' in nom1 and any(v in nom2 for v in firene_vassals)) or ('alear' in nom2 and any(v in nom1 for v in firene_vassals)):
+        return 'C'
+
+    brodia_trio = {'alcryst', 'citrinne', 'citrinica', 'lapis'}
+    if any(b in nom1 for b in brodia_trio) and any(b in nom2 for b in brodia_trio):
+        return 'C'
+
+    return ''
+
+def normalizar_aliados_cercanos(aliados, pos_ref):
+    """
+    Convierte cualquier formato de lista de aliados a una lista normalizada de (unidad, distancia).
+    Soporta tuplas (unidad, dist) o instancias de Ficha/Unidad con .x y .y.
+    """
+    res = []
+    if not aliados:
+        return res
+    for item in aliados:
+        if isinstance(item, (list, tuple)) and len(item) == 2 and isinstance(item[1], (int, float)):
+            res.append((item[0], int(item[1])))
+        elif hasattr(item, 'x') and hasattr(item, 'y') and pos_ref:
+            d = abs(item.x - pos_ref[0]) + abs(item.y - pos_ref[1])
+            res.append((item, d))
+        else:
+            res.append((item, 1))
+    return res
+
+def calcular_bonos_apoyo(unidad, aliados_cercanos):
+    """
+    Calcula la suma de bonos de apoyo de hasta 4 aliados adyacentes (distancia == 1).
+    Solo rangos C, B, A (entre aliados no existe rango S).
+    """
+    total_hit = 0
+    total_avo = 0
+    total_crit = 0
+    total_ddg = 0
+    aliados_apoyo_contados = 0
+    detalles = []
+
+    if not aliados_cercanos:
+        return total_hit, total_avo, total_crit, total_ddg, detalles
+
+    nom_self = (getattr(unidad, 'nombre', '') or '').lower()
+
+    for aliado, dist in aliados_cercanos:
+        if dist != 1:
+            continue
+        nom_aliado = (getattr(aliado, 'nombre', '') or '').lower()
+        if nom_aliado == nom_self:
+            continue
+        if aliados_apoyo_contados >= 4:
+            break
+            
+        rango = obtener_rango_apoyo(unidad, aliado)
+        if rango in ("C", "B", "A"):
+            cat = "default"
+            for k, c in CATEGORIAS_APOYO.items():
+                if k in nom_aliado:
+                    cat = c
+                    break
+            bono = TABLA_BONOS_APOYO.get(cat, TABLA_BONOS_APOYO["default"]).get(rango, {})
+            b_hit = bono.get("hit", 0)
+            b_avo = bono.get("avo", 0)
+            b_crit = bono.get("crit", 0)
+            b_ddg = bono.get("ddg", 0)
+            
+            total_hit += b_hit
+            total_avo += b_avo
+            total_crit += b_crit
+            total_ddg += b_ddg
+            aliados_apoyo_contados += 1
+            detalles.append({
+                "aliado": getattr(aliado, 'nombre', 'Aliado'),
+                "rango": rango,
+                "categoria": cat,
+                "hit": b_hit, "avo": b_avo, "crit": b_crit, "ddg": b_ddg
+            })
+
+    return total_hit, total_avo, total_crit, total_ddg, detalles
 
 
 # =============================================================================
@@ -179,18 +401,36 @@ class CalculadoraEngage:
         return 1, None
 
     @classmethod
-    def _stats_de_golpe(cls, atacante, arma, defensor, arma_def, terreno, es_iniciador: bool = True):
+    def _stats_de_golpe(
+        cls,
+        atacante,
+        arma,
+        defensor,
+        arma_def,
+        terreno,
+        es_iniciador: bool = True,
+        aliados_cercanos_atk=None,
+        aliados_cercanos_def=None,
+        distancia: int = 1,
+        es_engage_attack: bool = False,
+        engage_attack_nombre: str = "",
+    ):
         """
         Calcula las estadísticas de un golpe individual del atacante al defensor integrando
-        efectividades (Mt × 3), pasivas (Resonancia, Pulsera Lunar, Gentileza) y estilos de combate.
+        efectividades (Mt × 3), pasivas de proximidad (Guía Divina, Solidaridad, Gente de Cuento,
+        Admiración, Asesina Nata), bonos de apoyos oficiales (SupportCalculator) y ataques de Emblema.
         """
         habs_atk = [str(h).lower() for h in getattr(atacante, 'habilidades', [])]
         emblema_atk = str(getattr(atacante, 'emblema_nombre', '') or '').lower()
         estilo_atk = str(getattr(atacante, 'estilo_combate', '') or '').lower()
+        nombre_atk = str(getattr(atacante, 'nombre', '') or '').lower()
 
         habs_def = [str(h).lower() for h in getattr(defensor, 'habilidades', [])]
         emblema_def = str(getattr(defensor, 'emblema_nombre', '') or '').lower()
         estilo_def = str(getattr(defensor, 'estilo_combate', '') or '').lower()
+        nombre_def = str(getattr(defensor, 'nombre', '') or '').lower()
+
+        pasivas_activas = []
 
         # Modificadores de terreno según estilo de clase del defensor
         terreno_avo = terreno.avo
@@ -202,7 +442,7 @@ class CalculadoraEngage:
             terreno_dfn *= 2
 
         # Estilo Místico (Mystical / 魔法 / 魔道): ataques mágicos ignoran los bonos de evasión (Avoid) de terreno del defensor
-        if any(term in estilo_atk for term in ('místico', 'mistico', 'mystical', 'magic', '魔法', '魔道')) and (arma.es_magica or arma.tipo == 'Tomo'):
+        if any(term in estilo_atk for term in ('místico', 'mistico', 'mystical', 'magic', '魔法', '魔道')) and (arma.es_magica or arma.tipo in ('Tomo', 'Tome')):
             terreno_avo = 0
 
         # Velocidad de ataque de ambos bandos
@@ -229,7 +469,6 @@ class CalculadoraEngage:
             desc_efectividad = None
 
         mt_efectivo = arma.mt * mult_mt_efectividad
-
         atk_base = stat_ofensiva + mt_efectivo
 
         # Pasiva: Resonancia / Resonance (Celica): +2 ATK (+3 en Resonance+) estrictamente si usa Tomo y HP >= 2
@@ -241,12 +480,15 @@ class CalculadoraEngage:
                 bonus_res = 3 if any('+' in h for h in habs_atk if 'reson' in h) else 2
                 atk_base += bonus_res
                 recoil_hp = 1
+                pasivas_activas.append(f"Resonancia (+{bonus_res} ATK, 1 recoil)")
 
         # Pasiva: Lunar Brace / Pulsera Lunar (Eirika): suma +20% (30% en +) de la DEF del enemigo
         tiene_lunar = any('lunar' in h or 'luna' in h or '月の腕輪' in h for h in habs_atk) or 'eirika' in emblema_atk or 'エイリーク' in emblema_atk
         if tiene_lunar and not arma.es_magica:
             pct_lunar = 0.30 if any('+' in h for h in habs_atk if 'lunar' in h) else 0.20
-            atk_base += math.floor(defensor.defensa * pct_lunar)
+            bonus_lunar = math.floor(defensor.defensa * pct_lunar)
+            atk_base += bonus_lunar
+            pasivas_activas.append(f"Pulsera Lunar (+{bonus_lunar} ATK)")
 
         # Pasiva: Weapon Sync / Sincronía Armamentística (Edelgard / Tres Casas): +5 ATK (+7 en +) al iniciar combate
         tiene_weapon_sync = any('weapon sync' in h or 'sincronia' in h or 'sincronía' in h or '武器シンクロ' in h for h in habs_atk)
@@ -256,7 +498,6 @@ class CalculadoraEngage:
             if getattr(atacante, 'turnos_fusion_restantes', 0) > 0 or getattr(atacante, 'en_fusion', False):
                 aplica_ws = True
             else:
-                # Comprobar si coincide con el líder activo de Tres Casas o con el emblema principal
                 lider_3h = getattr(atacante, 'lider_tres_casas', 'Dimitri') or 'Dimitri'
                 lider_3h_str = str(lider_3h).lower()
                 tipo_a = arma.tipo.lower() if arma.tipo else ""
@@ -271,15 +512,64 @@ class CalculadoraEngage:
                     else:
                         aplica_ws = ('lanza' in tipo_a or 'lance' in tipo_a or 'hacha' in tipo_a or 'axe' in tipo_a or 'arco' in tipo_a or 'bow' in tipo_a)
                 elif tiene_weapon_sync:
-                    # Habilidad Weapon Sync con otro emblema: coincide si el arma es del tipo del emblema
                     aplica_ws = True
             if aplica_ws:
                 atk_base += bonus_ws
+                pasivas_activas.append(f"Sincronía Armamentística (+{bonus_ws} ATK)")
+
+        # ── Pasivas de proximidad en el atacante ─────────────────────────────
+        # 1. Aura de Alear (Guía Divina / Divinely Inspiring — SID_神竜の結束):
+        # Si un aliado adyacente (distancia == 1) es Alear o posee Guía Divina, otorga +3 ATK al aliado atacante
+        if aliados_cercanos_atk:
+            alear_adyacente = any(
+                ('alear' in (getattr(a, 'nombre', '') or '').lower() or
+                 'lueur' in (getattr(a, 'nombre', '') or '').lower() or
+                 any('神竜の結束' in str(h) or 'divinely' in str(h).lower() for h in getattr(a, 'habilidades', [])))
+                for a, d in aliados_cercanos_atk if d <= 1 and (getattr(a, 'nombre', '') != getattr(atacante, 'nombre', ''))
+            )
+            if alear_adyacente:
+                atk_base += 3
+                pasivas_activas.append("Guía Divina (+3 Daño por Alear)")
+
+        # 2. Chloé: Gente de Cuento (Fairy-Tale Folk — SID_絵になる二人):
+        # Si hay un aliado masculino y una femenina adyacentes entre sí a 2 casillas o menos, +2 de daño
+        tiene_fairy_tale = any('fairy-tale' in h or 'gente de cuento' in h or '絵になる二人' in h for h in habs_atk) or ('chloé' in nombre_atk or 'chloe' in nombre_atk)
+        if tiene_fairy_tale and aliados_cercanos_atk:
+            cercanos_2 = [a for a, d in aliados_cercanos_atk if d <= 2 and getattr(a, 'nombre', '') != getattr(atacante, 'nombre', '')]
+            males = [a for a in cercanos_2 if obtener_genero_unidad(a) == 1]
+            females = [a for a in cercanos_2 if obtener_genero_unidad(a) == 2]
+            par_encontrado = False
+            for m in males:
+                for f in females:
+                    if distancia_entre_unidades(m, f) == 1:
+                        par_encontrado = True
+                        break
+                if par_encontrado:
+                    break
+            if par_encontrado:
+                atk_base += 2
+                pasivas_activas.append("Gente de Cuento (+2 Daño)")
+
+        # 3. Alcryst: Al Rescate (Get Behind Me! — SID_僕が守ります！):
+        tiene_get_behind = any('get behind' in h or 'al rescate' in h or '僕が守ります' in h for h in habs_atk) or ('alcryst' in nombre_atk or 'staluke' in nombre_atk)
+        if tiene_get_behind and getattr(atacante, 'bonus_al_rescate_activo', False):
+            atk_base += 3
+            pasivas_activas.append("¡Al Rescate! (+3 STR/ATK)")
+
+        # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────
+        es_houses_unite = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('houses unite', 'union tres casas', 'unión tres casas'))
+        es_warp_ragnarok = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('warp ragnarok', 'teleragnarok', 'ragnarok fusion'))
+        es_lodestar_rush = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('lodestar', 'torrente estelar'))
+
+        if es_warp_ragnarok:
+            # Warp Ragnarok: Golpe devastador a gran distancia con tomo Ragnarok (Mt 20)
+            atk_base = atacante.magia + 20
+            pasivas_activas.append("Ragnarok Fusión (Ataque de Emblema Celica)")
 
         atk_efectivo = atk_base
 
         # Estadística defensiva (la magia ataca a RES e ignora los bonos de defensa física del terreno)
-        if arma.es_magica:
+        if arma.es_magica or es_warp_ragnarok:
             stat_defensiva = defensor.resistencia
         else:
             stat_defensiva = defensor.defensa + terreno_dfn
@@ -290,56 +580,128 @@ class CalculadoraEngage:
         if daño > 0:
             daño += nivel_veneno
 
-        # Pasiva: Gentility / Gentileza (Eirika) en el defensor: reduce daño recibido en 3 (o 5 con +)
+        # ── Pasivas defensivas de reducción de daño ─────────────────────────
+        # 1. Gentileza (Eirika)
         tiene_gentility = any('gentility' in h or 'gentileza' in h or '優風' in h for h in habs_def) or 'eirika' in emblema_def or 'エイリーク' in emblema_def
         if tiene_gentility and daño > 0:
             red_gent = 5 if any('+' in h for h in habs_def if 'gentil' in h) else 3
             daño = max(0, daño - red_gent)
+            pasivas_activas.append(f"Gentileza Defensor (-{red_gent} Daño)")
 
-        # Pasiva de Lunatic/Extremo en jefes: Veteran+ / 熟練者＋ (reduce daño final en 20%)
+        # 2. Aura de Alear en el defensor (Guía Divina): reduce en 1 el daño recibido si Alear está adyacente
+        if aliados_cercanos_def and daño > 0:
+            alear_ady_def = any(
+                ('alear' in (getattr(a, 'nombre', '') or '').lower() or
+                 'lueur' in (getattr(a, 'nombre', '') or '').lower() or
+                 any('神竜の結束' in str(h) or 'divinely' in str(h).lower() for h in getattr(a, 'habilidades', [])))
+                for a, d in aliados_cercanos_def if d <= 1 and (getattr(a, 'nombre', '') != getattr(defensor, 'nombre', ''))
+            )
+            if alear_ady_def:
+                daño = max(0, daño - 1)
+                pasivas_activas.append("Guía Divina Defensor (-1 Daño recibido)")
+
+        # 3. Louis: Admiración (Admiration — SID_花園の門番):
+        # Si dos aliadas femeninas están adyacentes entre sí a 2 casillas o menos, reduce el daño recibido en 2
+        tiene_admiration = any('admiration' in h or 'admiracion' in h or 'admiración' in h or '花園の門番' in h for h in habs_def) or ('louis' in nombre_def)
+        if tiene_admiration and aliados_cercanos_def and daño > 0:
+            cercanas_fem = [a for a, d in aliados_cercanos_def if d <= 2 and obtener_genero_unidad(a) == 2 and getattr(a, 'nombre', '') != getattr(defensor, 'nombre', '')]
+            par_fem_ady = False
+            for i in range(len(cercanas_fem)):
+                for j in range(i + 1, len(cercanas_fem)):
+                    if distancia_entre_unidades(cercanas_fem[i], cercanas_fem[j]) == 1:
+                        par_fem_ady = True
+                        break
+                if par_fem_ady:
+                    break
+            if par_fem_ady:
+                daño = max(0, daño - 2)
+                pasivas_activas.append("Admiración Louis (-2 Daño recibido)")
+
+        # 4. Veteran+ en jefes (Maddening): reduce daño en 20%
         if any('熟練者' in h or 'veteran' in h for h in habs_def) and daño > 0:
             daño = math.floor(daño * 0.8)
 
-        # Bonificaciones de evasión y esquive de crítico en el arma del defensor
+        # ── Ataque de Emblema: Unión Tres Casas (Houses Unite) ───────────────
+        if es_houses_unite:
+            # Tri-ataque secuencial con Aymr (Mt 24), Areadbhar (Mt 19) y Failnaught (Mt 15)
+            # Daño total suma los 3 impactos de las Reliquias de Fódlan
+            def_stat = defensor.defensa + terreno_dfn
+            d1 = max(0, atacante.fuerza + 19 - def_stat)  # Areadbhar
+            d2 = max(0, atacante.fuerza + 15 - def_stat)  # Failnaught
+            d3 = max(0, atacante.fuerza + 24 - def_stat)  # Aymr
+            daño = d1 + d2 + d3
+            pasivas_activas.append("Unión Tres Casas (Tri-ataque Areadbhar/Failnaught/Aymr)")
+
+        # ── Modificadores de Precisión, Evasión, Crítico y Esquive ──────────
+        hit_mod_pasivas = 0
+        avo_mod_pasivas = 0
+        crit_mod_pasivas = 0
+        ddg_mod_pasivas = 0
+
+        # Diamant: Lucha Limpia (Fair Fight — SID_真っ向勝負) (+15 Hit a ambos si inicia)
+        if es_iniciador and arma_def and any('真っ向勝負' in h or 'fair fight' in h for h in habs_atk):
+            hit_mod_pasivas += 15
+
+        # Lapis: Solidaridad (Share Spoils — SID_戦果委譲) (+10 Hit, +10 Avo, -10 Crit con aliado a 1 casilla)
+        tiene_share_spoils = any('戦果委譲' in h or 'share spoils' in h or 'solidaridad' in h for h in (habs_atk if es_iniciador else habs_def)) or ('lapis' in (nombre_atk if es_iniciador else nombre_def))
+        if tiene_share_spoils:
+            cercanos_lapis = aliados_cercanos_atk if es_iniciador else aliados_cercanos_def
+            u_lapis = atacante if es_iniciador else defensor
+            hay_aliado_ady = any(d <= 1 for a, d in (cercanos_lapis or []) if getattr(a, 'nombre', '') != getattr(u_lapis, 'nombre', ''))
+            if hay_aliado_ady:
+                hit_mod_pasivas += 10
+                avo_mod_pasivas += 10
+                crit_mod_pasivas -= 10
+                pasivas_activas.append("Solidaridad Lapis (+10 Hit, +10 Avo, -10 Crit)")
+
+        # Yunaka: Asesina Nata (Trained to Kill — SID_殺しの技術) (+15 Crit en casilla con Avoid)
+        tiene_trained_to_kill = any('殺しの技術' in h or 'trained to kill' in h or 'asesina nata' in h for h in habs_atk) or ('yunaka' in nombre_atk)
+        if tiene_trained_to_kill and terreno.avo > 0:
+            crit_mod_pasivas += 15
+            pasivas_activas.append("Asesina Nata (+15 Crit en Terreno)")
+
+        # Framme: Entusiasmo Carmesí (Crimson Cheer — SID_熱き声援) (+10 Avo con Alear adyacente)
+        tiene_framme_cheer = any('熱き声援' in h or 'crimson cheer' in h for h in habs_atk) or ('framme' in nombre_atk)
+        if tiene_framme_cheer and aliados_cercanos_atk:
+            if any('alear' in (getattr(a, 'nombre', '') or '').lower() for a, d in aliados_cercanos_atk if d <= 1):
+                avo_mod_pasivas += 10
+
+        # Vander: Deber Inmaculado (Alabaster Duty — SID_白の忠義) (+5 Crit con Alear adyacente)
+        tiene_alabaster = any('白の忠義' in h or 'alabaster duty' in h for h in habs_atk) or ('vander' in nombre_atk)
+        if tiene_alabaster and aliados_cercanos_atk:
+            if any('alear' in (getattr(a, 'nombre', '') or '').lower() for a, d in aliados_cercanos_atk if d <= 1):
+                crit_mod_pasivas += 5
+
+        # ── Bonificaciones oficiales de Apoyo (SupportCalculator) ───────────
+        supp_hit_atk, supp_avo_atk, supp_crit_atk, supp_ddg_atk, det_apoyos_atk = calcular_bonos_apoyo(atacante, aliados_cercanos_atk)
+        supp_hit_def, supp_avo_def, supp_crit_def, supp_ddg_def, det_apoyos_def = calcular_bonos_apoyo(defensor, aliados_cercanos_def)
+
+        # Bonificaciones del arma del defensor
         avo_bonus_arma = getattr(arma_def, 'avo_bonus', 0) if arma_def else 0
         ddg_bonus_arma = getattr(arma_def, 'ddg_bonus', 0) if arma_def else 0
 
-        # Modificadores de precisión y crítico de pasivas personales
-        hit_mod_pasivas = 0
-        crit_mod_pasivas = 0
-        # Diamant: Fair Fight / 真っ向勝負 (+15 Hit a atacante y defensor si inicia)
-        if es_iniciador and arma_def and any('真っ向勝負' in h or 'fair fight' in h for h in habs_atk):
-            hit_mod_pasivas += 15
-        # Lapis: Share Spoils / 戦果委譲 (+10 Hit, +10 Crit)
-        if any('戦果委譲' in h or 'share spoils' in h for h in habs_atk):
-            hit_mod_pasivas += 10
-            crit_mod_pasivas += 10
-
         # Precisión (Hit vs Avoid)
-        hit = cls.calcular_hit(atacante.destreza, atacante.suerte, arma.hit) + hit_mod_pasivas
-        avoid = cls.calcular_avoid(as_def, defensor.suerte, terreno_avo) + avo_bonus_arma
+        hit = cls.calcular_hit(atacante.destreza, atacante.suerte, arma.hit) + hit_mod_pasivas + supp_hit_atk
+        avoid = cls.calcular_avoid(as_def, defensor.suerte, terreno_avo) + avo_bonus_arma + avo_mod_pasivas + supp_avo_def
         precision = max(0, min(100, hit - avoid))
 
         # Críticos (Crit vs Dodge)
-        crit = cls.calcular_crit(atacante.destreza, arma.crit) + crit_mod_pasivas
-        dodge = cls.calcular_dodge(defensor.suerte) + ddg_bonus_arma
+        crit = cls.calcular_crit(atacante.destreza, arma.crit) + crit_mod_pasivas + supp_crit_atk
+        dodge = cls.calcular_dodge(defensor.suerte) + ddg_bonus_arma + ddg_mod_pasivas + supp_ddg_def
         prob_critico = max(0, min(100, crit - dodge))
 
         # Triángulo de armas
         tipo_def_arma = arma_def.tipo if arma_def else None
         tiene_ventaja = cls.ventaja_triangulo(arma.tipo, tipo_def_arma)
 
-        # Inmunidad a Break: si el defensor está en terreno antirruptura O es de clase Acorazada.
-        # REGLA FUNDAMENTAL DE FE ENGAGE: Solo un ataque INICIADO con ventaja de armas puede causar Ruptura.
-        # Un contraataque NUNCA puede infligir Ruptura (ni siquiera con ventaja de armas).
+        # Inmunidad a Break
         es_antirruptura = getattr(terreno, 'es_antirruptura', False)
         es_acorazado = any(term in estilo_def for term in ('acorazado', 'armored', '重装')) or getattr(defensor, 'tipo_movimiento', '') in ('acorazado', 'armored')
         inflige_ruptura = es_iniciador and tiene_ventaja and daño > 0 and not es_antirruptura and not es_acorazado
 
-        # Detección de pasivas adicionales
+        # Detección de pasivas de combate y Emblema
         tiene_canter = any('canter' in h or 'galopada' in h or '再移動' in h for h in habs_atk) or 'sigurd' in emblema_atk or 'シグルド' in emblema_atk
         tiene_alacrity = any('alacrity' in h or 'alacritad' in h or '攻め立て' in h for h in habs_atk) or 'lyn' in emblema_atk or 'リン' in emblema_atk
-        # Velocidad Divina (Divine Speed) es la Habilidad de Fusión de Marth: solo activa en modo Engage
         es_engage_activo = getattr(atacante, 'en_fusion', False) or (getattr(atacante, 'turnos_fusion_restantes', 0) > 0)
         tiene_divine_speed = es_engage_activo and (
             any('divine speed' in h or 'velocidad divina' in h or '神速' in h for h in habs_atk)
@@ -364,6 +726,10 @@ class CalculadoraEngage:
             "tiene_alacrity": tiene_alacrity,
             "tiene_divine_speed": tiene_divine_speed,
             "tiene_hold_out": tiene_hold_out,
+            "es_houses_unite": es_houses_unite,
+            "concede_accion_extra": es_houses_unite,
+            "pasivas_activas": pasivas_activas,
+            "apoyos_activos": det_apoyos_atk,
         }
 
     # ── Simulación completa ─────────────────────────────────────────────
@@ -373,10 +739,12 @@ class CalculadoraEngage:
                         terreno_atk=None, terreno_def=None, distancia=1,
                         aliados_apoyo_backup=None,
                         pos_atk=None, pos_def=None, mapa=None, casillas_ocupadas=None,
-                        defensor_en_ruptura: bool = False):
+                        defensor_en_ruptura: bool = False,
+                        aliados_cercanos_atk=None, aliados_cercanos_def=None,
+                        es_engage_attack: bool = False, engage_attack_nombre: str = ""):
         """
         Simula el intercambio completo siguiendo la secuencia determinista de FE Engage:
-          1. Chain Attacks de aliados de apoyo (Backup) cercanos (10% HP max c/u)
+          1. Chain Attacks de aliados de apoyo (Backup) cercanos (10% HP max c/u, redondeo canónico)
           2. Gestión de Armas Pesadas (Smash):
              - Si el atacante usa arma Smash y el defensor no, el defensor contraataca PRIMERO.
              - Las armas Smash NUNCA pueden realizar follow-up.
@@ -404,12 +772,28 @@ class CalculadoraEngage:
                 f"Rango válido: {arma_atk.rango}"
             )
 
-        stats_atk = cls._stats_de_golpe(atacante, arma_atk, defensor, arma_def, terreno_def, es_iniciador=True)
+        # Normalizar aliados cercanos con distancia si se pasó pos_atk / pos_def
+        norm_atk = normalizar_aliados_cercanos(aliados_cercanos_atk, pos_atk)
+        norm_def = normalizar_aliados_cercanos(aliados_cercanos_def, pos_def)
+
+        stats_atk = cls._stats_de_golpe(
+            atacante, arma_atk, defensor, arma_def, terreno_def,
+            es_iniciador=True,
+            aliados_cercanos_atk=norm_atk,
+            aliados_cercanos_def=norm_def,
+            es_engage_attack=es_engage_attack,
+            engage_attack_nombre=engage_attack_nombre
+        )
 
         puede_contra = (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
         stats_def = None
         if puede_contra:
-            stats_def = cls._stats_de_golpe(defensor, arma_def, atacante, arma_atk, terreno_atk, es_iniciador=False)
+            stats_def = cls._stats_de_golpe(
+                defensor, arma_def, atacante, arma_atk, terreno_atk,
+                es_iniciador=False,
+                aliados_cercanos_atk=norm_def,
+                aliados_cercanos_def=norm_atk
+            )
 
         es_smash_atk = getattr(arma_atk, 'es_smash', False)
         es_smash_def = getattr(arma_def, 'es_smash', False) if arma_def else False
@@ -421,9 +805,11 @@ class CalculadoraEngage:
         # Alacrity (Lyn): si AS >= rival + 9 (o +4), follow-up va antes del contraataque
         activa_alacrity = stats_atk.get("tiene_alacrity", False) and diff_as_atk >= 9 and follow_up_atk
 
-        hp_atk = atacante.hp
-        hp_def = defensor.hp
-        hp_def_max = getattr(defensor, 'hp_max', defensor.hp) or defensor.hp
+        hp_atk_inicial = getattr(atacante, 'hp_actual', atacante.hp)
+        hp_def_inicial = getattr(defensor, 'hp_actual', defensor.hp)
+        hp_atk = hp_atk_inicial
+        hp_def = hp_def_inicial
+        hp_def_max = getattr(defensor, 'hp_max', getattr(defensor, 'hp', 30)) or defensor.hp
         defensor_roto = defensor_en_ruptura
         atacante_roto = False
         secuencia = []
@@ -441,7 +827,7 @@ class CalculadoraEngage:
             for apoyo in aliados_apoyo_backup:
                 if hp_def <= 0:
                     break
-                dmg_chain = max(1, math.floor(hp_def_max * 0.10))
+                dmg_chain = max(1, math.floor(hp_def_max * 0.10 + 0.5))
                 hp_def -= dmg_chain
                 chain_dmg_total += dmg_chain
                 apoyo_nom = getattr(apoyo, 'nombre', 'Aliado')
@@ -586,14 +972,14 @@ class CalculadoraEngage:
         veneno_def_post = min(3, veneno_def_previo + (1 if aplica_veneno else 0))
 
         daño_solo_atacante = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre)
-        mata_solo_atacante = (defensor.hp - daño_solo_atacante) <= 0
+        mata_solo_atacante = (hp_def_inicial - daño_solo_atacante) <= 0
         es_kill_seguro = (hp_def_final <= 0) and (stats_atk["precision"] == 100) and mata_solo_atacante
         es_kill_probable = (hp_def_final <= 0) and not es_kill_seguro
 
         return {
             "atacante": {
                 "nombre": atacante.nombre,
-                "hp_inicial": atacante.hp,
+                "hp_inicial": hp_atk_inicial,
                 "daño_por_golpe": stats_atk["daño"],
                 "daño_critico": stats_atk["daño_critico"],
                 "precision": stats_atk["precision"],
@@ -606,10 +992,12 @@ class CalculadoraEngage:
                 "es_smash": es_smash_atk,
                 "efectividad_activa": stats_atk.get("efectividad_activa"),
                 "multiplicador_efectividad": stats_atk.get("multiplicador_efectividad"),
+                "pasivas_activas": stats_atk.get("pasivas_activas", []),
+                "apoyos_activos": stats_atk.get("apoyos_activos", []),
             },
             "defensor": {
                 "nombre": defensor.nombre,
-                "hp_inicial": defensor.hp,
+                "hp_inicial": hp_def_inicial,
                 "nivel_veneno": veneno_def_previo,
                 "puede_contraatacar": puede_contra,
                 "contraataque_anulado_por_ruptura": (defensor_en_ruptura or (defensor_roto and puede_contra)) and not (es_smash_atk and not es_smash_def),
@@ -621,6 +1009,8 @@ class CalculadoraEngage:
                 "daño_total_ronda": (stats_def["daño"] * golpes_def) if stats_def else 0,
                 "tiene_follow_up": follow_up_def,
                 "es_smash": es_smash_def,
+                "pasivas_activas": stats_def.get("pasivas_activas", []) if stats_def else [],
+                "apoyos_activos": stats_def.get("apoyos_activos", []) if stats_def else [],
             },
             "resultado": {
                 "hp_atacante_final": hp_atk_final,
@@ -639,6 +1029,8 @@ class CalculadoraEngage:
                 "nivel_veneno_defensor_post": veneno_def_post,
                 "secuencia": secuencia,
                 "smash": smash_info,
+                "pasivas_activas": stats_atk.get("pasivas_activas", []),
+                "apoyos_activos": stats_atk.get("apoyos_activos", []),
             },
             "alertas_tacticas": {
                 "peligro_letal": hp_atk_final <= 0,
@@ -658,9 +1050,9 @@ class CalculadoraEngage:
 
     @classmethod
     def _validar_unidad(cls, unidad, rol: str) -> None:
-        if not isinstance(unidad, Unidad):
+        if not isinstance(unidad, Unidad) and not (hasattr(unidad, 'hp') and hasattr(unidad, 'fuerza')):
             raise TypeError(
-                f"El {rol} debe ser una instancia de Unidad. "
+                f"El {rol} debe ser una instancia de Unidad o FichaUnidad válida. "
                 f"Recibido: {type(unidad).__name__}"
             )
 
@@ -699,7 +1091,10 @@ class CalculadoraEngage:
                        terreno_atk=None, terreno_def=None, distancia=1,
                        perfil="seguro", cronogema_usada=False,
                        contexto_mapa=None, defensor_en_ruptura: bool = False,
-                       aliados_apoyo_backup=None):
+                       aliados_apoyo_backup=None,
+                       aliados_cercanos_atk=None, aliados_cercanos_def=None,
+                       es_engage_attack: bool = False, engage_attack_nombre: str = "",
+                       pos_atk=None, pos_def=None):
         """
         Envuelve simular_combate() y genera un veredicto de riesgo
         con etiquetas semánticas para consumo del LLM.
@@ -729,6 +1124,12 @@ class CalculadoraEngage:
             terreno_atk, terreno_def, distancia,
             aliados_apoyo_backup=aliados_apoyo_backup,
             defensor_en_ruptura=defensor_en_ruptura,
+            aliados_cercanos_atk=aliados_cercanos_atk,
+            aliados_cercanos_def=aliados_cercanos_def,
+            es_engage_attack=es_engage_attack,
+            engage_attack_nombre=engage_attack_nombre,
+            pos_atk=pos_atk,
+            pos_def=pos_def,
         )
 
         atk = combate["atacante"]

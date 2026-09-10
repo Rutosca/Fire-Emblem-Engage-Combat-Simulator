@@ -153,6 +153,7 @@ class AnalizadorAmenaza:
         pos_jugador: Tuple[int, int],
         ficha_jugador,
         calc=None,
+        casillas_movimiento_precalc=None,
     ) -> dict:
         """
         Calcula el peor caso de amenaza del enemigo en su turno.
@@ -167,6 +168,7 @@ class AnalizadorAmenaza:
             ficha_jugador:  FichaUnidad del jugador (para calcular si puede contraatacar).
             calc:           Instancia de CalculadoraEngage. Si es None, sólo se
                             calcula viabilidad espacial (sin proyección de daño).
+            casillas_movimiento_precalc: Set opcional de casillas alcanzables ya calculadas.
 
         Returns:
             dict con:
@@ -176,18 +178,18 @@ class AnalizadorAmenaza:
                 daño_proyectado         int   — daño total esperado (0 si calc=None)
                 jugador_puede_contra    bool  — si el jugador puede contraatacar
         """
-        # Construimos una UnidadMock compatible con calcular_casillas_alcanzables
-        # a partir de la FichaUnidad (que usa el tipo rico de producción).
         arma_rango = ficha_enemigo.arma.rango if ficha_enemigo.arma else [1]
-        unidad_mock = UnidadMock(
-            x=ficha_enemigo.x,
-            y=ficha_enemigo.y,
-            mov=ficha_enemigo.mov,
-            es_volador=ficha_enemigo.es_volador,
-            arma=ArmaMock(rango=arma_rango),
-        )
-
-        casillas_movimiento = self.calcular_casillas_alcanzables(unidad_mock)
+        if casillas_movimiento_precalc is not None:
+            casillas_movimiento = casillas_movimiento_precalc
+        else:
+            unidad_mock = UnidadMock(
+                x=ficha_enemigo.x,
+                y=ficha_enemigo.y,
+                mov=ficha_enemigo.mov,
+                es_volador=ficha_enemigo.es_volador,
+                arma=ArmaMock(rango=arma_rango),
+            )
+            casillas_movimiento = self.calcular_casillas_alcanzables(unidad_mock)
         px, py = pos_jugador
 
         mejor_pos = None

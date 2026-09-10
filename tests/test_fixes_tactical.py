@@ -35,7 +35,8 @@ class TestFixesTactical(unittest.TestCase):
         u106 = [u for u in units if (u.get('x'), u.get('y')) == (10, 6)][0]
         cls.f_lf = resolver_unidad_con_catalogo(u106)
 
-        with open('escuadron_guardado.json', 'r', encoding='utf-8') as f:
+        path_esc = 'json/escuadron_guardado.json' if os.path.exists('json/escuadron_guardado.json') else 'escuadron_guardado.json'
+        with open(path_esc, 'r', encoding='utf-8') as f:
             esc = json.load(f)
 
         u_cel = [u for u in esc if 'cel' in norm(u.get('nombre',''))][0]
@@ -259,5 +260,59 @@ class TestFixesTactical(unittest.TestCase):
         self.assertIn("3 de daño", rec)
         self.assertIn("Y luego el ataque normal del aliado", rec)
 
+    def test_8_lapis_attacks_weakened_lance_fighter_no_healing(self):
+        """
+        Verifica el bug reportado:
+        Lance Fighter (6,10) tenía su HP ajustado de 32 a 10.
+        Al atacar Lapis con Espada de Hierro (14 dmg en 2 golpes de 7), el defensor debe
+        quedar en 0 HP (derrotado), en lugar de 'curarse' a 18 calculando desde 32 base.
+        """
+        tablero.limpiar()
+        # Lapis en (2, 10), Espada de Hierro, 26 HP, mov 5
+        lapis = resolver_unidad_con_catalogo({
+            "nombre": "Lapis", "x": 2, "y": 10, "mov": 5, "es_aliado": True,
+            "arma_nombre": "Iron Sword",
+            "stats": {"hp": 26, "fuerza": 11, "velocidad": 14, "defensa": 5, "destreza": 12, "complexion": 5}
+        })
+        tablero.registrar_unidad(lapis)
+
+        # Lance Fighter (6,10) con HP base 32, pero ajustado a 10 HP
+        lance_fighter = resolver_unidad_con_catalogo({
+            "nombre": "Lance Fighter (6,10)", "x": 6, "y": 10, "mov": 4, "es_aliado": False,
+            "arma_nombre": "Iron Lance",
+            "hp_actual": 10,
+            "hp_max": 32,
+            "stats": {"hp": 32, "defensa": 9, "velocidad": 9, "fuerza": 13}
+        })
+        tablero.registrar_unidad(lance_fighter)
+
+        # Verificar que el HP actual y stats.hp quedaron sincronizados a 10
+        f_def = tablero.obtener_ficha("Lance Fighter (6,10)")
+        self.assertEqual(f_def.hp_actual, 10)
+        self.assertEqual(f_def.stats.hp, 10)
+
+        client = app.test_client()
+        # Lapis se mueve a (5, 10) y ataca
+        res = client.post("/api/combate/ejecutar", json={
+            "atacante": "Lapis",
+            "defensor": "Lance Fighter (6,10)",
+            "arma_nombre": "Iron Sword",
+            "pos_destino": [5, 10]
+        })
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data["ok"])
+
+        # Daño: Lapis hace 7 por golpe x 2 = 14 daño
+        res_combate = data["combate"]["resultado"]
+        hp_def_final = res_combate["hp_defensor_final"]
+        self.assertEqual(hp_def_final, 0, f"El defensor debía quedar en 0 HP tras 14 dmg contra 10 HP, pero quedó en {hp_def_final}")
+
+        # En el tablero, el enemigo debe estar muerto (viva=False y hp_actual=0)
+        f_def_post = tablero.obtener_ficha("Lance Fighter (6,10)")
+        self.assertEqual(f_def_post.hp_actual, 0)
+        self.assertFalse(f_def_post.viva)
+
 if __name__ == "__main__":
     unittest.main()
+

@@ -6,7 +6,11 @@ import struct
 from dataclasses import dataclass
 from typing import List, Optional
 
-_RUTA_CANONICO = os.path.join(os.path.dirname(__file__), "datos_canonicos_engage.json")
+_candidatos_canonico = [
+    os.path.join(os.path.dirname(__file__), "json", "datos_canonicos_engage.json"),
+    os.path.join(os.path.dirname(__file__), "datos_canonicos_engage.json"),
+]
+_RUTA_CANONICO = next((p for p in _candidatos_canonico if os.path.exists(p)), _candidatos_canonico[0])
 _CANONICO_TERRENOS = {}
 if os.path.exists(_RUTA_CANONICO):
     try:

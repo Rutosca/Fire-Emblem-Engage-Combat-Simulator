@@ -58,20 +58,45 @@ class FichaUnidad:
         if self.stats:
             stat_hp = getattr(self.stats, 'hp', 30)
             if self.hp_max <= 0:
-                self.hp_max = stat_hp
-            if self.hp_actual <= 0:
+                self.hp_max = getattr(self.stats, 'hp_max', stat_hp) or stat_hp
+            if self.hp_actual <= 0 and self.viva and stat_hp > 0:
                 self.hp_actual = self.hp_max
+            self.stats.hp = self.hp_actual
+            self.stats.hp_max = self.hp_max
+            setattr(self.stats, 'hp_actual', self.hp_actual)
             setattr(self.stats, 'nivel_veneno', self.nivel_veneno)
             setattr(self.stats, 'lider_tres_casas', self.lider_tres_casas)
         elif self.hp_max <= 0:
             self.hp_max = 30
             self.hp_actual = 30
 
+    @property
+    def hp(self) -> int:
+        """Acceso unificado al HP actual para cálculos de combate."""
+        return self.hp_actual
+
+    @hp.setter
+    def hp(self, val: int):
+        self.sincronizar_hp(val)
+
+    def sincronizar_hp(self, nuevo_hp: int):
+        """Fuente única de mutación de HP: sincroniza ficha, stats y estado viva."""
+        self.hp_actual = max(0, min(self.hp_max, int(nuevo_hp))) if self.hp_max > 0 else max(0, int(nuevo_hp))
+        if self.stats and self.stats is not self:
+            self.stats.hp = self.hp_actual
+            self.stats.hp_max = self.hp_max
+            setattr(self.stats, 'hp_actual', self.hp_actual)
+        self.viva = (self.hp_actual > 0)
+
     def como_dict(self) -> dict:
         """Serialización completa para la API REST y el LLM."""
-        hp_m = self.hp_max if self.hp_max > 0 else (getattr(self.stats, 'hp', 30) if self.stats else 30)
-        hp_a = max(0, min(hp_m, self.hp_actual)) if self.hp_actual > 0 else (0 if not self.viva else hp_m)
+        hp_m = self.hp_max if self.hp_max > 0 else (getattr(self.stats, 'hp_max', getattr(self.stats, 'hp', 30)) if self.stats else 30)
+        hp_a = max(0, min(hp_m, self.hp_actual)) if self.viva else 0
         pct = round((hp_a / hp_m) * 100) if hp_m > 0 else 0
+        if self.stats:
+            self.stats.hp = hp_a
+            self.stats.hp_max = hp_m
+            setattr(self.stats, 'hp_actual', hp_a)
 
         return {
             "nombre": self.nombre,
@@ -107,8 +132,9 @@ class FichaUnidad:
             "tiene_stats": self.stats is not None,
             "tiene_arma": self.arma is not None,
             "stats": {
-                "hp": hp_m,
+                "hp": hp_a,
                 "hp_actual": hp_a,
+                "hp_max": hp_m,
                 "fuerza": getattr(self.stats, 'fuerza', 10),
                 "magia": getattr(self.stats, 'magia', 0),
                 "destreza": getattr(self.stats, 'destreza', 10),
@@ -256,20 +282,13 @@ class EstadoTablero:
         de los cálculos de amenaza y análisis.
         """
         if nombre in self.fichas:
-            self.fichas[nombre].viva = False
-            self.fichas[nombre].hp_actual = 0
-            if self.fichas[nombre].stats:
-                self.fichas[nombre].stats.hp = 0
+            self.fichas[nombre].sincronizar_hp(0)
 
     def modificar_hp(self, nombre: str, nuevo_hp: int) -> bool:
         """Ajusta directamente el HP actual de una unidad."""
         if nombre not in self.fichas:
             return False
-        f = self.fichas[nombre]
-        f.hp_actual = max(0, min(f.hp_max, nuevo_hp))
-        if f.stats:
-            f.stats.hp = f.hp_actual
-        f.viva = (f.hp_actual > 0)
+        self.fichas[nombre].sincronizar_hp(nuevo_hp)
         return True
 
     def aplicar_daño(self, nombre: str, daño: int) -> int:
@@ -277,11 +296,7 @@ class EstadoTablero:
         if nombre not in self.fichas:
             return 0
         f = self.fichas[nombre]
-        f.hp_actual = max(0, f.hp_actual - max(0, daño))
-        if f.stats:
-            f.stats.hp = f.hp_actual
-        if f.hp_actual <= 0:
-            f.viva = False
+        f.sincronizar_hp(f.hp_actual - max(0, daño))
         return f.hp_actual
 
     def curar_unidad(self, nombre: str, cantidad: int) -> int:
@@ -289,11 +304,7 @@ class EstadoTablero:
         if nombre not in self.fichas:
             return 0
         f = self.fichas[nombre]
-        f.hp_actual = min(f.hp_max, f.hp_actual + max(0, cantidad))
-        if f.stats:
-            f.stats.hp = f.hp_actual
-        if f.hp_actual > 0:
-            f.viva = True
+        f.sincronizar_hp(f.hp_actual + max(0, cantidad))
         return f.hp_actual
 
     def eliminar_unidad(self, nombre: str) -> bool:
