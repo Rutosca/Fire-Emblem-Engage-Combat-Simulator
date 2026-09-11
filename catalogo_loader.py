@@ -12,7 +12,7 @@ import re
 import json
 import math
 import unicodedata
-from motor_calculo import Unidad, Arma
+from motor_calculo import Unidad, Arma, inferir_rango_arma
 from estado_tablero import FichaUnidad
 
 # Rutas de catálogos oficiales
@@ -89,18 +89,160 @@ REFINES_GENERICOS = {
     5: {"mt": 5, "hit": 15, "crit": 10, "wt": -2},
 }
 
+ALIAS_ARMAS_ESPANOL = {
+    # Lanzas
+    "jabalina": "Javelin",
+    "pica": "Spear",
+    "lanza de hierro": "Iron Lance",
+    "lanza de acero": "Steel Lance",
+    "lanza de plata": "Silver Lance",
+    "lanza fina": "Slim Lance",
+    "lanza asesina": "Killer Lance",
+    "lanza del valor": "Brave Lance",
+    "gran lanza de hierro": "Iron Greatlance",
+    "gran lanza de acero": "Steel Greatlance",
+    "gran lanza de plata": "Silver Greatlance",
+    "lanza pesada": "Heavy Lance",
+    "lanza jinete": "Ridersbane",
+    "lanza de fuego": "Flame Lance",
+    # Espadas
+    "espada de hierro": "Iron Sword",
+    "espada de acero": "Steel Sword",
+    "espada de plata": "Silver Sword",
+    "espada fina": "Slim Sword",
+    "espada asesina": "Killing Edge",
+    "espada del valor": "Brave Sword",
+    "gran espada de hierro": "Iron Blade",
+    "gran espada de acero": "Steel Blade",
+    "gran espada de plata": "Silver Blade",
+    "espada trueno": "Levin Sword",
+    "machacaarmaduras": "Armorslayer",
+    "antijinetes": "Ridersbane",
+    "estoque": "Rapier",
+    # Hachas
+    "hacha de mano": "Hand Axe",
+    "hacha de hierro": "Iron Axe",
+    "hacha de acero": "Steel Axe",
+    "hacha de plata": "Silver Axe",
+    "hacha asesina": "Killer Axe",
+    "hacha del valor": "Brave Axe",
+    "gran hacha de hierro": "Iron Greataxe",
+    "gran hacha de acero": "Steel Greataxe",
+    "gran hacha de plata": "Silver Greataxe",
+    "hacha huracan": "Hurricane Axe",
+    "hacha huracán": "Hurricane Axe",
+    "machacamartillo": "Hammer",
+    "hacha polo": "Poleax",
+    # Arcos
+    "arco de hierro": "Iron Bow",
+    "arco de acero": "Steel Bow",
+    "arco de plata": "Silver Bow",
+    "arco asesino": "Killer Bow",
+    "arco del valor": "Brave Bow",
+    "arco largo": "Longbow",
+    "miniarco": "Mini Bow",
+    "arco corto": "Mini Bow",
+    "arco radiante": "Radiant Bow",
+    # Tomos
+    "fuego": "Fire",
+    "elfire": "Elfire",
+    "bolganon": "Bolganone",
+    "bolganone": "Bolganone",
+    "trueno": "Thunder",
+    "elthunder": "Elthunder",
+    "toron": "Thoron",
+    "thoron": "Thoron",
+    "viento": "Wind",
+    "elwind": "Elwind",
+    "excalibur": "Excalibur",
+    "fulgor": "Shine",
+    "nosferatu": "Nosferatu",
+    "serafin": "Seraphim",
+    "seraphim": "Seraphim",
+    "oleada": "Surge",
+    "eloleada": "Elsurge",
+    # Dagas
+    "daga de hierro": "Iron Dagger",
+    "daga de acero": "Steel Dagger",
+    "daga de plata": "Silver Dagger",
+    "cuchillo de hierro": "Iron Dagger",
+    "cuchillo de acero": "Steel Dagger",
+    "cuchillo de plata": "Silver Dagger",
+}
+
+def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
+    """
+    Garantiza el rango canónico estricto de las armas en Fire Emblem Engage:
+    - Arcos (Bows): estrictamente [2] (o [2, 3] si es Longbow/Arco largo, o [1] si es Mini Bow/Arco corto).
+      NUNCA [1] para arcos estándar (no pueden atacar ni contraatacar a distancia 1).
+    - Jabalinas, Hachas arrojadizas y armas 1-2: estrictamente [1, 2].
+    - Tomos mágicos: estrictamente [1, 2] (o [1, 2, 3] para Trueno/Thunder/Thoron).
+    - Dagas: estrictamente [1, 2].
+    - Armas cuerpo a cuerpo estándar: [1].
+    """
+    nom_low = (nombre or "").lower()
+    tipo_low = (tipo or "").lower()
+
+    # Arcos
+    if tipo_low in ("arco", "bow") or any(b in nom_low for b in ("arco", "bow")):
+        if "longbow" in nom_low or "largo" in nom_low:
+            return [2, 3]
+        if "mini" in nom_low or "corto" in nom_low:
+            return [1]
+        return [2]
+
+    # Armas arrojadizas 1-2
+    if any(w in nom_low for w in ("javelin", "jabalina", "hand axe", "hacha de mano", "tomahawk", "spear", "pica", "short spear", "levin", "espada trueno", "flame lance", "lanza de fuego", "hurricane", "hacha huracan", "hacha huracán")):
+        return [1, 2]
+
+    # Tomos
+    if tipo_low in ("tomo", "tome", "magia") or any(w in nom_low for w in ("fire", "fuego", "thunder", "trueno", "wind", "viento", "elfire", "elthunder", "elwind", "bolganone", "thoron", "excalibur", "surge", "elsurge", "shine", "fulgor", "nosferatu", "seraphim")):
+        if any(th in nom_low for th in ("thunder", "trueno", "elthunder", "thoron")):
+            return [1, 2, 3]
+        if "surge" in nom_low or "oleada" in nom_low:
+            return [1]
+        return [1, 2]
+
+    # Dagas
+    if tipo_low in ("daga", "dagger", "knife", "cuchillo") or any(w in nom_low for w in ("daga", "dagger", "knife", "cuchillo", "stiletto", "misericorde", "cinquedea", "peshkatz", "carnwenhan")):
+        return [1, 2]
+
+    if isinstance(rango_existente, (list, tuple)) and len(rango_existente) > 0:
+        return list(rango_existente)
+
+    return [1]
+
 def _buscar_en_catalogo(categoria: str, texto: str):
     """
     Búsqueda fuzzy en _catalogo[categoria] por ID exacto o nombre normalizado.
+    Soporta mapeo automático de nombres canónicos en español sin recursión circular.
     Devuelve (key, item_dict) o (None, None) si no lo encuentra.
     """
     datos = _catalogo.get(categoria, {})
     if texto in datos:
         return texto, datos[texto]
     texto_norm = normalizar_texto(texto)
+
+    # 1. Búsqueda directa por nombre o key en el catálogo
     for k, v in datos.items():
         if normalizar_texto(v.get("nombre", "")) == texto_norm or normalizar_texto(k) == texto_norm:
             return k, v
+
+    # 2. Comprobar alias en español si busca armas (evitando recursión circular)
+    if categoria == "armas" and texto_norm in ALIAS_ARMAS_ESPANOL:
+        alias_en = ALIAS_ARMAS_ESPANOL[texto_norm]
+        alias_norm = normalizar_texto(alias_en)
+        if alias_norm != texto_norm:
+            alias_k, alias_v = _buscar_en_catalogo("armas", alias_en)
+            if alias_v:
+                return alias_k, alias_v
+
+    # 3. Búsqueda por contención
+    for k, v in datos.items():
+        v_nom = normalizar_texto(v.get("nombre", ""))
+        if v_nom and (texto_norm in v_nom or v_nom in texto_norm):
+            return k, v
+
     return None, None
 
 def parsear_arma_string(raw_str):
@@ -179,7 +321,7 @@ def parsear_arma_string(raw_str):
         "avo_bonus": avo_bonus,
         "ddg_bonus": ddg_bonus,
         "tipo": ainfo.get("tipo", "Espada"),
-        "rango": ainfo.get("rango", [1]),
+        "rango": inferir_rango_arma(ainfo.get("nombre", base_aid), ainfo.get("tipo", "Espada"), ainfo.get("rango")),
         "es_magica": ainfo.get("es_magica", False),
         "es_smash": bool(ainfo.get("es_smash", False)),
         "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
@@ -208,7 +350,7 @@ def _arma_desde_item(item_dict):
             crit=parsed["crit"],
             es_magica=parsed["es_magica"],
             tipo=parsed["tipo"],
-            rango=parsed["rango"],
+            rango=inferir_rango_arma(parsed["nombre"], parsed["tipo"], parsed["rango"]),
             efectividades=parsed["efectividades"],
             avo_bonus=parsed["avo_bonus"],
             ddg_bonus=parsed["ddg_bonus"],
@@ -234,7 +376,7 @@ def _arma_desde_item(item_dict):
         crit=int(item_dict.get("crit", 0)),
         es_magica=bool(item_dict.get("es_magica", False)),
         tipo=tipo_raw,
-        rango=item_dict.get("rango", [1]),
+        rango=inferir_rango_arma(nombre_raw, tipo_raw, item_dict.get("rango")),
         efectividades=item_dict.get("efectividades", []),
         avo_bonus=int(item_dict.get("avo_bonus", 0)),
         ddg_bonus=int(item_dict.get("ddg_bonus", 0)),
@@ -321,6 +463,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 emblema_id = eid
                 break
 
+    en_fusion = bool(data.get("en_fusion", False)) or int(data.get("turnos_fusion", 0)) > 0
     es_sigurd = bool(emblema_info and ("siglud" in str(emblema_id).lower() or "sigurd" in str(emblema_info.get("nombre", "")).lower())) or ("sigurd" in str(data.get("emblema_nombre", "")).lower())
     tiene_botas = any("bota" in str(p).lower() for p in data.get("potenciadores_usados", []))
 
@@ -329,10 +472,13 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     style = clase_info.get("estilo_combate", "") if clase_info else ""
     mov_base = clase_info.get("mov", 4) if clase_info else 4
 
+    bono_mov_sigurd = 5 if (es_sigurd and en_fusion) else (1 if es_sigurd else 0)
     if "mov" in data and data["mov"] is not None and str(data["mov"]).strip() != "":
         mov = int(data["mov"])
+        if es_sigurd and en_fusion and mov < mov_base + 5:
+            mov = mov_base + 5 + (1 if tiene_botas else 0)
     else:
-        mov = mov_base + (1 if es_sigurd else 0) + (1 if tiene_botas else 0)
+        mov = mov_base + bono_mov_sigurd + (1 if tiene_botas else 0)
 
     if p_info and es_aliado:
         # Personaje único aliado con estadísticas canónicas de Serenes Forest
@@ -528,8 +674,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     )
     val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
     val_lider_3h = data.get("lider_tres_casas") or (getattr(unidad_previa, 'lider_tres_casas', None) if unidad_previa else "Dimitri") or "Dimitri"
+    es_jefe_val = bool(data.get("es_jefe", False)) or (getattr(unidad_previa, 'es_jefe', False) if unidad_previa else False)
     setattr(stats_obj, 'nivel_veneno', val_veneno)
     setattr(stats_obj, 'lider_tres_casas', val_lider_3h)
+    setattr(stats_obj, 'es_jefe', es_jefe_val)
 
     # Resolver arma principal / inventario
     inventario_raw = list(data.get("inventario", []))
@@ -665,7 +813,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     "wt": ainfo.get("wt", 5),
                     "hit": ainfo.get("hit", 80),
                     "crit": ainfo.get("crit", 0),
-                    "rango": ainfo.get("rango", [1]),
+                    "rango": inferir_rango_arma(nombre_final, ainfo.get("tipo", "Espada"), ainfo.get("rango")),
                     "es_magica": ainfo.get("es_magica", False),
                     "es_smash": es_smash_val,
                     "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
@@ -685,7 +833,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                         crit=ainfo.get("crit", 0),
                         es_magica=ainfo.get("es_magica", False),
                         tipo=ainfo.get("tipo", "Espada"),
-                        rango=ainfo.get("rango", [1]),
+                        rango=inferir_rango_arma(nombre_final, ainfo.get("tipo", "Espada"), ainfo.get("rango")),
                         efectividades=ainfo.get("efectividades", []),
                         es_smash=es_smash_val,
                     )
@@ -722,6 +870,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         hp_max=hp_m,
         hp_actual=hp_a,
         hp_stock=int(data.get("hp_stock", 0)),
+        es_jefe=es_jefe_val,
         ha_actuado=ha_actuado,
         cargas_ruptura=cargas_ruptura,
         energia_emblema=int(data.get("energia_emblema", 6)),

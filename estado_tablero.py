@@ -51,6 +51,7 @@ class FichaUnidad:
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
     cargas_ruptura: int = 0            # Cargas de Ruptura (Break): 1 = no puede contraatacar en el siguiente combate
     hp_stock: int = 0                  # Piedras resurrectoras / barras de vida extra (jefes)
+    es_jefe: bool = False              # True si es un jefe con características especiales
     nivel_veneno: int = 0              # Nivel de veneno (0..3): cada nivel aumenta en +1 todo daño recibido
     lider_tres_casas: str = "Dimitri"  # Líder activo del brazalete Tres Casas ("Edelgard", "Dimitri", "Claude")
 
@@ -116,6 +117,7 @@ class FichaUnidad:
             "hp_actual": hp_a,
             "hp_max": hp_m,
             "hp_stock": self.hp_stock,
+            "es_jefe": self.es_jefe,
             "pct_hp": pct,
             "energia_emblema": self.energia_emblema,
             "max_energia_emblema": self.max_energia_emblema,

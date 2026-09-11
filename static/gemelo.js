@@ -30,8 +30,18 @@ async function api(path, method = "GET", body = null) {
     opts.headers["Content-Type"] = "application/json";
     opts.body = JSON.stringify(body);
   }
-  const r = await fetch(path, opts);
-  return r.json();
+  try {
+    const r = await fetch(path, opts);
+    const ct = r.headers.get("content-type") || "";
+    if (ct.includes("application/json")) {
+      return await r.json();
+    }
+    const txt = await r.text();
+    return { ok: r.ok, error: txt };
+  } catch (err) {
+    console.error(`Error en API ${method} ${path}:`, err);
+    return { ok: false, error: err.message };
+  }
 }
 
 // ─── Clases de color para terreno ──────────────────────────────────────────
@@ -739,14 +749,30 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   recalcularCombatStats();
 
   $("btn-modal-eliminar").classList.add("hidden");
+  const g3H_new = $("grupo-lider-3h");
+  if (g3H_new) g3H_new.classList.add("hidden");
   $("modal-backdrop").classList.remove("hidden");
   $("f-nombre").focus();
+}
+
+function actualizarBotonesLiderModal(lider) {
+  state.modalLider3H = lider || "Dimitri";
+  document.querySelectorAll(".btn-lider-modal").forEach(btn => {
+    if ((btn.dataset.lider || "").toLowerCase() === state.modalLider3H.toLowerCase()) {
+      btn.classList.add("btn-primary");
+      btn.classList.remove("btn-secondary");
+    } else {
+      btn.classList.remove("btn-primary");
+      btn.classList.add("btn-secondary");
+    }
+  });
 }
 
 function abrirModalEdicion(ficha) {
   state.modalModo = "editar";
   state.potenciadoresModal = Array.isArray(ficha.potenciadores_usados) ? [...ficha.potenciadores_usados] : [];
   state.prevEmblemaModal = ficha.emblema_nombre || "";
+  state.modalLider3H = ficha.lider_tres_casas || "Dimitri";
   $("modal-titulo").textContent = `⚙ Editar Unidad: ${ficha.nombre}`;
   $("f-edit-original-name").value = ficha.nombre;
   $("f-x").value = ficha.x;
@@ -754,7 +780,8 @@ function abrirModalEdicion(ficha) {
   $("label-pos-x").textContent = ficha.x;
   $("label-pos-y").textContent = ficha.y;
 
-  if (ficha.es_aliado) {
+  const esAliado = ficha.es_aliado;
+  if (esAliado) {
     $("f-bando-aliado").checked = true;
     $("seccion-aliado-extra").classList.remove("hidden");
   } else {
@@ -764,23 +791,20 @@ function abrirModalEdicion(ficha) {
 
   $("f-nombre").value = ficha.nombre;
   $("f-clase").value = ficha.clase_nombre || "";
-  $("f-nivel").value = ficha.nivel || 10;
-  
-  const hpM = ficha.hp_max || (ficha.stats ? ficha.stats.hp : 30);
-  const hpA = (ficha.hp_actual !== undefined && ficha.hp_actual !== null) ? ficha.hp_actual : hpM;
-  $("f-hp-actual").value = hpA;
-  $("f-hp-max").value = hpM;
+  $("f-nivel").value = ficha.nivel || 1;
+  $("f-hp-actual").value = ficha.hp_actual ?? 30;
+  $("f-hp-max").value = ficha.hp_max ?? 30;
 
-  const st = ficha.stats || {};
-  $("f-stat-str").value = st.fuerza !== undefined ? st.fuerza : 10;
-  $("f-stat-mag").value = st.magia !== undefined ? st.magia : 0;
-  $("f-stat-dex").value = st.destreza !== undefined ? st.destreza : 10;
-  $("f-stat-spd").value = st.velocidad !== undefined ? st.velocidad : 10;
-  $("f-stat-def").value = st.defensa !== undefined ? st.defensa : 8;
-  $("f-stat-res").value = st.resistencia !== undefined ? st.resistencia : 5;
-  $("f-stat-lck").value = st.suerte !== undefined ? st.suerte : 5;
-  $("f-stat-bld").value = st.complexion !== undefined ? st.complexion : 7;
-  $("f-stat-mov").value = ficha.mov !== undefined ? ficha.mov : 4;
+  const s = ficha.stats || {};
+  $("f-stat-str").value = s.fuerza ?? 10;
+  $("f-stat-mag").value = s.magia ?? 0;
+  $("f-stat-dex").value = s.destreza ?? 10;
+  $("f-stat-spd").value = s.velocidad ?? 10;
+  $("f-stat-def").value = s.defensa ?? 8;
+  $("f-stat-res").value = s.resistencia ?? 5;
+  $("f-stat-lck").value = s.suerte ?? 5;
+  $("f-stat-bld").value = s.complexion ?? 7;
+  $("f-stat-mov").value = ficha.mov ?? 4;
 
   const rawArma = ficha.arma_equipada ? (ficha.arma_equipada.nombre || ficha.arma_equipada) : (ficha.arma ? (ficha.arma.nombre || ficha.arma) : "");
   const desglosada = desglosarArmaString(rawArma);
@@ -794,6 +818,20 @@ function abrirModalEdicion(ficha) {
   const tieneEmblema = !!ficha.emblema_nombre;
   $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
   $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
+
+  const es3H = (ficha.emblema_nombre || "").toLowerCase().includes("edelgard") ||
+               (ficha.emblema_nombre || "").toLowerCase().includes("three houses") ||
+               (ficha.emblema_nombre || "").toLowerCase().includes("tres casas") ||
+               (ficha.emblema_nombre || "").toLowerCase().includes("brazalete");
+  const g3H = $("grupo-lider-3h");
+  if (g3H) {
+    if (es3H) {
+      g3H.classList.remove("hidden");
+      actualizarBotonesLiderModal(state.modalLider3H);
+    } else {
+      g3H.classList.add("hidden");
+    }
+  }
 
   // Rellenar chips de habilidades
   limpiarChips("chips-pasivas");
@@ -875,7 +913,7 @@ async function guardarUnidadDesdeModal() {
   const cargasRuptura = fichaExistente ? (fichaExistente.cargas_ruptura || 0) : 0;
   const esVolador = fichaExistente ? !!fichaExistente.es_volador : undefined;
   const nivelVeneno = fichaExistente ? (fichaExistente.nivel_veneno || 0) : 0;
-  const lider3H = fichaExistente ? (fichaExistente.lider_tres_casas || "Dimitri") : "Dimitri";
+  const lider3H = state.modalLider3H || (fichaExistente ? (fichaExistente.lider_tres_casas || "Dimitri") : "Dimitri");
 
   const payload = {
     nombre,
@@ -1201,8 +1239,26 @@ function initModalEvents() {
       mostrarToast(`💍 Emblema ${newE.nombre}: Pasivas y bonos aplicados`, "ok");
     }
 
+    const valLow = val.toLowerCase();
+    const es3H_now = valLow.includes("edelgard") || valLow.includes("three houses") || valLow.includes("tres casas") || valLow.includes("brazalete");
+    const g3H_now = $("grupo-lider-3h");
+    if (g3H_now) {
+      if (es3H_now) {
+        g3H_now.classList.remove("hidden");
+        actualizarBotonesLiderModal(state.modalLider3H || "Dimitri");
+      } else {
+        g3H_now.classList.add("hidden");
+      }
+    }
+
     state.prevEmblemaModal = val;
     recalcularCombatStats();
+  });
+
+  document.querySelectorAll(".btn-lider-modal").forEach(btn => {
+    btn.addEventListener("click", () => {
+      actualizarBotonesLiderModal(btn.dataset.lider);
+    });
   });
 
   $("f-fusion").addEventListener("change", (e) => {
@@ -1381,26 +1437,34 @@ async function lanzarAnalisis() {
   const panel = $("analisis-scroll");
   panel.innerHTML = '<div class="loader">Calculando peor caso y amenazas…</div>';
 
-  const perfil = $("perfil-select").value;
-  const data = await api("/api/analizar", "POST", { perfil });
+  try {
+    const perfil = $("perfil-select") ? $("perfil-select").value : "seguro";
+    const data = await api("/api/analizar", "POST", { perfil });
 
-  const countBadge = $("analisis-badge-count");
-  if (countBadge) {
-    if (data.resultados && data.resultados.length > 0) {
-      countBadge.textContent = data.resultados.length;
-      countBadge.classList.remove("hidden");
-    } else {
-      countBadge.classList.add("hidden");
+    const countBadge = $("analisis-badge-count");
+    if (countBadge) {
+      if (data && data.resultados && data.resultados.length > 0) {
+        countBadge.textContent = data.resultados.length;
+        countBadge.classList.remove("hidden");
+      } else {
+        countBadge.classList.add("hidden");
+      }
     }
-  }
 
-  panel.innerHTML = "";
-  if (!data.resultados || data.resultados.length === 0) {
-    panel.innerHTML = '<p style="color:var(--text-dim);padding:8px;font-size:12px;">No hay unidades configuradas con stats y armas. Haz clic en el mapa para añadir fichas o pulsa [📍 Preset Cap. 7].</p>';
-    return;
-  }
+    panel.innerHTML = "";
+    if (!data || !data.resultados || data.resultados.length === 0) {
+      const msg = (data && data.error)
+        ? `⚠️ Error en análisis: ${data.error}`
+        : 'No hay unidades configuradas con stats y armas. Haz clic en el mapa para añadir fichas o pulsa [📍 Preset Cap. 7].';
+      panel.innerHTML = `<p style="color:var(--text-dim);padding:8px;font-size:12px;">${msg}</p>`;
+      return;
+    }
 
-  data.resultados.forEach(r => renderResultado(panel, r));
+    data.resultados.forEach(r => renderResultado(panel, r));
+  } catch (err) {
+    console.error("Error en lanzarAnalisis:", err);
+    panel.innerHTML = `<p style="color:var(--red);padding:8px;font-size:12px;">Error al calcular el análisis: ${err.message}</p>`;
+  }
 }
 
 $("btn-analizar").addEventListener("click", lanzarAnalisis);
@@ -1455,7 +1519,8 @@ $("btn-turno-fin").addEventListener("click", async () => {
     }
     $("btn-turno-fin").textContent = "✓ Confirmar Turno Enemigo";
     $("btn-turno-fin").style.color = "var(--red)";
-    mostrarToast("Mueve los tokens enemigos a donde se movieron en el juego y confirma.", "info");
+    mostrarToast("Fase Enemiga: puedes aplicar los ataques enemigos previstos o mover sus tokens.", "info");
+    setTimeout(lanzarAnalisis, 250);
   } else {
     const res = await api("/api/turno/fin", "POST");
     if (res && res.ok) {
@@ -1494,7 +1559,8 @@ async function ejecutarJugada(r) {
     atacante: r.aliado,
     defensor: r.enemigo,
     arma_nombre: r.arma_recomendada,
-    pos_destino: r.pos_sugerida
+    pos_destino: r.pos_sugerida,
+    pos_canter: r.pos_canter || null
   };
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
@@ -1521,11 +1587,11 @@ async function ejecutarJugada(r) {
   }
 
   const resComb = c && c.resultado ? c.resultado : {};
+  const smash = c && c.resultado ? c.resultado.smash : null;
   if (resComb.aplica_ruptura && !kill && !(smash && smash.rompio_por_choque)) {
     toastMsg += ` 💔 ¡Ruptura! ${dfn.nombre} pierde la guardia (no podrá contraatacar).`;
   }
 
-  const smash = c && c.resultado ? c.resultado.smash : null;
   if (smash && smash.ocurrido) {
     if (smash.empujado && smash.nueva_pos) {
       toastMsg += ` 🔨 ¡Smash! ${dfn.nombre} empujado a (${smash.nueva_pos[0]}, ${smash.nueva_pos[1]}).`;
@@ -1534,7 +1600,9 @@ async function ejecutarJugada(r) {
     }
   }
 
-  if (atkInfo && atkInfo.puede_canter) {
+  if (r.pos_canter) {
+    toastMsg += ` 🏃 Canter: Refugio en (${r.pos_canter[0]}, ${r.pos_canter[1]}).`;
+  } else if (atkInfo && atkInfo.puede_canter) {
     toastMsg += ` 🏃 Canter: Puede moverse 2 casillas.`;
   }
 
@@ -1548,7 +1616,8 @@ async function ejecutarAtaqueEnemigo(r) {
   const payload = {
     atacante: r.enemigo,
     defensor: r.aliado,
-    arma_nombre: r.arma_recomendada || ""
+    arma_nombre: r.arma_recomendada || "",
+    pos_destino: r.pos_sugerida || null
   };
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
@@ -1693,11 +1762,75 @@ function renderResultado(container, r) {
     card.appendChild(embBox);
   }
 
+  // Badge de exposición a líneas de peligro enemigas (Danger Zone de Engage)
+  if (r.tipo_analisis === "oportunidad_jugador" && r.num_amenazas_destino !== undefined) {
+    const dangerBox = document.createElement("div");
+    dangerBox.style.cssText = "display:inline-flex;align-items:center;gap:6px;margin:3px 0 6px 0;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;";
+    if (r.num_amenazas_destino === 0) {
+      dangerBox.style.background = "rgba(40, 167, 69, 0.18)";
+      dangerBox.style.border = "1px solid #28a745";
+      dangerBox.style.color = "#a3e635";
+      dangerBox.innerHTML = `🛡️ Casilla 100% segura (0 enemigos alcanzan esta casilla tras atacar)`;
+    } else if (r.num_amenazas_destino === 1) {
+      dangerBox.style.background = "rgba(255, 193, 7, 0.18)";
+      dangerBox.style.border = "1px solid #ffc107";
+      dangerBox.style.color = "#fde047";
+      const nomE = (r.amenazas_en_destino && r.amenazas_en_destino[0]) || "1 enemigo";
+      dangerBox.innerHTML = `⚠️ Al alcance de 1 enemigo tras atacar: ${nomE}`;
+    } else {
+      dangerBox.style.background = "rgba(220, 53, 69, 0.22)";
+      dangerBox.style.border = "1px solid #dc3545";
+      dangerBox.style.color = "#f87171";
+      const listaE = (r.amenazas_en_destino || []).slice(0, 3).join(", ");
+      dangerBox.innerHTML = `🔴 Al alcance de ${r.num_amenazas_destino} enemigos tras atacar (${listaE})`;
+    }
+    card.appendChild(dangerBox);
+  }
+
   if (r.recomendacion) {
     const p = document.createElement("p");
     p.className = "recomendacion-txt";
     p.textContent = r.recomendacion;
     card.appendChild(p);
+  }
+
+  // Si el aliado tiene el Emblema Tres Casas, permitir alternar de líder directamente desde la tarjeta
+  const fichaAli = state.fichas ? state.fichas[r.aliado] : null;
+  const es3H = fichaAli && (
+    (fichaAli.emblema_nombre || "").toLowerCase().includes("edelgard") ||
+    (fichaAli.emblema_nombre || "").toLowerCase().includes("three houses") ||
+    (fichaAli.emblema_nombre || "").toLowerCase().includes("tres casas") ||
+    (fichaAli.emblema_nombre || "").toLowerCase().includes("brazalete")
+  );
+  if (es3H && r.tipo_analisis === "oportunidad_jugador") {
+    const liderActivo = fichaAli.lider_tres_casas || "Dimitri";
+    const div3H = document.createElement("div");
+    div3H.style.cssText = "display:flex;align-items:center;gap:6px;margin:4px 0 6px 0;padding:4px 8px;background:rgba(218,165,32,0.12);border:1px solid rgba(218,165,32,0.3);border-radius:4px;font-size:11px;";
+    div3H.innerHTML = `<span style="color:#ffd700;font-weight:bold;">👑 Líder 3H:</span>`;
+    [
+      { id: "Edelgard", label: "🛡️ Edelgard (Hachas)" },
+      { id: "Dimitri",  label: "🗡️ Dimitri (Lanzas)" },
+      { id: "Claude",   label: "🏹 Claude (Arcos)" }
+    ].forEach(lObj => {
+      const btnL = document.createElement("button");
+      btnL.type = "button";
+      const activo = (lObj.id.toLowerCase() === (liderActivo || "").toLowerCase());
+      btnL.className = activo ? "btn-primary" : "btn-secondary";
+      btnL.style.cssText = "padding:2px 8px;font-size:10px;line-height:1.2;cursor:pointer;";
+      btnL.textContent = lObj.label;
+      btnL.title = `Cambiar líder activo a ${lObj.id} para Weapon Sync y Gambits`;
+      btnL.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const res = await api("/api/unidad/alternar_lider_tres_casas", "POST", { nombre: r.aliado, lider: lObj.id });
+        if (res && res.ok) {
+          if (res.fichas) actualizarTokens(res.fichas);
+          mostrarToast(`👑 Líder Tres Casas cambiado a ${lObj.id} (${r.aliado})`, "ok");
+          lanzarAnalisis();
+        }
+      });
+      div3H.appendChild(btnL);
+    });
+    card.appendChild(div3H);
   }
 
   // Botones de acción según el tipo de análisis
@@ -1712,7 +1845,11 @@ function renderResultado(container, r) {
     if (r.pos_sugerida && Array.isArray(r.pos_sugerida)) {
       labelPos = ` [Mover a (${r.pos_sugerida[0]},${r.pos_sugerida[1]})]`;
     }
-    btnExec.innerHTML = `⚔️ <b>Ejecutar Jugada</b>${labelPos}`;
+    let labelCanter = "";
+    if (r.pos_canter && Array.isArray(r.pos_canter)) {
+      labelCanter = ` → 🏃 Canter (${r.pos_canter[0]},${r.pos_canter[1]})`;
+    }
+    btnExec.innerHTML = `⚔️ <b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
     btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);
@@ -1740,16 +1877,19 @@ function renderResultado(container, r) {
     actionBar.appendChild(btnPot);
     card.appendChild(actionBar);
   } else if (r.tipo_analisis === "amenaza_enemiga") {
-    const actionBar = document.createElement("div");
-    actionBar.className = "card-action-bar";
-    const btnDmg = document.createElement("button");
-    btnDmg.type = "button";
-    btnDmg.className = "btn-recibir-daño";
-    btnDmg.innerHTML = `⚠️ Aplicar Ataque Enemigo`;
-    btnDmg.title = `Aplica el ataque de ${r.enemigo} sobre ${r.aliado} restando HP en el tablero`;
-    btnDmg.addEventListener("click", () => ejecutarAtaqueEnemigo(r));
-    actionBar.appendChild(btnDmg);
-    card.appendChild(actionBar);
+    // El botón de aplicar ataque enemigo SOLO se muestra durante la Fase Enemiga
+    if (state.fase === "enemigo") {
+      const actionBar = document.createElement("div");
+      actionBar.className = "card-action-bar";
+      const btnDmg = document.createElement("button");
+      btnDmg.type = "button";
+      btnDmg.className = "btn-recibir-daño";
+      btnDmg.innerHTML = `⚠️ Aplicar Ataque Enemigo`;
+      btnDmg.title = `Aplica el ataque de ${r.enemigo} sobre ${r.aliado} restando HP en el tablero`;
+      btnDmg.addEventListener("click", () => ejecutarAtaqueEnemigo(r));
+      actionBar.appendChild(btnDmg);
+      card.appendChild(actionBar);
+    }
   }
 
   container.appendChild(card);

@@ -15,6 +15,54 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATAMINE_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata")
 DISPOS_DIR = os.path.join(DATAMINE_DIR, "dispos")
 
+# Perfiles canonicos de jefes del Capitulo 7 con stats exactos de datamine / Serenes Forest
+PERFILES_JEFES_CAP7 = {
+    "PID_M007_オルテンシア": {
+        "nombre": "Hortensia (Jefa)",
+        "emblema_nombre": "Lucina",
+        "clase_nombre": "Wing Tamer",
+        "clase_id": "JID_テイマー",
+        "es_volador": True,
+        "hp_stock": 1,
+        "es_jefe": True,
+        "habilidades": ["Big Personality", "Carino fraternal", "Dual Strike", "All for One"],
+        "dificultad_stats": {
+            "extremo": {"hp": 36, "fuerza": 4, "magia": 6, "destreza": 20, "velocidad": 17, "defensa": 13, "resistencia": 18, "suerte": 15, "complexion": 5, "mov": 5, "habilidad_dif": "Veteran+"},
+            "dificil": {"hp": 34, "fuerza": 3, "magia": 5, "destreza": 18, "velocidad": 15, "defensa": 8, "resistencia": 16, "suerte": 13, "complexion": 5, "mov": 5, "habilidad_dif": "Stalwart"},
+            "normal":  {"hp": 34, "fuerza": 3, "magia": 5, "destreza": 18, "velocidad": 15, "defensa": 8, "resistencia": 16, "suerte": 13, "complexion": 5, "mov": 5}
+        },
+        "armas_extra": [
+            {"id": "IID_ルキナ_ノーブルレイピア", "nombre": "Noble Rapier", "arma": "Noble Rapier", "equipada": False, "es_drop": False}
+        ]
+    },
+    "PID_M007_ロサード": {
+        "nombre": "Rosado",
+        "clase_nombre": "Wyvern Knight",
+        "clase_id": "JID_ドラゴンナイト",
+        "es_volador": True,
+        "es_jefe": True,
+        "habilidades": ["Stunning Smile", "SID_微笑み"],
+        "dificultad_stats": {
+            "extremo": {"hp": 38, "fuerza": 17, "magia": 8, "destreza": 14, "velocidad": 17, "defensa": 14, "resistencia": 6, "suerte": 9, "complexion": 7, "mov": 6, "habilidad_dif": "Veteran+"},
+            "dificil": {"hp": 35, "fuerza": 15, "magia": 7, "destreza": 13, "velocidad": 17, "defensa": 13, "resistencia": 5, "suerte": 8, "complexion": 7, "mov": 6, "habilidad_dif": "Stalwart"},
+            "normal":  {"hp": 35, "fuerza": 15, "magia": 7, "destreza": 13, "velocidad": 17, "defensa": 13, "resistencia": 5, "suerte": 8, "complexion": 7, "mov": 6}
+        }
+    },
+    "PID_M007_ゴルドマリー": {
+        "nombre": "Goldmary",
+        "clase_nombre": "Hero",
+        "clase_id": "JID_ブレイブヒーロー",
+        "es_volador": False,
+        "es_jefe": True,
+        "habilidades": ["Disarming Sigh", "SID_溜め息"],
+        "dificultad_stats": {
+            "extremo": {"hp": 34, "fuerza": 12, "magia": 2, "destreza": 10, "velocidad": 18, "defensa": 14, "resistencia": 8, "suerte": 10, "complexion": 7, "mov": 5, "habilidad_dif": "Veteran+"},
+            "dificil": {"hp": 31, "fuerza": 11, "magia": 2, "destreza": 9, "velocidad": 18, "defensa": 12, "resistencia": 7, "suerte": 9, "complexion": 7, "mov": 5, "habilidad_dif": "Stalwart"},
+            "normal":  {"hp": 31, "fuerza": 11, "magia": 2, "destreza": 9, "velocidad": 18, "defensa": 12, "resistencia": 7, "suerte": 9, "complexion": 7, "mov": 5}
+        }
+    }
+}
+
 class CargadorDisposEngage:
     def __init__(self, ruta_catalogo: Optional[str] = None):
         _cat_json = os.path.join(BASE_DIR, "json", "catalogo_engage.json")
@@ -104,7 +152,7 @@ class CargadorDisposEngage:
         """Determina un nombre claro e intuitivo para la unidad en inglés."""
         # Nombres de jefes / personajes únicos conocidos
         nombres_unicos = {
-            "PID_M007_オルテンシア": "Hortensia (Boss)",
+            "PID_M007_オルテンシア": "Hortensia (Jefa)",
             "PID_M007_ロサード": "Rosado",
             "PID_M007_ゴルドマリー": "Goldmary",
             "PID_リュール": "Alear",
@@ -273,9 +321,40 @@ class CargadorDisposEngage:
             ai_move = param.get("AI_MoveName", "")
             ai_rate = param.get("AI_BattleRate", "")
 
+            emblema_nom = "Marth" if pid == "PID_リュール" else ""
+            stats_explicitos = None
+            habs_explicitas = []
+            es_jefe_val = False
+            mov_explicito = None
+
+            if pid in PERFILES_JEFES_CAP7:
+                p_jefe = PERFILES_JEFES_CAP7[pid]
+                nombre_unidad = p_jefe["nombre"]
+                clase_nombre = p_jefe.get("clase_nombre", clase_nombre)
+                jid = p_jefe.get("clase_id", jid)
+                es_volador = p_jefe.get("es_volador", es_volador)
+                hp_stock = p_jefe.get("hp_stock", hp_stock)
+                es_jefe_val = True
+
+                for a_ext in p_jefe.get("armas_extra", []):
+                    if not any(it.get("nombre") == a_ext["nombre"] or it.get("id") == a_ext["id"] for it in inventario):
+                        inventario.append(dict(a_ext))
+
+                dif_k = "extremo" if dif in ("extremo", "lunatic", "maddening") else ("dificil" if dif in ("dificil", "hard") else "normal")
+                s_boss = p_jefe["dificultad_stats"].get(dif_k, p_jefe["dificultad_stats"]["extremo"])
+                stats_explicitos = {k: v for k, v in s_boss.items() if k not in ("habilidad_dif", "mov")}
+                mov_explicito = s_boss.get("mov")
+
+                habs_explicitas = list(p_jefe.get("habilidades", []))
+                if "habilidad_dif" in s_boss:
+                    habs_explicitas.append(s_boss["habilidad_dif"])
+
+                if p_jefe.get("emblema_nombre"):
+                    emblema_nom = p_jefe["emblema_nombre"]
+
             arma_principal = inventario[0]["nombre"] if inventario else "Espada de Hierro"
 
-            unidades.append({
+            u_dict = {
                 "nombre": nombre_unidad,
                 "pid": pid,
                 "es_aliado": es_aliado,
@@ -292,17 +371,28 @@ class CargadorDisposEngage:
                 "hp_stock": hp_stock,
                 "ia_move": ai_move,
                 "ia_rate": ai_rate,
-                "emblema_nombre": "Marth" if pid == "PID_リュール" else "",
+                "emblema_nombre": emblema_nom,
+                "es_jefe": es_jefe_val,
                 # Metadatos de dificultad para el resolver de stats
                 "dificultad": dificultad,
                 "auto_grow_extra": auto_grow_extra,  # level-ups bonus para cálculo de crecimientos
                 "p_offset": p_offset,                # offsets de stats por dificultad desde Person.xml
-            })
+            }
+            if stats_explicitos:
+                u_dict["stats"] = stats_explicitos
+            if habs_explicitas:
+                u_dict["habilidades"] = habs_explicitas
+            if mov_explicito is not None:
+                u_dict["mov"] = mov_explicito
+
+            unidades.append(u_dict)
 
         return unidades
 
 
 if __name__ == "__main__":
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
     cargador = CargadorDisposEngage()
     cap7 = cargador.cargar_capitulo("M007", "Extremo")
     print(f"[OK] Cargadas {len(cap7)} unidades del Capítulo 7:")

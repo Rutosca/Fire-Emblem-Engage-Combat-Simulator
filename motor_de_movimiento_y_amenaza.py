@@ -195,6 +195,7 @@ class AnalizadorAmenaza:
         mejor_pos = None
         mejor_distancia = None
         mejor_daño = -1
+        mejor_score = -999999
         jugador_puede_contra = False
 
         for (mx, my) in casillas_movimiento:
@@ -224,19 +225,25 @@ class AnalizadorAmenaza:
                         # Distancia fuera de rango del arma del jugador, etc.
                         daño = 0
 
-                if daño > mejor_daño:
+                arma_jugador = ficha_jugador.arma
+                jugador_puede_contra_aqui = (
+                    arma_jugador is not None
+                    and dist in arma_jugador.rango
+                    and (getattr(ficha_jugador, 'cargas_ruptura', 0) == 0)
+                )
+                score = (daño * 10) + (100 if not jugador_puede_contra_aqui else 0)
+
+                if score > mejor_score or (score == mejor_score and daño > mejor_daño):
+                    mejor_score = score
                     mejor_daño = daño
                     mejor_pos = (mx, my)
                     mejor_distancia = dist
-                    # El jugador puede contraatacar si su arma alcanza esa distancia
-                    arma_jugador = ficha_jugador.arma
-                    jugador_puede_contra = (
-                        arma_jugador is not None
-                        and dist in arma_jugador.rango
-                    )
+                    jugador_puede_contra = jugador_puede_contra_aqui
 
+        alcanza = mejor_pos is not None
         return {
-            "enemigo_alcanza": mejor_pos is not None,
+            "enemigo_alcanza": alcanza,
+            "puede_atacar": alcanza,
             "pos_optima": mejor_pos,
             "distancia_ataque": mejor_distancia,
             "daño_proyectado": max(0, mejor_daño),

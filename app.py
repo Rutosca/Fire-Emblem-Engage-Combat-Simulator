@@ -738,6 +738,15 @@ def ejecutar_combate():
         elif getattr(f_def, 'cargas_ruptura', 0) > 0:
             f_def.cargas_ruptura = max(0, f_def.cargas_ruptura - 1)
 
+    # Repliegue táctico de Canter (Movimiento ágil tras combate si atacante sobrevive)
+    pos_canter = data.get("pos_canter")
+    if pos_canter and isinstance(pos_canter, (list, tuple)) and len(pos_canter) == 2 and hp_atk_final > 0:
+        cx, cy = int(pos_canter[0]), int(pos_canter[1])
+        if (cx, cy) != (f_atk.x, f_atk.y):
+            casilla_libre = not any(f.viva and f.nombre != f_atk.nombre and f.x == cx and f.y == cy for f in tablero.fichas.values())
+            if casilla_libre:
+                tablero.mover_unidad(nombre_atk, cx, cy)
+
     # Marcar atacante como que ha actuado este turno si es aliado
     if f_atk.es_aliado:
         f_atk.ha_actuado = True
@@ -913,10 +922,15 @@ def analizar():
     """
     Análisis táctico completo por turno (delegado a motor_analisis.py).
     """
-    data = request.get_json(force=True) or {}
-    perfil = data.get("perfil", "seguro")
-    cronogema = data.get("cronogema_usada", False)
-    return jsonify(analizar_situacion_tactica(tablero, _mapa, perfil, cronogema))
+    try:
+        data = request.get_json(force=True) or {}
+        perfil = data.get("perfil", "seguro")
+        cronogema = data.get("cronogema_usada", False)
+        return jsonify(analizar_situacion_tactica(tablero, _mapa, perfil, cronogema))
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"ok": False, "error": str(e), "resultados": []}), 500
 
 
 # =============================================================================

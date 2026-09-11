@@ -56,6 +56,61 @@ class Unidad:
             self.emblema = self.emblema_nombre
 
 
+def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
+    """
+    Garantiza el rango canónico estricto de las armas en Fire Emblem Engage:
+    - Arcos (Bows): estrictamente [2] (o [2, 3] si es Longbow/Arco largo, o [1] si es Mini Bow/Arco corto).
+      NUNCA [1] para arcos estándar (no pueden atacar ni contraatacar a distancia 1).
+    - Jabalinas, Hachas arrojadizas y armas 1-2: estrictamente [1, 2].
+    - Tomos mágicos: estrictamente [1, 2] (o [1, 2, 3] para Trueno/Thunder/Thoron, [3..7] Meteor).
+    - Dagas: estrictamente [1, 2].
+    - Armas cuerpo a cuerpo estándar: [1].
+    """
+    nom_low = (nombre or "").lower()
+    tipo_low = (tipo or "").lower()
+
+    # Arcos
+    if tipo_low in ("arco", "bow") or any(b in nom_low for b in ("arco", "bow")):
+        if "longbow" in nom_low or "largo" in nom_low:
+            return [2, 3]
+        if "mini" in nom_low or "corto" in nom_low:
+            return [1]
+        return [2]
+
+    # Armas arrojadizas 1-2
+    if any(w in nom_low for w in (
+        "javelin", "jabalina", "hand axe", "hacha de mano", "tomahawk",
+        "spear", "pica", "short spear", "levin", "espada trueno",
+        "flame lance", "lanza de fuego", "hurricane", "hacha huracan", "hacha huracán"
+    )):
+        return [1, 2]
+
+    # Tomos
+    if tipo_low in ("tomo", "tome", "magia") or any(w in nom_low for w in (
+        "fire", "fuego", "thunder", "trueno", "wind", "viento", "elfire",
+        "elthunder", "elwind", "bolganone", "thoron", "excalibur", "surge",
+        "elsurge", "shine", "fulgor", "nosferatu", "seraphim", "meteor", "obscurite"
+    )):
+        if any(th in nom_low for th in ("thunder", "trueno", "elthunder", "thoron")):
+            return [1, 2, 3]
+        if "meteor" in nom_low:
+            return [3, 4, 5, 6, 7]
+        if "surge" in nom_low or "oleada" in nom_low:
+            return [1]
+        return [1, 2]
+
+    # Dagas
+    if tipo_low in ("daga", "dagger", "knife", "cuchillo") or any(w in nom_low for w in (
+        "daga", "dagger", "knife", "cuchillo", "stiletto", "misericorde", "cinquedea", "peshkatz", "carnwenhan"
+    )):
+        return [1, 2]
+
+    if isinstance(rango_existente, (list, tuple)) and len(rango_existente) > 0 and list(rango_existente) != [1]:
+        return list(rango_existente)
+
+    return [1]
+
+
 @dataclass
 class Arma:
     """Representa un arma con sus estadísticas y propiedades."""
@@ -71,14 +126,15 @@ class Arma:
     efectividades: list = field(default_factory=list)  # e.g. ["volador", "acorazado"]
     efectivo_contra: list = field(default_factory=list)
     avo_bonus: int = 0  # Bonus de Evasión (ej. Grabados de Emblema)
+    ddg_bonus: int = 0  # Bonus de Esquive de Crítico (Dodge)
+    es_smash: bool = False  # True si es arma pesada (Smash): ataca de segundo, sin follow-up, empuja 1 casilla
 
     def __post_init__(self):
         if self.efectivo_contra and not self.efectividades:
             self.efectividades = list(self.efectivo_contra)
         elif self.efectividades and not self.efectivo_contra:
             self.efectivo_contra = list(self.efectividades)
-    ddg_bonus: int = 0  # Bonus de Esquive de Crítico (Dodge)
-    es_smash: bool = False  # True si es arma pesada (Smash): ataca de segundo, sin follow-up, empuja 1 casilla
+        self.rango = inferir_rango_arma(self.nombre, self.tipo, self.rango)
 
 
 @dataclass
@@ -515,7 +571,7 @@ class CalculadoraEngage:
                     aplica_ws = True
             if aplica_ws:
                 atk_base += bonus_ws
-                pasivas_activas.append(f"Sincronía Armamentística (+{bonus_ws} ATK)")
+                pasivas_activas.append(f"Weapon Sync (+{bonus_ws} ATK)")
 
         # ── Pasivas de proximidad en el atacante ─────────────────────────────
         # 1. Aura de Alear (Guía Divina / Divinely Inspiring — SID_神竜の結束):
@@ -672,6 +728,18 @@ class CalculadoraEngage:
             if any('alear' in (getattr(a, 'nombre', '') or '').lower() for a, d in aliados_cercanos_atk if d <= 1):
                 crit_mod_pasivas += 5
 
+        # Rosado: Sonrisa Cautivadora (Stunning Smile — SID_微笑み) (-20 Avo a rivales masculinos)
+        tiene_stunning_smile = any('微笑み' in h or 'stunning smile' in h for h in habs_atk) or ('rosado' in nombre_atk)
+        if tiene_stunning_smile and obtener_genero_unidad(defensor) == 1:
+            avo_mod_pasivas -= 20
+            pasivas_activas.append("Sonrisa Cautivadora (-20 Evasión rival masculino)")
+
+        # Goldmary: Suspiro Desarmante (Disarming Sigh — SID_溜め息) (-20 Hit a rivales masculinos)
+        tiene_disarming_sigh_def = any('溜め息' in h or 'disarming sigh' in h for h in habs_def) or ('goldmary' in nombre_def)
+        if tiene_disarming_sigh_def and obtener_genero_unidad(atacante) == 1:
+            hit_mod_pasivas -= 20
+            pasivas_activas.append("Suspiro Desarmante (-20 Precisión por rival masculino)")
+
         # ── Bonificaciones oficiales de Apoyo (SupportCalculator) ───────────
         supp_hit_atk, supp_avo_atk, supp_crit_atk, supp_ddg_atk, det_apoyos_atk = calcular_bonos_apoyo(atacante, aliados_cercanos_atk)
         supp_hit_def, supp_avo_def, supp_crit_def, supp_ddg_def, det_apoyos_def = calcular_bonos_apoyo(defensor, aliados_cercanos_def)
@@ -731,6 +799,24 @@ class CalculadoraEngage:
             "pasivas_activas": pasivas_activas,
             "apoyos_activos": det_apoyos_atk,
         }
+
+    @classmethod
+    def calcular_intercambio(cls, atacante, defensor, arma_atk, arma_def=None,
+                             terreno_atk=None, terreno_def=None, distancia=1, **kwargs):
+        """
+        Calcula las estadísticas del intercambio directo para el atacante frente al defensor
+        utilizando _stats_de_golpe.
+        """
+        terreno_def = terreno_def or Terreno()
+        return cls._stats_de_golpe(
+            atacante=atacante,
+            arma=arma_atk,
+            defensor=defensor,
+            arma_def=arma_def,
+            terreno=terreno_def,
+            distancia=distancia,
+            **kwargs
+        )
 
     # ── Simulación completa ─────────────────────────────────────────────
 
