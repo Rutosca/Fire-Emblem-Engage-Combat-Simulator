@@ -12,6 +12,7 @@ import re
 import json
 import math
 import unicodedata
+import xml.etree.ElementTree as ET
 from motor_calculo import Unidad, Arma, inferir_rango_arma
 from estado_tablero import FichaUnidad
 
@@ -56,6 +57,20 @@ def cargar_catalogo():
             print(f"[OK] Catálogo Engage cargado: {len(_catalogo.get('armas', {}))} armas, {len(_catalogo.get('clases', {}))} clases, {len(_catalogo.get('habilidades', {}))} habilidades, {len(_catalogo.get('emblemas', {}))} emblemas")
         except Exception as e:
             print(f"Aviso al cargar catalogo_engage.json: {e}")
+
+    # El JSON histórico no incluía InternalLevel. Lo recuperamos del XML
+    # oficial para distinguir clases básicas (0) de avanzadas (20), sin
+    # inferirlo a partir de sus límites de estadísticas.
+    ruta_job = os.path.join(_dir_actual, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata", "Job.xml")
+    if os.path.exists(ruta_job) and _catalogo.get("clases"):
+        try:
+            for row in ET.parse(ruta_job).getroot().iter("Param"):
+                jid = row.get("Jid", "")
+                if jid in _catalogo["clases"]:
+                    raw = row.get("InternalLevel", "0")
+                    _catalogo["clases"][jid]["internal_level"] = int(raw or 0)
+        except (ET.ParseError, OSError, ValueError) as exc:
+            print(f"Aviso al cargar niveles internos de Job.xml: {exc}")
 
 # Carga inicial al importar el módulo
 cargar_catalogo()
@@ -394,7 +409,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     y = int(data.get("y", 0))
     nivel = max(1, int(data.get("nivel", 1)))
     # Dificultad: viene del preset via cargador_dispos, o por defecto Extremo
-    dificultad = data.get("dificultad", "Extremo").lower()
+    dificultad = normalizar_texto(data.get("dificultad", "Extremo")).replace("?", "i")
     # Level-ups extras para crecimientos (AutoGrowOffset del Person.xml por dificultad)
     auto_grow_extra = int(data.get("auto_grow_extra", 0))
     # Offsets de stats por dificultad (OffsetL/H/N del Person.xml)
@@ -463,22 +478,25 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 emblema_id = eid
                 break
 
-    en_fusion = bool(data.get("en_fusion", False)) or int(data.get("turnos_fusion", 0)) > 0
     es_sigurd = bool(emblema_info and ("siglud" in str(emblema_id).lower() or "sigurd" in str(emblema_info.get("nombre", "")).lower())) or ("sigurd" in str(data.get("emblema_nombre", "")).lower())
     tiene_botas = any("bota" in str(p).lower() for p in data.get("potenciadores_usados", []))
+
+    # Nivel de vínculo (1..20) y progresión canónica del Emblema
+    nivel_vinculo = max(1, min(20, int(data.get("nivel_vinculo", getattr(unidad_previa, 'nivel_vinculo', 1) if unidad_previa else 1))))
+    duracion_base = 4 if nivel_vinculo >= 11 else 3
+    max_energia_emblema = 5 if nivel_vinculo >= 20 else 6
+    bond_data = emblema_info.get("bond_levels", {}).get(str(nivel_vinculo)) if emblema_info else None
+    emblem_mov = bond_data.get("stat_boosts", {}).get("mov", 0) if bond_data else (1 if es_sigurd else 0)
 
     # Stats base de la clase y Movimiento
     c_bases = clase_info.get("base_stats", {}) if clase_info else {}
     style = clase_info.get("estilo_combate", "") if clase_info else ""
     mov_base = clase_info.get("mov", 4) if clase_info else 4
 
-    bono_mov_sigurd = 5 if (es_sigurd and en_fusion) else (1 if es_sigurd else 0)
     if "mov" in data and data["mov"] is not None and str(data["mov"]).strip() != "":
         mov = int(data["mov"])
-        if es_sigurd and en_fusion and mov < mov_base + 5:
-            mov = mov_base + 5 + (1 if tiene_botas else 0)
     else:
-        mov = mov_base + bono_mov_sigurd + (1 if tiene_botas else 0)
+        mov = mov_base + emblem_mov + (1 if tiene_botas else 0)
 
     if p_info and es_aliado:
         # Personaje único aliado con estadísticas canónicas de Serenes Forest
@@ -532,15 +550,32 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 c_growths = {stat: max(0, base_g.get(stat, 0) + normal_g.get(stat, 0))
                              for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]}
 
-        # Si es enemigo y tiene crecimientos personales únicos (ej. jefes con nombre propio como Hortensia),
-        # sus crecimientos en el datamine ya son completos (no se suman a los crecimientos genéricos de clase)
-        if not es_aliado and p_growths and any(v > 0 for v in p_growths.values()):
-            final_growths = p_growths
+        # En enemigos, los crecimientos de Person.xml son los de la unidad
+        # jugable y no se aplican al cálculo de despliegues. El juego usa los
+        # crecimientos de enemigo de la clase y el nivel interno de la clase.
+        # Una clase avanzada de nivel 1 equivale a una básica de nivel 10;
+        # el catálogo permite detectarlo sin una tabla de mapas hardcodeada.
+        # Los personajes con nombre propio traen en Person.xml su tabla de
+        # crecimientos completa. Los genéricos no tienen crecimientos
+        # personales útiles y usan los de enemigo de Job.xml.
+        usar_personales_enemigo = bool(not es_aliado and p_growths and any(v > 0 for v in p_growths.values()))
+        if usar_personales_enemigo:
+            final_growths = dict(p_growths)
         else:
             final_growths = {stat: c_growths.get(stat, 0) + (p_growths.get(stat, 0) if es_aliado else 0)
                              for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]}
 
-        lvl_ups = max(0, nivel - 1 + auto_grow_extra)
+        clase_internal = int(clase_info.get("internal_level", 0) if clase_info else 0)
+        # El nivel interno de Job.xml ya expresa la equivalencia de clase
+        # (una clase avanzada de nivel 1 tiene InternalLevel=20). No se debe
+        # aproximar con los límites máximos de HP ni sumar 9 manualmente.
+        # Las clases con InternalLevel usan su nivel interno como referencia
+        # (nivel 1 avanzado equivale a nivel 20), mientras que las básicas
+        # conservan la progresión normal del nivel mostrado.
+        if clase_internal > 0:
+            lvl_ups = max(0, nivel + clase_internal + auto_grow_extra - 2)
+        else:
+            lvl_ups = max(0, nivel - 1 + auto_grow_extra)
         lvl_factor = lvl_ups / 100.0
 
         calc_hp  = c_bases.get("hp", 20)  + p_offset_diff.get("hp",  0) + round_half_up(final_growths.get("hp",  45) * lvl_factor)
@@ -553,7 +588,21 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         calc_lck = c_bases.get("lck", 4)  + p_offset_diff.get("lck", 0) + round_half_up(final_growths.get("lck", 25) * lvl_factor)
         calc_bld = c_bases.get("bld", 5)  + p_offset_diff.get("bld", 0) + round_half_up(final_growths.get("bld",  5) * lvl_factor)
 
-    # Clamping de estadísticas a valores válidos no negativos
+    # Bonos de estadísticas de Emblema según nivel de vínculo (o sobreescritura manual)
+    emblem_stats = bond_data.get("stat_boosts", {}) if bond_data else {}
+    bonos_a_aplicar = data.get("emblema_bonos") if data.get("emblema_bonos") is not None else emblem_stats
+    for stat, bonus in (bonos_a_aplicar or {}).items():
+        b_val = int(bonus)
+        if stat == "hp": calc_hp += b_val
+        elif stat in ("str", "fuerza"): calc_str += b_val
+        elif stat in ("mag", "magia"): calc_mag += b_val
+        elif stat in ("dex", "destreza"): calc_dex += b_val
+        elif stat in ("spd", "velocidad"): calc_spd += b_val
+        elif stat in ("def", "defensa"): calc_def += b_val
+        elif stat in ("res", "resistencia"): calc_res += b_val
+        elif stat in ("lck", "suerte"): calc_lck += b_val
+        elif stat in ("bld", "complexion"): calc_bld += b_val
+
     calc_hp  = max(1, calc_hp)
     calc_str = max(0, calc_str)
     calc_mag = max(0, calc_mag)
@@ -577,7 +626,24 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         calc_lck = max(0, int(s.get("suerte", s.get("lck", calc_lck))))
         calc_bld = max(1, int(s.get("complexion", s.get("bld", calc_bld))))
 
-    en_fusion = bool(data.get("en_fusion", False)) or int(data.get("turnos_fusion", 0)) > 0
+    # Comprobar si la unidad ya estaba en fusion activa previa
+    estaba_en_fusion = bool(unidad_previa and (unidad_previa.en_fusion or getattr(unidad_previa, 'turnos_fusion', 0) > 0) and getattr(unidad_previa, 'turnos_fusion', 0) > 0)
+    if estaba_en_fusion:
+        # Una vez activada la fusion, no se puede retirar hasta que acaben los turnos
+        en_fusion = True
+        turnos_fusion = int(data.get("turnos_fusion", unidad_previa.turnos_fusion))
+        if turnos_fusion <= 0:
+            turnos_fusion = unidad_previa.turnos_fusion
+        ataque_emblema_usado = getattr(unidad_previa, 'ataque_emblema_usado', False)
+    else:
+        en_fusion = bool(data.get("en_fusion", False)) or int(data.get("turnos_fusion", 0)) > 0
+        if en_fusion:
+            t_solicitados = int(data.get("turnos_fusion", 0))
+            turnos_fusion = t_solicitados if t_solicitados > 0 else duracion_base
+        else:
+            turnos_fusion = 0
+        ataque_emblema_usado = bool(data.get("ataque_emblema_usado", False))
+
     es_lord = data.get("es_lord", False) or "alear" in nombre.lower()
 
     tipo_mov_c = str(clase_info.get("tipo_movimiento", "")).lower() if clase_info else ""
@@ -602,9 +668,23 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         habs_lista = [habs_lista]
 
     if emblema_info:
-        for sid in emblema_info.get("synchro_skills", []):
-            sk_info = _catalogo.get("habilidades", {}).get(sid)
-            s_nom = sk_info.get("nombre", sid) if sk_info else sid
+        sync_passives = []
+        if bond_data and "synchro_skills" in bond_data:
+            for sk_item in bond_data["synchro_skills"]:
+                if isinstance(sk_item, dict):
+                    s_nom = sk_item.get("nombre") or sk_item.get("sid")
+                else:
+                    s_nom = str(sk_item)
+                if s_nom and s_nom not in sync_passives:
+                    sync_passives.append(s_nom)
+        else:
+            for sid in emblema_info.get("synchro_skills", []):
+                sk_info = _catalogo.get("habilidades", {}).get(sid)
+                s_nom = sk_info.get("nombre", sid) if sk_info else sid
+                if s_nom and s_nom not in sync_passives:
+                    sync_passives.append(s_nom)
+
+        for s_nom in sync_passives:
             if s_nom and s_nom not in habs_lista and not any(s_nom.startswith(pfx) for pfx in ["HP +", "Strength +", "Magic +", "Dexterity +", "Speed +", "Defense +", "Resistance +", "Res ", "Phy "]):
                 habs_lista.append(s_nom)
 
@@ -650,6 +730,26 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 if ls not in habs_lista:
                     habs_lista.append(ls)
 
+    # Los SID se conservan internamente en los XML, pero la UI debe mostrar
+    # el nombre traducido. Si existe traducción, no expongas el identificador
+    # japonés como una segunda pasiva duplicada.
+    habilidades_limpias = []
+    for habilidad in habs_lista:
+        valor = str(habilidad)
+        era_sid = valor.startswith("SID_")
+        if valor.startswith("SID_"):
+            info = (_canonico.get("habilidades", {}).get(valor)
+                    or _catalogo.get("habilidades", {}).get(valor))
+            traducida = info.get("nombre") if info else None
+            valor = traducida or valor
+        # Algunos registros canónicos no tienen traducción inglesa y dejan
+        # el nombre japonés. No lo mostramos como si fuera una pasiva nueva.
+        if re.search(r"[\u3040-\u30ff\u3400-\u9fff]", valor):
+            continue
+        if valor and valor not in habilidades_limpias:
+            habilidades_limpias.append(valor)
+    habs_lista = habilidades_limpias
+
     stats_obj = Unidad(
         nombre=nombre,
         hp=calc_hp,
@@ -662,10 +762,13 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         suerte=calc_lck,
         complexion=calc_bld,
         es_lord=es_lord,
-        energia_emblema=int(data.get("energia_emblema", 6)),
-        max_energia_emblema=6,
-        turnos_fusion_restantes=3 if en_fusion else int(data.get("turnos_fusion", 0)),
+        energia_emblema=min(int(data.get("energia_emblema", max_energia_emblema)), max_energia_emblema),
+        max_energia_emblema=max_energia_emblema,
+        turnos_fusion_restantes=turnos_fusion if en_fusion else 0,
         es_dragon=(style == "Dragon" or "alear" in nombre.lower()),
+        en_fusion=en_fusion,
+        ataque_emblema_usado=ataque_emblema_usado,
+        nivel_vinculo=nivel_vinculo,
         tipo_movimiento=tipo_movimiento,
         hp_max=calc_hp,
         habilidades=habs_lista,
@@ -673,11 +776,14 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         estilo_combate=estilo_combate,
     )
     val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
+    es_jefe_val = bool(data.get("es_jefe", False)) or nombre.lower().endswith("(boss)") or int(data.get("hp_stock", 0)) > 0
     val_lider_3h = data.get("lider_tres_casas") or (getattr(unidad_previa, 'lider_tres_casas', None) if unidad_previa else "Dimitri") or "Dimitri"
-    es_jefe_val = bool(data.get("es_jefe", False)) or (getattr(unidad_previa, 'es_jefe', False) if unidad_previa else False)
+    if val_lider_3h not in ("Edelgard", "Dimitri", "Claude"):
+        val_lider_3h = "Dimitri"
     setattr(stats_obj, 'nivel_veneno', val_veneno)
     setattr(stats_obj, 'lider_tres_casas', val_lider_3h)
     setattr(stats_obj, 'es_jefe', es_jefe_val)
+    setattr(stats_obj, 'nivel_interno_clase', int(clase_info.get('internal_level', 0) if clase_info else 0))
 
     # Resolver arma principal / inventario
     inventario_raw = list(data.get("inventario", []))
@@ -690,9 +796,21 @@ def resolver_unidad_con_catalogo(data, tablero=None):
 
     # Inyección de Fusión (Engage Mode)
     if en_fusion and emblema_info:
-        stats_obj.turnos_fusion_restantes = 3
+        stats_obj.turnos_fusion_restantes = turnos_fusion
+        
+        # Armas y habilidades de Engage específicas para este nivel de vínculo
+        if bond_data and "engage_items" in bond_data:
+            armas_engage_a_anadir = [it.get("nombre") or it.get("iid") if isinstance(it, dict) else it for it in bond_data["engage_items"]]
+        else:
+            armas_engage_a_anadir = emblema_info.get("engage_items", [])
+
+        if bond_data and "engage_skills" in bond_data:
+            skills_engage_a_anadir = [sk.get("nombre") or sk.get("sid") if isinstance(sk, dict) else sk for sk in bond_data["engage_skills"]]
+        else:
+            skills_engage_a_anadir = emblema_info.get("engage_skills", [])
+
         # Añadir armas de Engage al inventario temporal
-        for iid in emblema_info.get("engage_items", []):
+        for iid in armas_engage_a_anadir:
             ya_esta = any(
                 (isinstance(it, dict) and (it.get("id") == iid or it.get("arma") == iid or it.get("nombre") == iid))
                 or (isinstance(it, str) and (it == iid or iid in it))
@@ -702,17 +820,16 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 inventario_raw.append({"arma": iid, "id": iid, "equipada": False, "es_engage": True})
 
         # Añadir habilidades de Engage
-        habilidades_existentes = list(data.get("habilidades", []))
-        if isinstance(habilidades_existentes, str):
-            habilidades_existentes = [habilidades_existentes]
-
-        for sid in emblema_info.get("engage_skills", []):
+        habilidades_existentes = list(habs_lista)
+        for sid in skills_engage_a_anadir:
             skill_info = _catalogo.get("habilidades", {}).get(sid)
             s_nom = skill_info.get("nombre", sid) if skill_info else sid
             if s_nom not in habilidades_existentes:
                 habilidades_existentes.append(s_nom)
 
+        habs_lista = habilidades_existentes
         data["habilidades"] = habilidades_existentes
+        stats_obj.habilidades = list(habs_lista)
 
     re_usos = re.compile(r"^(.*?)(?:\s*(?:\((\d+)(?:\/\d+)?\)|x(\d+)))?\s*$")
 
@@ -870,22 +987,27 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         hp_max=hp_m,
         hp_actual=hp_a,
         hp_stock=int(data.get("hp_stock", 0)),
-        es_jefe=es_jefe_val,
         ha_actuado=ha_actuado,
         cargas_ruptura=cargas_ruptura,
-        energia_emblema=int(data.get("energia_emblema", 6)),
-        max_energia_emblema=6,
-        turnos_fusion=3 if en_fusion else int(data.get("turnos_fusion", 0)),
+        energia_emblema=min(int(data.get("energia_emblema", max_energia_emblema)), max_energia_emblema),
+        max_energia_emblema=max_energia_emblema,
+        turnos_fusion=turnos_fusion,
         en_fusion=en_fusion,
+        ataque_emblema_usado=ataque_emblema_usado,
+        nivel_vinculo=nivel_vinculo,
         clase_id=clase_id,
         clase_nombre=clase_info.get("nombre", "") if clase_info else data.get("clase_nombre", ""),
         nivel=nivel,
         emblema_id=emblema_id,
         emblema_nombre=emblema_info.get("nombre", "") if emblema_info else data.get("emblema_nombre", ""),
-        habilidades=data.get("habilidades", []),
+        habilidades=habs_lista,
         inventario=inventario_resuelto,
         potenciadores_usados=list(data.get("potenciadores_usados", [])),
         nivel_veneno=val_veneno,
         lider_tres_casas=val_lider_3h,
     )
+    # registrar_unidad conserva el líder anterior al editar una ficha para no
+    # perder estado. Si el formulario/API trae explícitamente un líder nuevo,
+    # debe prevalecer sobre ese valor anterior.
+    setattr(ficha, '_lider_tres_casas_explicito', 'lider_tres_casas' in data)
     return ficha

@@ -46,6 +46,8 @@ class Unidad:
     en_fusion: bool = False
     clase_nombre: str = ""
     nivel_veneno: int = 0
+    ataque_emblema_usado: bool = False # True si ya ejecutó el ataque o técnica especial de Engage
+    nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión)
 
     def __post_init__(self):
         if self.hp_max <= 0:
@@ -571,7 +573,7 @@ class CalculadoraEngage:
                     aplica_ws = True
             if aplica_ws:
                 atk_base += bonus_ws
-                pasivas_activas.append(f"Weapon Sync (+{bonus_ws} ATK)")
+                pasivas_activas.append(f"Sincronía Armamentística (+{bonus_ws} ATK)")
 
         # ── Pasivas de proximidad en el atacante ─────────────────────────────
         # 1. Aura de Alear (Guía Divina / Divinely Inspiring — SID_神竜の結束):
@@ -728,18 +730,6 @@ class CalculadoraEngage:
             if any('alear' in (getattr(a, 'nombre', '') or '').lower() for a, d in aliados_cercanos_atk if d <= 1):
                 crit_mod_pasivas += 5
 
-        # Rosado: Sonrisa Cautivadora (Stunning Smile — SID_微笑み) (-20 Avo a rivales masculinos)
-        tiene_stunning_smile = any('微笑み' in h or 'stunning smile' in h for h in habs_atk) or ('rosado' in nombre_atk)
-        if tiene_stunning_smile and obtener_genero_unidad(defensor) == 1:
-            avo_mod_pasivas -= 20
-            pasivas_activas.append("Sonrisa Cautivadora (-20 Evasión rival masculino)")
-
-        # Goldmary: Suspiro Desarmante (Disarming Sigh — SID_溜め息) (-20 Hit a rivales masculinos)
-        tiene_disarming_sigh_def = any('溜め息' in h or 'disarming sigh' in h for h in habs_def) or ('goldmary' in nombre_def)
-        if tiene_disarming_sigh_def and obtener_genero_unidad(atacante) == 1:
-            hit_mod_pasivas -= 20
-            pasivas_activas.append("Suspiro Desarmante (-20 Precisión por rival masculino)")
-
         # ── Bonificaciones oficiales de Apoyo (SupportCalculator) ───────────
         supp_hit_atk, supp_avo_atk, supp_crit_atk, supp_ddg_atk, det_apoyos_atk = calcular_bonos_apoyo(atacante, aliados_cercanos_atk)
         supp_hit_def, supp_avo_def, supp_crit_def, supp_ddg_def, det_apoyos_def = calcular_bonos_apoyo(defensor, aliados_cercanos_def)
@@ -799,24 +789,6 @@ class CalculadoraEngage:
             "pasivas_activas": pasivas_activas,
             "apoyos_activos": det_apoyos_atk,
         }
-
-    @classmethod
-    def calcular_intercambio(cls, atacante, defensor, arma_atk, arma_def=None,
-                             terreno_atk=None, terreno_def=None, distancia=1, **kwargs):
-        """
-        Calcula las estadísticas del intercambio directo para el atacante frente al defensor
-        utilizando _stats_de_golpe.
-        """
-        terreno_def = terreno_def or Terreno()
-        return cls._stats_de_golpe(
-            atacante=atacante,
-            arma=arma_atk,
-            defensor=defensor,
-            arma_def=arma_def,
-            terreno=terreno_def,
-            distancia=distancia,
-            **kwargs
-        )
 
     # ── Simulación completa ─────────────────────────────────────────────
 
@@ -896,6 +868,9 @@ class CalculadoraEngage:
         hp_atk = hp_atk_inicial
         hp_def = hp_def_inicial
         hp_def_max = getattr(defensor, 'hp_max', getattr(defensor, 'hp', 30)) or defensor.hp
+        piedras_res = max(0, int(getattr(defensor, 'hp_stock', 0) or 0))
+        barra_resucitada = False
+        dano_aplicado_ultimo = 0
         defensor_roto = defensor_en_ruptura
         atacante_roto = False
         secuencia = []
@@ -907,28 +882,44 @@ class CalculadoraEngage:
                 "daño": daño, "hp_objetivo_tras": max(0, hp_obj),
             })
 
+        def golpear_defensor(actor, tipo, daño):
+            """Aplica un golpe y corta la ronda al romper una barra con piedra."""
+            nonlocal hp_def, piedras_res, barra_resucitada, dano_aplicado_ultimo
+            dano_aplicado_ultimo = min(max(0, daño), max(0, hp_def))
+            hp_def -= daño
+            registrar(actor, tipo, dano_aplicado_ultimo, hp_def)
+            if hp_def <= 0 and piedras_res > 0:
+                piedras_res -= 1
+                barra_resucitada = True
+                hp_def = hp_def_max
+                secuencia.append({"actor": defensor.nombre, "tipo": "piedra_resurrectora", "daño": 0, "hp_objetivo_tras": hp_def})
+                return True
+            return False
+
         # 1. Chain Attacks de aliados de apoyo (Backup)
         chain_attacks_info = []
         if aliados_apoyo_backup:
             for apoyo in aliados_apoyo_backup:
                 if hp_def <= 0:
                     break
-                dmg_chain = max(1, math.floor(hp_def_max * 0.10 + 0.5))
-                hp_def -= dmg_chain
-                chain_dmg_total += dmg_chain
+                # Chain Attack: 10% del HP máximo, truncado (29 HP -> 2).
+                dmg_chain = max(1, math.floor(hp_def_max * 0.10))
                 apoyo_nom = getattr(apoyo, 'nombre', 'Aliado')
-                registrar(apoyo_nom, "chain_attack", dmg_chain, hp_def)
+                barra_rota = golpear_defensor(apoyo_nom, "chain_attack", dmg_chain)
+                chain_dmg_total += dano_aplicado_ultimo
                 chain_attacks_info.append({
                     "nombre": apoyo_nom,
-                    "daño": dmg_chain,
+                    "daño": dano_aplicado_ultimo,
                     "precision": 80,
                     "arma": getattr(getattr(apoyo, 'arma', None), 'nombre', 'Arma')
                 })
+                if barra_rota:
+                    break
 
         # 2. Secuencia según propiedad Smash:
         # En FE Engage, las armas Smash atacan de segundo ("strike second") si el rival puede contraatacar
         # y no usa también un arma Smash.
-        if es_smash_atk and puede_contra and not es_smash_def:
+        if es_smash_atk and puede_contra and not es_smash_def and not barra_resucitada:
             # ── Defensor contraataca PRIMERO (prioridad por arma Smash del rival) ──
             if hp_def > 0 and stats_def:
                 hp_atk -= stats_def["daño"]
@@ -937,56 +928,50 @@ class CalculadoraEngage:
 
             # ── Atacante ejecuta su golpe Smash (si sobrevive al contraataque) ──
             if hp_atk > 0 and hp_def > 0:
-                hp_def -= stats_atk["daño"]
+                barra_rota = golpear_defensor(atacante.nombre, "ataque (smash)", stats_atk["daño"])
                 if stats_atk["inflige_ruptura"]:
                     defensor_roto = True
-                registrar(atacante.nombre, "ataque (smash)", stats_atk["daño"], hp_def)
 
-                if stats_atk.get("tiene_divine_speed") and hp_def > 0:
+                if stats_atk.get("tiene_divine_speed") and hp_def > 0 and not barra_rota:
                     dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
-                    hp_def -= dmg_divine
-                    registrar(atacante.nombre, "divine_speed", dmg_divine, hp_def)
+                    golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
 
             # ── Follow-up del defensor si doblaba, atacante sigue vivo y defensor no quedó roto ──
-            if follow_up_def and hp_def > 0 and hp_atk > 0 and not defensor_roto and stats_def:
+            if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 hp_atk -= stats_def["daño"]
                 registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
 
-        else:
+        elif not barra_resucitada:
             # ── Secuencia estándar (sin Smash del atacante, o ambos con Smash) ──
             # 2a. Ataque principal del atacante
             if hp_def > 0:
                 tipo_atk_str = "ataque (smash)" if es_smash_atk else "ataque"
-                hp_def -= stats_atk["daño"]
+                barra_rota = golpear_defensor(atacante.nombre, tipo_atk_str, stats_atk["daño"])
                 if stats_atk["inflige_ruptura"]:
                     defensor_roto = True
-                registrar(atacante.nombre, tipo_atk_str, stats_atk["daño"], hp_def)
 
                 # Golpe extra de Divine Speed (Marth)
-                if stats_atk.get("tiene_divine_speed") and hp_def > 0:
+                if stats_atk.get("tiene_divine_speed") and hp_def > 0 and not barra_rota:
                     dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
-                    hp_def -= dmg_divine
-                    registrar(atacante.nombre, "divine_speed", dmg_divine, hp_def)
+                    golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
 
             # 2b. Follow-up anticipado por Alacrity
-            if activa_alacrity and hp_atk > 0 and hp_def > 0:
-                hp_def -= stats_atk["daño"]
-                registrar(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"], hp_def)
+            if activa_alacrity and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
+                golpear_defensor(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"])
 
             # 2c. Contraataque del defensor (si vivo, en rango y no roto)
-            if puede_contra and hp_def > 0 and not defensor_roto and stats_def:
+            if puede_contra and hp_def > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 tipo_contra_str = "contraataque (smash)" if es_smash_def else "contraataque"
                 hp_atk -= stats_def["daño"]
                 # Un contraataque NUNCA inflige Ruptura
                 registrar(defensor.nombre, tipo_contra_str, stats_def["daño"], hp_atk)
 
             # 2d. Follow-up regular del atacante (si no se ejecutó por Alacrity)
-            if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0:
-                hp_def -= stats_atk["daño"]
-                registrar(atacante.nombre, "follow-up", stats_atk["daño"], hp_def)
+            if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
+                golpear_defensor(atacante.nombre, "follow-up", stats_atk["daño"])
 
             # 2e. Follow-up del defensor
-            if follow_up_def and hp_def > 0 and hp_atk > 0 and not defensor_roto and stats_def:
+            if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 hp_atk -= stats_def["daño"]
                 registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
 
@@ -1058,7 +1043,7 @@ class CalculadoraEngage:
         veneno_def_post = min(3, veneno_def_previo + (1 if aplica_veneno else 0))
 
         daño_solo_atacante = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre)
-        mata_solo_atacante = (hp_def_inicial - daño_solo_atacante) <= 0
+        mata_solo_atacante = (hp_def_final <= 0) and not barra_resucitada
         es_kill_seguro = (hp_def_final <= 0) and (stats_atk["precision"] == 100) and mata_solo_atacante
         es_kill_probable = (hp_def_final <= 0) and not es_kill_seguro
 
@@ -1101,7 +1086,9 @@ class CalculadoraEngage:
             "resultado": {
                 "hp_atacante_final": hp_atk_final,
                 "hp_defensor_final": hp_def_final,
-                "atacante_mata": hp_def_final <= 0,
+                "atacante_mata": hp_def_final <= 0 and not barra_resucitada,
+                "piedra_resurrectora_consumida": barra_resucitada,
+                "piedras_restantes": piedras_res,
                 "defensor_mata": hp_atk_final <= 0,
                 "aplica_ruptura": bool(stats_atk.get("inflige_ruptura", False) or smash_info.get("rompio_por_choque", False)),
                 "defensor_roto": defensor_roto,
@@ -1117,6 +1104,7 @@ class CalculadoraEngage:
                 "smash": smash_info,
                 "pasivas_activas": stats_atk.get("pasivas_activas", []),
                 "apoyos_activos": stats_atk.get("apoyos_activos", []),
+                "ataque_emblema_ejecutado": bool(es_engage_attack),
             },
             "alertas_tacticas": {
                 "peligro_letal": hp_atk_final <= 0,
@@ -1497,7 +1485,8 @@ class CalculadoraEngage:
         # • Casilla de Emblema: Recarga instantánea al 100% (todas las cargas)
         recarga_emblema_info = None
         turnos_fusion = getattr(atacante, 'turnos_fusion_restantes', 0)
-        if turnos_fusion <= 0:
+        esta_en_fusion = getattr(atacante, 'en_fusion', False) or (turnos_fusion > 0)
+        if turnos_fusion <= 0 and not esta_en_fusion:
             energia_actual = getattr(atacante, 'energia_emblema', 6)
             max_energia = getattr(atacante, 'max_energia_emblema', 6)
 
@@ -1528,8 +1517,8 @@ class CalculadoraEngage:
 
                 if fusion_lista and energia_actual < max_energia:
                     motivos.append(
-                        f"¡FUSIÓN DE EMBLEMA LISTA! {atk['nombre']} obtiene +{ganancia} cargas "
-                        f"({nueva_energia}/{max_energia}). Podrá fusionarse con su Emblema el próximo turno."
+                        f"FUSION DE EMBLEMA LISTA: {atk['nombre']} obtiene +{ganancia} cargas "
+                        f"({nueva_energia}/{max_energia}). Podra fusionarse con su Emblema el proximo turno."
                     )
                 elif ganancia > 0 and energia_actual < max_energia:
                     motivo_kill = " (remate + bono baja)" if (kill_seguro or res["atacante_mata"]) else ""

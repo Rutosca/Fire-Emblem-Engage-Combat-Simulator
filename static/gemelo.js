@@ -4,7 +4,7 @@
  * • Renderizado de mapa CSS Grid + Terreno
  * • Creación y edición interactiva de unidades (Aliados y Enemigos) con autocompletado del catálogo
  * • Drag-and-drop nativo HTML5
- * • Botones [Analizar], [Turno Enemigo ✓], [Preset Cap. 7]
+ * • Botones [Analizar], [Turno Enemigo], [Preset Cap. 7]
  */
 
 "use strict";
@@ -119,14 +119,14 @@ async function loadTerrenoAsync(ancho, alto) {
             celda.classList.add(claseTerreno(t.nombre));
 
             const perks = [`${t.nombre} | AVO +${t.avo} DEF +${t.dfn}`];
-            if (t.curacion_turno) perks.push(`✚ Cura +${t.curacion_turno} HP/turno`);
-            if (t.es_antirruptura) perks.push(`🛡 Inmune Ruptura`);
-            if (t.es_recarga_emblema) perks.push(`💍 Recarga Emblema 100%`);
+            if (t.curacion_turno) perks.push(`Cura +${t.curacion_turno} HP/turno`);
+            if (t.es_antirruptura) perks.push(`Inmune Ruptura`);
+            if (t.es_recarga_emblema) perks.push(`Recarga Emblema 100%`);
 
             celda.title = perks.join(" · ");
             let tagExtra = "";
-            if (t.curacion_turno) tagExtra += ` · ✚+${t.curacion_turno}HP 🛡Antirruptura`;
-            if (t.es_recarga_emblema) tagExtra += ` · 💍Recarga Fusión`;
+            if (t.curacion_turno) tagExtra += ` · +${t.curacion_turno}HP Antirruptura`;
+            if (t.es_recarga_emblema) tagExtra += ` · Recarga Fusión`;
             celda.dataset.tip = `${x},${y} [${t.nombre}] AVO +${t.avo}${tagExtra}`;
           })
           .catch(() => {})
@@ -161,15 +161,15 @@ function crearToken(ficha) {
   if (ficha.en_fusion || ficha.turnos_fusion > 0) {
     const badge = document.createElement("span");
     badge.className = "token-engage-badge";
-    badge.textContent = "⚡";
-    badge.title = "Fusión con Emblema Activa";
+    badge.textContent = `${ficha.turnos_fusion || 3}`;
+    badge.title = `Fusión activa: ${ficha.turnos_fusion || 3} turno(s) restante(s)${ficha.ataque_emblema_usado ? ' (Técnica Engage usada)' : ''}`;
     tok.appendChild(badge);
   }
 
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) {
     const breakBadge = document.createElement("span");
     breakBadge.className = "token-break-badge";
-    breakBadge.textContent = "💔";
+    breakBadge.textContent = "BRK";
     breakBadge.title = "Ruptura (Break): Desarmado para contraataques";
     tok.appendChild(breakBadge);
   }
@@ -177,7 +177,7 @@ function crearToken(ficha) {
   if (ficha.nivel_veneno > 0) {
     const poisonBadge = document.createElement("span");
     poisonBadge.className = "token-poison-badge";
-    poisonBadge.textContent = "☠️" + (ficha.nivel_veneno > 1 ? ficha.nivel_veneno : "");
+    poisonBadge.textContent = "VEN" + (ficha.nivel_veneno > 1 ? ficha.nivel_veneno : "");
     poisonBadge.title = `Veneno Nivel ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} de daño en todos los ataques`;
     tok.appendChild(poisonBadge);
   }
@@ -190,11 +190,16 @@ function crearToken(ficha) {
   if (ficha.arma_equipada) desc += `\nArma: ${ficha.arma_equipada.nombre} (Mt ${ficha.arma_equipada.mt}, Rango ${ficha.arma_equipada.rango.join('-')})`;
   if (ficha.emblema_nombre) desc += `\nEmblema: ${ficha.emblema_nombre}`;
   const es3H = (ficha.emblema_nombre && (ficha.emblema_nombre.toLowerCase().includes("edelgard") || ficha.emblema_nombre.toLowerCase().includes("tres casas") || ficha.emblema_nombre.toLowerCase().includes("three houses")));
-  if (es3H && ficha.lider_tres_casas) desc += `\n👑 [Líder 3 Casas: ${ficha.lider_tres_casas}]`;
-  if (ficha.nivel_veneno > 0) desc += `\n☠️ [VENENO NIVEL ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} dmg de todo ataque]`;
-  if (ficha.ha_actuado) desc += `\n✓ [HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
-  if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n💔 [RUPTURA ACTIVA: No puede contraatacar]`;
-  if (ficha.en_fusion || ficha.turnos_fusion > 0) desc += `\n⚡ [MODO ENGAGE ACTIVO: Fusión con ${ficha.emblema_nombre || 'Emblema'}]`;
+  if (es3H && ficha.lider_tres_casas) desc += `\n[Líder 3 Casas: ${ficha.lider_tres_casas}]`;
+  if (ficha.nivel_veneno > 0) desc += `\n[VENENO NIVEL ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} dmg de todo ataque]`;
+  if (ficha.ha_actuado) desc += `\n[HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
+  if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n[RUPTURA ACTIVA: No puede contraatacar]`;
+  if (ficha.en_fusion || ficha.turnos_fusion > 0) desc += `\n[MODO ENGAGE ACTIVO: ${ficha.turnos_fusion} turno(s) restante(s)${ficha.ataque_emblema_usado ? ' - Técnica Engage consumida' : ''}]`;
+  else if (ficha.es_aliado && ficha.emblema_nombre) {
+    const maxE = ficha.max_energia_emblema || (ficha.nivel_vinculo >= 20 ? 5 : 6);
+    const curE = (ficha.energia_emblema !== undefined) ? ficha.energia_emblema : maxE;
+    desc += `\n[MEDIDOR DE EMBLEMA: ${curE}/${maxE}${curE >= maxE ? ' - FUSIÓN LISTA' : ''}]`;
+  }
   tok.title = desc;
 
   // Un aliado que ya ha actuado este turno no se puede volver a mover (pero sí se puede hacer clic para ver/editar)
@@ -295,7 +300,7 @@ function onTokenDragStart(e) {
   const ficha = state.fichas[nombre];
   if (ficha && ficha.es_aliado && ficha.ha_actuado) {
     e.preventDefault();
-    mostrarToast(`⚠️ ${nombre} ya ha actuado este turno. Usa la Cronogema (Deshacer / Ctrl+Z) para cambiar su elección.`, "info");
+    mostrarToast(`${nombre} ya ha actuado este turno. Usa la Cronogema (Deshacer / Ctrl+Z) para cambiar su elección.`, "info");
     return;
   }
   state.dragging = nombre;
@@ -337,7 +342,7 @@ async function onCeldaDrop(e) {
 
   const res = await api("/api/mover", "POST", { nombre, x, y });
   if (res.error) {
-    mostrarToast(`⚠️ ${res.error}`, "error");
+    mostrarToast(`${res.error}`, "error");
     return;
   }
 
@@ -554,13 +559,55 @@ const EMBLEMAS_DATA = {
   }
 };
 
+let CATALOGO_EMBLEMAS = {};
+
+async function cargarCatalogoEmblemas() {
+  try {
+    const res = await api("/api/catalogo/emblemas");
+    if (res && res.ok && res.emblemas) {
+      CATALOGO_EMBLEMAS = res.emblemas;
+    }
+  } catch (e) {
+    console.warn("No se pudo cargar catalogo de emblemas:", e);
+  }
+}
+
 function buscarEmblemaInfo(nombre) {
   if (!nombre) return null;
   const n = nombre.trim().toLowerCase();
+
+  // 1. Buscar en catálogo compilado oficial (21 emblemas con bond_levels 1..20)
+  for (const [k, v] of Object.entries(CATALOGO_EMBLEMAS)) {
+    const nom = (v.nombre || "").toLowerCase();
+    const ascii = (v.ascii_name || "").toLowerCase();
+    const link = (v.link_name || "").toLowerCase();
+    const kid = k.toLowerCase();
+    if (n === nom || n === ascii || n === link || n === kid || nom.includes(n) || n.includes(nom)) {
+      return v;
+    }
+  }
+
+  // 2. Fallback a datos estáticos embebidos
   for (const [k, v] of Object.entries(EMBLEMAS_DATA)) {
     if (n === k || n.includes(k) || k.includes(n)) return v;
   }
   return null;
+}
+
+function obtenerDatosVinculoEmblema(eInfo, nivel) {
+  if (!eInfo) return null;
+  const n = Math.max(1, Math.min(20, parseInt(nivel || 1, 10)));
+  if (eInfo.bond_levels && eInfo.bond_levels[String(n)]) {
+    return eInfo.bond_levels[String(n)];
+  }
+  return {
+    level: n,
+    stat_boosts: eInfo.synchro_boosts || {},
+    synchro_skills: (eInfo.synchro_skills || []).map(s => ({ sid: s, nombre: s })),
+    engage_items: (eInfo.engage_items || []).map(i => ({ iid: i, nombre: i })),
+    engage_skills: (eInfo.engage_skills || []).map(s => ({ sid: s, nombre: s })),
+    max_energia_emblema: n >= 20 ? 5 : 6
+  };
 }
 
 function desglosarArmaString(raw) {
@@ -696,7 +743,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   state.modalModo = "crear";
   state.potenciadoresModal = [];
   state.prevEmblemaModal = "";
-  $("modal-titulo").textContent = esAliado ? "🛡 Añadir Nuevo Aliado" : "⚔ Añadir Nuevo Enemigo";
+  $("modal-titulo").textContent = esAliado ? "Añadir Nuevo Aliado" : "Añadir Nuevo Enemigo";
   $("f-edit-original-name").value = "";
   $("f-x").value = x;
   $("f-y").value = y;
@@ -731,10 +778,19 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   if ($("f-arma-forja")) $("f-arma-forja").value = "0";
   if ($("f-arma-grabado")) $("f-arma-grabado").value = "";
   $("f-emblema").value = esAliado ? "Marth" : "";
+  establecerLiderTresCasas("Dimitri");
+  actualizarSelectorLiderTresCasas();
   state.prevEmblemaModal = esAliado ? "Marth" : "";
+  state.prevNivelVinculoModal = 1;
+  if ($("f-nivel-vinculo")) {
+    $("f-nivel-vinculo").value = "1";
+    actualizarTooltipNivelVinculo(1);
+  }
   $("f-fusion").checked = false;
+  $("f-fusion").disabled = !esAliado;
   $("label-fusion").style.opacity = esAliado ? "1" : "0.5";
   $("label-fusion").style.pointerEvents = esAliado ? "auto" : "none";
+  $("label-fusion").title = "";
   limpiarChips("chips-pasivas");
   limpiarChips("chips-inventario");
 
@@ -749,39 +805,22 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   recalcularCombatStats();
 
   $("btn-modal-eliminar").classList.add("hidden");
-  const g3H_new = $("grupo-lider-3h");
-  if (g3H_new) g3H_new.classList.add("hidden");
   $("modal-backdrop").classList.remove("hidden");
   $("f-nombre").focus();
-}
-
-function actualizarBotonesLiderModal(lider) {
-  state.modalLider3H = lider || "Dimitri";
-  document.querySelectorAll(".btn-lider-modal").forEach(btn => {
-    if ((btn.dataset.lider || "").toLowerCase() === state.modalLider3H.toLowerCase()) {
-      btn.classList.add("btn-primary");
-      btn.classList.remove("btn-secondary");
-    } else {
-      btn.classList.remove("btn-primary");
-      btn.classList.add("btn-secondary");
-    }
-  });
 }
 
 function abrirModalEdicion(ficha) {
   state.modalModo = "editar";
   state.potenciadoresModal = Array.isArray(ficha.potenciadores_usados) ? [...ficha.potenciadores_usados] : [];
   state.prevEmblemaModal = ficha.emblema_nombre || "";
-  state.modalLider3H = ficha.lider_tres_casas || "Dimitri";
-  $("modal-titulo").textContent = `⚙ Editar Unidad: ${ficha.nombre}`;
+  $("modal-titulo").textContent = `Editar Unidad: ${ficha.nombre}`;
   $("f-edit-original-name").value = ficha.nombre;
   $("f-x").value = ficha.x;
   $("f-y").value = ficha.y;
   $("label-pos-x").textContent = ficha.x;
   $("label-pos-y").textContent = ficha.y;
 
-  const esAliado = ficha.es_aliado;
-  if (esAliado) {
+  if (ficha.es_aliado) {
     $("f-bando-aliado").checked = true;
     $("seccion-aliado-extra").classList.remove("hidden");
   } else {
@@ -791,20 +830,23 @@ function abrirModalEdicion(ficha) {
 
   $("f-nombre").value = ficha.nombre;
   $("f-clase").value = ficha.clase_nombre || "";
-  $("f-nivel").value = ficha.nivel || 1;
-  $("f-hp-actual").value = ficha.hp_actual ?? 30;
-  $("f-hp-max").value = ficha.hp_max ?? 30;
+  $("f-nivel").value = ficha.nivel || 10;
+  
+  const hpM = ficha.hp_max || (ficha.stats ? ficha.stats.hp : 30);
+  const hpA = (ficha.hp_actual !== undefined && ficha.hp_actual !== null) ? ficha.hp_actual : hpM;
+  $("f-hp-actual").value = hpA;
+  $("f-hp-max").value = hpM;
 
-  const s = ficha.stats || {};
-  $("f-stat-str").value = s.fuerza ?? 10;
-  $("f-stat-mag").value = s.magia ?? 0;
-  $("f-stat-dex").value = s.destreza ?? 10;
-  $("f-stat-spd").value = s.velocidad ?? 10;
-  $("f-stat-def").value = s.defensa ?? 8;
-  $("f-stat-res").value = s.resistencia ?? 5;
-  $("f-stat-lck").value = s.suerte ?? 5;
-  $("f-stat-bld").value = s.complexion ?? 7;
-  $("f-stat-mov").value = ficha.mov ?? 4;
+  const st = ficha.stats || {};
+  $("f-stat-str").value = st.fuerza !== undefined ? st.fuerza : 10;
+  $("f-stat-mag").value = st.magia !== undefined ? st.magia : 0;
+  $("f-stat-dex").value = st.destreza !== undefined ? st.destreza : 10;
+  $("f-stat-spd").value = st.velocidad !== undefined ? st.velocidad : 10;
+  $("f-stat-def").value = st.defensa !== undefined ? st.defensa : 8;
+  $("f-stat-res").value = st.resistencia !== undefined ? st.resistencia : 5;
+  $("f-stat-lck").value = st.suerte !== undefined ? st.suerte : 5;
+  $("f-stat-bld").value = st.complexion !== undefined ? st.complexion : 7;
+  $("f-stat-mov").value = ficha.mov !== undefined ? ficha.mov : 4;
 
   const rawArma = ficha.arma_equipada ? (ficha.arma_equipada.nombre || ficha.arma_equipada) : (ficha.arma ? (ficha.arma.nombre || ficha.arma) : "");
   const desglosada = desglosarArmaString(rawArma);
@@ -813,24 +855,28 @@ function abrirModalEdicion(ficha) {
   if ($("f-arma-grabado")) $("f-arma-grabado").value = desglosada.grabado;
 
   $("f-emblema").value = ficha.emblema_nombre || "";
-  $("f-fusion").checked = ficha.en_fusion || false;
+  const nivV = ficha.nivel_vinculo || 1;
+  if ($("f-nivel-vinculo")) {
+    $("f-nivel-vinculo").value = nivV;
+    actualizarTooltipNivelVinculo(nivV);
+  }
+  state.prevEmblemaModal = ficha.emblema_nombre || "";
+  state.prevNivelVinculoModal = nivV;
+  establecerLiderTresCasas(ficha.lider_tres_casas || "Dimitri");
+  actualizarSelectorLiderTresCasas();
 
   const tieneEmblema = !!ficha.emblema_nombre;
-  $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
-  $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
-
-  const es3H = (ficha.emblema_nombre || "").toLowerCase().includes("edelgard") ||
-               (ficha.emblema_nombre || "").toLowerCase().includes("three houses") ||
-               (ficha.emblema_nombre || "").toLowerCase().includes("tres casas") ||
-               (ficha.emblema_nombre || "").toLowerCase().includes("brazalete");
-  const g3H = $("grupo-lider-3h");
-  if (g3H) {
-    if (es3H) {
-      g3H.classList.remove("hidden");
-      actualizarBotonesLiderModal(state.modalLider3H);
-    } else {
-      g3H.classList.add("hidden");
-    }
+  const enFusionActiva = (ficha.en_fusion || ficha.turnos_fusion > 0) && (ficha.turnos_fusion > 0);
+  $("f-fusion").checked = ficha.en_fusion || false;
+  if (enFusionActiva) {
+    $("f-fusion").disabled = true;
+    $("label-fusion").style.opacity = "0.7";
+    $("label-fusion").title = `Fusión en curso: ${ficha.turnos_fusion} turno(s) restante(s). No se puede retirar hasta que acabe.`;
+  } else {
+    $("f-fusion").disabled = !tieneEmblema;
+    $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
+    $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
+    $("label-fusion").title = "";
   }
 
   // Rellenar chips de habilidades
@@ -859,10 +905,127 @@ function cerrarModal() {
   $("modal-backdrop").classList.add("hidden");
 }
 
+function esEmblemaTresCasas(nombreEmblema) {
+  const nombre = String(nombreEmblema || "").toLowerCase();
+  return nombre.includes("edelgard") || nombre.includes("tres casas") || nombre.includes("three houses");
+}
+
+function establecerLiderTresCasas(lider) {
+  const liderValido = ["Edelgard", "Dimitri", "Claude"].includes(lider) ? lider : "Dimitri";
+  const input = document.querySelector(`input[name="f-lider-tres-casas"][value="${liderValido}"]`);
+  if (input) input.checked = true;
+}
+
+function obtenerLiderTresCasasSeleccionado() {
+  const seleccionado = document.querySelector('input[name="f-lider-tres-casas"]:checked');
+  return seleccionado ? seleccionado.value : "Dimitri";
+}
+
+function actualizarSelectorLiderTresCasas() {
+  const seccion = $("seccion-lider-tres-casas");
+  if (!seccion) return;
+  seccion.classList.toggle("hidden", !esEmblemaTresCasas($("f-emblema")?.value));
+}
+
+function actualizarTooltipNivelVinculo(nivel) {
+  const inputVinculo = $("f-nivel-vinculo");
+  const labelVinculo = document.querySelector('label[for="f-nivel-vinculo"]');
+  const n = parseInt(nivel || 1, 10);
+  let txt = "";
+  if (n >= 20) {
+    txt = "Nivel 20: Medidor de recarga de Emblema reducido a 5 cargas (máx 5). 4 turnos de Fusión.";
+  } else if (n >= 11) {
+    txt = "Nivel 11-19: +1 turno de Fusión (4 turnos). Medidor: 6 cargas.";
+  } else {
+    txt = "Nivel 1-10: 3 turnos de Fusión. Medidor: 6 cargas.";
+  }
+  if (inputVinculo) inputVinculo.title = txt;
+  if (labelVinculo) labelVinculo.title = txt;
+}
+
+function sincronizarEmblemaModal() {
+  const val = $("f-emblema") ? $("f-emblema").value.trim() : "";
+  const nivelVal = $("f-nivel-vinculo") ? Math.max(1, Math.min(20, parseInt($("f-nivel-vinculo").value || 1, 10))) : 1;
+  const tieneEmblema = val.length > 0;
+
+  $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
+  $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
+  if (!tieneEmblema) $("f-fusion").checked = false;
+  actualizarSelectorLiderTresCasas();
+  actualizarTooltipNivelVinculo(nivelVal);
+
+  const prevEmb = state.prevEmblemaModal || "";
+  const prevNiv = state.prevNivelVinculoModal || 1;
+
+  const oldE = buscarEmblemaInfo(prevEmb);
+  const newE = buscarEmblemaInfo(val);
+
+  const oldBond = (oldE && prevEmb) ? obtenerDatosVinculoEmblema(oldE, prevNiv) : null;
+  const newBond = (newE && val) ? obtenerDatosVinculoEmblema(newE, nivelVal) : null;
+
+  const cambioEmblema = (prevEmb.toLowerCase() !== val.toLowerCase());
+  const cambioNivel = (prevNiv !== nivelVal);
+
+  if (cambioEmblema || cambioNivel) {
+    // 1. Revertir bonos y pasivas del estado anterior
+    if (oldBond) {
+      for (const [st, num] of Object.entries(oldBond.stat_boosts || {})) {
+        const el = $(`f-stat-${st}`);
+        if (el) el.value = Math.max(0, parseInt(el.value || 0, 10) - num);
+      }
+      (oldBond.synchro_skills || []).forEach(sk => {
+        const sNom = sk.nombre || sk.sid || sk;
+        const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${sNom}"]`);
+        if (chip) chip.remove();
+      });
+      (oldBond.engage_skills || []).forEach(sk => {
+        const sNom = sk.nombre || sk.sid || sk;
+        const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${sNom}"]`);
+        if (chip) chip.remove();
+      });
+      if (oldE && oldE.engage_attack) {
+        const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="${oldE.engage_attack}"]`);
+        if (chipAtk) chipAtk.remove();
+      }
+    }
+
+    // 2. Aplicar nuevos bonos y pasivas
+    if (newBond) {
+      for (const [st, num] of Object.entries(newBond.stat_boosts || {})) {
+        const el = $(`f-stat-${st}`);
+        if (el) el.value = parseInt(el.value || 0, 10) + num;
+      }
+      (newBond.synchro_skills || []).forEach(sk => {
+        const sNom = sk.nombre || sk.sid || sk;
+        addChip("chips-pasivas", sNom);
+      });
+      if ($("f-fusion") && $("f-fusion").checked) {
+        (newBond.engage_skills || []).forEach(sk => {
+          const sNom = sk.nombre || sk.sid || sk;
+          addChip("chips-pasivas", sNom);
+        });
+        if (newE && newE.engage_attack) {
+          addChip("chips-pasivas", `${newE.engage_attack}`);
+        }
+      }
+
+      if (nivelVal === 20 && (cambioNivel || cambioEmblema)) {
+        mostrarToast(`Emblema ${newE.nombre} (Nv 20): Medidor de recarga reducido a 5`, "ok");
+      } else if (cambioEmblema) {
+        mostrarToast(`Emblema ${newE.nombre} (Nv ${nivelVal}): Bonos y pasivas aplicados`, "ok");
+      }
+    }
+
+    state.prevEmblemaModal = val;
+    state.prevNivelVinculoModal = nivelVal;
+    recalcularCombatStats();
+  }
+}
+
 async function guardarUnidadDesdeModal() {
   const nombre = $("f-nombre").value.trim();
   if (!nombre) {
-    mostrarToast("⚠️ Introduce un nombre para la unidad", "error");
+    mostrarToast("Introduce un nombre para la unidad", "error");
     return;
   }
 
@@ -880,6 +1043,7 @@ async function guardarUnidadDesdeModal() {
   const emblemaNombre = $("f-emblema").value.trim();
   const enFusion = $("f-fusion").checked && !!emblemaNombre;
 
+  const nivelVinculo = $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1;
   const str = parseInt($("f-stat-str").value, 10) || 0;
   const mag = parseInt($("f-stat-mag").value, 10) || 0;
   const dex = parseInt($("f-stat-dex").value, 10) || 0;
@@ -909,11 +1073,15 @@ async function guardarUnidadDesdeModal() {
   inventarioExtra.forEach(nombre_item => inventario.push({ arma: nombre_item, equipada: false }));
 
   const fichaExistente = state.fichas[nombreOriginal || nombre];
+  const estabaEnFusion = fichaExistente && (fichaExistente.en_fusion || fichaExistente.turnos_fusion > 0) && (fichaExistente.turnos_fusion > 0);
+  if (estabaEnFusion) {
+    enFusion = true;
+  }
   const haActuado = fichaExistente ? !!fichaExistente.ha_actuado : false;
   const cargasRuptura = fichaExistente ? (fichaExistente.cargas_ruptura || 0) : 0;
   const esVolador = fichaExistente ? !!fichaExistente.es_volador : undefined;
   const nivelVeneno = fichaExistente ? (fichaExistente.nivel_veneno || 0) : 0;
-  const lider3H = state.modalLider3H || (fichaExistente ? (fichaExistente.lider_tres_casas || "Dimitri") : "Dimitri");
+  const lider3H = obtenerLiderTresCasasSeleccionado();
 
   const payload = {
     nombre,
@@ -931,6 +1099,9 @@ async function guardarUnidadDesdeModal() {
     arma_nombre: armaNombre,
     emblema_nombre: emblemaNombre,
     en_fusion: enFusion,
+    turnos_fusion: estabaEnFusion ? fichaExistente.turnos_fusion : undefined,
+    ataque_emblema_usado: fichaExistente ? fichaExistente.ataque_emblema_usado : undefined,
+    nivel_vinculo: nivelVinculo,
     mov: mov,
     potenciadores_usados: state.potenciadoresModal || [],
     stats: {
@@ -955,9 +1126,9 @@ async function guardarUnidadDesdeModal() {
     crearToken(res.ficha);
     autoGuardarLocal();
     cerrarModal();
-    mostrarToast(`✓ Unidad '${nombre}' guardada con éxito.`, "ok");
+    mostrarToast(`Unidad '${nombre}' guardada con éxito.`, "ok");
   } else {
-    mostrarToast(`⚠️ Error: ${res.error || "No se pudo guardar"}`, "error");
+    mostrarToast(`Error: ${res.error || "No se pudo guardar"}`, "error");
   }
 }
 
@@ -1120,6 +1291,7 @@ function initModalEvents() {
         nivel: nivel,
         es_aliado: esAliado,
         emblema_nombre: emblema,
+        nivel_vinculo: $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1,
         potenciadores_usados: state.potenciadoresModal || []
       });
 
@@ -1154,7 +1326,7 @@ function initModalEvents() {
         }
 
         recalcularCombatStats();
-        mostrarToast(`✨ Datos de ${res.nombre} (Nv ${res.nivel}) cargados del catálogo`, "info");
+        mostrarToast(`Datos de ${res.nombre} (Nv ${res.nivel}) cargados del catálogo`, "info");
       }
     } catch (e) {
       console.warn("Error en autoRellenarStatsDesdeCatalogo:", e);
@@ -1185,104 +1357,45 @@ function initModalEvents() {
   });
 
   // Habilitar checkbox de fusión, auto-aplicar pasivas y modificadores del Emblema
-  $("f-emblema").addEventListener("input", (e) => {
-    const val = e.target.value.trim();
-    const tieneEmblema = val.length > 0;
-    $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
-    $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
-    if (!tieneEmblema) $("f-fusion").checked = false;
-
-    const oldE = buscarEmblemaInfo(state.prevEmblemaModal || "");
-    const newE = buscarEmblemaInfo(val);
-
-    // Revertir bonos y pasivas del emblema anterior
-    if (oldE && oldE !== newE) {
-      if (oldE.synchro_skills) {
-        oldE.synchro_skills.forEach(s => {
-          const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${s}"]`);
-          if (chip) chip.remove();
-        });
-      }
-      if (oldE.engage_skills) {
-        oldE.engage_skills.forEach(s => {
-          const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${s}"]`);
-          if (chip) chip.remove();
-        });
-      }
-      if (oldE.synchro_boosts) {
-        for (const [st, num] of Object.entries(oldE.synchro_boosts)) {
-          const el = $(`f-stat-${st}`);
-          if (el) el.value = Math.max(0, parseInt(el.value || 0, 10) - num);
-        }
-      }
-    }
-
-    // Aplicar nuevos bonos y pasivas
-    if (newE && oldE !== newE) {
-      if (newE.synchro_skills) {
-        newE.synchro_skills.forEach(s => addChip("chips-pasivas", s));
-      }
-      if ($("f-fusion").checked) {
-        if (newE.engage_skills) {
-          newE.engage_skills.forEach(s => addChip("chips-pasivas", s));
-        }
-        if (newE.engage_attack) {
-          addChip("chips-pasivas", `⚡ ${newE.engage_attack}`);
-        }
-      }
-      if (newE.synchro_boosts) {
-        for (const [st, num] of Object.entries(newE.synchro_boosts)) {
-          const el = $(`f-stat-${st}`);
-          if (el) el.value = parseInt(el.value || 0, 10) + num;
-        }
-      }
-      mostrarToast(`💍 Emblema ${newE.nombre}: Pasivas y bonos aplicados`, "ok");
-    }
-
-    const valLow = val.toLowerCase();
-    const es3H_now = valLow.includes("edelgard") || valLow.includes("three houses") || valLow.includes("tres casas") || valLow.includes("brazalete");
-    const g3H_now = $("grupo-lider-3h");
-    if (g3H_now) {
-      if (es3H_now) {
-        g3H_now.classList.remove("hidden");
-        actualizarBotonesLiderModal(state.modalLider3H || "Dimitri");
-      } else {
-        g3H_now.classList.add("hidden");
-      }
-    }
-
-    state.prevEmblemaModal = val;
-    recalcularCombatStats();
-  });
-
-  document.querySelectorAll(".btn-lider-modal").forEach(btn => {
-    btn.addEventListener("click", () => {
-      actualizarBotonesLiderModal(btn.dataset.lider);
-    });
-  });
+  $("f-emblema").addEventListener("input", sincronizarEmblemaModal);
+  $("f-emblema").addEventListener("change", sincronizarEmblemaModal);
+  if ($("f-nivel-vinculo")) {
+    $("f-nivel-vinculo").addEventListener("input", sincronizarEmblemaModal);
+    $("f-nivel-vinculo").addEventListener("change", sincronizarEmblemaModal);
+  }
 
   $("f-fusion").addEventListener("change", (e) => {
     const isChecked = e.target.checked;
+    const nombreOriginal = $("f-edit-original-name") ? $("f-edit-original-name").value : "";
+    const fichaExistente = state.fichas[nombreOriginal];
+    if (fichaExistente && (fichaExistente.en_fusion || fichaExistente.turnos_fusion > 0) && fichaExistente.turnos_fusion > 0 && !isChecked) {
+      e.target.checked = true;
+      mostrarToast(`La fusión no puede retirarse manualmente. Quedan ${fichaExistente.turnos_fusion} turno(s).`, "info");
+      return;
+    }
     const eInfo = buscarEmblemaInfo($("f-emblema").value);
     if (!eInfo) return;
+    const nivelVal = $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1;
+    const bond = obtenerDatosVinculoEmblema(eInfo, nivelVal);
 
     if (isChecked) {
-      if (eInfo.engage_skills) {
-        eInfo.engage_skills.forEach(s => addChip("chips-pasivas", s));
+      if (bond && bond.engage_skills) {
+        bond.engage_skills.forEach(sk => addChip("chips-pasivas", sk.nombre || sk.sid || sk));
       }
       if (eInfo.engage_attack) {
-        addChip("chips-pasivas", `⚡ ${eInfo.engage_attack}`);
+        addChip("chips-pasivas", `${eInfo.engage_attack}`);
       }
-      mostrarToast(`⚡ ¡Fusión Engage con ${eInfo.nombre} activada!`, "ok");
+      mostrarToast(`Fusión Engage con ${eInfo.nombre} activada!`, "ok");
     } else {
-      if (eInfo.engage_skills) {
-        eInfo.engage_skills.forEach(s => {
-          const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${s}"]`);
+      if (bond && bond.engage_skills) {
+        bond.engage_skills.forEach(sk => {
+          const sNom = sk.nombre || sk.sid || sk;
+          const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${sNom}"]`);
           if (chip) chip.remove();
         });
       }
       if (eInfo.engage_attack) {
-        const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="⚡ ${eInfo.engage_attack}"]`);
+        const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="${eInfo.engage_attack}"]`);
         if (chipAtk) chipAtk.remove();
       }
       mostrarToast(`Fusión desactivada`, "info");
@@ -1335,7 +1448,7 @@ function initModalEvents() {
       state.potenciadoresModal.push(nom);
       renderizarBadgesPotenciadores();
       recalcularCombatStats();
-      mostrarToast(`✨ Potenciador aplicado: ${nom}`, "ok");
+      mostrarToast(`Potenciador aplicado: ${nom}`, "ok");
     });
   });
 
@@ -1349,7 +1462,7 @@ function initModalEvents() {
     const res = await api("/api/preset/capitulo7", "POST", { dificultad });
     if (res.ok && res.fichas) {
       actualizarTokens(res.fichas);
-      mostrarToast(`📍 ${res.mensaje || "Preset cargado con éxito"}`, "ok");
+      mostrarToast(`${res.mensaje || "Preset cargado con éxito"}`, "ok");
       setTimeout(lanzarAnalisis, 250);
     }
   });
@@ -1365,16 +1478,16 @@ function initModalEvents() {
     actualizarTokens([]);
     $("analisis-scroll").innerHTML = "";
     localStorage.removeItem("engage_tracker_partida_local");
-    mostrarToast("🗑 Tablero limpio: todas las fichas eliminadas", "info");
+    mostrarToast("Tablero limpio: todas las fichas eliminadas", "info");
   });
 
   // Gestión de Escuadrón Persistente
   $("btn-guardar-squad").addEventListener("click", async () => {
     const res = await api("/api/escuadron/guardar", "POST", {});
     if (res.ok) {
-      mostrarToast(`💾 ${res.mensaje || "Escuadrón guardado con éxito"}`, "ok");
+      mostrarToast(`${res.mensaje || "Escuadrón guardado con éxito"}`, "ok");
     } else {
-      mostrarToast(`⚠️ Error al guardar escuadrón: ${res.error}`, "error");
+      mostrarToast(`Error al guardar escuadrón: ${res.error}`, "error");
     }
   });
 
@@ -1382,10 +1495,10 @@ function initModalEvents() {
     const res = await api("/api/escuadron/desplegar", "POST", {});
     if (res.ok && res.fichas) {
       actualizarTokens(res.fichas);
-      mostrarToast(`🛡️ ${res.mensaje || "Escuadrón desplegado"}`, "ok");
+      mostrarToast(`${res.mensaje || "Escuadrón desplegado"}`, "ok");
       setTimeout(lanzarAnalisis, 250);
     } else {
-      mostrarToast(`⚠️ ${res.error || "No hay escuadrón guardado"}`, "error");
+      mostrarToast(`${res.error || "No hay escuadrón guardado"}`, "error");
     }
   });
 
@@ -1400,7 +1513,7 @@ function initModalEvents() {
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      mostrarToast("📤 Archivo de partida descargado", "ok");
+      mostrarToast("Archivo de partida descargado", "ok");
     }
   });
 
@@ -1417,13 +1530,13 @@ function initModalEvents() {
           state.turno = partida.turno_actual || 1;
           state.fase = partida.fase || "jugador";
           actualizarBadge();
-          mostrarToast(`📥 Partida importada con éxito (${res.fichas.length} unidades)`, "ok");
+          mostrarToast(`Partida importada con éxito (${res.fichas.length} unidades)`, "ok");
           setTimeout(lanzarAnalisis, 250);
         } else {
-          mostrarToast(`⚠️ Error al importar: ${res.error}`, "error");
+          mostrarToast(`Error al importar: ${res.error}`, "error");
         }
       } catch (err) {
-        mostrarToast("⚠️ El archivo seleccionado no es un JSON válido", "error");
+        mostrarToast("El archivo seleccionado no es un JSON válido", "error");
       }
     };
     reader.readAsText(file);
@@ -1454,8 +1567,8 @@ async function lanzarAnalisis() {
     panel.innerHTML = "";
     if (!data || !data.resultados || data.resultados.length === 0) {
       const msg = (data && data.error)
-        ? `⚠️ Error en análisis: ${data.error}`
-        : 'No hay unidades configuradas con stats y armas. Haz clic en el mapa para añadir fichas o pulsa [📍 Preset Cap. 7].';
+        ? `Error en análisis: ${data.error}`
+        : 'No hay unidades configuradas con stats y armas. Haz clic en el mapa para añadir fichas o pulsa [Preset Cap. 7].';
       panel.innerHTML = `<p style="color:var(--text-dim);padding:8px;font-size:12px;">${msg}</p>`;
       return;
     }
@@ -1502,7 +1615,7 @@ $("btn-reactivar").addEventListener("click", async () => {
   const res = await api("/api/turno/reiniciar_acciones", "POST", {});
   if (res.ok && res.fichas) {
     actualizarTokens(res.fichas);
-    mostrarToast("✓ Acciones reactivadas para todos los aliados", "ok");
+    mostrarToast("Acciones reactivadas para todos los aliados", "ok");
     setTimeout(lanzarAnalisis, 250);
   }
 });
@@ -1517,7 +1630,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
         actualizarTokens(res.fichas);
       }
     }
-    $("btn-turno-fin").textContent = "✓ Confirmar Turno Enemigo";
+    $("btn-turno-fin").textContent = "Confirmar Turno Enemigo";
     $("btn-turno-fin").style.color = "var(--red)";
     mostrarToast("Fase Enemiga: puedes aplicar los ataques enemigos previstos o mover sus tokens.", "info");
     setTimeout(lanzarAnalisis, 250);
@@ -1531,7 +1644,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
         actualizarTokens(res.fichas);
       }
     }
-    $("btn-turno-fin").textContent = "Turno Enemigo ✓";
+    $("btn-turno-fin").textContent = "Turno Enemigo";
     $("btn-turno-fin").style.color = "";
     mostrarToast(`Turno ${state.turno} — Fase del jugador`, "ok");
     setTimeout(lanzarAnalisis, 350);
@@ -1547,7 +1660,7 @@ $("btn-reset").addEventListener("click", async () => {
     actualizarTokens(res.fichas || []);
     $("analisis-scroll").innerHTML = "";
     localStorage.removeItem("engage_tracker_partida_local");
-    mostrarToast("↺ Tablero reiniciado al Turno 1", "ok");
+    mostrarToast("Tablero reiniciado al Turno 1", "ok");
     setTimeout(lanzarAnalisis, 350);
   }
 });
@@ -1565,7 +1678,7 @@ async function ejecutarJugada(r) {
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
   if (res.error) {
-    mostrarToast(`⚠️ ${res.error}`, "error");
+    mostrarToast(`${res.error}`, "error");
     return;
   }
 
@@ -1581,29 +1694,29 @@ async function ejecutarJugada(r) {
 
   let toastMsg = "";
   if (kill) {
-    toastMsg = `💥 ${atk.nombre} atacó a ${dfn.nombre} con ${r.arma_recomendada || 'Arma'} (${atkInfo.daño_total_ronda} dmg) → ¡${dfn.nombre} DERROTADO!`;
+    toastMsg = `${atk.nombre} atacó a ${dfn.nombre} con ${r.arma_recomendada || 'Arma'} (${atkInfo.daño_total_ronda} dmg) -> ¡${dfn.nombre} DERROTADO!`;
   } else {
-    toastMsg = `⚔️ ${atk.nombre} infligió ${atkInfo.daño_total_ronda} dmg a ${dfn.nombre}. Queda en ${dfn.hp_actual}/${dfn.hp_max} HP.`;
+    toastMsg = `${atk.nombre} infligió ${atkInfo.daño_total_ronda} dmg a ${dfn.nombre}. Queda en ${dfn.hp_actual}/${dfn.hp_max} HP.`;
   }
 
   const resComb = c && c.resultado ? c.resultado : {};
-  const smash = c && c.resultado ? c.resultado.smash : null;
+  const smash = resComb.smash || null;
   if (resComb.aplica_ruptura && !kill && !(smash && smash.rompio_por_choque)) {
-    toastMsg += ` 💔 ¡Ruptura! ${dfn.nombre} pierde la guardia (no podrá contraatacar).`;
+    toastMsg += ` ¡Ruptura! ${dfn.nombre} pierde la guardia (no podrá contraatacar).`;
   }
 
   if (smash && smash.ocurrido) {
     if (smash.empujado && smash.nueva_pos) {
-      toastMsg += ` 🔨 ¡Smash! ${dfn.nombre} empujado a (${smash.nueva_pos[0]}, ${smash.nueva_pos[1]}).`;
+      toastMsg += ` ¡Smash! ${dfn.nombre} empujado a (${smash.nueva_pos[0]}, ${smash.nueva_pos[1]}).`;
     } else if (smash.rompio_por_choque) {
-      toastMsg += ` 🔨 ¡Smash! ${dfn.nombre} chocó contra obstáculo y sufrió RUPTURA (Break).`;
+      toastMsg += ` ¡Smash! ${dfn.nombre} chocó contra obstáculo y sufrió RUPTURA (Break).`;
     }
   }
 
-  if (r.pos_canter) {
-    toastMsg += ` 🏃 Canter: Refugio en (${r.pos_canter[0]}, ${r.pos_canter[1]}).`;
-  } else if (atkInfo && atkInfo.puede_canter) {
-    toastMsg += ` 🏃 Canter: Puede moverse 2 casillas.`;
+  if (res.canter_aplicado) {
+    toastMsg += ` Canter: refugio en (${res.canter_aplicado[0]}, ${res.canter_aplicado[1]}).`;
+  } else if (res.aviso_canter) {
+    toastMsg += ` ${res.aviso_canter}`;
   }
 
   mostrarToast(toastMsg, kill ? "ok" : "info");
@@ -1622,7 +1735,7 @@ async function ejecutarAtaqueEnemigo(r) {
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
   if (res.error) {
-    mostrarToast(`⚠️ ${res.error}`, "error");
+    mostrarToast(`${res.error}`, "error");
     return;
   }
 
@@ -1633,7 +1746,7 @@ async function ejecutarAtaqueEnemigo(r) {
   const dfn = res.defensor;
   const kill = dfn.hp_actual <= 0;
   mostrarToast(
-    `⚠️ ${r.enemigo} atacó a ${r.aliado}. ${r.aliado} queda en ${dfn.hp_actual}/${dfn.hp_max} HP.`,
+    `${r.enemigo} atacó a ${r.aliado}. ${r.aliado} queda en ${dfn.hp_actual}/${dfn.hp_max} HP.`,
     kill ? "error" : "info"
   );
 
@@ -1642,7 +1755,16 @@ async function ejecutarAtaqueEnemigo(r) {
 
 async function ejecutarCuracion(r) {
   if (r.pos_sugerida) {
-    await api(`/api/fichas/${encodeURIComponent(r.aliado)}/mover`, "POST", { x: r.pos_sugerida[0], y: r.pos_sugerida[1] });
+    const movRes = await api("/api/mover", "POST", {
+      nombre: r.aliado,
+      x: r.pos_sugerida[0],
+      y: r.pos_sugerida[1]
+    });
+    if (movRes.error) {
+      mostrarToast(`No se pudo colocar al curandero: ${movRes.error}`, "error");
+      return;
+    }
+    if (movRes.fichas) actualizarTokens(movRes.fichas);
   }
   const obj = state.fichas[r.objetivo];
   if (obj) {
@@ -1652,7 +1774,7 @@ async function ejecutarCuracion(r) {
     if (res.fichas) actualizarTokens(res.fichas);
   }
   await api("/api/unidad/alternar_actuado", "POST", { nombre: r.aliado });
-  mostrarToast(`🩹 ${r.aliado} usó ${r.baston} en ${r.objetivo} (+${r.curacion_estimada} HP)`, "ok");
+  mostrarToast(`${r.aliado} usó ${r.baston} en ${r.objetivo} (+${r.curacion_estimada} HP)`, "ok");
   setTimeout(lanzarAnalisis, 400);
 }
 
@@ -1665,7 +1787,7 @@ async function ejecutarPocion(r) {
     if (res.fichas) actualizarTokens(res.fichas);
   }
   await api("/api/unidad/alternar_actuado", "POST", { nombre: r.aliado });
-  mostrarToast(`🧪 ${r.aliado} usó ${r.item} (+HP recuperados)`, "ok");
+  mostrarToast(`${r.aliado} usó ${r.item} (+HP recuperados)`, "ok");
   setTimeout(lanzarAnalisis, 400);
 }
 
@@ -1675,7 +1797,7 @@ function renderResultado(container, r) {
   if (r.error) {
     const card = document.createElement("div");
     card.className = "riesgo-card riesgo-moderado";
-    card.innerHTML = `<header>⚠️ ${r.aliado} vs ${r.enemigo}</header><p style="font-size:11px;color:var(--text-dim);">${r.error}</p>`;
+    card.innerHTML = `<header>${r.aliado} vs ${r.enemigo}</header><p style="font-size:11px;color:var(--text-dim);">${r.error}</p>`;
     container.appendChild(card);
     return;
   }
@@ -1687,9 +1809,9 @@ function renderResultado(container, r) {
   card.className = `riesgo-card riesgo-${nivel}`;
 
   const header = document.createElement("header");
-  let icon = "🛡️";
-  if (r.tipo_analisis === "amenaza_enemiga") icon = "⚠️";
-  else if (r.tipo_analisis === "oportunidad_jugador") icon = "⚔️";
+  let icon = "";
+  if (r.tipo_analisis === "amenaza_enemiga") icon = "";
+  else if (r.tipo_analisis === "oportunidad_jugador") icon = "";
 
   header.innerHTML = `
     <span>${icon} ${r.aliado} vs ${r.enemigo}</span>
@@ -1712,7 +1834,7 @@ function renderResultado(container, r) {
     const pe = v.peor_caso_espacial;
     const div = document.createElement("div");
     div.className = "peor-caso-box";
-    div.innerHTML = `📍 <b>Peor caso IA:</b> atacará desde (${pe.pos_optima[0]}, ${pe.pos_optima[1]}) haciendo ${pe.daño_proyectado} de daño a dist. ${pe.distancia_ataque}.`;
+    div.innerHTML = `<b>Peor caso IA:</b> atacará desde (${pe.pos_optima[0]}, ${pe.pos_optima[1]}) haciendo ${pe.daño_proyectado} de daño a dist. ${pe.distancia_ataque}.`;
     card.appendChild(div);
   }
 
@@ -1724,7 +1846,7 @@ function renderResultado(container, r) {
       const item = document.createElement("div");
       item.className = "chain-attack-item";
       const targetName = isEnemy ? r.aliado : r.enemigo;
-      item.innerHTML = `⚔️ <b>Chain Attack (80% Hit):</b> La unidad <b>${ca.nombre}</b> puede realizar ataque en cadena contra <b>${targetName}</b> haciendo <b>${ca.daño} dmg</b> (10% HP).`;
+      item.innerHTML = `<b>Chain Attack (80% Hit):</b> La unidad <b>${ca.nombre}</b> puede realizar ataque en cadena contra <b>${targetName}</b> haciendo <b>${ca.daño} dmg</b> (10% HP).`;
       chainBox.appendChild(item);
     });
     const sub = document.createElement("div");
@@ -1739,7 +1861,7 @@ function renderResultado(container, r) {
     const passBox = document.createElement("div");
     passBox.className = "passivas-box";
     passBox.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;padding:4px 8px;background:rgba(218,165,32,0.12);border-left:3px solid #daa520;border-radius:4px;font-size:11px;";
-    passBox.innerHTML = `<span style="font-weight:bold;color:#ffd700;">🌟 Pasivas:</span> ` +
+    passBox.innerHTML = `<span style="font-weight:bold;color:#ffd700;">Pasivas:</span> ` +
       r.pasivas_activas.map(p => `<span class="badge" style="background:#2a2510;border:1px solid #b8860b;color:#ffd700;padding:1px 6px;border-radius:3px;">${p}</span>`).join(" ");
     card.appendChild(passBox);
   }
@@ -1749,7 +1871,7 @@ function renderResultado(container, r) {
     const suppBox = document.createElement("div");
     suppBox.className = "apoyos-box";
     suppBox.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px 0;padding:4px 8px;background:rgba(70,130,180,0.12);border-left:3px solid #4682b4;border-radius:4px;font-size:11px;";
-    suppBox.innerHTML = `<span style="font-weight:bold;color:#87cefa;">🤝 Apoyos:</span> ` +
+    suppBox.innerHTML = `<span style="font-weight:bold;color:#87cefa;">Apoyos:</span> ` +
       r.apoyos_activos.map(ap => `<span class="badge" style="background:#102030;border:1px solid #4682b4;color:#87cefa;padding:1px 6px;border-radius:3px;">${ap.aliado} (Rango ${ap.rango}): +${ap.hit} Hit, +${ap.avo} Avo</span>`).join(" ");
     card.appendChild(suppBox);
   }
@@ -1758,7 +1880,7 @@ function renderResultado(container, r) {
   if (r.tactica_emblema === "burst") {
     const embBox = document.createElement("div");
     embBox.style.cssText = "margin:4px 0 6px 0;padding:4px 8px;background:linear-gradient(90deg, rgba(138,43,226,0.25), rgba(75,0,130,0.15));border-left:3px solid #9932cc;border-radius:4px;font-size:11px;font-weight:bold;color:#da70d6;";
-    embBox.innerHTML = `⚡ <b>BURST DE EMBLEMA SUGERIDO:</b> Fusión de Emblema lista para rematar al Jefe sin contraataque peligroso.`;
+    embBox.innerHTML = `<b>BURST DE EMBLEMA SUGERIDO:</b> Fusión de Emblema lista para rematar al Jefe sin contraataque peligroso.`;
     card.appendChild(embBox);
   }
 
@@ -1770,19 +1892,19 @@ function renderResultado(container, r) {
       dangerBox.style.background = "rgba(40, 167, 69, 0.18)";
       dangerBox.style.border = "1px solid #28a745";
       dangerBox.style.color = "#a3e635";
-      dangerBox.innerHTML = `🛡️ Casilla 100% segura (0 enemigos alcanzan esta casilla tras atacar)`;
+      dangerBox.innerHTML = `Casilla 100% segura (0 enemigos alcanzan esta casilla tras atacar)`;
     } else if (r.num_amenazas_destino === 1) {
       dangerBox.style.background = "rgba(255, 193, 7, 0.18)";
       dangerBox.style.border = "1px solid #ffc107";
       dangerBox.style.color = "#fde047";
       const nomE = (r.amenazas_en_destino && r.amenazas_en_destino[0]) || "1 enemigo";
-      dangerBox.innerHTML = `⚠️ Al alcance de 1 enemigo tras atacar: ${nomE}`;
+      dangerBox.innerHTML = `Al alcance de 1 enemigo tras atacar: ${nomE}`;
     } else {
       dangerBox.style.background = "rgba(220, 53, 69, 0.22)";
       dangerBox.style.border = "1px solid #dc3545";
       dangerBox.style.color = "#f87171";
       const listaE = (r.amenazas_en_destino || []).slice(0, 3).join(", ");
-      dangerBox.innerHTML = `🔴 Al alcance de ${r.num_amenazas_destino} enemigos tras atacar (${listaE})`;
+      dangerBox.innerHTML = `Al alcance de ${r.num_amenazas_destino} enemigos tras atacar (${listaE})`;
     }
     card.appendChild(dangerBox);
   }
@@ -1806,11 +1928,11 @@ function renderResultado(container, r) {
     const liderActivo = fichaAli.lider_tres_casas || "Dimitri";
     const div3H = document.createElement("div");
     div3H.style.cssText = "display:flex;align-items:center;gap:6px;margin:4px 0 6px 0;padding:4px 8px;background:rgba(218,165,32,0.12);border:1px solid rgba(218,165,32,0.3);border-radius:4px;font-size:11px;";
-    div3H.innerHTML = `<span style="color:#ffd700;font-weight:bold;">👑 Líder 3H:</span>`;
+    div3H.innerHTML = `<span style="color:#ffd700;font-weight:bold;">Líder 3H:</span>`;
     [
-      { id: "Edelgard", label: "🛡️ Edelgard (Hachas)" },
-      { id: "Dimitri",  label: "🗡️ Dimitri (Lanzas)" },
-      { id: "Claude",   label: "🏹 Claude (Arcos)" }
+      { id: "Edelgard", label: "Edelgard (Hachas)" },
+      { id: "Dimitri",  label: "Dimitri (Lanzas)" },
+      { id: "Claude",   label: "Claude (Arcos)" }
     ].forEach(lObj => {
       const btnL = document.createElement("button");
       btnL.type = "button";
@@ -1824,7 +1946,7 @@ function renderResultado(container, r) {
         const res = await api("/api/unidad/alternar_lider_tres_casas", "POST", { nombre: r.aliado, lider: lObj.id });
         if (res && res.ok) {
           if (res.fichas) actualizarTokens(res.fichas);
-          mostrarToast(`👑 Líder Tres Casas cambiado a ${lObj.id} (${r.aliado})`, "ok");
+          mostrarToast(`Líder Tres Casas cambiado a ${lObj.id} (${r.aliado})`, "ok");
           lanzarAnalisis();
         }
       });
@@ -1845,11 +1967,8 @@ function renderResultado(container, r) {
     if (r.pos_sugerida && Array.isArray(r.pos_sugerida)) {
       labelPos = ` [Mover a (${r.pos_sugerida[0]},${r.pos_sugerida[1]})]`;
     }
-    let labelCanter = "";
-    if (r.pos_canter && Array.isArray(r.pos_canter)) {
-      labelCanter = ` → 🏃 Canter (${r.pos_canter[0]},${r.pos_canter[1]})`;
-    }
-    btnExec.innerHTML = `⚔️ <b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
+    const labelCanter = r.pos_canter ? ` -> Canter (${r.pos_canter[0]},${r.pos_canter[1]})` : "";
+    btnExec.innerHTML = `<b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
     btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);
@@ -1861,7 +1980,7 @@ function renderResultado(container, r) {
     btnHeal.type = "button";
     btnHeal.className = "btn-ejecutar-jugada";
     btnHeal.style.background = "linear-gradient(135deg, #1e7e34, #28a745)";
-    btnHeal.innerHTML = `🩹 <b>Usar ${r.baston || 'Bastón'}</b> en ${r.objetivo} (+${r.curacion_estimada} HP)`;
+    btnHeal.innerHTML = `<b>Usar ${r.baston || 'Bastón'}</b> en ${r.objetivo} (+${r.curacion_estimada} HP)`;
     btnHeal.addEventListener("click", () => ejecutarCuracion(r));
     actionBar.appendChild(btnHeal);
     card.appendChild(actionBar);
@@ -1872,7 +1991,7 @@ function renderResultado(container, r) {
     btnPot.type = "button";
     btnPot.className = "btn-ejecutar-jugada";
     btnPot.style.background = "linear-gradient(135deg, #d39e00, #ffc107);color:#111;";
-    btnPot.innerHTML = `🧪 <b>Usar ${r.item || 'Poción'}</b> (+HP)`;
+    btnPot.innerHTML = `<b>Usar ${r.item || 'Poción'}</b> (+HP)`;
     btnPot.addEventListener("click", () => ejecutarPocion(r));
     actionBar.appendChild(btnPot);
     card.appendChild(actionBar);
@@ -1884,7 +2003,7 @@ function renderResultado(container, r) {
       const btnDmg = document.createElement("button");
       btnDmg.type = "button";
       btnDmg.className = "btn-recibir-daño";
-      btnDmg.innerHTML = `⚠️ Aplicar Ataque Enemigo`;
+      btnDmg.innerHTML = `Aplicar Ataque Enemigo`;
       btnDmg.title = `Aplica el ataque de ${r.enemigo} sobre ${r.aliado} restando HP en el tablero`;
       btnDmg.addEventListener("click", () => ejecutarAtaqueEnemigo(r));
       actionBar.appendChild(btnDmg);
@@ -1917,6 +2036,7 @@ function mostrarToast(msg, tipo = "info") {
 // ─── Inicialización ────────────────────────────────────────────────────────
 
 async function init() {
+  await cargarCatalogoEmblemas();
   const estado = await api("/api/estado");
   const ancho = estado.mapa ? estado.mapa.ancho : 24;
   const alto  = estado.mapa ? estado.mapa.alto  : 17;

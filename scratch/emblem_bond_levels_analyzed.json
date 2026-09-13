@@ -1,0 +1,86 @@
+{
+  "GID_マルス": {
+    "gid": "GID_マルス",
+    "nombre": "Marth",
+    "grow_table": "GGID_マルス",
+    "levels": []
+  },
+  "GID_シグルド": {
+    "gid": "GID_シグルド",
+    "nombre": "Sigurd",
+    "grow_table": "GGID_シグルド",
+    "levels": []
+  },
+  "GID_セリカ": {
+    "gid": "GID_セリカ",
+    "nombre": "Celica",
+    "grow_table": "GGID_セリカ",
+    "levels": []
+  },
+  "GID_ミカヤ": {
+    "gid": "GID_ミカヤ",
+    "nombre": "Micaiah",
+    "grow_table": "GGID_ミカヤ",
+    "levels": []
+  },
+  "GID_ロイ": {
+    "gid": "GID_ロイ",
+    "nombre": "Roy",
+    "grow_table": "GGID_ロイ",
+    "levels": []
+  },
+  "GID_リーフ": {
+    "gid": "GID_リーフ",
+    "nombre": "Leif",
+    "grow_table": "GGID_リーフ",
+    "levels": []
+  },
+  "GID_ルキナ": {
+    "gid": "GID_ルキナ",
+    "nombre": "Lucina",
+    "grow_table": "GGID_ルキナ",
+    "levels": []
+  },
+  "GID_リン": {
+    "gid": "GID_リン",
+    "nombre": "Lyn",
+    "grow_table": "GGID_リン",
+    "levels": []
+  },
+  "GID_アイク": {
+    "gid": "GID_アイク",
+    "nombre": "Ike",
+    "grow_table": "GGID_アイク",
+    "levels": []
+  },
+  "GID_ベレト": {
+    "gid": "GID_ベレト",
+    "nombre": "Byleth",
+    "grow_table": "GGID_ベレト",
+    "levels": []
+  },
+  "GID_カムイ": {
+    "gid": "GID_カムイ",
+    "nombre": "Corrin",
+    "grow_table": "GGID_カムイ",
+    "levels": []
+  },
+  "GID_エイリーク": {
+    "gid": "GID_エイリーク",
+    "nombre": "Eirika",
+    "grow_table": "GGID_エイリーク",
+    "levels": []
+  },
+  "GID_エフラム": {
+    "gid": "GID_エフラム",
+    "nombre": "Ephraim",
+    "grow_table": "GGID_エイリーク",
+    "levels": []
+  },
+  "GID_リュール": {
+    "gid": "GID_リュール",
+    "nombre": "Alear",
+    "grow_table": "GGID_リュール",
+    "levels": []
+  }
+}

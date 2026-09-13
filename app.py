@@ -49,6 +49,12 @@ def recargar_catalogo_endpoint():
     return jsonify({"ok": True, "armas": len(_catalogo.get('armas', {})), "emblemas": len(_catalogo.get('emblemas', {}))})
 
 
+@app.route("/api/catalogo/emblemas", methods=["GET"])
+def obtener_catalogo_emblemas():
+    """Devuelve el diccionario completo de Emblemas con sus 20 niveles de vínculo."""
+    return jsonify({"ok": True, "emblemas": _catalogo.get("emblemas", {})})
+
+
 @app.route("/api/mapa/recargar", methods=["POST", "GET"])
 def recargar_mapa_endpoint():
     """Recarga el JSON del mapa activo en caliente, sin reiniciar el servidor.
@@ -551,7 +557,7 @@ def deshacer_accion():
     ok = tablero.deshacer()
     return jsonify({
         "ok": ok,
-        "mensaje": "⏱️ Cronogema activada: Acción deshecha." if ok else "No hay más acciones previas para deshacer.",
+        "mensaje": "Cronogema activada: Acción deshecha." if ok else "No hay más acciones previas para deshacer.",
         "turno": tablero.turno_actual,
         "fase": tablero.fase,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
@@ -564,7 +570,7 @@ def reiniciar_acciones_turno():
     tablero.reiniciar_acciones_turno()
     return jsonify({
         "ok": True,
-        "mensaje": "✓ Acciones de turno reactivadas para todos los aliados.",
+        "mensaje": "Acciones de turno reactivadas para todos los aliados.",
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
 
@@ -636,7 +642,10 @@ def ejecutar_combate():
                 break
 
     # 3. Detectar aliados de apoyo (Backup) cercanos al objetivo para Chain Attacks
-    apoyos_fichas = obtener_aliados_backup(f_atk, f_def)
+    apoyos_fichas = obtener_aliados_backup(f_atk, f_def, tablero=tablero)
+    for a in apoyos_fichas:
+        if a.stats and a.arma:
+            setattr(a.stats, 'arma', a.arma)
     aliados_backup = [a.stats for a in apoyos_fichas]
 
     # 4. Distancia y terrenos
@@ -751,12 +760,33 @@ def ejecutar_combate():
     if f_atk.es_aliado:
         f_atk.ha_actuado = True
 
-    # Medidor de Emblema (si aliado combate)
-    if f_atk.es_aliado and f_atk.energia_emblema < f_atk.max_energia_emblema and not f_atk.en_fusion:
-        ganancia = 1
-        if hp_def_final <= 0:
-            ganancia += 1
-        f_atk.energia_emblema = min(f_atk.max_energia_emblema, f_atk.energia_emblema + ganancia)
+    # Registrar uso de ataque o tecnica especial de Engage (solo 1 vez por fusion)
+    if es_engage_attack:
+        f_atk.ataque_emblema_usado = True
+        if f_atk.stats:
+            setattr(f_atk.stats, 'ataque_emblema_usado', True)
+
+    # Medidor de Emblema (Engage Gauge):
+    # La recarga de emblema solo entra en vigor cuando se hayan usado y gastado todos los turnos de fusion
+    # Atacar da 1 recarga (+1 o +2 extra por remate/Libération)
+    if f_atk.es_aliado and not f_atk.en_fusion and getattr(f_atk, 'turnos_fusion', 0) <= 0:
+        if getattr(t_atk, 'es_recarga_emblema', False):
+            f_atk.energia_emblema = f_atk.max_energia_emblema
+        else:
+            ganancia = 1
+            if hp_def_final <= 0:
+                nombre_arma_l = str(getattr(f_atk.arma, 'nombre', '')).lower() if f_atk.arma else ""
+                es_lib = any(w in nombre_arma_l for w in ('liberation', 'libération')) or (f_atk.stats and getattr(f_atk.stats, 'tiene_liberation', False))
+                ganancia += 2 if es_lib else 1
+            f_atk.energia_emblema = min(f_atk.max_energia_emblema, f_atk.energia_emblema + ganancia)
+        if f_atk.stats:
+            f_atk.stats.energia_emblema = f_atk.energia_emblema
+
+    # Recibir un ataque da otra recarga para defensores aliados fuera de fusion
+    if f_def.es_aliado and not f_def.en_fusion and getattr(f_def, 'turnos_fusion', 0) <= 0:
+        f_def.energia_emblema = min(f_def.max_energia_emblema, f_def.energia_emblema + 1)
+        if f_def.stats:
+            f_def.stats.energia_emblema = f_def.energia_emblema
 
     return jsonify({
         "ok": True,

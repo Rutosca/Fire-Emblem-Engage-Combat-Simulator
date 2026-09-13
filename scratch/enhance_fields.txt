@@ -1,0 +1,11 @@
+EnhanceLevel
+EnhanceValue.Def
+EnhanceValue.Hp
+EnhanceValue.Luck
+EnhanceValue.Magic
+EnhanceValue.Mdef
+EnhanceValue.Move
+EnhanceValue.Phys
+EnhanceValue.Quick
+EnhanceValue.Str
+EnhanceValue.Tech

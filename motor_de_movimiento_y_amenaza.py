@@ -116,6 +116,31 @@ class AnalizadorAmenaza:
         # Devolvemos solo las coordenadas (x, y) de las casillas alcanzables
         return set(visitados.keys())
 
+    def calcular_movimiento_restante(
+        self,
+        unidad: UnidadMock,
+        casillas_bloqueadas: Optional[Set[Tuple[int, int]]] = None
+    ) -> dict:
+        """Devuelve cada casilla alcanzable y el movimiento que queda al llegar."""
+        cola = deque([(unidad.x, unidad.y, unidad.movimiento_max)])
+        visitados = {(unidad.x, unidad.y): unidad.movimiento_max}
+        bloqueadas = casillas_bloqueadas or set()
+        tiene_pass = getattr(unidad, 'tiene_pass', False)
+        direcciones = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+        while cola:
+            cx, cy, mov_restante = cola.popleft()
+            for dx, dy in direcciones:
+                nx, ny = cx + dx, cy + dy
+                if not tiene_pass and (nx, ny) in bloqueadas:
+                    continue
+                coste = self._obtener_coste_terreno(nx, ny, unidad.es_volador)
+                nuevo_mov = mov_restante - coste
+                if nuevo_mov >= 0 and nuevo_mov > visitados.get((nx, ny), -1):
+                    visitados[(nx, ny)] = nuevo_mov
+                    cola.append((nx, ny, nuevo_mov))
+        return visitados
+
     def calcular_rango_amenaza(self, unidad: UnidadMock) -> Tuple[Set[Tuple[int, int]], Set[Tuple[int, int]]]:
         """
         Paso 2: A partir de donde puede moverse, calcula hasta dónde puede atacar (Rango Rojo).

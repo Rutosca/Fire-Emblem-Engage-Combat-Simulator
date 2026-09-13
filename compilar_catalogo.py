@@ -526,16 +526,16 @@ def compilar():
             "nombre": nombre,
             "icono": s.get("IconName", ""),
             "stat_boosts": {
-                "hp": to_int(s.get("Enhance.Hp")),
-                "str": to_int(s.get("Enhance.Str")),
-                "mag": to_int(s.get("Enhance.Magic")),
-                "dex": to_int(s.get("Enhance.Tech")),
-                "spd": to_int(s.get("Enhance.Quick")),
-                "def": to_int(s.get("Enhance.Def")),
-                "res": to_int(s.get("Enhance.Mdef")),
-                "lck": to_int(s.get("Enhance.Luck")),
-                "bld": to_int(s.get("Enhance.Phys")),
-                "mov": to_int(s.get("Enhance.Move")),
+                "hp": to_int(s.get("EnhanceValue.Hp") or s.get("Enhance.Hp")),
+                "str": to_int(s.get("EnhanceValue.Str") or s.get("Enhance.Str")),
+                "mag": to_int(s.get("EnhanceValue.Magic") or s.get("Enhance.Magic")),
+                "dex": to_int(s.get("EnhanceValue.Tech") or s.get("Enhance.Tech")),
+                "spd": to_int(s.get("EnhanceValue.Quick") or s.get("Enhance.Quick")),
+                "def": to_int(s.get("EnhanceValue.Def") or s.get("Enhance.Def")),
+                "res": to_int(s.get("EnhanceValue.Mdef") or s.get("Enhance.Mdef")),
+                "lck": to_int(s.get("EnhanceValue.Luck") or s.get("Enhance.Luck")),
+                "bld": to_int(s.get("EnhanceValue.Phys") or s.get("Enhance.Phys")),
+                "mov": to_int(s.get("EnhanceValue.Move") or s.get("Enhance.Move")),
             },
             "combat_mods": {
                 "power": to_int(s.get("Power")),
@@ -548,76 +548,134 @@ def compilar():
 
     print(f"Habilidades procesadas: {len(habilidades)}")
 
-    # 5. Emblemas (God) — Extracción en dos pasadas
-    gods_raw = parsear_xml_generico(os.path.join(DATAMINE_DIR, "God.xml"))
-    
-    # Pasada 1: Tablas de crecimiento de Engage (armas, habilidades synchro y habilidades engage hasta nivel 10)
-    tablas_crecimiento = {}
+    # 5. Emblemas (God) — Extracción canónica de niveles de vínculo (1 a 20)
+    god_tree = ET.parse(os.path.join(DATAMINE_DIR, "God.xml"))
+    god_sheets = god_tree.getroot().findall("Sheet")
+    god_sheet_0 = god_sheets[0].find("Data").findall("Param")
+    god_sheet_1 = god_sheets[1].find("Data").findall("Param")
+
+    # Mapeo de niveles por tabla de crecimiento (Ggid)
     current_ggid = None
-    for g in gods_raw:
-        g_ggid = g.get("Ggid")
-        if g_ggid:
-            current_ggid = g_ggid
-            if current_ggid not in tablas_crecimiento:
-                tablas_crecimiento[current_ggid] = {"items": [], "skills": [], "synchro_skills": []}
-        if current_ggid:
-            lvl_str = g.get("Level")
-            if lvl_str and lvl_str.isdigit():
-                lvl = int(lvl_str)
-                if 1 <= lvl <= 10:
-                    e_items = g.get("EngageItems", "")
-                    if e_items:
-                        for iid in e_items.split(";"):
-                            iid = iid.strip()
-                            if iid and iid not in tablas_crecimiento[current_ggid]["items"]:
-                                tablas_crecimiento[current_ggid]["items"].append(iid)
-                    e_skills = g.get("EngageSkills", "")
-                    if e_skills:
-                        for sid in e_skills.split(";"):
-                            sid = sid.strip()
-                            if sid and sid not in tablas_crecimiento[current_ggid]["skills"]:
-                                tablas_crecimiento[current_ggid]["skills"].append(sid)
-                    s_skills = g.get("SynchroSkills", "")
-                    if s_skills:
-                        for sid in s_skills.split(";"):
-                            sid = sid.strip()
-                            if sid and sid not in tablas_crecimiento[current_ggid]["synchro_skills"]:
-                                tablas_crecimiento[current_ggid]["synchro_skills"].append(sid)
+    levels_by_ggid = {}
+    for r in god_sheet_1:
+        ggid = r.attrib.get("Ggid", "").strip()
+        if ggid:
+            current_ggid = ggid
+        if not current_ggid:
+            continue
+        lvl_str = r.attrib.get("Level", "").strip()
+        if not lvl_str or not lvl_str.isdigit():
+            continue
+        lvl = int(lvl_str)
+        if current_ggid not in levels_by_ggid:
+            levels_by_ggid[current_ggid] = {}
+        
+        sync_skills = [s.strip() for s in r.attrib.get("SynchroSkills", "").split(";") if s.strip()]
+        inh_skills = [s.strip() for s in r.attrib.get("InheritanceSkills", "").split(";") if s.strip()]
+        eng_skills = [s.strip() for s in r.attrib.get("EngageSkills", "").split(";") if s.strip()]
+        eng_items = [s.strip() for s in r.attrib.get("EngageItems", "").split(";") if s.strip()]
 
-    # Pasada 2: Registro maestro de Emblemas (GID_*)
+        levels_by_ggid[current_ggid][lvl] = {
+            "synchro_skills": sync_skills,
+            "inheritance_skills": inh_skills,
+            "engage_skills": eng_skills,
+            "engage_items": eng_items
+        }
+
     emblemas = {}
-    for g in gods_raw:
-        gid = g.get("Gid")
-        if not gid:
+
+    for g in god_sheet_0:
+        gid = g.attrib.get("Gid")
+        if not gid or gid.startswith("GID_M0") or "相手" in gid or "敵" in gid:
             continue
 
-        # Filtrar duplicados de scripts de eventos / enemigos de capítulos / marcadores vacíos
-        if gid.startswith("GID_M0") or "相手" in gid or "敵" in gid:
-            continue
-
-        mid = g.get("Mid", "")
-        ascii_name = g.get("AsciiName", "")
-        nombre = trans.get(mid) or ascii_name or limpiar_nombre(gid, g.get("Name"), trans)
+        mid = g.attrib.get("Mid", "")
+        ascii_name = g.attrib.get("AsciiName", "")
+        nombre = trans.get(mid) or ascii_name or limpiar_nombre(gid, g.attrib.get("Name"), trans)
         if not nombre or nombre.startswith("GID_") or nombre == "???":
             continue
 
-        gt = g.get("GrowTable", "")
-        engage_items = list(tablas_crecimiento.get(gt, {}).get("items", []))
-        engage_skills = list(tablas_crecimiento.get(gt, {}).get("skills", []))
-        synchro_skills = list(tablas_crecimiento.get(gt, {}).get("synchro_skills", []))
+        gt = g.attrib.get("GrowTable", "")
+        raw_levels = levels_by_ggid.get(gt, {})
 
+        bond_levels = {}
+        active_stats = {s: 0 for s in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld", "mov"]}
+        active_passives = {}
+        active_items = []
+        active_engage_skills = []
+
+        for l in range(1, 21):
+            lvl_data = raw_levels.get(l, {"synchro_skills": [], "inheritance_skills": [], "engage_skills": [], "engage_items": []})
+
+            # Armas Engage desbloqueadas en este nivel o previos
+            for iid in lvl_data["engage_items"]:
+                if iid not in [it["iid"] for it in active_items]:
+                    it_nom = armas.get(iid, {}).get("nombre") or trans.get(f"MIID_{iid}") or trans.get(iid) or iid
+                    active_items.append({"iid": iid, "nombre": it_nom})
+
+            # Habilidades Engage desbloqueadas
+            for sid in lvl_data["engage_skills"]:
+                if sid not in [es["sid"] for es in active_engage_skills]:
+                    s_nom = habilidades.get(sid, {}).get("nombre") or trans.get(f"MSID_{sid}") or trans.get(sid) or sid
+                    active_engage_skills.append({"sid": sid, "nombre": s_nom})
+
+            # Habilidades de Sincronía (distinguiendo entre potenciadores de stat y pasivas de combate)
+            for sid in lvl_data["synchro_skills"]:
+                sk_info = habilidades.get(sid)
+                enh = sk_info.get("stat_boosts", {}) if sk_info else {}
+                has_enh = any(v > 0 for v in enh.values())
+                if has_enh:
+                    for stat_k, val in enh.items():
+                        if val > 0:
+                            active_stats[stat_k] = max(active_stats.get(stat_k, 0), val)
+                else:
+                    if "特効" in sid:
+                        continue
+                    s_nom = sk_info.get("nombre") if sk_info else (trans.get(f"MSID_{sid}") or trans.get(sid) or sid)
+                    base_key = sid.rstrip("＋+0123456789")
+                    active_passives[base_key] = {"sid": sid, "nombre": s_nom}
+
+            # Habilidades heredables desbloqueadas en este nivel (se guardan para referencia pero no se auto-equipan)
+            inh_at_level = []
+            for sid in lvl_data["inheritance_skills"]:
+                s_nom = habilidades.get(sid, {}).get("nombre") or trans.get(f"MSID_{sid}") or trans.get(sid) or sid
+                inh_at_level.append({"sid": sid, "nombre": s_nom})
+
+            cur_boosts = {k: v for k, v in active_stats.items() if v > 0}
+
+            bond_levels[str(l)] = {
+                "level": l,
+                "stat_boosts": dict(cur_boosts),
+                "synchro_skills": list(active_passives.values()),
+                "engage_items": list(active_items),
+                "engage_skills": list(active_engage_skills),
+                "inheritance_skills": inh_at_level,
+                "max_energia_emblema": 5 if l >= 20 else 6
+            }
+
+        fb10 = bond_levels.get("10", bond_levels.get("1", {}))
         emblemas[gid] = {
             "id": gid,
             "nombre": nombre,
             "ascii_name": ascii_name,
-            "link_name": g.get("LinkName", ""),
+            "link_name": g.attrib.get("LinkName", ""),
             "grow_table": gt,
-            "engage_items": engage_items,
-            "engage_skills": engage_skills,
-            "synchro_skills": synchro_skills,
+            "engage_items": [it["iid"] for it in fb10.get("engage_items", [])],
+            "engage_skills": [sk["sid"] for sk in fb10.get("engage_skills", [])],
+            "synchro_skills": [sk["sid"] for sk in fb10.get("synchro_skills", [])],
+            "bond_levels": bond_levels
         }
 
-    print(f"Emblemas procesados: {len(emblemas)}")
+    # Integrar Emblemas de DLC (Edelgard/3H, Tiki, Hector, Veronica, Soren, Camilla, Chrom/Robin)
+    dlc_canon_path = os.path.join(BASE_DIR, "json", "dlc_emblems_canon.json")
+    if os.path.exists(dlc_canon_path):
+        with open(dlc_canon_path, "r", encoding="utf-8") as f:
+            dlc_data = json.load(f)
+        for dlc_gid, dlc_info in dlc_data.items():
+            emblemas[dlc_gid] = dlc_info
+        print(f"Emblemas DLC integrados: {len(dlc_data)}")
+
+    print(f"Total Emblemas procesados (Base + DLC): {len(emblemas)}")
 
     # Guardar catálogo maestro compilado
     catalogo_final = {
@@ -631,6 +689,12 @@ def compilar():
     output_path = os.path.join(BASE_DIR, "catalogo_engage.json")
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(catalogo_final, f, indent=2, ensure_ascii=False)
+
+    json_dir = os.path.join(BASE_DIR, "json")
+    if os.path.exists(json_dir):
+        json_output = os.path.join(json_dir, "catalogo_engage.json")
+        with open(json_output, "w", encoding="utf-8") as f:
+            json.dump(catalogo_final, f, indent=2, ensure_ascii=False)
 
     print(f"\n[OK] Catalogo maestro compilado con exito: {output_path}")
     print(f"Tamano total: {os.path.getsize(output_path) / 1024:.1f} KB")

@@ -1,0 +1,6517 @@
+{
+  "GID_DLC_EDELGARD": {
+    "id": "GID_DLC_EDELGARD",
+    "nombre": "Edelgard / Dimitri / Claude",
+    "ascii_name": "Edelgard",
+    "link_name": "Edelgard",
+    "grow_table": "GGID_EDELGARD",
+    "engage_items": [
+      "Aymr (Edelgard)",
+      "Areadbhar (Dimitri)"
+    ],
+    "engage_skills": [
+      "Combat Arts"
+    ],
+    "synchro_skills": [
+      "Gambit",
+      "Friendly Rivalry",
+      "Lineage"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 1,
+          "def": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "def": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Assembly Gambit",
+            "nombre": "Assembly Gambit",
+            "sp": "1500"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "def": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Dex +1",
+            "nombre": "Str/Dex +1",
+            "sp": "700"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Bow Guard 1",
+            "nombre": "Bow Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 2,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Dex +2",
+            "nombre": "Str/Dex +2",
+            "sp": "1600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Bow Guard 2",
+            "nombre": "Bow Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync",
+            "nombre": "Weapon Sync"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Dex +3",
+            "nombre": "Str/Dex +3",
+            "sp": "4200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync",
+            "nombre": "Weapon Sync"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync",
+            "nombre": "Weapon Sync"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Bow Guard 3",
+            "nombre": "Bow Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync",
+            "nombre": "Weapon Sync"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          },
+          {
+            "iid": "Failnaught (Claude)",
+            "nombre": "Failnaught (Claude)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "str": 4,
+          "dex": 3,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync",
+            "nombre": "Weapon Sync"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          },
+          {
+            "iid": "Failnaught (Claude)",
+            "nombre": "Failnaught (Claude)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Dex +4",
+            "nombre": "Str/Dex +4",
+            "sp": "6000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "str": 4,
+          "dex": 3,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync+",
+            "nombre": "Weapon Sync+"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          },
+          {
+            "iid": "Failnaught (Claude)",
+            "nombre": "Failnaught (Claude)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Bow Guard 4",
+            "nombre": "Bow Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "str": 4,
+          "dex": 4,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync+",
+            "nombre": "Weapon Sync+"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          },
+          {
+            "iid": "Failnaught (Claude)",
+            "nombre": "Failnaught (Claude)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Dex +5",
+            "nombre": "Str/Dex +5",
+            "sp": "8400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "str": 5,
+          "dex": 4,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync+",
+            "nombre": "Weapon Sync+"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          },
+          {
+            "iid": "Failnaught (Claude)",
+            "nombre": "Failnaught (Claude)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Bow Guard 5",
+            "nombre": "Bow Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "str": 5,
+          "dex": 4,
+          "def": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Gambit",
+            "nombre": "Gambit"
+          },
+          {
+            "sid": "Friendly Rivalry",
+            "nombre": "Friendly Rivalry"
+          },
+          {
+            "sid": "Lineage",
+            "nombre": "Lineage"
+          },
+          {
+            "sid": "Weapon Sync+",
+            "nombre": "Weapon Sync+"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Aymr (Edelgard)",
+            "nombre": "Aymr (Edelgard)"
+          },
+          {
+            "iid": "Areadbhar (Dimitri)",
+            "nombre": "Areadbhar (Dimitri)"
+          },
+          {
+            "iid": "Failnaught (Claude)",
+            "nombre": "Failnaught (Claude)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Combat Arts",
+            "nombre": "Combat Arts"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  },
+  "GID_DLC_TIKI": {
+    "id": "GID_DLC_TIKI",
+    "nombre": "Tiki",
+    "ascii_name": "Tiki",
+    "link_name": "Tiki",
+    "grow_table": "GGID_TIKI",
+    "engage_items": [
+      "Eternal Claw",
+      "Tail Smash",
+      "Fire Breath",
+      "Ice Breath",
+      "Flame Breath",
+      "Dark Breath",
+      "Fog Breath"
+    ],
+    "engage_skills": [
+      "Draconic Form"
+    ],
+    "synchro_skills": [
+      "Starsphere",
+      "Geosphere",
+      "Lifesphere",
+      "Lightsphere"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "hp": 5,
+          "def": 1,
+          "lck": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "hp": 5,
+          "def": 1,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "HP/Lck +2",
+            "nombre": "HP/Lck +2",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "hp": 5,
+          "def": 1,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "hp": 5,
+          "def": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Special Guard 1",
+            "nombre": "Special Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "hp": 5,
+          "def": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "hp": 5,
+          "def": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "hp": 7,
+          "def": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "HP/Lck +4",
+            "nombre": "HP/Lck +4",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "hp": 7,
+          "def": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere",
+            "nombre": "Lifesphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "hp": 7,
+          "def": 2,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere",
+            "nombre": "Lifesphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Special Guard 2",
+            "nombre": "Special Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "hp": 7,
+          "def": 2,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere",
+            "nombre": "Lifesphere"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "hp": 7,
+          "def": 2,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere",
+            "nombre": "Lifesphere"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "hp": 7,
+          "def": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere",
+            "nombre": "Lifesphere"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "HP/Lck +6",
+            "nombre": "HP/Lck +6",
+            "sp": "1100"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere",
+            "nombre": "Lifesphere"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Special Guard 3",
+            "nombre": "Special Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere+",
+            "nombre": "Lifesphere+"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 3,
+          "lck": 8
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere",
+            "nombre": "Geosphere"
+          },
+          {
+            "sid": "Lifesphere+",
+            "nombre": "Lifesphere+"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "HP/Lck +8",
+            "nombre": "HP/Lck +8",
+            "sp": "1900"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 3,
+          "lck": 8
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere+",
+            "nombre": "Geosphere+"
+          },
+          {
+            "sid": "Lifesphere+",
+            "nombre": "Lifesphere+"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 4,
+          "lck": 8
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere+",
+            "nombre": "Geosphere+"
+          },
+          {
+            "sid": "Lifesphere+",
+            "nombre": "Lifesphere+"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Special Guard 4",
+            "nombre": "Special Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 4,
+          "lck": 10
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere+",
+            "nombre": "Geosphere+"
+          },
+          {
+            "sid": "Lifesphere+",
+            "nombre": "Lifesphere+"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "HP/Lck +10",
+            "nombre": "HP/Lck +10",
+            "sp": "3600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 4,
+          "lck": 10
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere+",
+            "nombre": "Geosphere+"
+          },
+          {
+            "sid": "Lifesphere++",
+            "nombre": "Lifesphere++"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Special Guard 5",
+            "nombre": "Special Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "hp": 10,
+          "def": 4,
+          "lck": 10
+        },
+        "synchro_skills": [
+          {
+            "sid": "Starsphere",
+            "nombre": "Starsphere"
+          },
+          {
+            "sid": "Geosphere+",
+            "nombre": "Geosphere+"
+          },
+          {
+            "sid": "Lifesphere++",
+            "nombre": "Lifesphere++"
+          },
+          {
+            "sid": "Lightsphere",
+            "nombre": "Lightsphere"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Eternal Claw",
+            "nombre": "Eternal Claw"
+          },
+          {
+            "iid": "Tail Smash",
+            "nombre": "Tail Smash"
+          },
+          {
+            "iid": "Fire Breath",
+            "nombre": "Fire Breath"
+          },
+          {
+            "iid": "Ice Breath",
+            "nombre": "Ice Breath"
+          },
+          {
+            "iid": "Flame Breath",
+            "nombre": "Flame Breath"
+          },
+          {
+            "iid": "Dark Breath",
+            "nombre": "Dark Breath"
+          },
+          {
+            "iid": "Fog Breath",
+            "nombre": "Fog Breath"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Draconic Form",
+            "nombre": "Draconic Form"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  },
+  "GID_DLC_HECTOR": {
+    "id": "GID_DLC_HECTOR",
+    "nombre": "Hector",
+    "ascii_name": "Hector",
+    "link_name": "Hector",
+    "grow_table": "GGID_HECTOR",
+    "engage_items": [
+      "Wolf Beil",
+      "Runesword"
+    ],
+    "engage_skills": [
+      "Impenetrable"
+    ],
+    "synchro_skills": [
+      "Quick Riposte",
+      "Adaptability",
+      "Heavy Attack"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "str": 1,
+          "def": 2,
+          "bld": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "str": 2,
+          "def": 2,
+          "bld": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Def +1",
+            "nombre": "Str/Def +1",
+            "sp": "700"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "str": 2,
+          "def": 2,
+          "bld": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "str": 2,
+          "def": 3,
+          "bld": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Axe Guard 1",
+            "nombre": "Axe Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "str": 2,
+          "def": 3,
+          "bld": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "str": 2,
+          "def": 3,
+          "bld": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "str": 2,
+          "def": 3,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Def +2",
+            "nombre": "Str/Def +2",
+            "sp": "1600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "str": 2,
+          "def": 3,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "str": 3,
+          "def": 3,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Axe Guard 2",
+            "nombre": "Axe Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "str": 3,
+          "def": 3,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "str": 3,
+          "def": 3,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "str": 3,
+          "def": 3,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Def +3",
+            "nombre": "Str/Def +3",
+            "sp": "4200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "str": 3,
+          "def": 4,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Axe Guard 3",
+            "nombre": "Axe Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "str": 4,
+          "def": 4,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Def +4",
+            "nombre": "Str/Def +4",
+            "sp": "6000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "str": 4,
+          "def": 4,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte",
+            "nombre": "Quick Riposte"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          },
+          {
+            "iid": "Armads",
+            "nombre": "Armads"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "str": 4,
+          "def": 4,
+          "bld": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte+",
+            "nombre": "Quick Riposte+"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          },
+          {
+            "iid": "Armads",
+            "nombre": "Armads"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "str": 4,
+          "def": 4,
+          "bld": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte+",
+            "nombre": "Quick Riposte+"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          },
+          {
+            "iid": "Armads",
+            "nombre": "Armads"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Axe Guard 4",
+            "nombre": "Axe Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "str": 4,
+          "def": 5,
+          "bld": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte+",
+            "nombre": "Quick Riposte+"
+          },
+          {
+            "sid": "Adaptability",
+            "nombre": "Adaptability"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          },
+          {
+            "iid": "Armads",
+            "nombre": "Armads"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Str/Def +5",
+            "nombre": "Str/Def +5",
+            "sp": "8400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "str": 4,
+          "def": 5,
+          "bld": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte+",
+            "nombre": "Quick Riposte+"
+          },
+          {
+            "sid": "Adaptability+",
+            "nombre": "Adaptability+"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          },
+          {
+            "iid": "Armads",
+            "nombre": "Armads"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Axe Guard 5",
+            "nombre": "Axe Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "str": 4,
+          "def": 5,
+          "bld": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Quick Riposte+",
+            "nombre": "Quick Riposte+"
+          },
+          {
+            "sid": "Adaptability+",
+            "nombre": "Adaptability+"
+          },
+          {
+            "sid": "Heavy Attack",
+            "nombre": "Heavy Attack"
+          },
+          {
+            "sid": "Piercing Glare",
+            "nombre": "Piercing Glare"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Wolf Beil",
+            "nombre": "Wolf Beil"
+          },
+          {
+            "iid": "Runesword",
+            "nombre": "Runesword"
+          },
+          {
+            "iid": "Armads",
+            "nombre": "Armads"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Impenetrable",
+            "nombre": "Impenetrable"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  },
+  "GID_DLC_VERONICA": {
+    "id": "GID_DLC_VERONICA",
+    "nombre": "Veronica",
+    "ascii_name": "Veronica",
+    "link_name": "Veronica",
+    "grow_table": "GGID_VERONICA",
+    "engage_items": [
+      "Hliðskjálf",
+      "Fortify+"
+    ],
+    "engage_skills": [
+      "Contract"
+    ],
+    "synchro_skills": [
+      "Reprisal",
+      "Book of Worlds",
+      "Level Boost"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "mag": 2,
+          "res": 1,
+          "lck": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "mag": 2,
+          "res": 2,
+          "lck": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Dex +1",
+            "nombre": "Mag/Dex +1",
+            "sp": "700"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "mag": 2,
+          "res": 2,
+          "lck": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "mag": 2,
+          "res": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Knife Guard 1",
+            "nombre": "Knife Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "mag": 2,
+          "res": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "mag": 2,
+          "res": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Dex +2",
+            "nombre": "Mag/Dex +2",
+            "sp": "1600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 2,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 3,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Knife Guard 2",
+            "nombre": "Knife Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 3,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 3,
+          "lck": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Dex +3",
+            "nombre": "Mag/Dex +3",
+            "sp": "4200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "mag": 3,
+          "res": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Knife Guard 3",
+            "nombre": "Knife Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "mag": 4,
+          "res": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Dex +4",
+            "nombre": "Mag/Dex +4",
+            "sp": "6000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "mag": 4,
+          "res": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          },
+          {
+            "iid": "Élivágar",
+            "nombre": "Élivágar"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "mag": 4,
+          "res": 3,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          },
+          {
+            "iid": "Élivágar",
+            "nombre": "Élivágar"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "mag": 4,
+          "res": 4,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal",
+            "nombre": "Reprisal"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          },
+          {
+            "iid": "Élivágar",
+            "nombre": "Élivágar"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Knife Guard 4",
+            "nombre": "Knife Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "mag": 4,
+          "res": 4,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal+",
+            "nombre": "Reprisal+"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          },
+          {
+            "iid": "Élivágar",
+            "nombre": "Élivágar"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Dex +5",
+            "nombre": "Mag/Dex +5",
+            "sp": "8400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "mag": 5,
+          "res": 4,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal+",
+            "nombre": "Reprisal+"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          },
+          {
+            "iid": "Élivágar",
+            "nombre": "Élivágar"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Knife Guard 5",
+            "nombre": "Knife Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "mag": 5,
+          "res": 4,
+          "lck": 6
+        },
+        "synchro_skills": [
+          {
+            "sid": "Reprisal+",
+            "nombre": "Reprisal+"
+          },
+          {
+            "sid": "Book of Worlds",
+            "nombre": "Book of Worlds"
+          },
+          {
+            "sid": "Level Boost",
+            "nombre": "Level Boost"
+          },
+          {
+            "sid": "SP Conversion",
+            "nombre": "SP Conversion"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Hliðskjálf",
+            "nombre": "Hliðskjálf"
+          },
+          {
+            "iid": "Fortify+",
+            "nombre": "Fortify+"
+          },
+          {
+            "iid": "Élivágar",
+            "nombre": "Élivágar"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Contract",
+            "nombre": "Contract"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  },
+  "GID_DLC_SOREN": {
+    "id": "GID_DLC_SOREN",
+    "nombre": "Soren",
+    "ascii_name": "Soren",
+    "link_name": "Soren",
+    "grow_table": "GGID_SOREN",
+    "engage_items": [
+      "Bolting",
+      "Reflect"
+    ],
+    "engage_skills": [
+      "Flare"
+    ],
+    "synchro_skills": [
+      "Assign Decoy",
+      "Anima Focus",
+      "Keen Insight"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "mag": 1,
+          "dex": 1,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "mag": 2,
+          "dex": 1,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Res +1",
+            "nombre": "Mag/Res +1",
+            "sp": "700"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "mag": 2,
+          "dex": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Magic Guard 1",
+            "nombre": "Magic Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "mag": 2,
+          "dex": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "mag": 2,
+          "dex": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "mag": 2,
+          "dex": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "mag": 2,
+          "dex": 2,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Res +2",
+            "nombre": "Mag/Res +2",
+            "sp": "1600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 2,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Magic Guard 2",
+            "nombre": "Magic Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 2,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 2,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 2,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Res +3",
+            "nombre": "Mag/Res +3",
+            "sp": "4200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Magic Guard 3",
+            "nombre": "Magic Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 3,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Res +4",
+            "nombre": "Mag/Res +4",
+            "sp": "6000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 3,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          },
+          {
+            "iid": "Rexcalibur",
+            "nombre": "Rexcalibur"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "mag": 3,
+          "dex": 3,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          },
+          {
+            "iid": "Rexcalibur",
+            "nombre": "Rexcalibur"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "mag": 4,
+          "dex": 3,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight",
+            "nombre": "Keen Insight"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          },
+          {
+            "iid": "Rexcalibur",
+            "nombre": "Rexcalibur"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Magic Guard 4",
+            "nombre": "Magic Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "mag": 4,
+          "dex": 3,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight+",
+            "nombre": "Keen Insight+"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          },
+          {
+            "iid": "Rexcalibur",
+            "nombre": "Rexcalibur"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Mag/Res +5",
+            "nombre": "Mag/Res +5",
+            "sp": "8400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "mag": 4,
+          "dex": 3,
+          "res": 5
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight+",
+            "nombre": "Keen Insight+"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          },
+          {
+            "iid": "Rexcalibur",
+            "nombre": "Rexcalibur"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Magic Guard 5",
+            "nombre": "Magic Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "mag": 4,
+          "dex": 3,
+          "res": 5
+        },
+        "synchro_skills": [
+          {
+            "sid": "Assign Decoy",
+            "nombre": "Assign Decoy"
+          },
+          {
+            "sid": "Anima Focus",
+            "nombre": "Anima Focus"
+          },
+          {
+            "sid": "Keen Insight+",
+            "nombre": "Keen Insight+"
+          },
+          {
+            "sid": "Block Recovery",
+            "nombre": "Block Recovery"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolting",
+            "nombre": "Bolting"
+          },
+          {
+            "iid": "Reflect",
+            "nombre": "Reflect"
+          },
+          {
+            "iid": "Rexcalibur",
+            "nombre": "Rexcalibur"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Flare",
+            "nombre": "Flare"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  },
+  "GID_DLC_CAMILLA": {
+    "id": "GID_DLC_CAMILLA",
+    "nombre": "Camilla",
+    "ascii_name": "Camilla",
+    "link_name": "Camilla",
+    "grow_table": "GGID_CAMILLA",
+    "engage_items": [
+      "Bolt Axe",
+      "Lightning"
+    ],
+    "engage_skills": [
+      "Soar"
+    ],
+    "synchro_skills": [
+      "Dragon Vein",
+      "Decisive Strike",
+      "Detoxify"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "hp": 3,
+          "spd": 2,
+          "res": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Res +1",
+            "nombre": "Spd/Res +1",
+            "sp": "250"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "hp": 3,
+          "spd": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Lance Guard 1",
+            "nombre": "Lance Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Res +2",
+            "nombre": "Spd/Res +2",
+            "sp": "700"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 2,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 3,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Lance Guard 2",
+            "nombre": "Lance Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 3,
+          "res": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Res +3",
+            "nombre": "Spd/Res +3",
+            "sp": "1200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "hp": 5,
+          "spd": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 3,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Lance Guard 3",
+            "nombre": "Lance Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 4,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Res +4",
+            "nombre": "Spd/Res +4",
+            "sp": "2400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 4,
+          "res": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          },
+          {
+            "iid": "Camilla’s Axe",
+            "nombre": "Camilla’s Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 4,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          },
+          {
+            "iid": "Camilla’s Axe",
+            "nombre": "Camilla’s Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Lance Guard 4",
+            "nombre": "Lance Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 4,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike",
+            "nombre": "Decisive Strike"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          },
+          {
+            "iid": "Camilla’s Axe",
+            "nombre": "Camilla’s Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 4,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike+",
+            "nombre": "Decisive Strike+"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          },
+          {
+            "iid": "Camilla’s Axe",
+            "nombre": "Camilla’s Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Res +5",
+            "nombre": "Spd/Res +5",
+            "sp": "4800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 5,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike+",
+            "nombre": "Decisive Strike+"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          },
+          {
+            "iid": "Camilla’s Axe",
+            "nombre": "Camilla’s Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Lance Guard 5",
+            "nombre": "Lance Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "hp": 7,
+          "spd": 5,
+          "res": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Dragon Vein",
+            "nombre": "Dragon Vein"
+          },
+          {
+            "sid": "Decisive Strike+",
+            "nombre": "Decisive Strike+"
+          },
+          {
+            "sid": "Detoxify",
+            "nombre": "Detoxify"
+          },
+          {
+            "sid": "Groundswell",
+            "nombre": "Groundswell"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Bolt Axe",
+            "nombre": "Bolt Axe"
+          },
+          {
+            "iid": "Lightning",
+            "nombre": "Lightning"
+          },
+          {
+            "iid": "Camilla’s Axe",
+            "nombre": "Camilla’s Axe"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Soar",
+            "nombre": "Soar"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  },
+  "GID_DLC_CHROM": {
+    "id": "GID_DLC_CHROM",
+    "nombre": "Chrom / Robin",
+    "ascii_name": "Chrom",
+    "link_name": "Chrom",
+    "grow_table": "GGID_CHROM",
+    "engage_items": [
+      "Levin Sword (Robin)",
+      "Thoron (Robin)"
+    ],
+    "engage_skills": [
+      "Other Half"
+    ],
+    "synchro_skills": [
+      "Surprise Attack",
+      "Rally Spectrum",
+      "Brute Force"
+    ],
+    "bond_levels": {
+      "1": {
+        "level": 1,
+        "stat_boosts": {
+          "str": 1,
+          "dex": 2,
+          "spd": 1
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "2": {
+        "level": 2,
+        "stat_boosts": {
+          "str": 1,
+          "dex": 2,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Dex +1",
+            "nombre": "Spd/Dex +1",
+            "sp": "250"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "3": {
+        "level": 3,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Sword Guard 1",
+            "nombre": "Sword Guard 1",
+            "sp": "200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "4": {
+        "level": 4,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "5": {
+        "level": 5,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "6": {
+        "level": 6,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 2,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "7": {
+        "level": 7,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 3,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Dex +2",
+            "nombre": "Spd/Dex +2",
+            "sp": "700"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "8": {
+        "level": 8,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 3,
+          "spd": 2
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "9": {
+        "level": 9,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 3,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Sword Guard 2",
+            "nombre": "Sword Guard 2",
+            "sp": "400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "10": {
+        "level": 10,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 3,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "11": {
+        "level": 11,
+        "stat_boosts": {
+          "str": 2,
+          "dex": 3,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "12": {
+        "level": 12,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Dex +3",
+            "nombre": "Spd/Dex +3",
+            "sp": "1200"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "13": {
+        "level": 13,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 3,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Sword Guard 3",
+            "nombre": "Sword Guard 3",
+            "sp": "600"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "14": {
+        "level": 14,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 4,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Dex +4",
+            "nombre": "Spd/Dex +4",
+            "sp": "2400"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "15": {
+        "level": 15,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 4,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          },
+          {
+            "iid": "Falchion (Chrom)",
+            "nombre": "Falchion (Chrom)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "16": {
+        "level": 16,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 4,
+          "spd": 3
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          },
+          {
+            "iid": "Falchion (Chrom)",
+            "nombre": "Falchion (Chrom)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 6
+      },
+      "17": {
+        "level": 17,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 4,
+          "spd": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum",
+            "nombre": "Rally Spectrum"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          },
+          {
+            "iid": "Falchion (Chrom)",
+            "nombre": "Falchion (Chrom)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Sword Guard 4",
+            "nombre": "Sword Guard 4",
+            "sp": "800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "18": {
+        "level": 18,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 4,
+          "spd": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum+",
+            "nombre": "Rally Spectrum+"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          },
+          {
+            "iid": "Falchion (Chrom)",
+            "nombre": "Falchion (Chrom)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Spd/Dex +5",
+            "nombre": "Spd/Dex +5",
+            "sp": "4800"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "19": {
+        "level": 19,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 5,
+          "spd": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum+",
+            "nombre": "Rally Spectrum+"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          },
+          {
+            "iid": "Falchion (Chrom)",
+            "nombre": "Falchion (Chrom)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "sid": "Sword Guard 5",
+            "nombre": "Sword Guard 5",
+            "sp": "1000"
+          }
+        ],
+        "max_energia_emblema": 6
+      },
+      "20": {
+        "level": 20,
+        "stat_boosts": {
+          "str": 3,
+          "dex": 5,
+          "spd": 4
+        },
+        "synchro_skills": [
+          {
+            "sid": "Surprise Attack",
+            "nombre": "Surprise Attack"
+          },
+          {
+            "sid": "Rally Spectrum+",
+            "nombre": "Rally Spectrum+"
+          },
+          {
+            "sid": "Brute Force",
+            "nombre": "Brute Force"
+          },
+          {
+            "sid": "Charm",
+            "nombre": "Charm"
+          }
+        ],
+        "engage_items": [
+          {
+            "iid": "Levin Sword (Robin)",
+            "nombre": "Levin Sword (Robin)"
+          },
+          {
+            "iid": "Thoron (Robin)",
+            "nombre": "Thoron (Robin)"
+          },
+          {
+            "iid": "Falchion (Chrom)",
+            "nombre": "Falchion (Chrom)"
+          }
+        ],
+        "engage_skills": [
+          {
+            "sid": "Other Half",
+            "nombre": "Other Half"
+          }
+        ],
+        "inheritance_skills": [],
+        "max_energia_emblema": 5
+      }
+    }
+  }
+}

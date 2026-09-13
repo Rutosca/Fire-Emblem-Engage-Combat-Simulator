@@ -51,11 +51,26 @@ class FichaUnidad:
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
     cargas_ruptura: int = 0            # Cargas de Ruptura (Break): 1 = no puede contraatacar en el siguiente combate
     hp_stock: int = 0                  # Piedras resurrectoras / barras de vida extra (jefes)
-    es_jefe: bool = False              # True si es un jefe con características especiales
     nivel_veneno: int = 0              # Nivel de veneno (0..3): cada nivel aumenta en +1 todo daño recibido
     lider_tres_casas: str = "Dimitri"  # Líder activo del brazalete Tres Casas ("Edelgard", "Dimitri", "Claude")
+    ataque_emblema_usado: bool = False # True si ya ejecutó el ataque o técnica especial de Engage en esta Fusión
+    nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión, total 4)
 
     def __post_init__(self):
+        # Canónico FE Engage: 3 turnos de fusión base; nivel de vínculo >= 11 otorga +1 turno (4 turnos).
+        # No se distingue entre tipos de unidades para los turnos de fusión.
+        duracion_base = 4 if self.nivel_vinculo >= 11 else 3
+        if self.en_fusion and self.turnos_fusion <= 0:
+            self.turnos_fusion = duracion_base
+
+        # Regla Nivel 20: El medidor de recarga máxima se reduce en 1 (de 6 a 5)
+        if self.nivel_vinculo >= 20:
+            self.max_energia_emblema = 5
+        elif self.max_energia_emblema == 5 and self.nivel_vinculo < 20:
+            self.max_energia_emblema = 6
+        if self.energia_emblema > self.max_energia_emblema:
+            self.energia_emblema = self.max_energia_emblema
+
         if self.stats:
             stat_hp = getattr(self.stats, 'hp', 30)
             if self.hp_max <= 0:
@@ -67,6 +82,12 @@ class FichaUnidad:
             setattr(self.stats, 'hp_actual', self.hp_actual)
             setattr(self.stats, 'nivel_veneno', self.nivel_veneno)
             setattr(self.stats, 'lider_tres_casas', self.lider_tres_casas)
+            setattr(self.stats, 'nivel_vinculo', self.nivel_vinculo)
+            setattr(self.stats, 'ataque_emblema_usado', self.ataque_emblema_usado)
+            setattr(self.stats, 'turnos_fusion_restantes', self.turnos_fusion)
+            setattr(self.stats, 'en_fusion', self.en_fusion or (self.turnos_fusion > 0))
+            setattr(self.stats, 'energia_emblema', self.energia_emblema)
+            setattr(self.stats, 'max_energia_emblema', self.max_energia_emblema)
         elif self.hp_max <= 0:
             self.hp_max = 30
             self.hp_actual = 30
@@ -117,12 +138,13 @@ class FichaUnidad:
             "hp_actual": hp_a,
             "hp_max": hp_m,
             "hp_stock": self.hp_stock,
-            "es_jefe": self.es_jefe,
             "pct_hp": pct,
             "energia_emblema": self.energia_emblema,
             "max_energia_emblema": self.max_energia_emblema,
             "turnos_fusion": self.turnos_fusion,
             "en_fusion": self.en_fusion or (self.turnos_fusion > 0),
+            "ataque_emblema_usado": self.ataque_emblema_usado,
+            "nivel_vinculo": self.nivel_vinculo,
             "clase_id": self.clase_id,
             "clase_nombre": self.clase_nombre,
             "nivel": self.nivel,
@@ -274,6 +296,15 @@ class EstadoTablero:
                 ficha.lider_tres_casas = prev.lider_tres_casas
                 if ficha.stats:
                     setattr(ficha.stats, 'lider_tres_casas', ficha.lider_tres_casas)
+        if prev and (prev.en_fusion or prev.turnos_fusion > 0) and prev.turnos_fusion > 0:
+            ficha.en_fusion = True
+            if ficha.turnos_fusion <= 0:
+                ficha.turnos_fusion = prev.turnos_fusion
+            ficha.ataque_emblema_usado = prev.ataque_emblema_usado
+            if ficha.stats:
+                setattr(ficha.stats, 'en_fusion', True)
+                setattr(ficha.stats, 'turnos_fusion_restantes', ficha.turnos_fusion)
+                setattr(ficha.stats, 'ataque_emblema_usado', ficha.ataque_emblema_usado)
 
         self.fichas[ficha.nombre] = ficha
 
@@ -331,6 +362,16 @@ class EstadoTablero:
         ficha = self.fichas[nombre]
         ficha.x = nueva_x
         ficha.y = nueva_y
+
+        # Casilla de recarga de Emblema al 100%: solo surte efecto si la unidad no esta en fusion y agoto sus turnos
+        if self.mapa and hasattr(self.mapa, 'grid'):
+            if 0 <= nueva_x < len(self.mapa.grid) and 0 <= nueva_y < len(self.mapa.grid[0]):
+                casilla = self.mapa.grid[nueva_x][nueva_y]
+                if getattr(casilla, 'es_recarga_emblema', False) and ficha.es_aliado and not ficha.en_fusion and ficha.turnos_fusion <= 0:
+                    ficha.energia_emblema = ficha.max_energia_emblema
+                    if ficha.stats:
+                        ficha.stats.energia_emblema = ficha.max_energia_emblema
+
         return True
 
     def alternar_lider_tres_casas(self, nombre: str, nuevo_lider: Optional[str] = None) -> Optional[str]:
@@ -427,6 +468,20 @@ class EstadoTablero:
         self.turno_actual += 1
         self.fase = "jugador"
         self.reiniciar_acciones_turno()
+
+        # Decremento canonico de turnos de Fusion de Emblema para aliados
+        for f in self.obtener_aliados():
+            if f.en_fusion or f.turnos_fusion > 0:
+                f.turnos_fusion = max(0, f.turnos_fusion - 1)
+                if f.turnos_fusion == 0:
+                    f.en_fusion = False
+                    f.energia_emblema = 0
+                    f.ataque_emblema_usado = False
+                if f.stats:
+                    f.stats.turnos_fusion_restantes = f.turnos_fusion
+                    f.stats.en_fusion = f.en_fusion
+                    f.stats.energia_emblema = f.energia_emblema
+                    f.stats.ataque_emblema_usado = f.ataque_emblema_usado
 
     def iniciar_fase_enemigo(self) -> None:
         """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""

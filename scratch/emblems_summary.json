@@ -1,0 +1,220 @@
+{
+  "emblems_count": 14,
+  "emblem_names": [
+    "Marth",
+    "Siglud",
+    "Celica",
+    "Micaiah",
+    "Roy",
+    "Leaf",
+    "Lucina",
+    "Lin",
+    "Ike",
+    "Byleth",
+    "Kamui",
+    "Eirik",
+    "Ephraim",
+    "Lueur"
+  ],
+  "sample_marth": {
+    "gid": "GID_マルス",
+    "nombre": "Marth",
+    "ascii_name": "Marth",
+    "link_name": "",
+    "grow_table": "GGID_マルス",
+    "levels": {
+      "1": {
+        "synchro_skills": [
+          "SID_見切り",
+          "SID_力＋１",
+          "SID_技＋１",
+          "SID_速さ＋１",
+          "SID_メディウス特効"
+        ],
+        "inheritance_skills": [
+          "SID_見切り",
+          "SID_回避＋１０"
+        ],
+        "engage_skills": [
+          "SID_カウンター",
+          "SID_敵エンゲージ技ダメージ軽減"
+        ],
+        "engage_items": [
+          "IID_マルス_レイピア"
+        ]
+      },
+      "2": {
+        "synchro_skills": [
+          "SID_技＋２"
+        ],
+        "inheritance_skills": [
+          "SID_剣術・柔１"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "3": {
+        "synchro_skills": [
+          "SID_ブレイク時追撃"
+        ],
+        "inheritance_skills": [
+          "SID_ブレイク時追撃"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "4": {
+        "synchro_skills": [
+          "SID_速さ＋２"
+        ],
+        "inheritance_skills": [
+          "SID_回避＋１５"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "6": {
+        "synchro_skills": [
+          "SID_力＋２"
+        ],
+        "inheritance_skills": [
+          "SID_剣術・柔２"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "7": {
+        "synchro_skills": [
+          "SID_不屈"
+        ],
+        "inheritance_skills": [
+          "SID_不屈"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "8": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          "SID_剣術・柔３"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "9": {
+        "synchro_skills": [
+          "SID_技＋３"
+        ],
+        "inheritance_skills": [
+          "SID_回避＋２０"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          "IID_マルス_メリクルソード"
+        ]
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "12": {
+        "synchro_skills": [
+          "SID_不屈＋"
+        ],
+        "inheritance_skills": [
+          "SID_不屈＋"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "13": {
+        "synchro_skills": [
+          "SID_速さ＋３"
+        ],
+        "inheritance_skills": [
+          "SID_剣術・柔４"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "14": {
+        "synchro_skills": [
+          "SID_力＋３"
+        ],
+        "inheritance_skills": [
+          "SID_回避＋２５"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          "IID_マルス_ファルシオン"
+        ]
+      },
+      "16": {
+        "synchro_skills": [
+          "SID_見切り＋"
+        ],
+        "inheritance_skills": [
+          "SID_見切り＋"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "17": {
+        "synchro_skills": [
+          "SID_技＋４"
+        ],
+        "inheritance_skills": [
+          "SID_剣術・柔５"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "18": {
+        "synchro_skills": [
+          "SID_不屈＋＋"
+        ],
+        "inheritance_skills": [
+          "SID_不屈＋＋"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "19": {
+        "synchro_skills": [
+          "SID_速さ＋４"
+        ],
+        "inheritance_skills": [
+          "SID_回避＋３０"
+        ],
+        "engage_skills": [],
+        "engage_items": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": []
+      }
+    }
+  }
+}

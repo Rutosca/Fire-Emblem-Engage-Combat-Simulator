@@ -311,9 +311,9 @@ class TestGroundTruthCapitulo7(unittest.TestCase):
 
         chain_list = res["resultado"]["chain_attacks"]
         assert len(chain_list) == 1
-        assert chain_list[0]["daño"] == 3  # 2.9 redondeado a 3!
+        assert chain_list[0]["daño"] == 2  # 2.9 truncado a 2
         assert chain_list[0]["precision"] == 80
-        assert res["resultado"]["chain_attacks_daño"] == 3
+        assert res["resultado"]["chain_attacks_daño"] == 2
 
     def test_06_chloe_houses_unite_engage_attack_combat_70(self):
         """

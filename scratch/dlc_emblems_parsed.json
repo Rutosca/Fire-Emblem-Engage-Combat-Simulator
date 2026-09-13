@@ -1,0 +1,2583 @@
+{
+  "edelgard": {
+    "id": "GID_DLC_EDELGARD",
+    "nombre": "Edelgard / Dimitri / Claude",
+    "stat_boosts": {
+      "1": {
+        "str": 2,
+        "dex": 1,
+        "def": 1
+      },
+      "2": {
+        "str": 2,
+        "dex": 2,
+        "def": 1
+      },
+      "3": {
+        "str": 2,
+        "dex": 2,
+        "def": 1
+      },
+      "4": {
+        "str": 2,
+        "dex": 2,
+        "def": 2
+      },
+      "5": {
+        "str": 2,
+        "dex": 2,
+        "def": 2
+      },
+      "6": {
+        "str": 2,
+        "dex": 2,
+        "def": 2
+      },
+      "7": {
+        "str": 3,
+        "dex": 2,
+        "def": 2
+      },
+      "8": {
+        "str": 3,
+        "dex": 3,
+        "def": 2
+      },
+      "9": {
+        "str": 3,
+        "dex": 3,
+        "def": 2
+      },
+      "10": {
+        "str": 3,
+        "dex": 3,
+        "def": 2
+      },
+      "11": {
+        "str": 3,
+        "dex": 3,
+        "def": 2
+      },
+      "12": {
+        "str": 3,
+        "dex": 3,
+        "def": 2
+      },
+      "13": {
+        "str": 3,
+        "dex": 3,
+        "def": 2
+      },
+      "14": {
+        "str": 3,
+        "dex": 3,
+        "def": 3
+      },
+      "15": {
+        "str": 3,
+        "dex": 3,
+        "def": 3
+      },
+      "16": {
+        "str": 4,
+        "dex": 3,
+        "def": 3
+      },
+      "17": {
+        "str": 4,
+        "dex": 3,
+        "def": 3
+      },
+      "18": {
+        "str": 4,
+        "dex": 4,
+        "def": 3
+      },
+      "19": {
+        "str": 5,
+        "dex": 4,
+        "def": 3
+      },
+      "20": {
+        "str": 5,
+        "dex": 4,
+        "def": 3
+      }
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [
+          {
+            "nombre": "Gambit",
+            "descripcion": "Effects change based on synced Emblem.",
+            "tipo": "Sync Skill (Cannot Inherit)",
+            "sp": "—"
+          },
+          {
+            "nombre": "Friendly Rivalry",
+            "descripcion": "At start of player phase, the Emblem will randomly switch to Edelgard, Dimitri, or Claude.",
+            "tipo": "Sync Skill (Cannot Inherit)",
+            "sp": "—"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [
+          {
+            "nombre": "Combat Arts",
+            "descripcion": "Enables use of Edelgard, Dimitri, or Claude’s Combat Art. Spends some remaining engage turns.[Dragon] +10% damage.[Covert] Avo+20.",
+            "tipo": "Engage Skill",
+            "sp": "—"
+          }
+        ],
+        "engage_items": [
+          {
+            "nombre": "Aymr (Edelgard)",
+            "descripcion": "Axe of Emblem Edelgard. Smashes foes. Cannot follow up, or strike first if initiating combat. Eff: Dragon.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": [
+          {
+            "nombre": "Houses Unite",
+            "descripcion": "Use to attack with Aymr, Areadbhar, and Failnaught at 50% damage.[Dragon] +10% damage.[Cavalry] +10% damage with Areadbhar.[Covert] +10% damage with Failnaught.[Armored] +10% damage with Aymr.[Qi Adept] Breaks foe.",
+            "tipo": "Engage Attack",
+            "sp": "—"
+          },
+          {
+            "nombre": "Houses Unite+",
+            "descripcion": "Use to attack with Aymr, Areadbhar, and Failnaught at 50% damage. After combat, take another action.[Dragon] +10% damage.[Cavalry] +10% damage with Areadbhar.[Covert] +10% damage with Failnaught.[Armored] +10% damage with Aymr.[Qi Adept] Breaks foe.",
+            "tipo": "Engage Attack (Requires adjacent Byleth)",
+            "sp": "—"
+          }
+        ]
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Assembly Gambit",
+            "descripcion": "Use to attack an adjacent foe, then move 1 space away after combat. Target foe moves to unit’s previous space.",
+            "tipo": "Inheritable Skill",
+            "sp": "1500"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [
+          {
+            "nombre": "Lineage",
+            "descripcion": "Increases unit’s earned experience by 20%.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "150"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Dex +1",
+            "descripcion": "Grants Str+1 and Dex+1.",
+            "tipo": "Inheritable Skill",
+            "sp": "700"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Bow Guard 1",
+            "descripcion": "If foe is equipped with a bow, unit takes 1 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Dex +2",
+            "descripcion": "Grants Str+2 and Dex+2.",
+            "tipo": "Inheritable Skill",
+            "sp": "1600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Bow Guard 2",
+            "descripcion": "If foe is equipped with a bow, unit takes 2 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Areadbhar (Dimitri)",
+            "descripcion": "Lance wielded by Emblem Dimitri. If user initiates combat, grants Mt+50%.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [
+          {
+            "nombre": "Weapon Sync",
+            "descripcion": "If unit initiates combat using same weapon type as the synced Emblem, grants Atk+5. If engaged, grants Atk+5 regardless of weapon type. [See note above.]",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "3000"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Dex +3",
+            "descripcion": "Grants Str+3 and Dex+3.",
+            "tipo": "Inheritable Skill",
+            "sp": "4200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Bow Guard 3",
+            "descripcion": "If foe is equipped with a bow, unit takes 3 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Failnaught (Claude)",
+            "descripcion": "Bow wielded by Emblem Claude. If user initiates combat, grants Avo+20. Effective: Dragon, Flying.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Dex +4",
+            "descripcion": "Grants Str+4 and Dex+4.",
+            "tipo": "Inheritable Skill",
+            "sp": "6000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [
+          {
+            "nombre": "Weapon Sync+",
+            "descripcion": "If unit initiates combat using same weapon type as the synced Emblem, grants Atk+7. If engaged, grants Atk+7 regardless of weapon type. [See note above.]",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "5000"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Bow Guard 4",
+            "descripcion": "If foe is equipped with a bow, unit takes 4 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Dex +5",
+            "descripcion": "Grants Str+5 and Dex+5.",
+            "tipo": "Inheritable Skill",
+            "sp": "8400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Bow Guard 5",
+            "descripcion": "If foe is equipped with a bow, unit takes 5 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "1000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  },
+  "tiki": {
+    "id": "GID_DLC_TIKI",
+    "nombre": "Tiki",
+    "stat_boosts": {
+      "1": {
+        "hp": 5,
+        "def": 1,
+        "lck": 2
+      },
+      "2": {
+        "hp": 5,
+        "def": 1,
+        "lck": 4
+      },
+      "3": {
+        "hp": 5,
+        "def": 1,
+        "lck": 4
+      },
+      "4": {
+        "hp": 5,
+        "def": 2,
+        "lck": 4
+      },
+      "5": {
+        "hp": 5,
+        "def": 2,
+        "lck": 4
+      },
+      "6": {
+        "hp": 5,
+        "def": 2,
+        "lck": 4
+      },
+      "7": {
+        "hp": 7,
+        "def": 2,
+        "lck": 4
+      },
+      "8": {
+        "hp": 7,
+        "def": 2,
+        "lck": 4
+      },
+      "9": {
+        "hp": 7,
+        "def": 2,
+        "lck": 6
+      },
+      "10": {
+        "hp": 7,
+        "def": 2,
+        "lck": 6
+      },
+      "11": {
+        "hp": 7,
+        "def": 2,
+        "lck": 6
+      },
+      "12": {
+        "hp": 7,
+        "def": 3,
+        "lck": 6
+      },
+      "13": {
+        "hp": 10,
+        "def": 3,
+        "lck": 6
+      },
+      "14": {
+        "hp": 10,
+        "def": 3,
+        "lck": 6
+      },
+      "15": {
+        "hp": 10,
+        "def": 3,
+        "lck": 8
+      },
+      "16": {
+        "hp": 10,
+        "def": 3,
+        "lck": 8
+      },
+      "17": {
+        "hp": 10,
+        "def": 4,
+        "lck": 8
+      },
+      "18": {
+        "hp": 10,
+        "def": 4,
+        "lck": 10
+      },
+      "19": {
+        "hp": 10,
+        "def": 4,
+        "lck": 10
+      },
+      "20": {
+        "hp": 10,
+        "def": 4,
+        "lck": 10
+      }
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [
+          {
+            "nombre": "Starsphere",
+            "descripcion": "Grants unit enhanced stat growth when leveling up. [Adds +15% to final growth rates.]",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [
+          {
+            "nombre": "Draconic Form",
+            "descripcion": "Unit transforms into and fights as a dragon while engaged. Grants +10 to max HP and +5 to Bld and all basic stats.[Armored] Negates terrain damage.[Mystical] Grants an extra Res+5.",
+            "tipo": "Engage Skill",
+            "sp": "—"
+          }
+        ],
+        "engage_items": [
+          {
+            "nombre": "Eternal Claw",
+            "descripcion": "Claw attack used by Emblem Tiki. Easily inflicts fatal wounds.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          },
+          {
+            "nombre": "Tail Smash",
+            "descripcion": "Smash attack used by Emblem Tiki. Smashes foes. Cannot follow up, or strike first if initiating combat.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          },
+          {
+            "nombre": "Fire Breath",
+            "descripcion": "A scorching breath attack. Ignores foe’s Def/Res.",
+            "tipo": "Engage Weapon (Backup, Cavalry, Covert and Qi Adept)",
+            "sp": "—"
+          },
+          {
+            "nombre": "Ice Breath",
+            "descripcion": "Strikes foes in area at half Def. Freezes foes. Cannot follow up, or strike first if initiating combat.",
+            "tipo": "Engage Weapon (Armor)",
+            "sp": "—"
+          },
+          {
+            "nombre": "Flame Breath",
+            "descripcion": "Sets area on fire. Strikes foes at 70% damage and half Def. Cannot follow up, or strike first if initiating combat.",
+            "tipo": "Engage Weapon (Flying)",
+            "sp": "—"
+          },
+          {
+            "nombre": "Dark Breath",
+            "descripcion": "Magically strikes foes in area at half Res. Cannot follow up, or strike first if initiating combat.",
+            "tipo": "Engage Weapon (Mystical)",
+            "sp": "—"
+          },
+          {
+            "nombre": "Fog Breath",
+            "descripcion": "Strikes foes in area at half Def. Eff: Dragon. Creates fog. Cannot follow up, or strike first if initiating combat.",
+            "tipo": "Engage Weapon (Dragon)",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": [
+          {
+            "nombre": "Divine Blessing",
+            "descripcion": "Use to grant 1 ally a Revival Stone.[Dragon] Restore 20 HP to ally.[Qi Adept] Heal their status effects.",
+            "tipo": "Engage Attack",
+            "sp": "—"
+          },
+          {
+            "nombre": "Divine Blessing+",
+            "descripcion": "Use to grant 1 ally a Revival Stone. If ally is not synced, fully restore HP. If ally is synced, +3 to engage meter. If ally is engaged, restore engage turns.[Dragon] Restore 20 HP to ally.[Qi Adept] Heal their status effects.",
+            "tipo": "Engage Attack (Requires adjacent Marth)",
+            "sp": "—"
+          }
+        ]
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "HP/Lck +2",
+            "descripcion": "Grants HP+2 and Lck+2.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [
+          {
+            "nombre": "Geosphere",
+            "descripcion": "At start of player phase, if there are allies adjacent to unit, grants Def/Res+3 to unit and those allies for 1 turn.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Special Guard 1",
+            "descripcion": "If foe is equipped with a special attack, unit takes 1 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "HP/Lck +4",
+            "descripcion": "Grants HP+4 and Lck+4.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [
+          {
+            "nombre": "Lifesphere",
+            "descripcion": "If unit uses Wait without attacking or using items, restores 20 HP and heals status effects.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Special Guard 2",
+            "descripcion": "If foe is equipped with a special attack, unit takes 2 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [
+          {
+            "nombre": "Lightsphere",
+            "descripcion": "If unit initiates combat, halves chance of receiving critical hit from foe.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "900"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "HP/Lck +6",
+            "descripcion": "Grants HP+6 and Lck+6.",
+            "tipo": "Inheritable Skill",
+            "sp": "1100"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Special Guard 3",
+            "descripcion": "If foe is equipped with a special attack, unit takes 3 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [
+          {
+            "nombre": "Lifesphere+",
+            "descripcion": "If unit uses Wait without attacking or using items, restores 30 HP and heals status effects.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "2000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "HP/Lck +8",
+            "descripcion": "Grants HP+8 and Lck+8.",
+            "tipo": "Inheritable Skill",
+            "sp": "1900"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [
+          {
+            "nombre": "Geosphere+",
+            "descripcion": "At start of player phase, if there are allies adjacent to unit, grants Def/Res+5 to unit and those allies for 1 turn.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Special Guard 4",
+            "descripcion": "If foe is equipped with a special attack, unit takes 4 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "HP/Lck +10",
+            "descripcion": "Grants HP+10 and Lck+10.",
+            "tipo": "Inheritable Skill",
+            "sp": "3600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [
+          {
+            "nombre": "Lifesphere++",
+            "descripcion": "If unit uses Wait without attacking or using items, restores 40 HP and heals status effects.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "3000"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Special Guard 5",
+            "descripcion": "If foe is equipped with a special attack, unit takes 5 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "1000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  },
+  "hector": {
+    "id": "GID_DLC_HECTOR",
+    "nombre": "Hector",
+    "stat_boosts": {
+      "1": {
+        "str": 1,
+        "def": 2,
+        "bld": 1
+      },
+      "2": {
+        "str": 2,
+        "def": 2,
+        "bld": 1
+      },
+      "3": {
+        "str": 2,
+        "def": 2,
+        "bld": 1
+      },
+      "4": {
+        "str": 2,
+        "def": 3,
+        "bld": 1
+      },
+      "5": {
+        "str": 2,
+        "def": 3,
+        "bld": 1
+      },
+      "6": {
+        "str": 2,
+        "def": 3,
+        "bld": 1
+      },
+      "7": {
+        "str": 2,
+        "def": 3,
+        "bld": 2
+      },
+      "8": {
+        "str": 2,
+        "def": 3,
+        "bld": 2
+      },
+      "9": {
+        "str": 3,
+        "def": 3,
+        "bld": 2
+      },
+      "10": {
+        "str": 3,
+        "def": 3,
+        "bld": 2
+      },
+      "11": {
+        "str": 3,
+        "def": 3,
+        "bld": 2
+      },
+      "12": {
+        "str": 3,
+        "def": 3,
+        "bld": 2
+      },
+      "13": {
+        "str": 3,
+        "def": 4,
+        "bld": 2
+      },
+      "14": {
+        "str": 4,
+        "def": 4,
+        "bld": 2
+      },
+      "15": {
+        "str": 4,
+        "def": 4,
+        "bld": 2
+      },
+      "16": {
+        "str": 4,
+        "def": 4,
+        "bld": 2
+      },
+      "17": {
+        "str": 4,
+        "def": 4,
+        "bld": 3
+      },
+      "18": {
+        "str": 4,
+        "def": 5,
+        "bld": 3
+      },
+      "19": {
+        "str": 4,
+        "def": 5,
+        "bld": 3
+      },
+      "20": {
+        "str": 4,
+        "def": 5,
+        "bld": 3
+      }
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [
+          {
+            "nombre": "Quick Riposte",
+            "descripcion": "If unit’s HP is 80% or more and foe initiates combat, unit will always follow up (if weapon allows).",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "2000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [
+          {
+            "nombre": "Impenetrable",
+            "descripcion": "If foe initiates combat, grants Def/Res+30% during combat.[Dragon] Ddg+50%.[Cavalry] Grants immunity to freeze.[Armored] Grants Def+50% instead of +30%.[Flying] Grants Res+50% instead of +30%.",
+            "tipo": "Engage Skill",
+            "sp": "—"
+          }
+        ],
+        "engage_items": [
+          {
+            "nombre": "Wolf Beil",
+            "descripcion": "Axe wielded by Emblem Hector. Effective: Cavalry, Armored.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": [
+          {
+            "nombre": "Storm’s Eye",
+            "descripcion": "Grants immunity to break. Foe cannot follow up. Unit follows up. Lasts 1 turn. Sword/axe only.[Dragon] Prevent one critical hit.[Backup] Crit+20.[Covert] Avo+30.",
+            "tipo": "Engage Attack",
+            "sp": "—"
+          },
+          {
+            "nombre": "Storm’s Eye+",
+            "descripcion": "Grants immunity to break. Foe cannot follow up. Unit counters before foe’s first attack and follows up. Lasts 1 turn. Sword/axe only. [Dragon] Prevent one critical hit.[Backup] Crit+20.[Covert] Avo+30.",
+            "tipo": "Engage Attack (Requires adjacent Lyn)",
+            "sp": "—"
+          }
+        ]
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Def +1",
+            "descripcion": "Grants Str+1 and Def+1.",
+            "tipo": "Inheritable Skill",
+            "sp": "700"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [
+          {
+            "nombre": "Adaptability",
+            "descripcion": "When hit by a foe’s attack, grants Def+2 for a physical attack or Res+2 for a magical attack after combat. Lasts until end of battle, or until activated again.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "350"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Axe Guard 1",
+            "descripcion": "If foe is equipped with an axe, unit takes 1 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Def +2",
+            "descripcion": "Grants Str+2 and Def+2.",
+            "tipo": "Inheritable Skill",
+            "sp": "1600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [
+          {
+            "nombre": "Heavy Attack",
+            "descripcion": "When making a physical attack, if an equipped weapon’s Wt exceeds unit’s Bld, adds excess as damage. (Max +5)",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "3000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Axe Guard 2",
+            "descripcion": "If foe is equipped with an axe, unit takes 2 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Runesword",
+            "descripcion": "Magic sword of Emblem Hector. Can strike close or at range. Restore HP equal to 50% of damage dealt.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [
+          {
+            "nombre": "Piercing Glare",
+            "descripcion": "Use when HP is full to consume 20% of max HP and prevent foes from entering the 4 spaces diagonally adjacent to unit for 1 turn.",
+            "tipo": "Sync Skill (Cannot Inherit)",
+            "sp": "—"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Def +3",
+            "descripcion": "Grants Str+3 and Def+3.",
+            "tipo": "Inheritable Skill",
+            "sp": "4200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Axe Guard 3",
+            "descripcion": "If foe is equipped with an axe, unit takes 3 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Def +4",
+            "descripcion": "Grants Str+4 and Def+4.",
+            "tipo": "Inheritable Skill",
+            "sp": "6000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Armads",
+            "descripcion": "Lightning-charged axe wielded by Emblem Hector. Grants Def+5. Effective: Dragon.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [
+          {
+            "nombre": "Quick Riposte+",
+            "descripcion": "If unit’s HP is 60% or more and foe initiates combat, unit will always follow up (if weapon allows).",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "3000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Axe Guard 4",
+            "descripcion": "If foe is equipped with an axe, unit takes 4 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Str/Def +5",
+            "descripcion": "Grants Str+5 and Def+5.",
+            "tipo": "Inheritable Skill",
+            "sp": "8400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [
+          {
+            "nombre": "Adaptability+",
+            "descripcion": "When hit by a foe’s attack, grants Def+3 for a physical attack or Res+3 for a magical attack after combat. Lasts until end of battle, or until activated again.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "700"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Axe Guard 5",
+            "descripcion": "If foe is equipped with an axe, unit takes 5 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "1000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  },
+  "veronica": {
+    "id": "GID_DLC_VERONICA",
+    "nombre": "Veronica",
+    "stat_boosts": {
+      "1": {},
+      "2": {},
+      "3": {},
+      "4": {},
+      "5": {},
+      "6": {},
+      "7": {},
+      "8": {},
+      "9": {},
+      "10": {},
+      "11": {},
+      "12": {},
+      "13": {},
+      "14": {},
+      "15": {},
+      "16": {},
+      "17": {},
+      "18": {},
+      "19": {},
+      "20": {}
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  },
+  "soren": {
+    "id": "GID_DLC_SOREN",
+    "nombre": "Soren",
+    "stat_boosts": {
+      "1": {
+        "mag": 1,
+        "dex": 1,
+        "res": 2
+      },
+      "2": {
+        "mag": 2,
+        "dex": 1,
+        "res": 2
+      },
+      "3": {
+        "mag": 2,
+        "dex": 2,
+        "res": 2
+      },
+      "4": {
+        "mag": 2,
+        "dex": 2,
+        "res": 2
+      },
+      "5": {
+        "mag": 2,
+        "dex": 2,
+        "res": 2
+      },
+      "6": {
+        "mag": 2,
+        "dex": 2,
+        "res": 2
+      },
+      "7": {
+        "mag": 2,
+        "dex": 2,
+        "res": 3
+      },
+      "8": {
+        "mag": 3,
+        "dex": 2,
+        "res": 3
+      },
+      "9": {
+        "mag": 3,
+        "dex": 2,
+        "res": 3
+      },
+      "10": {
+        "mag": 3,
+        "dex": 2,
+        "res": 3
+      },
+      "11": {
+        "mag": 3,
+        "dex": 2,
+        "res": 3
+      },
+      "12": {
+        "mag": 3,
+        "dex": 3,
+        "res": 3
+      },
+      "13": {
+        "mag": 3,
+        "dex": 3,
+        "res": 3
+      },
+      "14": {
+        "mag": 3,
+        "dex": 3,
+        "res": 4
+      },
+      "15": {
+        "mag": 3,
+        "dex": 3,
+        "res": 4
+      },
+      "16": {
+        "mag": 3,
+        "dex": 3,
+        "res": 4
+      },
+      "17": {
+        "mag": 4,
+        "dex": 3,
+        "res": 4
+      },
+      "18": {
+        "mag": 4,
+        "dex": 3,
+        "res": 4
+      },
+      "19": {
+        "mag": 4,
+        "dex": 3,
+        "res": 5
+      },
+      "20": {
+        "mag": 4,
+        "dex": 3,
+        "res": 5
+      }
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [
+          {
+            "nombre": "Assign Decoy",
+            "descripcion": "Use to make one chosen ally more likely to be targeted by enemies for 1 turn. Effect is removed after ally is targeted by or otherwise damaged by foes 3 times.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [
+          {
+            "nombre": "Flare",
+            "descripcion": "When attacking with tomes, inflicts Res-20% on foe, and unit recovers 50% of damage dealt.[Dragon] Critical rate is doubled.[Mystical] Extra -10% to foe’s Res.[Qi Adept] Unit recovers 100% of damage dealt instead.",
+            "tipo": "Engage Skill",
+            "sp": "—"
+          }
+        ],
+        "engage_items": [
+          {
+            "nombre": "Bolting",
+            "descripcion": "Long-range thunder magic wielded by Emblem Soren. Cannot follow up.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": [
+          {
+            "nombre": "Cataclysm",
+            "descripcion": "Use to attack foes in an area with fire, thunder and wind magic at 40% damage. Wind is effective: Flying.[Dragon] Sets terrain on fire.[Mystical] +10% damage.[Qi Adept] 20% chance of breaking target.",
+            "tipo": "Engage Attack",
+            "sp": "—"
+          },
+          {
+            "nombre": "Cataclysm+",
+            "descripcion": "Use to attack foes in an area with fire, thunder and wind magic at 40% damage. Wind is effective: Flying.[Dragon] Sets terrain on fire.[Mystical] +10% damage.[Qi Adept] 20% chance of breaking target.",
+            "tipo": "Engage Attack (Requires adjacent Ike)",
+            "sp": "—"
+          }
+        ]
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Mag/Res +1",
+            "descripcion": "Grants Mag+1 and Res+1.",
+            "tipo": "Inheritable Skill",
+            "sp": "700"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Magic Guard 1",
+            "descripcion": "If foe is equipped with a tome, unit takes 1 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [
+          {
+            "nombre": "Anima Focus",
+            "descripcion": "When using tomes, unit inflicts Def-3 with fire, Hit-20 with thunder, or Mov-2 with wind magic for 1 turn.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "800"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Mag/Res +2",
+            "descripcion": "Grants Mag+2 and Res+2.",
+            "tipo": "Inheritable Skill",
+            "sp": "1600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Magic Guard 2",
+            "descripcion": "If foe is equipped with a tome, unit takes 2 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [
+          {
+            "nombre": "Keen Insight",
+            "descripcion": "When unit deals Effective damage, deal +5 damage.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Reflect",
+            "descripcion": "Staff of Emblem Soren. Allies within 2 spaces gain “deals 50% of magic damage taken back to foe” for 1 turn.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Mag/Res +3",
+            "descripcion": "Grants Mag+3 and Res+3.",
+            "tipo": "Inheritable Skill",
+            "sp": "4200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [
+          {
+            "nombre": "Block Recovery",
+            "descripcion": "When attacking a broken foe with a tome, grants a chance the foe will remain broken. Chance increases with high Spd. [Trigger% = (Spd – foe’s Spd) x 5, max 50]",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1500"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Magic Guard 3",
+            "descripcion": "If foe is equipped with a tome, unit takes 3 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Mag/Res +4",
+            "descripcion": "Grants Mag+4 and Res+4.",
+            "tipo": "Inheritable Skill",
+            "sp": "6000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Rexcalibur",
+            "descripcion": "Powerful wind magic wielded by Emblem Soren. Effective: Flying.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Magic Guard 4",
+            "descripcion": "If foe is equipped with a tome, unit takes 4 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [
+          {
+            "nombre": "Keen Insight+",
+            "descripcion": "When unit deals Effective damage, deal +7 damage.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "3000"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Mag/Res +5",
+            "descripcion": "Grants Mag+5 and Res+5.",
+            "tipo": "Inheritable Skill",
+            "sp": "8400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Magic Guard 5",
+            "descripcion": "If foe is equipped with a tome, unit takes 5 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "1000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  },
+  "camilla": {
+    "id": "GID_DLC_CAMILLA",
+    "nombre": "Camilla",
+    "stat_boosts": {
+      "1": {
+        "hp": 3,
+        "spd": 2,
+        "res": 1
+      },
+      "2": {
+        "hp": 3,
+        "spd": 2,
+        "res": 2
+      },
+      "3": {
+        "hp": 5,
+        "spd": 2,
+        "res": 2
+      },
+      "4": {
+        "hp": 5,
+        "spd": 2,
+        "res": 2
+      },
+      "5": {
+        "hp": 5,
+        "spd": 2,
+        "res": 2
+      },
+      "6": {
+        "hp": 5,
+        "spd": 2,
+        "res": 2
+      },
+      "7": {
+        "hp": 5,
+        "spd": 3,
+        "res": 2
+      },
+      "8": {
+        "hp": 5,
+        "spd": 3,
+        "res": 2
+      },
+      "9": {
+        "hp": 5,
+        "spd": 3,
+        "res": 3
+      },
+      "10": {
+        "hp": 5,
+        "spd": 3,
+        "res": 3
+      },
+      "11": {
+        "hp": 5,
+        "spd": 3,
+        "res": 3
+      },
+      "12": {
+        "hp": 5,
+        "spd": 3,
+        "res": 3
+      },
+      "13": {
+        "hp": 7,
+        "spd": 3,
+        "res": 3
+      },
+      "14": {
+        "hp": 7,
+        "spd": 4,
+        "res": 3
+      },
+      "15": {
+        "hp": 7,
+        "spd": 4,
+        "res": 3
+      },
+      "16": {
+        "hp": 7,
+        "spd": 4,
+        "res": 4
+      },
+      "17": {
+        "hp": 7,
+        "spd": 4,
+        "res": 4
+      },
+      "18": {
+        "hp": 7,
+        "spd": 4,
+        "res": 4
+      },
+      "19": {
+        "hp": 7,
+        "spd": 5,
+        "res": 4
+      },
+      "20": {
+        "hp": 7,
+        "spd": 5,
+        "res": 4
+      }
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [
+          {
+            "nombre": "Dragon Vein",
+            "descripcion": "Use to add a special effect to certain spaces.[Dragon] Choose any Vein effect.[Backup] Creates stone pillars that increase Def/Res.[Cavalry] Creates water that decreases Avo.[Covert] Creates smoke that decreases Def/Avo.[Armored] Creates vines that grant immunity to break.[Flying] Creates healing glow that restores HP.[Mystical] Creates flames that inflict damage.[Qi Adept] Creates ice floor that increases movement.",
+            "tipo": "Sync Skill (Cannot Inherit)",
+            "sp": "—"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Res +1",
+            "descripcion": "Grants Spd+1 and Res+1.",
+            "tipo": "Inheritable Skill",
+            "sp": "250"
+          }
+        ],
+        "engage_skills": [
+          {
+            "nombre": "Soar",
+            "descripcion": "Grants Mov+2. Unit can cross terrain as if flying.[Dragon] If unit initiates combat, deals damage to foes within 2 spaces equal to 10% of their max HP after combat.[Cavalry] Grants an extra Mov+2.[Flying] Grants an extra Mov+1.",
+            "tipo": "Engage Skill",
+            "sp": "—"
+          }
+        ],
+        "engage_items": [
+          {
+            "nombre": "Bolt Axe",
+            "descripcion": "Magic axe wielded by Emblem Camilla. Can strike close or at range.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": [
+          {
+            "nombre": "Dark Inferno",
+            "descripcion": "Use to deal damage to foes on certain spaces near unit and set those spaces on fire.[Dragon] Increases area of effect.[Mystical] +20% damage.[Qi Adept] Adds Glow to adjacent spaces.",
+            "tipo": "Engage Attack",
+            "sp": "—"
+          },
+          {
+            "nombre": "Dark Inferno+",
+            "descripcion": "Use to deal damage to foes on certain spaces near unit and set those spaces on fire.[Dragon] Increases area of effect.[Mystical] +20% damage.[Qi Adept] Adds Glow to adjacent spaces.",
+            "tipo": "Engage Attack (Requires adjacent Corrin)",
+            "sp": "—"
+          }
+        ]
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Lance Guard 1",
+            "descripcion": "If foe is equipped with a lance, unit takes 1 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Res +2",
+            "descripcion": "Grants Spd+2 and Res+2.",
+            "tipo": "Inheritable Skill",
+            "sp": "700"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [
+          {
+            "nombre": "Decisive Strike",
+            "descripcion": "If unit initiates combat and lands a critical, deals 5 damage to foe after combat.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Lance Guard 2",
+            "descripcion": "If foe is equipped with a lance, unit takes 2 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [
+          {
+            "nombre": "Detoxify",
+            "descripcion": "Cures poison at start of turn.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "250"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Res +3",
+            "descripcion": "Grants Spd+3 and Res+3.",
+            "tipo": "Inheritable Skill",
+            "sp": "1200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Lightning",
+            "descripcion": "Magic wielded by Emblem Camilla. If user initiates combat, attacks twice.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [
+          {
+            "nombre": "Groundswell",
+            "descripcion": "After unit acts or waits in flames, miasma, or similar terrain effect, unit clears effect and recovers 10 HP.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Lance Guard 3",
+            "descripcion": "If foe is equipped with a lance, unit takes 3 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Res +4",
+            "descripcion": "Grants Spd+4 and Res+4.",
+            "tipo": "Inheritable Skill",
+            "sp": "2400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Camilla’s Axe",
+            "descripcion": "Axe wielded by Emblem Camilla. Grants Res+10 and deals extra damage = foe’s Res-Def.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Lance Guard 4",
+            "descripcion": "If foe is equipped with a lance, unit takes 4 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [
+          {
+            "nombre": "Decisive Strike+",
+            "descripcion": "If unit initiates combat and lands a critical, deals 10 damage to foe after combat.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1000"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Res +5",
+            "descripcion": "Grants Spd+5 and Res+5.",
+            "tipo": "Inheritable Skill",
+            "sp": "4800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Lance Guard 5",
+            "descripcion": "If foe is equipped with a lance, unit takes 5 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "1000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  },
+  "chrom": {
+    "id": "GID_DLC_CHROM",
+    "nombre": "Chrom",
+    "stat_boosts": {
+      "1": {
+        "str": 1,
+        "dex": 2,
+        "spd": 1
+      },
+      "2": {
+        "str": 1,
+        "dex": 2,
+        "spd": 2
+      },
+      "3": {
+        "str": 2,
+        "dex": 2,
+        "spd": 2
+      },
+      "4": {
+        "str": 2,
+        "dex": 2,
+        "spd": 2
+      },
+      "5": {
+        "str": 2,
+        "dex": 2,
+        "spd": 2
+      },
+      "6": {
+        "str": 2,
+        "dex": 2,
+        "spd": 2
+      },
+      "7": {
+        "str": 2,
+        "dex": 3,
+        "spd": 2
+      },
+      "8": {
+        "str": 2,
+        "dex": 3,
+        "spd": 2
+      },
+      "9": {
+        "str": 2,
+        "dex": 3,
+        "spd": 3
+      },
+      "10": {
+        "str": 2,
+        "dex": 3,
+        "spd": 3
+      },
+      "11": {
+        "str": 2,
+        "dex": 3,
+        "spd": 3
+      },
+      "12": {
+        "str": 3,
+        "dex": 3,
+        "spd": 3
+      },
+      "13": {
+        "str": 3,
+        "dex": 3,
+        "spd": 3
+      },
+      "14": {
+        "str": 3,
+        "dex": 4,
+        "spd": 3
+      },
+      "15": {
+        "str": 3,
+        "dex": 4,
+        "spd": 3
+      },
+      "16": {
+        "str": 3,
+        "dex": 4,
+        "spd": 3
+      },
+      "17": {
+        "str": 3,
+        "dex": 4,
+        "spd": 4
+      },
+      "18": {
+        "str": 3,
+        "dex": 4,
+        "spd": 4
+      },
+      "19": {
+        "str": 3,
+        "dex": 5,
+        "spd": 4
+      },
+      "20": {
+        "str": 3,
+        "dex": 5,
+        "spd": 4
+      }
+    },
+    "skills_by_level": {
+      "1": {
+        "synchro_skills": [
+          {
+            "nombre": "Surprise Attack",
+            "descripcion": "If unit initiates combat from terrain that provides an Avo bonus, foe cannot counterattack.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "3000"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [
+          {
+            "nombre": "Other Half",
+            "descripcion": "If unit initiates combat, Robin chain attacks. Grants Mag+10 while engaged.\n[Dragon] Robin chain attacks 2 times.\n[Backup] Guaranteed hit with chain attack.\n[Covert] Grants Mov+1 while engaged.",
+            "tipo": "Engage Skill",
+            "sp": "—"
+          }
+        ],
+        "engage_items": [
+          {
+            "nombre": "Levin Sword (Robin)",
+            "descripcion": "Magic sword wielded by Emblem Robin. Can hit foes with magic lightning from a distance.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": [
+          {
+            "nombre": "Giga Levin Sword",
+            "descripcion": "Use to attack with a magic sword. Magic attack that uses physical attack power. Swords only.\n[Dragon] Deals extra damage = half of Str.\n[Flying] Deals extra damage = Bld.\n[Mystical] Deals extra damage = half of Mag.",
+            "tipo": "Engage Attack",
+            "sp": "—"
+          },
+          {
+            "nombre": "Giga Levin Sword+",
+            "descripcion": "Use to attack with a magic sword. Magic attack that uses physical attack power. Swords only. Adjacent allies chain attack.\n[Dragon] Deals extra damage = half of Str.\n[Flying] Deals extra damage = Bld.\n[Mystical] Deals extra damage = half of Mag.",
+            "tipo": "Engage Attack (requires adjacent Lucina)",
+            "sp": "—"
+          }
+        ]
+      },
+      "2": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Dex +1",
+            "descripcion": "Grants Spd+1 and Dex+1.",
+            "tipo": "Inheritable Skill",
+            "sp": "250"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "3": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Sword Guard 1",
+            "descripcion": "If foe is equipped with a sword, unit takes 1 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "4": {
+        "synchro_skills": [
+          {
+            "nombre": "Rally Spectrum",
+            "descripcion": "Use to grant adjacent allies +3 to all seven basic stats for 1 turn.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "5": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "6": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "7": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Dex +2",
+            "descripcion": "Grants Spd+2 and Dex+2.",
+            "tipo": "Inheritable Skill",
+            "sp": "700"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "8": {
+        "synchro_skills": [
+          {
+            "nombre": "Brute Force",
+            "descripcion": "While making a physical attack, critical hits deal increased damage. [Damage increased by one third.]",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "1500"
+          }
+        ],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "9": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Sword Guard 2",
+            "descripcion": "If foe is equipped with a sword, unit takes 2 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "10": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Thoron (Robin)",
+            "descripcion": "Powerful lightning magic wielded by Emblem Robin.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "11": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "12": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Dex +3",
+            "descripcion": "Grants Spd+3 and Dex+3.",
+            "tipo": "Inheritable Skill",
+            "sp": "1200"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "13": {
+        "synchro_skills": [
+          {
+            "nombre": "Charm",
+            "descripcion": "If unit’s attack triggers a chain attack, increases chain attack accuracy to 90%.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "800"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Sword Guard 3",
+            "descripcion": "If foe is equipped with a sword, unit takes 3 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "600"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "14": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Dex +4",
+            "descripcion": "Grants Spd+4 and Dex+4.",
+            "tipo": "Inheritable Skill",
+            "sp": "2400"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "15": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [
+          {
+            "nombre": "Falchion (Chrom)",
+            "descripcion": "A legendary sword wielded by Emblem Chrom. Effective: Dragon.",
+            "tipo": "Engage Weapon",
+            "sp": "—"
+          }
+        ],
+        "engage_attacks": []
+      },
+      "16": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "17": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Sword Guard 4",
+            "descripcion": "If foe is equipped with a sword, unit takes 4 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "18": {
+        "synchro_skills": [
+          {
+            "nombre": "Rally Spectrum+",
+            "descripcion": "Use to grant allies within 2 spaces +3 to all seven basic stats for 1 turn.",
+            "tipo": "Sync Skill (Can Inherit)",
+            "sp": "2000"
+          }
+        ],
+        "inheritance_skills": [
+          {
+            "nombre": "Spd/Dex +5",
+            "descripcion": "Grants Spd+5 and Dex+5.",
+            "tipo": "Inheritable Skill",
+            "sp": "4800"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "19": {
+        "synchro_skills": [],
+        "inheritance_skills": [
+          {
+            "nombre": "Sword Guard 5",
+            "descripcion": "If foe is equipped with a sword, unit takes 5 less damage during combat.",
+            "tipo": "Inheritable Skill",
+            "sp": "1000"
+          }
+        ],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      },
+      "20": {
+        "synchro_skills": [],
+        "inheritance_skills": [],
+        "engage_skills": [],
+        "engage_items": [],
+        "engage_attacks": []
+      }
+    }
+  }
+}
