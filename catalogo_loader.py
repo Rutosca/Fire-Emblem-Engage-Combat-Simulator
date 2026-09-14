@@ -72,6 +72,70 @@ def cargar_catalogo():
         except (ET.ParseError, OSError, ValueError) as exc:
             print(f"Aviso al cargar niveles internos de Job.xml: {exc}")
 
+    # Garantizar engage_attack canónico para los 21 Emblemas
+    for eid, edata in _catalogo.get("emblemas", {}).items():
+        if not edata.get("engage_attack"):
+            atk = ATAQUES_ENGAGE_MAP.get(eid)
+            if not atk:
+                nom = normalizar_texto(edata.get("nombre", ""))
+                ascii_n = normalizar_texto(edata.get("ascii_name", ""))
+                for k_map, v_atk in ATAQUES_ENGAGE_MAP.items():
+                    if normalizar_texto(k_map) in nom or normalizar_texto(k_map) in ascii_n:
+                        atk = v_atk
+                        break
+            if atk:
+                edata["engage_attack"] = atk
+
+# =============================================================================
+# Diccionario Canónico de Ataques de Emblema (Técnicas de Fusión Engage)
+# =============================================================================
+
+ATAQUES_ENGAGE_MAP = {
+    "GID_マルス": "Lodestar Rush (Acometida estelar)",
+    "GID_シグルド": "Override (Superación)",
+    "GID_セリカ": "Warp Ragnarök (Tele-Ragnarök)",
+    "GID_ミカヤ": "Great Sacrifice (Gran sacrificio)",
+    "GID_ロイ": "Blazing Lion (León ardiente)",
+    "GID_リーフ": "Quadruple Hit (Tétragolpe)",
+    "GID_ルキナ": "All for One (Todos para uno)",
+    "GID_リン": "Astra Storm (Tormenta astral)",
+    "GID_アイク": "Great Aether (Gran Éter)",
+    "GID_ベレト": "Goddess Dance (Danza de la Diosa)",
+    "GID_カムイ": "Torrential Roar (Torrente rugiente)",
+    "GID_エイリーク": "Twin Strike (Golpe gemelo)",
+    "GID_エフラム": "Twin Strike (Golpe gemelo)",
+    "GID_リュール": "Bond Blast (Ataque de Vínculo)",
+    "GID_DLC_EDELGARD": "Houses Unite (Unión de Casas)",
+    "GID_DLC_TIKI": "Divine Blessing (Bendición Divina)",
+    "GID_DLC_HECTOR": "Storm's Eye (Ojo de la tormenta)",
+    "GID_DLC_VERONICA": "Summon Hero (Invocar Héroe de FEH)",
+    "GID_DLC_SOREN": "Cataclysm (Cataclismo)",
+    "GID_DLC_CAMILLA": "Darkness (Torrente Sombrío)",
+    "GID_DLC_CHROM": "Giga Levin Sword (Gigaespada Trueno)",
+    "edelgard": "Houses Unite (Unión de Casas)",
+    "three houses": "Houses Unite (Unión de Casas)",
+    "marth": "Lodestar Rush (Acometida estelar)",
+    "sigurd": "Override (Superación)",
+    "celica": "Warp Ragnarök (Tele-Ragnarök)",
+    "micaiah": "Great Sacrifice (Gran sacrificio)",
+    "roy": "Blazing Lion (León ardiente)",
+    "leif": "Quadruple Hit (Tétragolpe)",
+    "lucina": "All for One (Todos para uno)",
+    "lyn": "Astra Storm (Tormenta astral)",
+    "ike": "Great Aether (Gran Éter)",
+    "byleth": "Goddess Dance (Danza de la Diosa)",
+    "corrin": "Torrential Roar (Torrente rugiente)",
+    "eirika": "Twin Strike (Golpe gemelo)",
+    "ephraim": "Twin Strike (Golpe gemelo)",
+    "alear": "Bond Blast (Ataque de Vínculo)",
+    "tiki": "Divine Blessing (Bendición Divina)",
+    "hector": "Storm's Eye (Ojo de la tormenta)",
+    "veronica": "Summon Hero (Invocar Héroe de FEH)",
+    "soren": "Cataclysm (Cataclismo)",
+    "camilla": "Darkness (Torrente Sombrío)",
+    "chrom": "Giga Levin Sword (Gigaespada Trueno)",
+}
+
 # Carga inicial al importar el módulo
 cargar_catalogo()
 
@@ -973,6 +1037,15 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if hp_a > hp_m:
         hp_a = hp_m
 
+    es_viva = bool(data.get("viva", True)) and (hp_a > 0)
+    if not es_viva:
+        hp_a = 0
+
+    if stats_obj:
+        stats_obj.hp = hp_a
+        stats_obj.hp_max = hp_m
+        setattr(stats_obj, 'hp_actual', hp_a)
+
     ficha = FichaUnidad(
         nombre=nombre,
         es_aliado=es_aliado,
@@ -984,9 +1057,12 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         arma=arma_equipada,
         mov=mov,
         es_volador=es_volador,
+        viva=es_viva,
         hp_max=hp_m,
         hp_actual=hp_a,
-        hp_stock=int(data.get("hp_stock", 0)),
+        hp_stock=int(data.get("hp_stock", getattr(unidad_previa, 'hp_stock', 0) if unidad_previa else 0)),
+        chain_guard_activo=bool(data.get("chain_guard_activo", getattr(unidad_previa, 'chain_guard_activo', True) if unidad_previa else True)),
+        chain_guard_usado=bool(data.get("chain_guard_usado", getattr(unidad_previa, 'chain_guard_usado', False) if unidad_previa else False)),
         ha_actuado=ha_actuado,
         cargas_ruptura=cargas_ruptura,
         energia_emblema=min(int(data.get("energia_emblema", max_energia_emblema)), max_energia_emblema),
@@ -1005,9 +1081,11 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         potenciadores_usados=list(data.get("potenciadores_usados", [])),
         nivel_veneno=val_veneno,
         lider_tres_casas=val_lider_3h,
+        estilo_combate=estilo_combate,
     )
-    # registrar_unidad conserva el líder anterior al editar una ficha para no
-    # perder estado. Si el formulario/API trae explícitamente un líder nuevo,
-    # debe prevalecer sobre ese valor anterior.
+    # registrar_unidad conserva el estado anterior al editar una ficha para no perder datos.
+    # Si el formulario/API trae explícitamente estos campos nuevos, deben prevalecer.
     setattr(ficha, '_lider_tres_casas_explicito', 'lider_tres_casas' in data)
+    setattr(ficha, '_chain_guard_activo_explicito', 'chain_guard_activo' in data)
+    setattr(ficha, '_hp_stock_explicito', 'hp_stock' in data)
     return ficha

@@ -54,7 +54,10 @@ class FichaUnidad:
     nivel_veneno: int = 0              # Nivel de veneno (0..3): cada nivel aumenta en +1 todo daño recibido
     lider_tres_casas: str = "Dimitri"  # Líder activo del brazalete Tres Casas ("Edelgard", "Dimitri", "Claude")
     ataque_emblema_usado: bool = False # True si ya ejecutó el ataque o técnica especial de Engage en esta Fusión
+    chain_guard_activo: bool = True    # True si puede realizar Guardia en Cadena (Martial Monk/Master/Dancer)
+    chain_guard_usado: bool = False    # True si ya absorbió un golpe este turno
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión, total 4)
+    estilo_combate: str = ""           # Estilo de combate: Qi Adept, Backup, Dragon, Covert, etc.
 
     def __post_init__(self):
         # Canónico FE Engage: 3 turnos de fusión base; nivel de vínculo >= 11 otorga +1 turno (4 turnos).
@@ -70,6 +73,10 @@ class FichaUnidad:
             self.max_energia_emblema = 6
         if self.energia_emblema > self.max_energia_emblema:
             self.energia_emblema = self.max_energia_emblema
+
+        if not self.viva or self.hp_actual <= 0:
+            self.viva = False
+            self.hp_actual = 0
 
         if self.stats:
             stat_hp = getattr(self.stats, 'hp', 30)
@@ -88,6 +95,7 @@ class FichaUnidad:
             setattr(self.stats, 'en_fusion', self.en_fusion or (self.turnos_fusion > 0))
             setattr(self.stats, 'energia_emblema', self.energia_emblema)
             setattr(self.stats, 'max_energia_emblema', self.max_energia_emblema)
+            setattr(self.stats, 'hp_stock', self.hp_stock)
         elif self.hp_max <= 0:
             self.hp_max = 30
             self.hp_actual = 30
@@ -144,9 +152,12 @@ class FichaUnidad:
             "turnos_fusion": self.turnos_fusion,
             "en_fusion": self.en_fusion or (self.turnos_fusion > 0),
             "ataque_emblema_usado": self.ataque_emblema_usado,
+            "chain_guard_activo": self.chain_guard_activo,
+            "chain_guard_usado": self.chain_guard_usado,
             "nivel_vinculo": self.nivel_vinculo,
             "clase_id": self.clase_id,
             "clase_nombre": self.clase_nombre,
+            "estilo_combate": self.estilo_combate or (getattr(self.stats, 'estilo_combate', '') if self.stats else ''),
             "nivel": self.nivel,
             "emblema_id": self.emblema_id,
             "emblema_nombre": self.emblema_nombre,
@@ -272,10 +283,10 @@ class EstadoTablero:
         Añade o sobreescribe una ficha en el tablero.
         Si resolver_colision es True, elimina cualquier ficha previa que ocupe la misma casilla (x, y).
         """
-        if resolver_colision:
+        if resolver_colision and ficha.viva:
             duplicados = [
                 nom for nom, f in self.fichas.items()
-                if f.viva and f.x == ficha.x and f.y == ficha.y and nom != ficha.nombre
+                if f.x == ficha.x and f.y == ficha.y and nom != ficha.nombre
             ]
             for dup in duplicados:
                 del self.fichas[dup]
@@ -305,6 +316,11 @@ class EstadoTablero:
                 setattr(ficha.stats, 'en_fusion', True)
                 setattr(ficha.stats, 'turnos_fusion_restantes', ficha.turnos_fusion)
                 setattr(ficha.stats, 'ataque_emblema_usado', ficha.ataque_emblema_usado)
+        if prev and not getattr(ficha, '_chain_guard_activo_explicito', False):
+            ficha.chain_guard_activo = prev.chain_guard_activo
+        if prev and not getattr(ficha, '_hp_stock_explicito', False):
+            if ficha.hp_stock == 0 and prev.hp_stock > 0:
+                ficha.hp_stock = prev.hp_stock
 
         self.fichas[ficha.nombre] = ficha
 
@@ -447,6 +463,7 @@ class EstadoTablero:
         """Reactiva las acciones de todas las unidades vivas y limpia la ruptura de aliados al inicio de turno."""
         for f in self.fichas.values():
             f.ha_actuado = False
+            f.chain_guard_usado = False
             if f.es_aliado:
                 f.cargas_ruptura = 0
 
@@ -455,6 +472,17 @@ class EstadoTablero:
         if nombre not in self.fichas:
             return False
         self.fichas[nombre].ha_actuado = not self.fichas[nombre].ha_actuado
+        return True
+
+    def alternar_chain_guard(self, nombre: str, nuevo_estado: Optional[bool] = None) -> bool:
+        """Alterna o establece si una unidad Qi Adept tiene activa su postura de Guardia en Cadena."""
+        if nombre not in self.fichas:
+            return False
+        ficha = self.fichas[nombre]
+        if nuevo_estado is not None:
+            ficha.chain_guard_activo = bool(nuevo_estado)
+        else:
+            ficha.chain_guard_activo = not ficha.chain_guard_activo
         return True
 
     # ── Turno ────────────────────────────────────────────────────────────
@@ -488,6 +516,7 @@ class EstadoTablero:
         self.guardar_snapshot()
         self.fase = "enemigo"
         for f in self.fichas.values():
+            f.chain_guard_usado = False
             if not f.es_aliado:
                 f.cargas_ruptura = 0
 
@@ -500,10 +529,11 @@ class EstadoTablero:
         """
         return {
             "turno": self.turno_actual,
+            "turno_actual": self.turno_actual,
             "fase": self.fase,
             "aliados": [f.como_dict() for f in self.obtener_aliados()],
             "enemigos": [f.como_dict() for f in self.obtener_enemigos()],
-            "fichas": [f.como_dict() for f in self.fichas.values()]
+            "fichas": [f.como_dict() for f in self.fichas.values() if f.viva and f.hp_actual > 0]
         }
 
     def como_dict(self) -> dict:

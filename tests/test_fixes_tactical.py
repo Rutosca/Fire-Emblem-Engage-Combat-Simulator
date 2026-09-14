@@ -22,6 +22,7 @@ from app import app, tablero, _mapa, resolver_unidad_con_catalogo, _arma_desde_i
 from cargador_dispos import CargadorDisposEngage
 from motor_calculo import CalculadoraEngage, Terreno, Unidad, Arma
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock
+from estado_tablero import FichaUnidad
 
 def norm(t): return unicodedata.normalize('NFKD', str(t)).encode('ASCII', 'ignore').decode('utf-8').lower()
 
@@ -66,15 +67,15 @@ class TestFixesTactical(unittest.TestCase):
             self.f_chl.stats, self.f_lf.stats, silver, self.f_lf.arma,
             Terreno(0,0), Terreno(0,0), distancia=1
         )
-        self.assertEqual(comb_dim['atacante']['daño_por_golpe'], 20, "Chloé con Dimitri debe hacer 20")
-
         # Caso B: Edelgard activa -> +0 Atk con Lanza (Weapon Sync solo Hachas)
         self.f_chl.stats.lider_tres_casas = "Edelgard"
         comb_ed = CalculadoraEngage.simular_combate(
             self.f_chl.stats, self.f_lf.stats, silver, self.f_lf.arma,
             Terreno(0,0), Terreno(0,0), distancia=1
         )
-        self.assertEqual(comb_ed['atacante']['daño_por_golpe'], 15, "Chloé con Edelgard debe hacer 15 con lanza")
+        self.assertEqual(comb_dim['atacante']['daño_por_golpe'] - comb_ed['atacante']['daño_por_golpe'], 5, "Dimitri debe otorgar exactamente +5 ATK sobre Edelgard con lanza")
+        self.assertEqual(comb_dim['atacante']['daño_por_golpe'], 21, "Chloé con Dimitri debe hacer 21 a vínculo 11")
+        self.assertEqual(comb_ed['atacante']['daño_por_golpe'], 16, "Chloé con Edelgard debe hacer 16 con lanza a vínculo 11")
 
     def test_3_poison_damage_and_application(self):
         """Dagas aplican veneno, y cada nivel suma +1 a todo el daño recibido."""
@@ -276,7 +277,7 @@ class TestFixesTactical(unittest.TestCase):
         self.assertTrue(len(data.get("resultados", [])) > 0)
 
         # Buscar la jugada de Alear contra Lance Fighter (oportunidad de ataque del jugador)
-        jugada_alear = [r for r in data["resultados"] if r.get("tipo_analisis") == "oportunidad_jugador" and r.get("aliado") == "Alear" and r.get("enemigo") == "Lance Fighter (6,6)"]
+        jugada_alear = [r for r in data["resultados"] if r.get("tipo_analisis") in ("oportunidad_jugador", "combo_ataque") and r.get("aliado") == "Alear" and r.get("enemigo") == "Lance Fighter (6,6)"]
         self.assertTrue(len(jugada_alear) > 0, "Debe existir recomendación de ataque de Alear contra Lance Fighter")
         r_alear = jugada_alear[0]
 
@@ -1090,6 +1091,477 @@ class TestFixesTactical(unittest.TestCase):
             self.assertEqual(len(b_levels), 20, f"Emblema {eid} debe tener exactamente 20 niveles")
             self.assertEqual(b_levels["19"]["max_energia_emblema"], 6, f"Emblema {eid} a Lv 19 debe tener max 6")
             self.assertEqual(b_levels["20"]["max_energia_emblema"], 5, f"Emblema {eid} a Lv 20 debe tener max 5")
+
+    def test_26_obstruct_excluded_from_healing_and_deduplication(self):
+        """
+        Verifica que bastones utilitarios como Obstruct NO sean tratados como
+        bastones de curación, y que un aliado herido reciba a lo sumo la mejor
+        recomendación curativa sin duplicados repetitivos.
+        """
+        from motor_analisis import analizar_situacion_tactica
+        tablero.limpiar()
+        framme = resolver_unidad_con_catalogo({
+            "nombre": "Framme", "x": 10, "y": 10, "es_aliado": True,
+            "inventario": [{"nombre": "Obstruct (8)"}, {"nombre": "Heal (16)"}],
+            "stats": {"hp": 20, "magia": 10}
+        })
+        yunaka = resolver_unidad_con_catalogo({
+            "nombre": "Yunaka", "x": 10, "y": 12, "es_aliado": True,
+            "inventario": [{"nombre": "Mend (13)"}],
+            "stats": {"hp": 24, "magia": 12}
+        })
+        louis = resolver_unidad_con_catalogo({
+            "nombre": "Louis", "x": 11, "y": 11, "es_aliado": True,
+            "hp_actual": 10,
+            "stats": {"hp": 31}
+        })
+        tablero.registrar_unidad(framme)
+        tablero.registrar_unidad(yunaka)
+        tablero.registrar_unidad(louis)
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        curaciones = [r for r in res["resultados"] if r.get("tipo_analisis") == "apoyo_curacion"]
+        # Ninguna curación puede provenir de Obstruct
+        self.assertFalse(any("obstruct" in str(r.get("baston", "")).lower() for r in curaciones), "Obstruct nunca debe ser recomendado como curación")
+        # Louis debe tener a lo sumo 1 recomendación de curación (la mejor: Mend de Yunaka)
+        curaciones_louis = [r for r in curaciones if r.get("objetivo") == "Louis"]
+        self.assertEqual(len(curaciones_louis), 1, "Debe haber exactamente 1 mejor curación para Louis")
+        self.assertEqual(curaciones_louis[0]["aliado"], "Yunaka", "Mend de Yunaka debe superar a Heal de Framme")
+
+    def test_27_weapon_selection_follow_up_slim_over_iron(self):
+        """
+        Verifica que un arma de follow-up con mayor daño total y 100% acierto
+        (Slim Lance 11x2 = 22 dmg) supere a un arma de golpe único con menor daño
+        (Iron Lance 13x1 = 13 dmg).
+        """
+        from motor_analisis import analizar_situacion_tactica
+        from catalogo_loader import _buscar_en_catalogo
+        tablero.limpiar()
+        _, a_slim = _buscar_en_catalogo("armas", "Slim Lance")
+        _, a_iron = _buscar_en_catalogo("armas", "Iron Lance")
+        _, a_bow = _buscar_en_catalogo("armas", "Iron Bow")
+
+        arma_slim = _arma_desde_item(a_slim)
+        arma_iron = _arma_desde_item(a_iron)
+        arma_bow = _arma_desde_item(a_bow)
+
+        chloe = Unidad("Chloé", hp=22, fuerza=12, magia=0, destreza=12, velocidad=14, defensa=6, resistencia=8, suerte=10, complexion=5, tipo_movimiento="volador")
+        archer = Unidad("Archer", hp=24, fuerza=9, magia=0, destreza=10, velocidad=9, defensa=6, resistencia=2, suerte=6, complexion=6, tipo_movimiento="infanteria")
+
+        chloe_f = FichaUnidad(
+            "Chloé", clase_nombre="Pegasus Knight", nivel=7, es_aliado=True,
+            x=10, y=10, hp_actual=22, hp_max=22, stats=chloe, arma=arma_slim,
+            inventario=[{"nombre": "Slim Lance"}, {"nombre": "Iron Lance"}]
+        )
+        archer_f = FichaUnidad(
+            "Archer", clase_nombre="Archer", nivel=7, es_aliado=False,
+            x=11, y=10, hp_actual=24, hp_max=24, stats=archer, arma=arma_bow,
+            inventario=[{"nombre": "Iron Bow"}]
+        )
+        tablero.registrar_unidad(chloe_f)
+        tablero.registrar_unidad(archer_f)
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        ataques_chloe = [r for r in res["resultados"] if r.get("aliado") == "Chloé" and r.get("enemigo") == "Archer"]
+        self.assertTrue(len(ataques_chloe) > 0, "Debe haber una recomendación de ataque para Chloé")
+        self.assertEqual(ataques_chloe[0]["arma_recomendada"], "Slim Lance", "Slim Lance (11x2) debe superar a Iron Lance (13x1)")
+
+    def test_28_kill_con_critico_requires_positive_crit_rate(self):
+        """
+        CalculadoraEngage.evaluar_riesgo solo debe marcar kill_con_critico=True
+        si la probabilidad de crítico es estrictamente mayor a 0%.
+        """
+        chloe = Unidad("Chloé", hp=22, fuerza=12, magia=0, destreza=12, velocidad=14, defensa=6, resistencia=8, suerte=10, complexion=5, tipo_movimiento="volador")
+        archer = Unidad("Archer", hp=24, fuerza=9, magia=0, destreza=10, velocidad=9, defensa=6, resistencia=2, suerte=6, complexion=6, tipo_movimiento="infanteria")
+        arma_atk = Arma("Lanza", mt=5, wt=5, hit=100, crit=0, tipo="Lanza", rango=[1])
+        arma_def = Arma("Arco", mt=6, wt=5, hit=80, crit=0, tipo="Arco", rango=[2])
+
+        v = CalculadoraEngage.evaluar_riesgo(chloe, archer, arma_atk, arma_def, Terreno(), Terreno(), distancia=1, perfil="seguro")
+        self.assertFalse(v["veredicto"]["kill_con_critico"], "Con 0% crit, kill_con_critico debe ser False")
+
+    def test_29_cooperative_focus_fire_combo(self):
+        """
+        Detección de ataque combinado (Focus Fire): Alfred desgasta a un enemigo
+        de 31 HP (10 dmg) para que Louis lo remate con Ridersbane (26 dmg).
+        El sistema debe recomendar primero el ataque de preparación de Alfred.
+        """
+        from motor_analisis import analizar_situacion_tactica
+        tablero.limpiar()
+        alfred = resolver_unidad_con_catalogo({
+            "nombre": "Alfred", "x": 15, "y": 10, "es_aliado": True,
+            "clase_nombre": "Noble", "nivel": 7,
+            "inventario": [{"nombre": "Iron Lance"}],
+            "stats": {"hp": 26, "fuerza": 10, "velocidad": 9, "defensa": 9, "mov": 5}
+        })
+        louis = resolver_unidad_con_catalogo({
+            "nombre": "Louis", "x": 15, "y": 8, "es_aliado": True,
+            "clase_nombre": "Lance Armor", "nivel": 7,
+            "inventario": [{"nombre": "Ridersbane"}],
+            "stats": {"hp": 31, "fuerza": 13, "velocidad": 4, "defensa": 14, "mov": 4}
+        })
+        axe_cav = resolver_unidad_con_catalogo({
+            "nombre": "Axe Cavalier", "x": 18, "y": 10, "es_aliado": False,
+            "clase_nombre": "Axe Cavalier", "nivel": 7,
+            "hp_actual": 31,
+            "inventario": [{"nombre": "Iron Axe"}],
+            "stats": {"hp": 31, "fuerza": 10, "defensa": 6, "velocidad": 8, "tipo_movimiento": "caballeria"}
+        })
+        tablero.registrar_unidad(alfred)
+        tablero.registrar_unidad(louis)
+        tablero.registrar_unidad(axe_cav)
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        combos = [r for r in res["resultados"] if r.get("tipo_analisis") == "combo_ataque" and r.get("enemigo") == "Axe Cavalier"]
+        self.assertTrue(len(combos) > 0, "Debe generarse un ataque coordinado contra el Axe Cavalier")
+        combo = combos[0]
+        self.assertEqual(combo["aliado"], "Alfred", "Debe recomendarse el ataque preparatorio de Alfred")
+        self.assertEqual(combo["aliado_rematador"], "Louis", "Louis debe ser el aliado que remata")
+        self.assertIn("PREPARAR BAJA", combo["recomendacion"])
+
+    def test_30_boss_hortensia_attack_viable_in_danger_zone(self):
+        """
+        Verifica que en combates con alta densidad de enemigos (como Hortensia en Cap 7),
+        los ataques seguros al jefe no sean descartados por penalización excesiva de zonas de peligro.
+        """
+        from motor_analisis import analizar_situacion_tactica
+        from app import _desplegar_capitulo
+        _desplegar_capitulo("M007", "Extremo")
+        hortensia = [e for e in tablero.obtener_enemigos() if "hortensia" in e.nombre.lower()][0]
+        hortensia.x, hortensia.y = 18, 8
+
+        # Desplegar aliado que alcance a Hortensia en zona densa de peligro
+        chloe = resolver_unidad_con_catalogo({
+            "nombre": "Chloé", "x": 17, "y": 8, "es_aliado": True,
+            "clase_nombre": "Lance Flier", "nivel": 7,
+            "mov": 5, "es_volador": True,
+            "inventario": [{"nombre": "Javelin"}, {"nombre": "Slim Lance"}],
+            "stats": {"hp": 24, "fuerza": 11, "velocidad": 14, "defensa": 7, "resistencia": 10}
+        })
+        tablero.registrar_unidad(chloe)
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        ataques = [r for r in res["resultados"] if r.get("enemigo") == hortensia.nombre]
+        self.assertTrue(len(ataques) > 0, "Debe haber al menos un ataque viable recomendado contra Hortensia")
+
+    def test_31_edelgard_engage_attack_houses_unite(self):
+        """Verifica que el Emblema Edelgard cargue correctamente su ataque Houses Unite."""
+        from catalogo_loader import _catalogo
+        client = app.test_client()
+        res = client.get("/api/catalogo/emblemas")
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertTrue(data.get("ok"))
+        emblemas = data.get("emblemas", {})
+        self.assertIn("GID_DLC_EDELGARD", emblemas)
+        ed = emblemas["GID_DLC_EDELGARD"]
+        self.assertEqual(ed.get("engage_attack"), "Houses Unite (Unión de Casas)")
+
+    def test_32_engage_weapons_usable_when_in_fusion(self):
+        """Verifica que al fusionar, las armas desbloqueadas del Emblema sean utilizables."""
+        from motor_analisis import _armas_aliado
+        # Chloé con Edelgard a nivel de vínculo 10
+        chloe_stats = Unidad(nombre="Chloé", hp=26, fuerza=9, magia=8, destreza=15, velocidad=13, defensa=9, resistencia=10, suerte=11, complexion=5)
+        chloe_stats.emblema_nombre = "Edelgard"
+        chloe_stats.nivel_vinculo = 10
+        chloe_stats.en_fusion = True
+        chloe_stats.inventario = [{"nombre": "Iron Lance"}]
+
+        armas_fusion = _armas_aliado(chloe_stats)
+        nombres_armas = [a.nombre for a, es_eng, _ in armas_fusion]
+        # A nivel 10, Edelgard otorga Aymr y Areadbhar
+        self.assertIn("Aymr", nombres_armas, "Aymr debe estar disponible como arma usable en fusión")
+        self.assertIn("Areadbhar", nombres_armas, "Areadbhar debe estar disponible como arma usable en fusión")
+        self.assertIn("Iron Lance", nombres_armas, "El arma de inventario normal debe seguir presente")
+
+        # Marth a nivel 15 con Alear
+        alear_stats = Unidad(nombre="Alear", hp=24, fuerza=10, magia=2, destreza=12, velocidad=12, defensa=8, resistencia=5, suerte=9, complexion=6)
+        alear_stats.emblema_nombre = "Marth"
+        alear_stats.nivel_vinculo = 15
+        alear_stats.en_fusion = True
+        alear_stats.inventario = [{"nombre": "Libération"}]
+
+        armas_marth = _armas_aliado(alear_stats)
+        nombres_marth = [a.nombre for a, es_eng, _ in armas_marth]
+        self.assertIn("Rapier", nombres_marth)
+        self.assertIn("Mercurius", nombres_marth)
+        self.assertIn("Falchion", nombres_marth)
+
+    def test_33_solo_kill_priority_over_combos(self):
+        """
+        Verifica que:
+        1. Si un enemigo puede ser eliminado de forma directa 1:1, NO se generen combos contra él.
+        2. Las kills unitarias tengan prioridad estricta y se listen antes de cualquier estrategia conjunta.
+        """
+        from motor_analisis import analizar_situacion_tactica
+        tablero.limpiar()
+
+        # Enemigo 1: Corrupted frágil que Boucheron puede derrotar 1:1 con 100% hit
+        fragil = resolver_unidad_con_catalogo({
+            "nombre": "Fragile Thief", "x": 5, "y": 5, "es_aliado": False,
+            "hp_actual": 12, "hp_max": 12, "arma_nombre": "Iron Dagger",
+            "stats": {"hp": 12, "defensa": 2, "resistencia": 1, "velocidad": 0, "fuerza": 5, "suerte": 0}
+        })
+        tablero.registrar_unidad(fragil)
+
+        # Aliado 1: Boucheron cerca del frágil (Kill 1:1 garantizada, 100% hit)
+        bouch = resolver_unidad_con_catalogo({
+            "nombre": "Boucheron", "x": 5, "y": 4, "es_aliado": True,
+            "mov": 5, "arma_nombre": "Iron Axe",
+            "stats": {"hp": 28, "fuerza": 14, "destreza": 15, "velocidad": 10, "defensa": 8, "resistencia": 3, "suerte": 10}
+        })
+        tablero.registrar_unidad(bouch)
+
+        # Aliados 2 y 3: Alfred y Louis cerca de Axe Cavalier (hacen combo coordinado)
+        alfred = resolver_unidad_con_catalogo({
+            "nombre": "Alfred", "x": 15, "y": 10, "es_aliado": True,
+            "clase_nombre": "Noble", "nivel": 7,
+            "inventario": [{"nombre": "Iron Lance"}],
+            "stats": {"hp": 26, "fuerza": 10, "velocidad": 9, "defensa": 9, "mov": 5}
+        })
+        louis = resolver_unidad_con_catalogo({
+            "nombre": "Louis", "x": 15, "y": 8, "es_aliado": True,
+            "clase_nombre": "Lance Armor", "nivel": 7,
+            "inventario": [{"nombre": "Ridersbane"}],
+            "stats": {"hp": 31, "fuerza": 13, "velocidad": 4, "defensa": 14, "mov": 4}
+        })
+        axe_cav = resolver_unidad_con_catalogo({
+            "nombre": "Axe Cavalier", "x": 18, "y": 10, "es_aliado": False,
+            "clase_nombre": "Axe Cavalier", "nivel": 7,
+            "hp_actual": 31,
+            "inventario": [{"nombre": "Iron Axe"}],
+            "stats": {"hp": 31, "fuerza": 10, "defensa": 6, "velocidad": 8, "tipo_movimiento": "caballeria"}
+        })
+        tablero.registrar_unidad(alfred)
+        tablero.registrar_unidad(louis)
+        tablero.registrar_unidad(axe_cav)
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        resultados = res["resultados"]
+
+        # 1. No debe haber ningún combo contra Fragile Thief (porque Boucheron lo mata 1:1)
+        combos_fragil = [r for r in resultados if r.get("tipo_analisis") == "combo_ataque" and r.get("enemigo") == "Fragile Thief"]
+        self.assertEqual(len(combos_fragil), 0, "No deben generarse combos para un enemigo que muere 1:1")
+
+        # 2. Debe haber kill directa de Boucheron sobre Fragile Thief
+        solo_kill = [r for r in resultados if r.get("tipo_analisis") == "oportunidad_jugador" and r.get("enemigo") == "Fragile Thief"]
+        self.assertTrue(len(solo_kill) > 0, "Boucheron debe tener kill unitaria contra Fragile Thief")
+
+        # 3. Debe haber combo coordinado contra Axe Cavalier (ya que nadie lo mata 1:1)
+        combos_cav = [r for r in resultados if r.get("tipo_analisis") == "combo_ataque" and r.get("enemigo") == "Axe Cavalier"]
+        self.assertTrue(len(combos_cav) > 0, "Debe haber combo coordinado contra Axe Cavalier")
+
+        # 4. En la lista final, la kill 1:1 debe aparecer ANTES del combo coordinado
+        idx_solo = resultados.index(solo_kill[0])
+        idx_combo = resultados.index(combos_cav[0])
+        self.assertLess(idx_solo, idx_combo, "Las bajas 1:1 deben listarse antes que los combos coordinados")
+
+    def test_34_hortensia_boss_3_step_engage_defeat_sequence(self):
+        """
+        Verifica el flujo canónico de 3 pasos para derrotar a Hortensia (Boss) en Capítulo 7:
+        1. Recomendaciones simultáneas en el panel para Chloé, Alear y Céline con sus técnicas Engage.
+        2. Paso 1: Chloé (Houses Unite) quiebra la 1ª barra, Hortensia consume la piedra resurrectora
+           (hp_stock pasa de 1 a 0) y revive con 36/36 HP sin contraataque.
+        3. Paso 2: Alear (Lodestar Rush con Fólkvangr) quita 9x3 = 27 dmg sin contraataque,
+           dejando a Hortensia en 36 - 27 = 9 HP.
+        4. Paso 3: Céline (Warp Ragnarök) se teletransporta a casilla adyacente libre y remata
+           a Hortensia (18 dmg > 9 HP), dejándola en 0 HP y viva=False.
+        """
+        client = app.test_client()
+        import os
+        path_test = os.path.join("scratch", "partida_hortensia_test.json")
+        self.assertTrue(os.path.exists(path_test))
+        with open(path_test, "r", encoding="utf-8") as f:
+            d = json.load(f)
+
+        for x in d["fichas"]:
+            if "hortensia" in x["nombre"].lower():
+                x["hp_stock"] = 1
+                x["hp_actual"] = 25
+                x["hp_max"] = 36
+
+        res_imp = client.post("/api/partida/importar", json={"partida": d})
+        self.assertEqual(res_imp.status_code, 200)
+
+        # 1. Panel táctico debe recomendar simultáneamente a Alear, Chloé y Céline
+        res_an = client.post("/api/analizar", json={})
+        self.assertEqual(res_an.status_code, 200)
+        recs = res_an.get_json().get("resultados", [])
+        aliados_hortensia = [r.get("aliado") for r in recs if "hortensia" in str(r.get("enemigo")).lower()]
+
+        self.assertTrue(any("chlo" in a.lower() for a in aliados_hortensia), "Chloé debe estar recomendada")
+        self.assertTrue(any("alear" in a.lower() for a in aliados_hortensia), "Alear debe estar recomendada")
+        self.assertTrue(any("line" in a.lower() for a in aliados_hortensia), "Céline debe estar recomendada")
+
+        nom_chloe = [f.nombre for f in tablero.obtener_aliados() if "chlo" in f.nombre.lower()][0]
+        nom_alear = [f.nombre for f in tablero.obtener_aliados() if "alear" in f.nombre.lower()][0]
+        nom_celine = [f.nombre for f in tablero.obtener_aliados() if "line" in f.nombre.lower()][0]
+
+        # 2. Paso 1: Chloé usa Houses Unite
+        r1 = client.post("/api/combate/ejecutar", json={
+            "atacante": nom_chloe,
+            "defensor": "Hortensia (Boss)",
+            "arma": "Houses Unite",
+            "pos_destino": [16, 7]
+        })
+        self.assertEqual(r1.status_code, 200)
+        hort = tablero.obtener_ficha("Hortensia (Boss)")
+        self.assertEqual(hort.hp_actual, 36, "Hortensia debió revivir a 36 HP tras romper su 1ª barra")
+        self.assertEqual(hort.hp_stock, 0, "Hortensia debió consumir su piedra resurrectora")
+
+        # 3. Paso 2: Alear usa Lodestar Rush (Fólkvangr)
+        r2 = client.post("/api/combate/ejecutar", json={
+            "atacante": nom_alear,
+            "defensor": "Hortensia (Boss)",
+            "arma": "Lodestar Rush (Fólkvangr)",
+            "pos_destino": [16, 9]
+        })
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(hort.hp_actual, 9, "Hortensia debió quedar en 9 HP tras 9x3=27 de Lodestar Rush")
+
+        # 4. Paso 3: Céline usa Warp Ragnarök al hueco adyacente libre
+        libres_adj = []
+        for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+            pos_adj = (16 + dx, 8 + dy)
+            if not any(f.viva and (f.x, f.y) == pos_adj for f in tablero.fichas.values()):
+                libres_adj.append(pos_adj)
+        self.assertTrue(len(libres_adj) > 0, "Debe haber al menos 1 casilla adyacente libre")
+
+        r3 = client.post("/api/combate/ejecutar", json={
+            "atacante": nom_celine,
+            "defensor": "Hortensia (Boss)",
+            "arma": "Warp Ragnarök",
+            "pos_destino": list(libres_adj[0])
+        })
+        self.assertEqual(r3.status_code, 200)
+        self.assertEqual(hort.hp_actual, 0, "Hortensia debe quedar en 0 HP tras el remate")
+        self.assertFalse(hort.viva, "Hortensia debe estar derrotada")
+
+    def test_35_qi_adept_chain_guard_activation_and_enemy_phase_toggle(self):
+        """
+        Verifica el funcionamiento canónico de Guardia en Cadena (Chain Guard) de Adeptos de Qi:
+        1. Al 100% HP, anula el 1er impacto contra un aliado adyacente y recibe 20% max HP de retroceso.
+        2. Un 2º impacto en la misma ronda (doble ataque / arma brave) sí impacta al defensor.
+        3. Si la unidad enemiga no activó Chain Guard en su turno (ej. curó con bastón o atacó),
+           el toggle chain_guard_activo=False impide que proteja al objetivo.
+        4. Si el protector tiene HP < 100%, no puede realizar Chain Guard.
+        """
+        from motor_calculo import es_unidad_qi_adept
+        from motor_analisis import obtener_protector_chain_guard
+
+        client = app.test_client()
+        tablero.limpiar()
+
+        # Atacante aliado: Alear con espada de hierro y alta velocidad para realizar ataque doble
+        tablero.registrar_unidad(FichaUnidad(
+            "Alear", es_aliado=True, x=9, y=5,
+            hp_actual=30, hp_max=30,
+            stats=Unidad("Alear", hp=30, fuerza=15, velocidad=20, defensa=10),
+            arma=Arma("Iron Sword", mt=6, wt=5, hit=100, crit=0, es_magica=False, tipo="Espada", rango=[1])
+        ))
+
+        # Defensor enemigo: Lance Armor con 30 HP, 10 Def
+        tablero.registrar_unidad(FichaUnidad(
+            "Lance Armor", es_aliado=False, x=10, y=5,
+            hp_actual=30, hp_max=30,
+            stats=Unidad("Lance Armor", hp=30, fuerza=10, velocidad=2, defensa=10),
+            arma=Arma("Iron Lance", mt=6, wt=8, hit=80, crit=0, es_magica=False, tipo="Lanza", rango=[1])
+        ))
+
+        # Protector enemigo: Martial Monk adyacente en (10, 6) a 100% HP (30/30)
+        tablero.registrar_unidad(FichaUnidad(
+            "Martial Monk", es_aliado=False, x=10, y=6,
+            hp_actual=30, hp_max=30,
+            clase_nombre="Martial Monk",
+            chain_guard_activo=True,
+            stats=Unidad("Martial Monk", hp=30, fuerza=5, velocidad=10, defensa=5, clase_nombre="Martial Monk")
+        ))
+
+        # 1. Verificar detección de protector
+        armor = tablero.obtener_ficha("Lance Armor")
+        monk = tablero.obtener_ficha("Martial Monk")
+        self.assertTrue(es_unidad_qi_adept(monk))
+        prot = obtener_protector_chain_guard(armor, tablero)
+        self.assertIsNotNone(prot)
+        self.assertEqual(prot.nombre, "Martial Monk")
+
+        # 2. Ejecutar combate: 1er golpe debe ser bloqueado por Chain Guard, 2º golpe entra
+        # Daño por golpe: 15 Atk + 6 Mt = 21 Atk - 10 Def = 11 dmg.
+        # Hit 1: Bloqueado (0 dmg a Armor). Monk sufre 20% de 30 HP = 6 daño de retroceso.
+        # Hit 2 (Doble por velocidad): Conecta contra Armor por 11 dmg -> HP Armor 30 - 11 = 19.
+        resp = client.post("/api/combate/ejecutar", json={
+            "atacante": "Alear",
+            "defensor": "Lance Armor",
+            "arma": "Iron Sword",
+            "pos_destino": [9, 5]
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+
+        # Armor debe haber recibido solo el 2º golpe
+        self.assertEqual(armor.hp_actual, 19, "Armor debió recibir únicamente el 2º impacto tras la protección")
+        # Monk debe haber recibido 6 dmg de retroceso (30 - 6 = 24) y gastado su Chain Guard
+        self.assertEqual(monk.hp_actual, 24, "Martial Monk debió sufrir 6 daño de recoil (20% de 30 HP)")
+        self.assertTrue(monk.chain_guard_usado, "Martial Monk debe tener chain_guard_usado=True")
+
+        # 3. Un segundo ataque al mismo objetivo no debe activar Chain Guard (Monk ya no tiene 100% HP)
+        prot_segundo = obtener_protector_chain_guard(armor, tablero)
+        self.assertIsNone(prot_segundo, "No debe proteger porque ya no está al 100% HP")
+
+        # 4. Probar toggle de Chain Guard: Restaurar Monk a 30 HP, pero desactivar chain_guard_activo
+        monk.hp_actual = 30
+        monk.chain_guard_usado = False
+        r_toggle = client.post("/api/unidad/alternar_chain_guard", json={"nombre": "Martial Monk", "activo": False})
+        self.assertEqual(r_toggle.status_code, 200)
+        self.assertFalse(monk.chain_guard_activo)
+
+        # Ahora, aun teniendo 100% HP, como el enemigo curó o atacó en su turno, no está en postura de Chain Guard
+        prot_desactivado = obtener_protector_chain_guard(armor, tablero)
+        self.assertIsNone(prot_desactivado, "No debe proteger si chain_guard_activo=False")
+
+        # Volver a activar vía toggle API
+        r_toggle2 = client.post("/api/unidad/alternar_chain_guard", json={"nombre": "Martial Monk", "activo": True})
+        self.assertEqual(r_toggle2.status_code, 200)
+        self.assertTrue(monk.chain_guard_activo)
+        self.assertIsNotNone(obtener_protector_chain_guard(armor, tablero))
+
+    def test_36_qi_adept_scope_monk_master_dancer_and_custom(self):
+        """
+        Verifica que el subtipo Qi Adept abarca:
+        - Martial Monk
+        - Martial Master
+        - Dancer (Seadall / Bailarín)
+        - Unidades con estilo_combate explícito "Qi Adept" / "気功スタイル"
+        Y descarta unidades de otros estilos (Místico, Dragón, Apoyo, Acorazado).
+        """
+        from motor_calculo import es_unidad_qi_adept
+
+        # Qi Adept canónicos
+        monk = FichaUnidad("Framme", es_aliado=True, x=0, y=0, clase_nombre="Martial Monk", hp_actual=25, hp_max=25)
+        master = FichaUnidad("Jean", es_aliado=True, x=0, y=0, clase_nombre="Martial Master", hp_actual=35, hp_max=35)
+        dancer = FichaUnidad("Seadall", es_aliado=True, x=0, y=0, clase_nombre="Dancer", hp_actual=28, hp_max=28)
+        dancer_es = FichaUnidad("Bailarín", es_aliado=True, x=0, y=0, clase_nombre="Bailarín", hp_actual=28, hp_max=28)
+        custom_qi = FichaUnidad("Soldado Qi", es_aliado=True, x=0, y=0, estilo_combate="Qi Adept", hp_actual=30, hp_max=30)
+        custom_jp = FichaUnidad("Monje JP", es_aliado=True, x=0, y=0, estilo_combate="気功スタイル", hp_actual=30, hp_max=30)
+
+        self.assertTrue(es_unidad_qi_adept(monk), "Martial Monk debe ser Qi Adept")
+        self.assertTrue(es_unidad_qi_adept(master), "Martial Master debe ser Qi Adept")
+        self.assertTrue(es_unidad_qi_adept(dancer), "Dancer (Seadall) debe ser Qi Adept")
+        self.assertTrue(es_unidad_qi_adept(dancer_es), "Bailarín español debe ser Qi Adept")
+        self.assertTrue(es_unidad_qi_adept(custom_qi), "Estilo Qi Adept explícito debe ser reconocido")
+        self.assertTrue(es_unidad_qi_adept(custom_jp), "Estilo 気功スタイル explícito debe ser reconocido")
+
+        # No Qi Adept
+        alear = FichaUnidad("Alear", es_aliado=True, x=0, y=0, clase_nombre="Dragon Child", estilo_combate="Dragon", hp_actual=25, hp_max=25)
+        chloe = FichaUnidad("Chloé", es_aliado=True, x=0, y=0, clase_nombre="Pegasus Knight", estilo_combate="Flying", hp_actual=25, hp_max=25)
+        louis = FichaUnidad("Louis", es_aliado=True, x=0, y=0, clase_nombre="Lance Armor", estilo_combate="Armored", hp_actual=30, hp_max=30)
+        lapis = FichaUnidad("Lapis", es_aliado=True, x=0, y=0, clase_nombre="Sword Fighter", estilo_combate="Backup", hp_actual=22, hp_max=22)
+        celine = FichaUnidad("Céline", es_aliado=True, x=0, y=0, clase_nombre="Vidame", estilo_combate="Mystical", hp_actual=24, hp_max=24)
+
+        self.assertFalse(es_unidad_qi_adept(alear), "Dragon no es Qi Adept")
+        self.assertFalse(es_unidad_qi_adept(chloe), "Flying no es Qi Adept")
+        self.assertFalse(es_unidad_qi_adept(louis), "Armored no es Qi Adept")
+        self.assertFalse(es_unidad_qi_adept(lapis), "Backup no es Qi Adept")
+        self.assertFalse(es_unidad_qi_adept(celine), "Mystical no es Qi Adept")
 
 if __name__ == "__main__":
     unittest.main()

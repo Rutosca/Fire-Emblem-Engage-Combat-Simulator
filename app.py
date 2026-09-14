@@ -25,7 +25,8 @@ from catalogo_loader import (
 )
 from motor_analisis import (
     BACKUP_CLASSES, es_unidad_backup, obtener_aliados_backup,
-    encontrar_pos_ataque_optima, analizar_situacion_tactica
+    encontrar_pos_ataque_optima, analizar_situacion_tactica,
+    obtener_protector_chain_guard, _armas_aliado
 )
 
 app = Flask(__name__)
@@ -305,17 +306,18 @@ def desplegar_escuadron():
 
 @app.route("/api/partida/exportar", methods=["GET"])
 def exportar_partida():
-    """Exporta el estado completo de la partida en formato JSON."""
+    """Exporta el estado completo de la partida en formato JSON (fotografía exacta de unidades vivas)."""
+    fichas_vivas = [f.como_dict() for f in tablero.fichas.values() if f.viva and f.hp_actual > 0]
     estado = {
         "turno_actual": tablero.turno_actual,
         "fase": tablero.fase,
-        "fichas": [f.como_dict() for f in tablero.fichas.values()]
+        "fichas": fichas_vivas
     }
     return jsonify({"ok": True, "partida": estado})
 
 @app.route("/api/partida/importar", methods=["POST"])
 def importar_partida():
-    """Importa el estado completo de la partida desde un JSON."""
+    """Importa el estado completo de la partida desde un JSON (fotografía exacta)."""
     data = request.get_json(force=True)
     partida = data.get("partida") or data
     fichas_raw = partida.get("fichas", [])
@@ -327,14 +329,23 @@ def importar_partida():
     tablero.turno_actual = int(partida.get("turno_actual", 1))
     tablero.fase = partida.get("fase", "jugador")
 
-    for f_data in fichas_raw:
-        f_res = resolver_unidad_con_catalogo(f_data)
-        tablero.registrar_unidad(f_res)
+    # Una partida guardada es una fotografía del estado actual del mapa.
+    # Se filtran y colocan exclusivamente las unidades vivas (viva: true y hp_actual > 0).
+    fichas_vivas_raw = [
+        f for f in fichas_raw
+        if bool(f.get("viva", True)) and int(f.get("hp_actual", 1)) > 0
+    ]
 
+    for f_data in fichas_vivas_raw:
+        f_res = resolver_unidad_con_catalogo(f_data)
+        if f_res.viva and f_res.hp_actual > 0:
+            tablero.registrar_unidad(f_res)
+
+    fichas_retorno = [f.como_dict() for f in tablero.fichas.values() if f.viva and f.hp_actual > 0]
     return jsonify({
         "ok": True,
-        "mensaje": f"Partida importada con éxito ({len(fichas_raw)} unidades)",
-        "fichas": [f.como_dict() for f in tablero.fichas.values()]
+        "mensaje": f"Partida importada con éxito ({len(fichas_retorno)} unidades vivas)",
+        "fichas": fichas_retorno
     })
 
 @app.route("/api/unidad/eliminar", methods=["POST"])
@@ -590,6 +601,23 @@ def alternar_actuado():
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
+@app.route("/api/unidad/alternar_chain_guard", methods=["POST"])
+def alternar_chain_guard():
+    """Alterna o fija el estado de Guardia en Cadena (Chain Guard) de una unidad Qi Adept."""
+    data = request.get_json(force=True) or {}
+    nombre = data.get("nombre")
+    if not nombre:
+        return jsonify({"error": "Falta campo nombre"}), 400
+    nuevo_estado = data.get("activo")
+    tablero.guardar_snapshot()
+    ok = tablero.alternar_chain_guard(nombre, nuevo_estado)
+    f = tablero.obtener_ficha(nombre)
+    return jsonify({
+        "ok": ok,
+        "ficha": f.como_dict() if f else None,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()]
+    })
+
 
 # =============================================================================
 # API — Combate Interactivo y Ajustes en Tiempo Real
@@ -609,8 +637,10 @@ def ejecutar_combate():
     data = request.get_json(force=True) or {}
     nombre_atk = data.get("atacante")
     nombre_def = data.get("defensor")
-    nombre_arma = data.get("arma_nombre")
+    nombre_arma = data.get("arma_nombre") or data.get("arma")
     pos_destino = data.get("pos_destino")
+    es_engage_attack = bool(data.get("es_engage_attack", False))
+    engage_attack_nombre = str(data.get("engage_attack_nombre", "") or "")
 
     f_atk = tablero.obtener_ficha(nombre_atk)
     f_def = tablero.obtener_ficha(nombre_def)
@@ -632,6 +662,7 @@ def ejecutar_combate():
 
     # 2. Equipar arma
     if nombre_arma:
+        arma_encontrada = False
         for item in f_atk.inventario:
             if item.get("nombre") == nombre_arma or item.get("arma") == nombre_arma or item.get("id") == nombre_arma:
                 for it in f_atk.inventario:
@@ -639,7 +670,17 @@ def ejecutar_combate():
                 a_obj = _arma_desde_item(item)
                 if a_obj:
                     f_atk.arma = a_obj
+                arma_encontrada = True
                 break
+        if not arma_encontrada:
+            for a_eng, es_eng, _ in _armas_aliado(f_atk):
+                if normalizar_texto(a_eng.nombre) == normalizar_texto(nombre_arma) or normalizar_texto(nombre_arma) in normalizar_texto(a_eng.nombre):
+                    f_atk.arma = a_eng
+                    if getattr(a_eng, 'es_engage_attack', False):
+                        es_engage_attack = True
+                        engage_attack_nombre = getattr(a_eng, 'engage_attack_nombre', nombre_arma)
+                    arma_encontrada = True
+                    break
 
     # 3. Detectar aliados de apoyo (Backup) cercanos al objetivo para Chain Attacks
     apoyos_fichas = obtener_aliados_backup(f_atk, f_def, tablero=tablero)
@@ -683,8 +724,15 @@ def ejecutar_combate():
         if f.viva and f.es_aliado == f_def.es_aliado and f.nombre != f_def.nombre and f.stats
     ]
 
-    es_engage_attack = bool(data.get("es_engage_attack", False))
-    engage_attack_nombre = str(data.get("engage_attack_nombre", "") or "")
+    es_engage_attack = bool(data.get("es_engage_attack", False) or es_engage_attack)
+    engage_attack_nombre = str(data.get("engage_attack_nombre", "") or engage_attack_nombre)
+
+    if es_engage_attack and not f_atk.en_fusion:
+        f_atk.en_fusion = True
+        f_atk.turnos_fusion = 4 if f_atk.nivel_vinculo >= 11 else 3
+        if f_atk.stats:
+            setattr(f_atk.stats, 'en_fusion', True)
+            setattr(f_atk.stats, 'turnos_fusion_restantes', f_atk.turnos_fusion)
 
     # Sincronización estricta de HP actual con el objeto de stats antes de simular
     if f_atk.stats:
@@ -695,6 +743,9 @@ def ejecutar_combate():
         f_def.stats.hp = f_def.hp_actual
         f_def.stats.hp_max = f_def.hp_max
         setattr(f_def.stats, 'hp_actual', f_def.hp_actual)
+        setattr(f_def.stats, 'hp_stock', getattr(f_def, 'hp_stock', 0))
+
+    cg_protector = obtener_protector_chain_guard(f_def, tablero)
 
     combate = CalculadoraEngage.simular_combate(
         atacante=f_atk.stats,
@@ -718,11 +769,29 @@ def ejecutar_combate():
         aliados_cercanos_def=aliados_cercanos_def,
         es_engage_attack=es_engage_attack,
         engage_attack_nombre=engage_attack_nombre,
+        chain_guard_protector=cg_protector,
     )
 
     res = combate["resultado"]
     hp_def_final = res["hp_defensor_final"]
     hp_atk_final = res["hp_atacante_final"]
+
+    # Piedra resurrectora consumida:
+    if res.get("piedra_resurrectora_consumida"):
+        f_def.hp_stock = max(0, getattr(f_def, 'hp_stock', 0) - 1)
+        hp_def_final = f_def.hp_max
+        if f_def.stats:
+            f_def.stats.hp = f_def.hp_max
+
+    # Guardia en cadena: aplicar retroceso al protector
+    cg_res = res.get("chain_guard", {})
+    if cg_res.get("activo") and cg_res.get("protector"):
+        f_prot = tablero.obtener_ficha(cg_res["protector"])
+        if f_prot:
+            dmg_cg = cg_res.get("daño_protector", 0)
+            nuevo_hp_prot = max(1, f_prot.hp_actual - dmg_cg)
+            tablero.modificar_hp(f_prot.nombre, nuevo_hp_prot)
+            f_prot.chain_guard_usado = True
 
     # Aplicar HP resultante en el estado mutable del tablero
     tablero.modificar_hp(nombre_def, hp_def_final)
@@ -745,7 +814,7 @@ def ejecutar_combate():
         if res.get("aplica_ruptura") or smash_res.get("rompio_por_choque"):
             f_def.cargas_ruptura = 1
         elif getattr(f_def, 'cargas_ruptura', 0) > 0:
-            f_def.cargas_ruptura = max(0, f_def.cargas_ruptura - 1)
+            f_def.cargas_ruptura = 0
 
     # Repliegue táctico de Canter (Movimiento ágil tras combate si atacante sobrevive)
     pos_canter = data.get("pos_canter")
@@ -763,8 +832,13 @@ def ejecutar_combate():
     # Registrar uso de ataque o tecnica especial de Engage (solo 1 vez por fusion)
     if es_engage_attack:
         f_atk.ataque_emblema_usado = True
+        if not f_atk.en_fusion:
+            f_atk.en_fusion = True
+            f_atk.turnos_fusion = 4 if f_atk.nivel_vinculo >= 11 else 3
         if f_atk.stats:
             setattr(f_atk.stats, 'ataque_emblema_usado', True)
+            setattr(f_atk.stats, 'en_fusion', True)
+            setattr(f_atk.stats, 'turnos_fusion_restantes', f_atk.turnos_fusion)
 
     # Medidor de Emblema (Engage Gauge):
     # La recarga de emblema solo entra en vigor cuando se hayan usado y gastado todos los turnos de fusion

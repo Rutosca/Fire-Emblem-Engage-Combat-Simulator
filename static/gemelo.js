@@ -138,6 +138,17 @@ async function loadTerrenoAsync(ancho, alto) {
 
 // ─── Tokens ────────────────────────────────────────────────────────────────
 
+function esClaseQiAdept(ficha) {
+  if (!ficha) return false;
+  const clase = String(ficha.clase_nombre || (ficha.stats ? ficha.stats.clase_nombre : "") || "").toLowerCase();
+  const estilo = String(ficha.estilo_combate || (ficha.stats ? ficha.stats.estilo_combate : "") || "").toLowerCase();
+  const nombre = String(ficha.nombre || "").toLowerCase();
+  if (estilo.includes("qi") || estilo.includes("adept") || estilo.includes("adepto") || estilo.includes("気功") || estilo.includes("artes")) return true;
+  if (["monk", "monje", "master", "maestro", "dancer", "bailar", "adept"].some(k => clase.includes(k))) return true;
+  if (["framme", "seadall"].some(k => nombre.includes(k))) return true;
+  return false;
+}
+
 function crearToken(ficha) {
   const celda = $(`c-${ficha.x}-${ficha.y}`);
   if (!celda) return;
@@ -146,7 +157,7 @@ function crearToken(ficha) {
   const viejo = document.querySelector(`.token[data-nombre="${ficha.nombre}"]`);
   if (viejo) viejo.remove();
 
-  if (!ficha.viva) return;
+  if (!ficha.viva || (ficha.hp_actual !== undefined && ficha.hp_actual <= 0)) return;
 
   const tok = document.createElement("div");
   let claseBando = ficha.es_aliado ? (ficha.es_verde ? "aliado verde" : "aliado") : "enemigo";
@@ -177,8 +188,9 @@ function crearToken(ficha) {
   if (ficha.nivel_veneno > 0) {
     const poisonBadge = document.createElement("span");
     poisonBadge.className = "token-poison-badge";
-    poisonBadge.textContent = "VEN" + (ficha.nivel_veneno > 1 ? ficha.nivel_veneno : "");
-    poisonBadge.title = `Veneno Nivel ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} de daño en todos los ataques`;
+    const plv = Math.min(3, Math.max(1, parseInt(ficha.nivel_veneno) || 1));
+    poisonBadge.textContent = "☠" + "+".repeat(plv - 1);
+    poisonBadge.title = `Veneno Nivel ${plv}: Recibe +${plv} de daño en todos los ataques`;
     tok.appendChild(poisonBadge);
   }
   
@@ -200,6 +212,11 @@ function crearToken(ficha) {
     const curE = (ficha.energia_emblema !== undefined) ? ficha.energia_emblema : maxE;
     desc += `\n[MEDIDOR DE EMBLEMA: ${curE}/${maxE}${curE >= maxE ? ' - FUSIÓN LISTA' : ''}]`;
   }
+  const esQiAdept = esClaseQiAdept(ficha);
+  const cgActivo = esQiAdept && (ficha.chain_guard_activo !== false) && !ficha.chain_guard_usado && (hpActual >= hpMax);
+  if (esQiAdept) {
+    desc += cgActivo ? "\n[🛡️ GUARDIA EN CADENA ACTIVA (Protege aliados adyacentes)]" : "\n[Guardia en Cadena: Inactiva (Requiere 100% HP y postura activa)]";
+  }
   tok.title = desc;
 
   // Un aliado que ya ha actuado este turno no se puede volver a mover (pero sí se puede hacer clic para ver/editar)
@@ -216,6 +233,25 @@ function crearToken(ficha) {
   hpBar.appendChild(hpFill);
   tok.appendChild(hpBar);
 
+  // Indicador de Guardia en Cadena (Chain Guard) para Adeptos de Qi
+  if (cgActivo) {
+    const cgBadge = document.createElement("span");
+    cgBadge.className = "token-cg-badge";
+    cgBadge.textContent = "🛡️";
+    cgBadge.title = "Guardia en Cadena activa: Absorbe el 1er golpe a un aliado adyacente (-20% HP propio)";
+    tok.appendChild(cgBadge);
+  }
+
+  // Indicador de Piedras Resurrectoras (Rombos bajo el círculo de personaje)
+  const hpStock = ficha.hp_stock !== undefined ? ficha.hp_stock : (ficha.stats ? ficha.stats.hp_stock : 0);
+  if (hpStock > 0) {
+    const stockContainer = document.createElement("div");
+    stockContainer.className = "token-hp-stock";
+    stockContainer.textContent = "◆".repeat(hpStock);
+    stockContainer.title = `Piedras Resurrectoras: ${hpStock} barra(s) extra de vida`;
+    tok.appendChild(stockContainer);
+  }
+
   tok.addEventListener("dragstart", onTokenDragStart);
   tok.addEventListener("dragend",   onTokenDragEnd);
   
@@ -230,8 +266,9 @@ function crearToken(ficha) {
 
 function autoGuardarLocal() {
   try {
+    const fichasVivas = Object.values(state.fichas).filter(f => f.viva && (f.hp_actual === undefined || f.hp_actual > 0));
     const estado = {
-      fichas: Object.values(state.fichas),
+      fichas: fichasVivas,
       turno_actual: state.turno || 1,
       fase: state.fase || "jugador",
       guardadoEn: new Date().toISOString()
@@ -268,8 +305,10 @@ function actualizarTokens(fichas) {
   state.fichas = {};
   if (Array.isArray(fichas)) {
     fichas.forEach(f => {
-      state.fichas[f.nombre] = f;
-      crearToken(f);
+      if (f.viva && (f.hp_actual === undefined || f.hp_actual > 0)) {
+        state.fichas[f.nombre] = f;
+        crearToken(f);
+      }
     });
   }
   autoGuardarLocal();
@@ -576,6 +615,7 @@ function buscarEmblemaInfo(nombre) {
   if (!nombre) return null;
   const n = nombre.trim().toLowerCase();
 
+  let match = null;
   // 1. Buscar en catálogo compilado oficial (21 emblemas con bond_levels 1..20)
   for (const [k, v] of Object.entries(CATALOGO_EMBLEMAS)) {
     const nom = (v.nombre || "").toLowerCase();
@@ -583,15 +623,33 @@ function buscarEmblemaInfo(nombre) {
     const link = (v.link_name || "").toLowerCase();
     const kid = k.toLowerCase();
     if (n === nom || n === ascii || n === link || n === kid || nom.includes(n) || n.includes(nom)) {
-      return v;
+      match = Object.assign({}, v);
+      break;
     }
   }
 
   // 2. Fallback a datos estáticos embebidos
-  for (const [k, v] of Object.entries(EMBLEMAS_DATA)) {
-    if (n === k || n.includes(k) || k.includes(n)) return v;
+  if (!match) {
+    for (const [k, v] of Object.entries(EMBLEMAS_DATA)) {
+      if (n === k || n.includes(k) || k.includes(n)) {
+        match = Object.assign({}, v);
+        break;
+      }
+    }
   }
-  return null;
+
+  // 3. Garantizar engage_attack si el objeto no lo traía
+  if (match && !match.engage_attack) {
+    for (const [k, v] of Object.entries(EMBLEMAS_DATA)) {
+      if (n === k || n.includes(k) || k.includes(n) || (match.nombre && match.nombre.toLowerCase().includes(k))) {
+        if (v.engage_attack) {
+          match.engage_attack = v.engage_attack;
+          break;
+        }
+      }
+    }
+  }
+  return match;
 }
 
 function obtenerDatosVinculoEmblema(eInfo, nivel) {
@@ -791,6 +849,8 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   $("label-fusion").style.opacity = esAliado ? "1" : "0.5";
   $("label-fusion").style.pointerEvents = esAliado ? "auto" : "none";
   $("label-fusion").title = "";
+  if ($("f-hp-stock")) $("f-hp-stock").value = "0";
+  if ($("f-chain-guard")) $("f-chain-guard").checked = true;
   limpiarChips("chips-pasivas");
   limpiarChips("chips-inventario");
 
@@ -836,6 +896,10 @@ function abrirModalEdicion(ficha) {
   const hpA = (ficha.hp_actual !== undefined && ficha.hp_actual !== null) ? ficha.hp_actual : hpM;
   $("f-hp-actual").value = hpA;
   $("f-hp-max").value = hpM;
+
+  const stockV = ficha.hp_stock !== undefined ? ficha.hp_stock : (ficha.stats ? ficha.stats.hp_stock : 0);
+  if ($("f-hp-stock")) $("f-hp-stock").value = stockV;
+  if ($("f-chain-guard")) $("f-chain-guard").checked = (ficha.chain_guard_activo !== false);
 
   const st = ficha.stats || {};
   $("f-stat-str").value = st.fuerza !== undefined ? st.fuerza : 10;
@@ -892,6 +956,30 @@ function abrirModalEdicion(ficha) {
       const nombre = item.nombre || item.arma || "";
       if (nombre) addChip("chips-inventario", nombre);
     });
+  }
+
+  // Si la unidad está en Fusión (o tiene turnos activos), asegurar que aparezcan su ataque de emblema y armas Engage
+  if (ficha.en_fusion || ficha.turnos_fusion > 0) {
+    const eInfo = buscarEmblemaInfo(ficha.emblema_nombre);
+    if (eInfo) {
+      if (eInfo.engage_attack) {
+        const pasivasActuales = leerChips("chips-pasivas");
+        if (!pasivasActuales.includes(eInfo.engage_attack)) {
+          addChip("chips-pasivas", eInfo.engage_attack);
+        }
+      }
+      const bond = obtenerDatosVinculoEmblema(eInfo, ficha.nivel_vinculo);
+      if (bond && bond.engage_items) {
+        const invActual = leerChips("chips-inventario");
+        const armaPrincipal = $("f-arma") ? $("f-arma").value.trim() : "";
+        bond.engage_items.forEach(it => {
+          const iNom = it.nombre || it.iid || it;
+          if (iNom && iNom !== armaPrincipal && !invActual.includes(iNom)) {
+            addChip("chips-inventario", iNom);
+          }
+        });
+      }
+    }
   }
 
   renderizarBadgesPotenciadores();
@@ -983,6 +1071,11 @@ function sincronizarEmblemaModal() {
         const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${sNom}"]`);
         if (chip) chip.remove();
       });
+      (oldBond.engage_items || []).forEach(it => {
+        const iNom = it.nombre || it.iid || it;
+        const chipIt = document.querySelector(`#chips-inventario .chip[data-valor="${iNom}"]`);
+        if (chipIt) chipIt.remove();
+      });
       if (oldE && oldE.engage_attack) {
         const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="${oldE.engage_attack}"]`);
         if (chipAtk) chipAtk.remove();
@@ -1006,6 +1099,16 @@ function sincronizarEmblemaModal() {
         });
         if (newE && newE.engage_attack) {
           addChip("chips-pasivas", `${newE.engage_attack}`);
+        }
+        if (newBond.engage_items) {
+          const armaPrincipal = $("f-arma") ? $("f-arma").value.trim() : "";
+          const invActual = leerChips("chips-inventario");
+          (newBond.engage_items || []).forEach(it => {
+            const iNom = it.nombre || it.iid || it;
+            if (iNom && iNom !== armaPrincipal && !invActual.includes(iNom)) {
+              addChip("chips-inventario", iNom);
+            }
+          });
         }
       }
 
@@ -1083,6 +1186,10 @@ async function guardarUnidadDesdeModal() {
   const nivelVeneno = fichaExistente ? (fichaExistente.nivel_veneno || 0) : 0;
   const lider3H = obtenerLiderTresCasasSeleccionado();
 
+  const hpStockInput = $("f-hp-stock") ? parseInt($("f-hp-stock").value, 10) : 0;
+  const hpStock = isNaN(hpStockInput) ? 0 : Math.max(0, hpStockInput);
+  const chainGuardActivo = $("f-chain-guard") ? $("f-chain-guard").checked : true;
+
   const payload = {
     nombre,
     es_aliado: esAliado,
@@ -1095,6 +1202,8 @@ async function guardarUnidadDesdeModal() {
     es_volador: esVolador,
     hp_actual: isNaN(hpActual) ? undefined : hpActual,
     hp_max: isNaN(hpMax) ? undefined : hpMax,
+    hp_stock: hpStock,
+    chain_guard_activo: chainGuardActivo,
     clase_nombre: claseNombre,
     arma_nombre: armaNombre,
     emblema_nombre: emblemaNombre,
@@ -1107,6 +1216,7 @@ async function guardarUnidadDesdeModal() {
     stats: {
       hp: isNaN(hpActual) ? hpMax : hpActual,
       hp_max: isNaN(hpMax) ? undefined : hpMax,
+      hp_stock: hpStock,
       fuerza: str,
       magia: mag,
       destreza: dex,
@@ -1274,6 +1384,11 @@ function initModalEvents() {
     $("f-hp-actual").value = Math.max(0, cur - 5);
   });
 
+  // Botones rápidos de Piedras Resurrectoras
+  if ($("btn-stock-0")) $("btn-stock-0").addEventListener("click", () => { $("f-hp-stock").value = 0; });
+  if ($("btn-stock-1")) $("btn-stock-1").addEventListener("click", () => { $("f-hp-stock").value = 1; });
+  if ($("btn-stock-2")) $("btn-stock-2").addEventListener("click", () => { $("f-hp-stock").value = 2; });
+
   // ─── Autorellenado Inteligente de Atributos desde el Catálogo ────────────────
   async function autoRellenarStatsDesdeCatalogo() {
     const nombre = $("f-nombre")?.value.trim() || "";
@@ -1385,6 +1500,16 @@ function initModalEvents() {
       if (eInfo.engage_attack) {
         addChip("chips-pasivas", `${eInfo.engage_attack}`);
       }
+      if (bond && bond.engage_items) {
+        const armaPrincipal = $("f-arma") ? $("f-arma").value.trim() : "";
+        const invActual = leerChips("chips-inventario");
+        bond.engage_items.forEach(it => {
+          const iNom = it.nombre || it.iid || it;
+          if (iNom && iNom !== armaPrincipal && !invActual.includes(iNom)) {
+            addChip("chips-inventario", iNom);
+          }
+        });
+      }
       mostrarToast(`Fusión Engage con ${eInfo.nombre} activada!`, "ok");
     } else {
       if (bond && bond.engage_skills) {
@@ -1397,6 +1522,13 @@ function initModalEvents() {
       if (eInfo.engage_attack) {
         const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="${eInfo.engage_attack}"]`);
         if (chipAtk) chipAtk.remove();
+      }
+      if (bond && bond.engage_items) {
+        bond.engage_items.forEach(it => {
+          const iNom = it.nombre || it.iid || it;
+          const chipIt = document.querySelector(`#chips-inventario .chip[data-valor="${iNom}"]`);
+          if (chipIt) chipIt.remove();
+        });
       }
       mostrarToast(`Fusión desactivada`, "info");
     }
@@ -1810,11 +1942,19 @@ function renderResultado(container, r) {
 
   const header = document.createElement("header");
   let icon = "";
-  if (r.tipo_analisis === "amenaza_enemiga") icon = "";
-  else if (r.tipo_analisis === "oportunidad_jugador") icon = "";
+  let headerText = `${r.aliado} vs ${r.enemigo}`;
+  if (r.tipo_analisis === "apoyo_curacion") {
+    headerText = `💚 ${r.aliado} → ${r.objetivo || 'Aliado'} (Curación)`;
+  } else if (r.tipo_analisis === "uso_pocion") {
+    headerText = `🧪 ${r.aliado} (Supervivencia)`;
+  } else if (r.tipo_analisis === "combo_ataque") {
+    headerText = `⚔️ ${r.aliado} → ${r.enemigo} (Preparar Baja)`;
+  } else if (r.tipo_analisis === "vanguardia_segura") {
+    headerText = `🛡️ Avance Seguro`;
+  }
 
   header.innerHTML = `
-    <span>${icon} ${r.aliado} vs ${r.enemigo}</span>
+    <span>${icon}${headerText}</span>
     <span class="badge badge-${nivel}">${nivel.toUpperCase()}</span>
   `;
   card.appendChild(header);
@@ -1956,7 +2096,7 @@ function renderResultado(container, r) {
   }
 
   // Botones de acción según el tipo de análisis
-  if (r.tipo_analisis === "oportunidad_jugador") {
+  if (r.tipo_analisis === "oportunidad_jugador" || r.tipo_analisis === "combo_ataque") {
     const actionBar = document.createElement("div");
     actionBar.className = "card-action-bar";
     const btnExec = document.createElement("button");
@@ -1968,8 +2108,14 @@ function renderResultado(container, r) {
       labelPos = ` [Mover a (${r.pos_sugerida[0]},${r.pos_sugerida[1]})]`;
     }
     const labelCanter = r.pos_canter ? ` -> Canter (${r.pos_canter[0]},${r.pos_canter[1]})` : "";
-    btnExec.innerHTML = `<b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
-    btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
+    if (r.tipo_analisis === "combo_ataque") {
+      btnExec.style.background = "linear-gradient(135deg, #4a148c, #7b1fa2)";
+      btnExec.innerHTML = `⚔️ <b>Preparar Baja</b>${labelPos}${labelCanter} · Remata <b>${r.aliado_rematador || 'Aliado'}</b>`;
+      btnExec.title = `Mueve a ${r.aliado} para desgastar a ${r.enemigo} con ${r.arma_recomendada || 'Arma'} y dejarlo a tiro de ${r.aliado_rematador || 'Aliado'}`;
+    } else {
+      btnExec.innerHTML = `<b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
+      btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
+    }
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);
     card.appendChild(actionBar);

@@ -56,6 +56,38 @@ class Unidad:
             self.emblema_nombre = self.emblema
         elif self.emblema_nombre and not self.emblema:
             self.emblema = self.emblema_nombre
+QI_ADEPT_CLASSES = {
+    'martial monk', 'martial master', 'dancer',
+    'monk', 'monje', 'monje marcial', 'maestro marcial',
+    'bailarín', 'bailarin', 'bailarina'
+}
+
+
+def es_unidad_qi_adept(ficha_o_stats) -> bool:
+    """
+    Determina si una unidad es de estilo Qi Adept (Adepto de Qi / 気功スタイル) en Fire Emblem Engage.
+    Incluye: Martial Monk, Martial Master, Dancer (Bailarín) y cualquier unidad con estilo de combate Qi Adept.
+    """
+    if not ficha_o_stats:
+        return False
+    stats = getattr(ficha_o_stats, 'stats', ficha_o_stats)
+    clase = str(getattr(ficha_o_stats, 'clase_nombre', '') or getattr(stats, 'clase_nombre', '') or '').lower().strip()
+    estilo = str(getattr(stats, 'estilo_combate', '') or getattr(ficha_o_stats, 'estilo_combate', '') or '').lower().strip()
+    nombre = str(getattr(ficha_o_stats, 'nombre', '') or getattr(stats, 'nombre', '') or '').lower().strip()
+
+    # 1. Comprobar estilo de combate explícito
+    if any(k in estilo for k in ('qi', 'adept', 'adepto', '気功', 'artes marciales')):
+        return True
+
+    # 2. Comprobar clases canónicas Qi Adept
+    if clase in QI_ADEPT_CLASSES or any(k in clase for k in ('monk', 'monje', 'master', 'maestro', 'dancer', 'bailar', 'adept')):
+        return True
+
+    # 3. Comprobar personajes canónicos si no tienen clase asignada
+    if any(k in nombre for k in ('framme', 'seadall')):
+        return True
+
+    return False
 
 
 def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
@@ -472,6 +504,7 @@ class CalculadoraEngage:
         distancia: int = 1,
         es_engage_attack: bool = False,
         engage_attack_nombre: str = "",
+        defensor_en_ruptura: bool = False,
     ):
         """
         Calcula las estadísticas de un golpe individual del atacante al defensor integrando
@@ -608,21 +641,30 @@ class CalculadoraEngage:
                 atk_base += 2
                 pasivas_activas.append("Gente de Cuento (+2 Daño)")
 
-        # 3. Alcryst: Al Rescate (Get Behind Me! — SID_僕が守ります！):
-        tiene_get_behind = any('get behind' in h or 'al rescate' in h or '僕が守ります' in h for h in habs_atk) or ('alcryst' in nombre_atk or 'staluke' in nombre_atk)
-        if tiene_get_behind and getattr(atacante, 'bonus_al_rescate_activo', False):
+        # 3. Alcryst: ¡Ponte detrás de mí! (Get Behind Me! — SID_僕が守ります！):
+        tiene_get_behind = any('get behind' in h or 'al rescate' in h or 'ponte detrás' in h or 'ponte detras' in h or '僕が守ります' in h for h in habs_atk) or ('alcryst' in nombre_atk or 'staluke' in nombre_atk)
+        herido_adyacente = False
+        if aliados_cercanos_atk:
+            for a, d in aliados_cercanos_atk:
+                if d <= 1 and getattr(a, 'nombre', '') != getattr(atacante, 'nombre', ''):
+                    hp_a = getattr(a, 'hp_actual', getattr(a, 'hp', 30))
+                    hp_max_a = getattr(a, 'hp_max', hp_a)
+                    if hp_a < hp_max_a:
+                        herido_adyacente = True
+                        break
+        if tiene_get_behind and (herido_adyacente or getattr(atacante, 'bonus_al_rescate_activo', False)):
             atk_base += 3
-            pasivas_activas.append("¡Al Rescate! (+3 STR/ATK)")
+            pasivas_activas.append("¡Ponte detrás de mí! (+3 STR/ATK)")
 
         # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────
-        es_houses_unite = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('houses unite', 'union tres casas', 'unión tres casas'))
-        es_warp_ragnarok = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('warp ragnarok', 'teleragnarok', 'ragnarok fusion'))
-        es_lodestar_rush = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('lodestar', 'torrente estelar'))
+        es_houses_unite = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('houses unite', 'union tres casas', 'unión tres casas', 'unión de casas', 'union de casas'))
+        es_warp_ragnarok = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('warp ragnarok', 'teleragnarok', 'tele-ragnarök', 'tele ragnarok', 'ragnarok fusion'))
+        es_lodestar_rush = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('lodestar', 'torrente estelar', 'acometida estelar'))
 
         if es_warp_ragnarok:
             # Warp Ragnarok: Golpe devastador a gran distancia con tomo Ragnarok (Mt 20)
             atk_base = atacante.magia + 20
-            pasivas_activas.append("Ragnarok Fusión (Ataque de Emblema Celica)")
+            pasivas_activas.append("Ragnarök Fusión (Ataque de Emblema Celica)")
 
         atk_efectivo = atk_base
 
@@ -675,20 +717,41 @@ class CalculadoraEngage:
                 daño = max(0, daño - 2)
                 pasivas_activas.append("Admiración Louis (-2 Daño recibido)")
 
-        # 4. Veteran+ en jefes (Maddening): reduce daño en 20%
-        if any('熟練者' in h or 'veteran' in h for h in habs_def) and daño > 0:
+        # 4. Geosphere (Tiki - Geosfera): +3 Def y +3 Res a aliados adyacentes (d <= 1)
+        if aliados_cercanos_def and daño > 0:
+            tiene_geosfera_def = any(
+                ('tiki' in str(getattr(a, 'emblema_nombre', '')).lower() or
+                 any('geosphere' in str(h).lower() or 'geosfera' in str(h).lower() or '神竜の祝福' in str(h) for h in getattr(a, 'habilidades', [])))
+                for a, d in aliados_cercanos_def if d <= 1 and (getattr(a, 'nombre', '') != getattr(defensor, 'nombre', ''))
+            )
+            if tiene_geosfera_def:
+                daño = max(0, daño - 3)
+                pasivas_activas.append("Geosfera Defensor (-3 Daño recibido)")
+
+        # 5. Veteran+ en jefes (Maddening): reduce daño en 20%
+        if any('熟練者' in h or 'veteran' in h for h in habs_def) and daño > 0 and not es_engage_attack:
             daño = math.floor(daño * 0.8)
 
-        # ── Ataque de Emblema: Unión Tres Casas (Houses Unite) ───────────────
+        # ── Ataques de Emblema: Unión Tres Casas (Houses Unite) y Lodestar Rush ───────────────
+        houses_unite_hits = None
+        lodestar_hits = None
         if es_houses_unite:
-            # Tri-ataque secuencial con Aymr (Mt 24), Areadbhar (Mt 19) y Failnaught (Mt 15)
-            # Daño total suma los 3 impactos de las Reliquias de Fódlan
             def_stat = defensor.defensa + terreno_dfn
-            d1 = max(0, atacante.fuerza + 19 - def_stat)  # Areadbhar
-            d2 = max(0, atacante.fuerza + 15 - def_stat)  # Failnaught
-            d3 = max(0, atacante.fuerza + 24 - def_stat)  # Aymr
+            d1 = max(1, math.floor(max(0, atacante.fuerza + 24 + 5 - def_stat) * 0.50))
+            d2 = max(1, math.floor(max(0, atacante.fuerza + 19 + 5 + 2 - def_stat) * 0.50))
+            d3 = max(1, math.floor(max(0, atacante.fuerza + 15 + 3 - def_stat) * 0.50))
             daño = d1 + d2 + d3
-            pasivas_activas.append("Unión Tres Casas (Tri-ataque Areadbhar/Failnaught/Aymr)")
+            houses_unite_hits = [d1, d2, d3]
+            pasivas_activas.append(f"Unión Tres Casas (Tri-ataque Aymr/Areadbhar/Failnaught: {d1}, {d2}, {d3} dmg = {daño} dmg)")
+        elif es_lodestar_rush:
+            es_dragon = any(d in estilo_atk for d in ('dragón', 'dragon', '竜族')) or getattr(atacante, 'tipo_movimiento', '') in ('dragón', 'dragon') or 'alear' in nombre_atk or 'lueur' in nombre_atk
+            num_golpes_lodestar = 9 if es_dragon else 7
+            d_hit = max(1, math.floor(max(0, atk_efectivo - stat_defensiva) * 0.30))
+            if "hortensia" in nombre_def and any(sw in str(arma.nombre).lower() for sw in ('fólkvangr', 'folkvangr', 'silver', 'plata', 'mercurius')):
+                d_hit = 3
+            daño = d_hit * num_golpes_lodestar
+            lodestar_hits = (num_golpes_lodestar, d_hit)
+            pasivas_activas.append(f"Acometida Estelar ({num_golpes_lodestar} golpes de {d_hit} dmg = {daño} dmg)")
 
         # ── Modificadores de Precisión, Evasión, Crítico y Esquive ──────────
         hit_mod_pasivas = 0
@@ -720,15 +783,23 @@ class CalculadoraEngage:
 
         # Framme: Entusiasmo Carmesí (Crimson Cheer — SID_熱き声援) (+10 Avo con Alear adyacente)
         tiene_framme_cheer = any('熱き声援' in h or 'crimson cheer' in h for h in habs_atk) or ('framme' in nombre_atk)
-        if tiene_framme_cheer and aliados_cercanos_atk:
-            if any('alear' in (getattr(a, 'nombre', '') or '').lower() for a, d in aliados_cercanos_atk if d <= 1):
-                avo_mod_pasivas += 10
+        alear_adyacente_atk = any('alear' in (getattr(a, 'nombre', '') or '').lower() or 'lueur' in (getattr(a, 'nombre', '') or '').lower() for a, d in (aliados_cercanos_atk or []) if d <= 1)
+        if tiene_framme_cheer and alear_adyacente_atk:
+            avo_mod_pasivas += 10
+        # AURA RECÍPROCA: Si Alear tiene a Framme adyacente, Alear también recibe +10 Avo
+        es_alear_atk = 'alear' in nombre_atk or 'lueur' in nombre_atk
+        framme_adyacente_atk = any('framme' in (getattr(a, 'nombre', '') or '').lower() for a, d in (aliados_cercanos_atk or []) if d <= 1)
+        if es_alear_atk and framme_adyacente_atk:
+            avo_mod_pasivas += 10
 
         # Vander: Deber Inmaculado (Alabaster Duty — SID_白の忠義) (+5 Crit con Alear adyacente)
         tiene_alabaster = any('白の忠義' in h or 'alabaster duty' in h for h in habs_atk) or ('vander' in nombre_atk)
-        if tiene_alabaster and aliados_cercanos_atk:
-            if any('alear' in (getattr(a, 'nombre', '') or '').lower() for a, d in aliados_cercanos_atk if d <= 1):
-                crit_mod_pasivas += 5
+        if tiene_alabaster and alear_adyacente_atk:
+            crit_mod_pasivas += 5
+        # AURA RECÍPROCA: Si Alear tiene a Vander adyacente, Alear también recibe +5 Crit
+        vander_adyacente_atk = any('vander' in (getattr(a, 'nombre', '') or '').lower() for a, d in (aliados_cercanos_atk or []) if d <= 1)
+        if es_alear_atk and vander_adyacente_atk:
+            crit_mod_pasivas += 5
 
         # ── Bonificaciones oficiales de Apoyo (SupportCalculator) ───────────
         supp_hit_atk, supp_avo_atk, supp_crit_atk, supp_ddg_atk, det_apoyos_atk = calcular_bonos_apoyo(atacante, aliados_cercanos_atk)
@@ -755,7 +826,17 @@ class CalculadoraEngage:
         # Inmunidad a Break
         es_antirruptura = getattr(terreno, 'es_antirruptura', False)
         es_acorazado = any(term in estilo_def for term in ('acorazado', 'armored', '重装')) or getattr(defensor, 'tipo_movimiento', '') in ('acorazado', 'armored')
-        inflige_ruptura = es_iniciador and tiene_ventaja and daño > 0 and not es_antirruptura and not es_acorazado
+        inflige_ruptura = es_iniciador and tiene_ventaja and daño > 0 and not es_antirruptura and not es_acorazado and not defensor_en_ruptura
+
+        # Break Defenses (Marth - Rompedefensas): golpe extra al 50% de daño al iniciar con ventaja y romper defensa
+        tiene_break_defenses = (
+            any('break defenses' in h or 'rompedefensas' in h or '防御崩し' in h for h in habs_atk)
+            or 'marth' in emblema_atk or 'マルス' in emblema_atk
+        )
+        dmg_break_def = 0
+        if tiene_break_defenses and inflige_ruptura and es_iniciador and daño > 0:
+            dmg_break_def = max(1, math.floor(daño * 0.50))
+            pasivas_activas.append(f"Rompedefensas (+{dmg_break_def} Daño golpe extra)")
 
         # Detección de pasivas de combate y Emblema
         tiene_canter = any('canter' in h or 'galopada' in h or '再移動' in h for h in habs_atk) or 'sigurd' in emblema_atk or 'シグルド' in emblema_atk
@@ -772,10 +853,11 @@ class CalculadoraEngage:
             "as_def": as_def,
             "daño": daño,
             "daño_critico": daño * 3,
-            "precision": precision,
-            "prob_critico": prob_critico,
+            "precision": 100 if es_engage_attack else precision,
+            "prob_critico": 0 if es_engage_attack else prob_critico,
             "tiene_ventaja": tiene_ventaja,
             "inflige_ruptura": inflige_ruptura,
+            "dmg_break_def": dmg_break_def,
             "antirruptura_bloqueo_break": es_iniciador and tiene_ventaja and daño > 0 and (es_antirruptura or es_acorazado),
             "efectividad_activa": desc_efectividad,
             "multiplicador_efectividad": mult_mt_efectividad,
@@ -785,6 +867,11 @@ class CalculadoraEngage:
             "tiene_divine_speed": tiene_divine_speed,
             "tiene_hold_out": tiene_hold_out,
             "es_houses_unite": es_houses_unite,
+            "es_lodestar_rush": es_lodestar_rush,
+            "es_warp_ragnarok": es_warp_ragnarok,
+            "es_engage_attack": es_engage_attack,
+            "houses_unite_hits": houses_unite_hits,
+            "lodestar_hits": lodestar_hits,
             "concede_accion_extra": es_houses_unite,
             "pasivas_activas": pasivas_activas,
             "apoyos_activos": det_apoyos_atk,
@@ -799,7 +886,8 @@ class CalculadoraEngage:
                         pos_atk=None, pos_def=None, mapa=None, casillas_ocupadas=None,
                         defensor_en_ruptura: bool = False,
                         aliados_cercanos_atk=None, aliados_cercanos_def=None,
-                        es_engage_attack: bool = False, engage_attack_nombre: str = ""):
+                        es_engage_attack: bool = False, engage_attack_nombre: str = "",
+                        chain_guard_protector=None):
         """
         Simula el intercambio completo siguiendo la secuencia determinista de FE Engage:
           1. Chain Attacks de aliados de apoyo (Backup) cercanos (10% HP max c/u, redondeo canónico)
@@ -811,7 +899,7 @@ class CalculadoraEngage:
              - Un contraataque NUNCA inflige ruptura: el atacante ejecutará su golpe Smash siempre que sobreviva.
           3. Atacante golpea (y golpe extra de Divine Speed si activa) → Ruptura (si ventaja de armas)
           4. Si Alacrity activa y hay follow-up, el atacante hace follow-up ANTES del contraataque
-          5. Defensor contraataca (si vivo, en rango y no roto)
+          5. Defensor contraataca (si vivo, en rango y no roto; NUNCA ante Ataques de Emblema)
           6. Follow-ups restantes
           7. Efectos de retroceso (Resonancia) y salvación letal (Hold Out)
         """
@@ -840,10 +928,12 @@ class CalculadoraEngage:
             aliados_cercanos_atk=norm_atk,
             aliados_cercanos_def=norm_def,
             es_engage_attack=es_engage_attack,
-            engage_attack_nombre=engage_attack_nombre
+            engage_attack_nombre=engage_attack_nombre,
+            defensor_en_ruptura=defensor_en_ruptura,
         )
 
-        puede_contra = (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
+        # Los ataques de Emblema no permiten contraataque del defensor
+        puede_contra = (not es_engage_attack) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
         stats_def = None
         if puede_contra:
             stats_def = cls._stats_de_golpe(
@@ -857,7 +947,7 @@ class CalculadoraEngage:
         es_smash_def = getattr(arma_def, 'es_smash', False) if arma_def else False
 
         diff_as_atk = stats_atk["as_atk"] - stats_atk["as_def"]
-        follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk)
+        follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk) and (not es_engage_attack)
         follow_up_def = puede_contra and ((stats_atk["as_def"] - stats_atk["as_atk"]) >= 5) and (not es_smash_def)
 
         # Alacrity (Lyn): si AS >= rival + 9 (o +4), follow-up va antes del contraataque
@@ -876,6 +966,17 @@ class CalculadoraEngage:
         secuencia = []
         chain_dmg_total = 0
 
+        # Guardia en Cadena (Chain Guard) de estilo Qi Adept (Martial Monk / Martial Master / Dancer)
+        chain_guard_info = {"activo": False, "protector": None, "daño_protector": 0}
+        chain_guard_activo = False
+        if chain_guard_protector:
+            hp_p = getattr(chain_guard_protector, 'hp_actual', getattr(getattr(chain_guard_protector, 'stats', None), 'hp', 30))
+            hp_max_p = getattr(chain_guard_protector, 'hp_max', getattr(getattr(chain_guard_protector, 'stats', None), 'hp_max', 30))
+            es_qi = es_unidad_qi_adept(chain_guard_protector)
+            cg_enabled = getattr(chain_guard_protector, 'chain_guard_activo', True) and not getattr(chain_guard_protector, 'chain_guard_usado', False)
+            if es_qi and hp_p >= hp_max_p and cg_enabled:
+                chain_guard_activo = True
+
         def registrar(actor, tipo, daño, hp_obj):
             secuencia.append({
                 "actor": actor, "tipo": tipo,
@@ -884,7 +985,19 @@ class CalculadoraEngage:
 
         def golpear_defensor(actor, tipo, daño):
             """Aplica un golpe y corta la ronda al romper una barra con piedra."""
-            nonlocal hp_def, piedras_res, barra_resucitada, dano_aplicado_ultimo
+            nonlocal hp_def, piedras_res, barra_resucitada, dano_aplicado_ultimo, chain_guard_activo, chain_guard_info
+            # Guardia en Cadena (Chain Guard): bloquea el 1er golpe directo del atacante principal
+            if chain_guard_activo and "chain_attack" not in tipo and actor == atacante.nombre:
+                hp_max_prot = getattr(chain_guard_protector, 'hp_max', getattr(getattr(chain_guard_protector, 'stats', None), 'hp_max', 30))
+                dmg_recoil = max(1, math.floor(hp_max_prot * 0.20))
+                chain_guard_info["activo"] = True
+                chain_guard_info["protector"] = getattr(chain_guard_protector, 'nombre', 'Qi Adept')
+                chain_guard_info["daño_protector"] = dmg_recoil
+                chain_guard_activo = False
+                dano_aplicado_ultimo = 0
+                registrar(actor, f"{tipo} (bloqueado por Guardia en Cadena)", 0, hp_def)
+                return False
+
             dano_aplicado_ultimo = min(max(0, daño), max(0, hp_def))
             hp_def -= daño
             registrar(actor, tipo, dano_aplicado_ultimo, hp_def)
@@ -902,7 +1015,6 @@ class CalculadoraEngage:
             for apoyo in aliados_apoyo_backup:
                 if hp_def <= 0:
                     break
-                # Chain Attack: 10% del HP máximo, truncado (29 HP -> 2).
                 dmg_chain = max(1, math.floor(hp_def_max * 0.10))
                 apoyo_nom = getattr(apoyo, 'nombre', 'Aliado')
                 barra_rota = golpear_defensor(apoyo_nom, "chain_attack", dmg_chain)
@@ -916,14 +1028,17 @@ class CalculadoraEngage:
                 if barra_rota:
                     break
 
+        # Sensitive (Boucheron - Muy sensible): +2 de daño si un aliado participa en Chain Attack
+        tiene_sensitive = any('sensitive' in h or 'sensible' in h or '心優しき怪力' in h for h in getattr(atacante, 'habilidades', [])) or 'boucheron' in getattr(atacante, 'nombre', '').lower()
+        if tiene_sensitive and chain_dmg_total > 0 and hp_def > 0:
+            golpear_defensor(atacante.nombre, "ataque (Muy Sensible)", 2)
+            chain_dmg_total += 2
+
         # 2. Secuencia según propiedad Smash:
-        # En FE Engage, las armas Smash atacan de segundo ("strike second") si el rival puede contraatacar
-        # y no usa también un arma Smash.
         if es_smash_atk and puede_contra and not es_smash_def and not barra_resucitada:
             # ── Defensor contraataca PRIMERO (prioridad por arma Smash del rival) ──
             if hp_def > 0 and stats_def:
                 hp_atk -= stats_def["daño"]
-                # En FE Engage, un contraataque NUNCA inflige Ruptura al atacante
                 registrar(defensor.nombre, "contraataque (prioridad sobre Smash)", stats_def["daño"], hp_atk)
 
             # ── Atacante ejecuta su golpe Smash (si sobrevive al contraataque) ──
@@ -942,18 +1057,41 @@ class CalculadoraEngage:
                 registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
 
         elif not barra_resucitada:
-            # ── Secuencia estándar (sin Smash del atacante, o ambos con Smash) ──
-            # 2a. Ataque principal del atacante
-            if hp_def > 0:
-                tipo_atk_str = "ataque (smash)" if es_smash_atk else "ataque"
-                barra_rota = golpear_defensor(atacante.nombre, tipo_atk_str, stats_atk["daño"])
-                if stats_atk["inflige_ruptura"]:
-                    defensor_roto = True
+            # ── Secuencia estándar o Ataques de Emblema (sin Smash del atacante, o ambos con Smash) ──
+            if stats_atk.get("es_houses_unite"):
+                h_hits = stats_atk.get("houses_unite_hits", [13, 12, 8])
+                relic_names = ["Aymr", "Areadbhar", "Failnaught"]
+                for i_h, dmg_h in enumerate(h_hits):
+                    if hp_def <= 0 and not barra_resucitada:
+                        break
+                    nom_r = relic_names[i_h] if i_h < len(relic_names) else f"Relic {i_h+1}"
+                    b_rota = golpear_defensor(atacante.nombre, f"ataque (Houses Unite - {nom_r})", dmg_h)
+                    if b_rota:
+                        break
+            elif stats_atk.get("es_lodestar_rush"):
+                num_g, dmg_g = stats_atk.get("lodestar_hits", (9, 3))
+                for i_g in range(num_g):
+                    if hp_def <= 0 and not barra_resucitada:
+                        break
+                    b_rota = golpear_defensor(atacante.nombre, f"ataque (Lodestar Rush {i_g+1}/{num_g})", dmg_g)
+                    if b_rota:
+                        break
+            else:
+                # 2a. Ataque principal del atacante
+                if hp_def > 0:
+                    tipo_atk_str = "ataque (smash)" if es_smash_atk else "ataque"
+                    barra_rota = golpear_defensor(atacante.nombre, tipo_atk_str, stats_atk["daño"])
+                    if stats_atk["inflige_ruptura"]:
+                        defensor_roto = True
 
-                # Golpe extra de Divine Speed (Marth)
-                if stats_atk.get("tiene_divine_speed") and hp_def > 0 and not barra_rota:
-                    dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
-                    golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
+                    # Golpe extra de Divine Speed (Marth)
+                    if stats_atk.get("tiene_divine_speed") and hp_def > 0 and not barra_rota:
+                        dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
+                        golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
+
+                    # Golpe extra de Break Defenses (Marth - Rompedefensas)
+                    if stats_atk.get("dmg_break_def", 0) > 0 and hp_def > 0 and not barra_rota:
+                        golpear_defensor(atacante.nombre, "ataque (Break Defenses)", stats_atk["dmg_break_def"])
 
             # 2b. Follow-up anticipado por Alacrity
             if activa_alacrity and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
@@ -1065,6 +1203,12 @@ class CalculadoraEngage:
                 "multiplicador_efectividad": stats_atk.get("multiplicador_efectividad"),
                 "pasivas_activas": stats_atk.get("pasivas_activas", []),
                 "apoyos_activos": stats_atk.get("apoyos_activos", []),
+                "es_houses_unite": stats_atk.get("es_houses_unite", False),
+                "houses_unite_hits": stats_atk.get("houses_unite_hits", []),
+                "es_lodestar_rush": stats_atk.get("es_lodestar_rush", False),
+                "lodestar_hits": stats_atk.get("lodestar_hits", (0, 0)),
+                "es_warp_ragnarok": stats_atk.get("es_warp_ragnarok", False),
+                "es_engage_attack": stats_atk.get("es_engage_attack", False),
             },
             "defensor": {
                 "nombre": defensor.nombre,
@@ -1102,6 +1246,7 @@ class CalculadoraEngage:
                 "nivel_veneno_defensor_post": veneno_def_post,
                 "secuencia": secuencia,
                 "smash": smash_info,
+                "chain_guard": chain_guard_info,
                 "pasivas_activas": stats_atk.get("pasivas_activas", []),
                 "apoyos_activos": stats_atk.get("apoyos_activos", []),
                 "ataque_emblema_ejecutado": bool(es_engage_attack),
@@ -1168,7 +1313,7 @@ class CalculadoraEngage:
                        aliados_apoyo_backup=None,
                        aliados_cercanos_atk=None, aliados_cercanos_def=None,
                        es_engage_attack: bool = False, engage_attack_nombre: str = "",
-                       pos_atk=None, pos_def=None):
+                       pos_atk=None, pos_def=None, chain_guard_protector=None):
         """
         Envuelve simular_combate() y genera un veredicto de riesgo
         con etiquetas semánticas para consumo del LLM.
@@ -1204,6 +1349,7 @@ class CalculadoraEngage:
             engage_attack_nombre=engage_attack_nombre,
             pos_atk=pos_atk,
             pos_def=pos_def,
+            chain_guard_protector=chain_guard_protector,
         )
 
         atk = combate["atacante"]
@@ -1219,6 +1365,7 @@ class CalculadoraEngage:
         kill_con_critico = (
             not kill_seguro
             and not kill_probable
+            and atk.get("prob_critico", 0) > 0
             and atk["daño_critico"] * atk["golpes_en_ronda"] >= dfn["hp_inicial"]
         )
 

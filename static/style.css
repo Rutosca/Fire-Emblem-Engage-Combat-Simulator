@@ -646,6 +646,27 @@ header h1 {
   pointer-events: none;
 }
 
+.token-poison-badge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  font-size: 10px;
+  font-weight: 900;
+  background: #190a28;
+  color: #d175ff;
+  border: 1px solid #b347eb;
+  border-radius: 8px;
+  padding: 0 3px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(179, 71, 235, 0.85);
+  pointer-events: none;
+  z-index: 12;
+  letter-spacing: -0.5px;
+}
+
 /* Mini barra de vida (HP) sobre el token */
 .token-hp-bar {
   position: absolute;
@@ -671,6 +692,47 @@ header h1 {
 .token-hp-fill.hp-high { background: linear-gradient(90deg, #3db866, #52c07a); }
 .token-hp-fill.hp-mid  { background: linear-gradient(90deg, #e5a820, #f0c040); }
 .token-hp-fill.hp-low  { background: linear-gradient(90deg, #c93030, #e05252); }
+
+/* Indicador de Piedras Resurrectoras (Rombos bajo el círculo de personaje) */
+.token-hp-stock {
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 11px;
+  line-height: 1;
+  color: #00e5ff;
+  text-shadow: 0 0 5px #00e5ff, 0 0 10px rgba(0, 229, 255, 0.8);
+  pointer-events: none;
+  z-index: 13;
+  letter-spacing: 1px;
+  animation: stock-glow 2s infinite alternate;
+}
+
+@keyframes stock-glow {
+  0% { filter: drop-shadow(0 0 2px #00e5ff); opacity: 0.9; }
+  100% { filter: drop-shadow(0 0 6px #00ffff); opacity: 1; }
+}
+
+/* Badge de Guardia en Cadena (Chain Guard) activa para Qi Adepts */
+.token-cg-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 11px;
+  line-height: 1;
+  background: rgba(16, 28, 48, 0.85);
+  border: 1px solid #4f8ef7;
+  border-radius: 50%;
+  padding: 1px 3px;
+  box-shadow: 0 0 6px rgba(79, 142, 247, 0.8);
+  pointer-events: none;
+  z-index: 14;
+}
 
 /* Botones rápidos de ajuste de HP en el modal */
 .hp-quick-btns {

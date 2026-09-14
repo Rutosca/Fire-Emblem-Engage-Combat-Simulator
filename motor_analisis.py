@@ -12,7 +12,7 @@ Contiene:
 
 import math
 from collections import deque
-from motor_calculo import CalculadoraEngage, Terreno
+from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock
 from catalogo_loader import _arma_desde_item, _catalogo, normalizar_texto
 
@@ -105,7 +105,16 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
 
     todas_ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre}
 
-    if casillas_alcanzables_precalc is not None:
+    is_tele = "ragnarok" in (arma.nombre if arma else "").lower() or getattr(arma, 'engage_attack_nombre', '').lower().startswith('warp')
+    if is_tele:
+        casillas_alcanzables = set()
+        for x in range(mapa.ancho):
+            for y in range(mapa.alto):
+                if abs(x - aliado.x) + abs(y - aliado.y) <= 10:
+                    t = mapa.grid[x][y]
+                    if getattr(t, 'caminable', True) or (getattr(aliado, 'es_volador', False) and getattr(t, 'volable', True)):
+                        casillas_alcanzables.add((x, y))
+    elif casillas_alcanzables_precalc is not None:
         casillas_alcanzables = casillas_alcanzables_precalc
     else:
         enemigos_bloqueo = {(f.x, f.y) for f in tablero.obtener_enemigos() if f.viva and f.nombre != enemigo.nombre}
@@ -283,9 +292,11 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
     }
 
 def _armas_aliado(aliado):
-    """Obtiene todas las armas usables del inventario de un aliado."""
+    """Obtiene todas las armas usables del inventario de un aliado, incluyendo armas de Engage si está en Fusión."""
     armas = []
     for item in (aliado.inventario or []):
+        if isinstance(item, str):
+            item = {"nombre": item}
         if not isinstance(item, dict):
             continue
         tipo = item.get("tipo", "")
@@ -300,6 +311,92 @@ def _armas_aliado(aliado):
             elif es_engage:
                 nota = "Arma de Engage"
             armas.append((a, es_engage, nota))
+
+    # Si está en modo Fusión o tiene energía al 100%, incorporar armas de emblema y Ataque de Emblema
+    es_fusion = (
+        bool(getattr(aliado, "en_fusion", False))
+        or int(getattr(aliado, "turnos_fusion", 0) or 0) > 0
+        or int(getattr(aliado, "turnos_fusion_restantes", 0) or 0) > 0
+    )
+    tiene_energia_max = (
+        int(getattr(aliado, "energia_emblema", 0) or 0) >= int(getattr(aliado, "max_energia_emblema", 6) or 6)
+        and int(getattr(aliado, "max_energia_emblema", 6) or 6) > 0
+    )
+    tiene_engage_disponible = es_fusion or tiene_energia_max
+    emb_nom = _emblema_equipado(aliado)
+    if not emb_nom and hasattr(aliado, "stats"):
+        emb_nom = getattr(aliado.stats, "emblema_nombre", "") or getattr(aliado.stats, "emblema", "")
+    emb_nom = str(emb_nom or "").strip()
+
+    if tiene_engage_disponible and emb_nom and emb_nom.lower() not in {"none", "null", "ninguno", "sin emblema"}:
+        buscado = normalizar_texto(emb_nom)
+        e_info = None
+        for edata in (_catalogo.get("emblemas", {}) or {}).values():
+            if (normalizar_texto(edata.get("nombre", "")) == buscado
+                or normalizar_texto(edata.get("ascii_name", "")) == buscado
+                or buscado in normalizar_texto(edata.get("nombre", ""))
+                or normalizar_texto(edata.get("nombre", "")) in buscado):
+                e_info = edata
+                break
+        if e_info:
+            nv = int(getattr(aliado, "nivel_vinculo", 1) or 1)
+            b_info = (e_info.get("bond_levels", {}) or {}).get(str(nv), {})
+            engage_items = b_info.get("engage_items")
+            if not engage_items:
+                engage_items = e_info.get("engage_items", [])
+            for it in (engage_items or []):
+                item_raw = it.get("nombre") or it.get("iid") if isinstance(it, dict) else str(it)
+                if not item_raw:
+                    continue
+                a_eng = _arma_desde_item(item_raw)
+                if a_eng and a_eng.mt > 0:
+                    tipo_l = str(getattr(a_eng, 'tipo', '')).lower()
+                    nom_l = str(getattr(a_eng, 'nombre', '')).lower()
+                    if not any(k in tipo_l for k in ('bastón', 'baston', 'staff')) and not any(k in nom_l for k in ('recover', 'curar', 'sanar', 'restituir', 'fortify', 'physic', 'mend', 'heal')):
+                        if not any(normalizar_texto(w.nombre) == normalizar_texto(a_eng.nombre) for w, _, _ in armas):
+                            armas.append((a_eng, True, "Arma de Engage"))
+
+        # Ataque de Emblema (Técnica Especial Engage) si no se ha usado
+        atk_ya_usado = bool(
+            getattr(aliado, "ataque_emblema_usado", False)
+            or (hasattr(aliado, "stats") and getattr(aliado.stats, "ataque_emblema_usado", False))
+        )
+        if not atk_ya_usado:
+            from catalogo_loader import ATAQUES_ENGAGE_MAP
+            nombre_atk_engage = None
+            for k_map, v_map in ATAQUES_ENGAGE_MAP.items():
+                if normalizar_texto(k_map) in buscado or buscado in normalizar_texto(k_map):
+                    nombre_atk_engage = v_map
+                    break
+            if nombre_atk_engage:
+                clean_name = nombre_atk_engage.split(" (")[0]
+                clean_l = clean_name.lower()
+                # Excluir técnicas que son de soporte grupal puro (no ataques contra enemigos)
+                if not any(k in clean_l for k in ("sacrifice", "sacrificio", "goddess dance", "baile de la diosa")):
+                    if "houses" in clean_l:
+                        a_eng_atk = Arma(nombre="Houses Unite", mt=19, hit=100, crit=0, wt=10, tipo="Lanza", rango=[1])
+                        setattr(a_eng_atk, 'es_engage_attack', True)
+                        setattr(a_eng_atk, 'engage_attack_nombre', 'Houses Unite')
+                        armas.append((a_eng_atk, True, "Ataque de Emblema (Houses Unite)"))
+                    elif "lodestar" in clean_l:
+                        espadas_aliado = [w for w, _, _ in armas if getattr(w, 'tipo', '') == "Espada"]
+                        if not espadas_aliado:
+                            espadas_aliado = [Arma(nombre="Silver Sword", mt=12, hit=90, crit=0, wt=11, tipo="Espada", rango=[1])]
+                        for sw in espadas_aliado:
+                            a_eng_atk = Arma(nombre=f"Lodestar Rush ({sw.nombre})", mt=sw.mt, hit=100, crit=0, wt=sw.wt, tipo="Espada", rango=[1])
+                            setattr(a_eng_atk, 'es_engage_attack', True)
+                            setattr(a_eng_atk, 'engage_attack_nombre', 'Lodestar Rush')
+                            armas.append((a_eng_atk, True, f"Ataque de Emblema (Lodestar Rush - {sw.nombre})"))
+                    elif "warp" in clean_l or "ragnarok" in clean_l or "ragnarök" in clean_l:
+                        a_eng_atk = Arma(nombre="Warp Ragnarök", mt=20, hit=100, crit=0, wt=5, tipo="Tomo", rango=[1], es_magica=True)
+                        setattr(a_eng_atk, 'es_engage_attack', True)
+                        setattr(a_eng_atk, 'engage_attack_nombre', 'Warp Ragnarök')
+                        armas.append((a_eng_atk, True, "Ataque de Emblema (Warp Ragnarök)"))
+                    else:
+                        a_eng_atk = Arma(nombre=clean_name, mt=15, hit=100, crit=0, wt=8, tipo="Espada", rango=[1])
+                        setattr(a_eng_atk, 'es_engage_attack', True)
+                        setattr(a_eng_atk, 'engage_attack_nombre', clean_name)
+                        armas.append((a_eng_atk, True, f"Ataque de Emblema ({clean_name})"))
 
     if not armas and aliado.arma:
         armas.append((aliado.arma, False, ""))
@@ -420,6 +517,23 @@ def _barras_vida(ficha):
     """Barras que deben agotarse: HP normal más piedras resurrectoras."""
     return 1 + max(0, int(getattr(ficha, "hp_stock", 0) or 0))
 
+
+def obtener_protector_chain_guard(objetivo, tablero):
+    """Detecta si el objetivo tiene un aliado adyacente (d == 1) de estilo Qi Adept al 100% HP capaz de Guardia en Cadena."""
+    if not objetivo or not tablero:
+        return None
+    for f in tablero.fichas.values():
+        if f.viva and f.es_aliado == objetivo.es_aliado and f.nombre != objetivo.nombre:
+            if abs(f.x - objetivo.x) + abs(f.y - objetivo.y) == 1:
+                es_qi = es_unidad_qi_adept(f)
+                hp_act = getattr(f, 'hp_actual', getattr(getattr(f, 'stats', None), 'hp', 0))
+                hp_max = getattr(f, 'hp_max', getattr(getattr(f, 'stats', None), 'hp_max', 0))
+                cg_act = getattr(f, 'chain_guard_activo', True) and not getattr(f, 'chain_guard_usado', False)
+                if es_qi and hp_act >= hp_max and cg_act:
+                    return f
+    return None
+
+
 def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
     """
     Análisis táctico determinista completo de la situación actual del tablero:
@@ -454,6 +568,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             e.stats.hp = e.hp_actual
             e.stats.hp_max = e.hp_max
             setattr(e.stats, 'hp_actual', e.hp_actual)
+            setattr(e.stats, 'hp_stock', getattr(e, 'hp_stock', 0))
 
     # Precomputar casillas de movimiento una sola vez por bando
     enemigos_bloqueo = {(f.x, f.y) for f in enemigos_activos}
@@ -555,6 +670,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                             contexto_mapa=contexto,
                             defensor_en_ruptura=(getattr(aliado, 'cargas_ruptura', 0) > 0),
                             aliados_apoyo_backup=aliados_backup_stats,
+                            chain_guard_protector=obtener_protector_chain_guard(aliado, tablero),
                         )
 
                         mult_eff, desc_eff = CalculadoraEngage.calcular_efectividad(enemigo.arma, aliado.stats)
@@ -624,14 +740,15 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
             for (arma_candidata, es_engage, nota_arma) in todas_armas:
                 rango_max = max(arma_candidata.rango) if arma_candidata.rango else 1
-                alcance = aliado.mov + rango_max
+                is_tele_candidata = "ragnarok" in (arma_candidata.nombre or "").lower() or getattr(arma_candidata, 'engage_attack_nombre', '').lower().startswith('warp')
+                alcance = (10 if is_tele_candidata else aliado.mov) + rango_max
                 if dist > alcance:
                     continue
 
                 pos_candidata = encontrar_pos_ataque_optima(
                     aliado, enemigo, arma_candidata,
                     mapa=mapa, tablero=tablero, analizador=analizador,
-                    casillas_alcanzables_precalc=casillas_mov_aliados.get(aliado.nombre),
+                    casillas_alcanzables_precalc=casillas_mov_aliados.get(aliado.nombre) if not is_tele_candidata else None,
                     zonas_amenaza_enemigos=zonas_amenaza_enemigos
                 )
                 if pos_candidata is None:
@@ -660,6 +777,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         if e_def.viva and e_def.stats and e_def.nombre != enemigo.nombre
                     ]
 
+                    es_engage_candidato = getattr(arma_candidata, 'es_engage_attack', False)
+                    nom_engage_candidato = getattr(arma_candidata, 'engage_attack_nombre', '')
+                    cg_protector = obtener_protector_chain_guard(enemigo, tablero)
+
                     v = CalculadoraEngage.evaluar_riesgo(
                         atacante=aliado.stats,
                         defensor=enemigo.stats,
@@ -680,8 +801,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         aliados_apoyo_backup=aliados_backup_stats,
                         aliados_cercanos_atk=aliados_cercanos_atk,
                         aliados_cercanos_def=aliados_cercanos_def,
+                        es_engage_attack=es_engage_candidato,
+                        engage_attack_nombre=nom_engage_candidato,
                         pos_atk=pos_candidata,
                         pos_def=(enemigo.x, enemigo.y),
+                        chain_guard_protector=cg_protector,
                     )
 
                     verd = v["veredicto"]
@@ -699,6 +823,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                     kill_seguro = verd.get("kill_seguro", False)
                     kill_probable = verd.get("kill_probable", False)
                     kill_con_critico = verd.get("kill_con_critico", False)
+                    quiebra_barra = res_info.get("piedra_resurrectora_consumida", False)
                     atacante_muere = verd.get("atacante_muere_si_falla", False) or verd.get("atacante_muere_en_contra", False)
                     prob_muerte = verd.get("prob_muerte_atacante", 0)
                     ruptura = res_info.get("aplica_ruptura", False)
@@ -706,22 +831,20 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
                     # ── Ratio Daño - Acierto - Supervivencia ──
                     if atacante_muere or prob_muerte >= 50:
-                        if not kill_seguro:
+                        if not (kill_seguro or quiebra_barra):
                             score = -1000
                         else:
                             score = -500 if daño_recibido >= hp_aliado_ini else 200
                     elif daño_total == 0:
                         score = -1
-                    elif kill_seguro:
+                    elif kill_seguro or quiebra_barra:
                         if daño_recibido == 0:
-                            # Clean Kill / OHKO: enemigo derrotado sin sufrir contragolpe
-                            # (Prioridad absoluta sobre overkill innecesario que cause daño)
-                            score = 1000 + precision + min(50, daño_total)
+                            # Clean Kill / OHKO o Quiebre de Barra sin contragolpe
+                            score = 1200 + precision + min(50, daño_total)
                         else:
-                            # Kill seguro pero recibiendo contragolpe (penalizar cada punto de HP perdido)
-                            score = 650 - (daño_recibido * 15) + (precision // 2)
+                            score = 1000 - (daño_recibido * 10) + (precision // 2)
                             if hp_aliado_fin <= 5:
-                                score -= 150
+                                score -= 100
                     elif kill_probable:
                         if daño_recibido == 0:
                             score = 450 + (precision * 2) - int(prob_muerte * 10)
@@ -729,24 +852,33 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                             score = 350 - (daño_recibido * 15) + precision - int(prob_muerte * 15)
                             if atacante_muere:
                                 score -= 200
-                    elif kill_con_critico:
-                        score = 180 - (daño_recibido * 10) + atk_info.get("prob_critico", 0)
+                    elif kill_con_critico and atk_info.get("prob_critico", 0) > 0:
+                        prob_crit = atk_info.get("prob_critico", 0)
+                        daño_util = min(daño_total, enemigo.stats.hp)
+                        follow_bonus = 25 if atk_info.get("tiene_follow_up") else 0
+                        if daño_recibido == 0:
+                            base_c = 120 + (daño_util * 2) + (precision // 2) + follow_bonus
+                        else:
+                            base_c = 50 + (daño_util * 2) - (daño_recibido * 12) + (precision // 4) + follow_bonus
+                        score = base_c + int(prob_crit * 1.5)
                     else:
                         # Ataque sin kill (desgaste / chip damage)
                         daño_util = min(daño_total, enemigo.stats.hp)
+                        follow_bonus = 25 if atk_info.get("tiene_follow_up") else 0
                         if daño_recibido == 0:
-                            # Golpe seguro a rango o aplicando Ruptura sin represalia
-                            score = 120 + (daño_util * 2) + (precision // 2)
+                            score = 120 + (daño_util * 2) + (precision // 2) + follow_bonus
                             if ruptura:
                                 score += 50
                         else:
-                            score = 50 + daño_util - (daño_recibido * 12) + (precision // 4)
+                            score = 50 + (daño_util * 2) - (daño_recibido * 12) + (precision // 4) + follow_bonus
                             if daño_recibido >= hp_aliado_ini:
                                 score = -1000
 
                     if es_jefe_e and score > 0:
-                        score += 150
-                    if is_tele and not kill_seguro:
+                        score += 300
+                        if es_engage_candidato:
+                            score += 1000
+                    if is_tele and not (kill_seguro or quiebra_barra or es_jefe_e):
                         score -= 150
                     if verd.get("nivel_riesgo") == "critico" and not kill_seguro:
                         score -= 200
@@ -759,7 +891,15 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         1 for e_nom, zona in zonas_amenaza_enemigos.items()
                         if e_nom != enemigo.nombre and pos_cand_tuple in zona
                     )
-                    score -= (amenazas_candidata * 40 + max(0, amenazas_candidata - 2) * 120)
+                    # Capping y racionalización: la exposición guía la elección de casilla,
+                    # pero jamás debe hundir un ataque viable no-suicida en -1680 pts
+                    penalizacion_amenazas = min(120, amenazas_candidata * 25)
+                    if es_jefe_e:
+                        penalizacion_amenazas = min(60, amenazas_candidata * 15)
+                    if score > 0 and not atacante_muere:
+                        score = max(15, score - penalizacion_amenazas)
+                    else:
+                        score -= penalizacion_amenazas
 
                     if score > mejor_score:
                         mejor_score = score
@@ -796,7 +936,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             hp_atk_fin = res_f.get("hp_atacante_final", aliado.stats.hp)
             daño_recibido_final = max(0, aliado.stats.hp - hp_atk_fin)
 
-            if verd.get("kill_seguro"):
+            quiebra_barra_final = res_f.get("piedra_resurrectora_consumida", False)
+            if quiebra_barra_final:
+                resultado_tag = f"QUIEBRA 1ª BARRA DE VIDA (Piedra consumida · Revive a {hp_enemigo_tras}/{enemigo.stats.hp_max} HP · 0 daño recibido)"
+            elif verd.get("kill_seguro"):
                 if daño_recibido_final == 0:
                     resultado_tag = f"CLEAN KILL ({precision}% hit · 0 daño recibido)"
                 else:
@@ -818,7 +961,15 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
             dano_arma_base = dpp * 2 if follow_up else dpp
             tiene_ds = atk_f.get("tiene_divine_speed", False)
-            if follow_up and tiene_ds:
+            if atk_f.get("es_houses_unite"):
+                hits_u = atk_f.get("houses_unite_hits", [13, 12, 8])
+                golpe_txt = f"3 ataques ({', '.join(str(h) for h in hits_u)} dmg){chain_txt} = {sum(hits_u) + chain_dmg} dmg (Houses Unite)"
+            elif atk_f.get("es_lodestar_rush"):
+                num_g, dmg_g = atk_f.get("lodestar_hits", (9, 3))
+                golpe_txt = f"{num_g}x{dmg_g}{chain_txt} = {num_g * dmg_g + chain_dmg} dmg (Lodestar Rush)"
+            elif atk_f.get("es_warp_ragnarok"):
+                golpe_txt = f"1x{dpp}{chain_txt} = {dpp + chain_dmg} dmg (Warp Ragnarök)"
+            elif follow_up and tiene_ds:
                 dmg_ds = max(1, math.floor(dpp * 0.50))
                 golpe_txt = f"2x{dpp} + {dmg_ds} (Velocidad Divina){chain_txt} = {dano_arma_base + dmg_ds + chain_dmg} dmg"
             elif follow_up:
@@ -902,7 +1053,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             # Se evalúa el HP restante real del aliado tras el combate (hp_atk_fin)
             # contra el daño acumulado de todos los enemigos que alcanzan la casilla final.
             amenazas_finales = canter.get("amenazas_final", len(amenazas_en_destino)) if canter else len(amenazas_en_destino)
-            if amenazas_finales >= 4:
+            if amenazas_finales >= 5 and not es_jefe_e:
                 continue
 
             hp_restante = hp_atk_fin
@@ -973,18 +1124,160 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 "recomendacion": rec_texto,
             })
 
+    # ── 2b. Detección de Ataques Coordinados / Focus Fire (Preparar Baja) ───
+    # Detecta parejas de aliados (A1 desgasta, A2 remata) en el turno actual
+    combos_coordinados = []
+    enemigos_con_solo_kill = {
+        op["enemigo"] for op in oportunidades_jugador
+        if op.get("veredicto", {}).get("kill_seguro")
+        and not op.get("veredicto", {}).get("atacante_muere_si_falla", False)
+        and not op.get("veredicto", {}).get("atacante_muere_en_contra", False)
+        and op.get("score_tactico", 0) > 0
+    }
+
+    for enemigo in enemigos_activos:
+        if enemigo.nombre in enemigos_con_solo_kill:
+            continue
+        hp_ene = getattr(enemigo.stats, 'hp', enemigo.hp_actual)
+        if hp_ene <= 0:
+            continue
+
+        # Recopilar todos los ataques viables y seguros de cada aliado contra este enemigo
+        ataques_por_aliado = {}
+        for a in aliados_activos:
+            candidatos_a = []
+            for arma, es_eng, nota_a in _armas_aliado(a):
+                rango_max = max(arma.rango) if arma.rango else 1
+                is_tele_c = "ragnarok" in (arma.nombre or "").lower() or getattr(arma, 'engage_attack_nombre', '').lower().startswith('warp')
+                alcance_c = (10 if is_tele_c else a.mov) + rango_max
+                if abs(a.x - enemigo.x) + abs(a.y - enemigo.y) > alcance_c:
+                    continue
+                pos = encontrar_pos_ataque_optima(
+                    a, enemigo, arma,
+                    mapa=mapa, tablero=tablero, analizador=analizador,
+                    casillas_alcanzables_precalc=casillas_mov_aliados.get(a.nombre) if not is_tele_c else None,
+                    zonas_amenaza_enemigos=zonas_amenaza_enemigos
+                )
+                if not pos:
+                    continue
+                dist_c = abs(pos[0] - enemigo.x) + abs(pos[1] - enemigo.y)
+                if dist_c not in (arma.rango or [1]):
+                    continue
+
+                try:
+                    t_def = mapa.grid[enemigo.x][enemigo.y]
+                    t_atk = mapa.grid[pos[0]][pos[1]]
+                    apoyos_aliados = obtener_aliados_backup(a, enemigo, tablero=tablero)
+                    aliados_backup_stats = [a_sup.stats for a_sup in apoyos_aliados]
+                    v = CalculadoraEngage.evaluar_riesgo(
+                        atacante=a.stats, defensor=enemigo.stats,
+                        arma_atk=arma, arma_def=enemigo.arma,
+                        terreno_def=Terreno(avo=t_def.avo, dfn=t_def.dfn),
+                        terreno_atk=Terreno(avo=t_atk.avo, dfn=t_atk.dfn),
+                        distancia=dist_c, perfil=perfil, cronogema_usada=cronogema,
+                        aliados_apoyo_backup=aliados_backup_stats,
+                        pos_atk=pos, pos_def=(enemigo.x, enemigo.y)
+                    )
+                    verd = v["veredicto"]
+                    combate_info_c = v.get("combate", {})
+                    atk_info = combate_info_c.get("atacante", {})
+                    res_info = combate_info_c.get("resultado", {})
+                    muere = verd.get("atacante_muere_si_falla") or verd.get("atacante_muere_en_contra")
+                    prob_m = verd.get("prob_muerte_atacante", 0)
+                    if muere or prob_m >= 35:
+                        continue
+                    d_ronda = atk_info.get("daño_total_ronda", 0)
+                    if d_ronda <= 0:
+                        continue
+
+                    hp_fin_a = res_info.get("hp_atacante_final", a.stats.hp)
+                    dmg_rec = max(0, a.stats.hp - hp_fin_a)
+                    candidatos_a.append({
+                        "arma": arma,
+                        "pos": pos,
+                        "daño": d_ronda,
+                        "precision": atk_info.get("precision", 0),
+                        "ruptura": res_info.get("aplica_ruptura", False),
+                        "daño_recibido": dmg_rec,
+                        "chain_attacks": res_info.get("chain_attacks", []),
+                        "veredicto": v
+                    })
+                except Exception:
+                    continue
+
+            if candidatos_a:
+                # Tomar la mejor opción de este aliado (priorizando daño y acierto)
+                candidatos_a.sort(key=lambda x: (x["daño"], x["precision"]), reverse=True)
+                ataques_por_aliado[a.nombre] = (a, candidatos_a[0])
+
+        if len(ataques_por_aliado) >= 2:
+            nombres_a = list(ataques_por_aliado.keys())
+            for i in range(len(nombres_a)):
+                nom1 = nombres_a[i]
+                a1, op1 = ataques_por_aliado[nom1]
+                for j in range(len(nombres_a)):
+                    if i == j:
+                        continue
+                    nom2 = nombres_a[j]
+                    a2, op2 = ataques_por_aliado[nom2]
+
+                    # Las casillas de ataque deben ser distintas
+                    if op1["pos"] == op2["pos"]:
+                        continue
+
+                    d1 = op1["daño"]
+                    d2 = op2["daño"]
+                    es_jefe_e = _es_jefe(enemigo)
+
+                    # A1 desgasta (no mata solo) y A1+A2 derrotan al rival (o quiebran la barra del jefe)
+                    if d1 < hp_ene and (d1 + d2) >= hp_ene:
+                        hp_rest = max(0, hp_ene - d1)
+                        bonus_rup = 40 if op1["ruptura"] else 0
+                        bonus_jefe = 60 if es_jefe_e else 0
+                        score_combo = 650 + min(50, d1 + d2) + (op1["precision"] // 4) + bonus_rup + bonus_jefe - (op1["daño_recibido"] * 8)
+
+                        combos_coordinados.append({
+                            "tipo_analisis": "combo_ataque",
+                            "aliado": a1.nombre,
+                            "enemigo": enemigo.nombre,
+                            "pos_sugerida": op1["pos"],
+                            "arma_recomendada": op1["arma"].nombre,
+                            "aliado_rematador": a2.nombre,
+                            "arma_rematador": op2["arma"].nombre,
+                            "dano_total": d1,
+                            "dano_rematador": d2,
+                            "hp_enemigo_tras": hp_rest,
+                            "score_tactico": score_combo,
+                            "chain_attacks": op1.get("chain_attacks", []),
+                            "veredicto": {
+                                "nivel_riesgo": "bajo",
+                                "kill_coordinado": True,
+                                "motivos": [
+                                    f"Ataque coordinado: {a1.nombre} desgasta ({d1} dmg) dejando a {enemigo.nombre} a {hp_rest} HP.",
+                                    f"{a2.nombre} podrá rematar con {op2['arma'].nombre} ({d2} dmg) asegurando la baja en este turno."
+                                ]
+                            },
+                            "recomendacion": (
+                                f"COMBATE COORDINADO (PREPARAR BAJA): {a1.nombre} -> atacar a {enemigo.nombre} con {op1['arma'].nombre} "
+                                f"({d1} dmg, lo deja en {hp_rest}/{hp_ene} HP) | "
+                                f"Permite a {a2.nombre} rematar a continuación con {op2['arma'].nombre} ({d2} dmg -> ¡BAJA ASEGURADA!)."
+                            )
+                        })
+
     # ── 3. Evaluar Bastones de Curación y Pociones de Supervivencia ──────
     acciones_soporte = []
     aliados_todos = tablero.obtener_aliados()
     heridos = [a for a in aliados_todos if a.viva and a.stats and a.stats.hp < getattr(a.stats, 'hp_max', a.stats.hp)]
 
-    # 3a. Bastones (Heal, Mend, Physic, etc.)
+    # 3a. Bastones estrictos de curación (Heal, Mend, Physic, etc. — Excluye Obstruct, Freeze, Rescue)
+    palabras_curar = ("curar", "heal", "sanar", "mend", "physic", "recuperar", "fortify", "fortalecer", "rehabilitar")
+    candidatos_curacion_por_objetivo = {}
+
     for sanador in aliados_activos:
         bastones = []
         for it in (sanador.inventario or []):
             nom_it = (it.get("nombre") or "").lower()
-            tipo_it = it.get("tipo", "")
-            if tipo_it == "Bastón" or any(b in nom_it for b in ("curar", "heal", "sanar", "mend", "physic", "recuperar")):
+            if any(b in nom_it for b in palabras_curar):
                 bastones.append(it)
 
         if not bastones or not heridos:
@@ -1025,20 +1318,28 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
                     pos_txt = f"Mover a ({pos_sanacion[0]},{pos_sanacion[1]}) · " if pos_sanacion != [sanador.x, sanador.y] else "En rango directo · "
                     urgencia = "URGENTE" if obj.stats.hp <= hp_max_obj * 0.35 else ("RECOMENDADO" if obj.stats.hp <= hp_max_obj * 0.65 else "PREVENTIVO")
+                    prio = 350 if "URGENTE" in urgencia else 150
 
-                    acciones_soporte.append({
+                    op_cur = {
                         "tipo_analisis": "apoyo_curacion",
                         "aliado": sanador.nombre,
                         "objetivo": obj.nombre,
                         "baston": nom_b,
                         "curacion_estimada": curacion,
                         "pos_sugerida": pos_sanacion,
-                        "prioridad": 350 if "URGENTE" in urgencia else 150,
+                        "prioridad": prio,
+                        "score_tactico": prio + curacion,
                         "recomendacion": (
                             f"APOYO ({urgencia}): {sanador.nombre} -> usar {nom_b} en {obj.nombre} | "
                             f"{pos_txt}Recupera +{curacion} HP ({obj.nombre} pasa a {obj.stats.hp + curacion}/{hp_max_obj} HP)."
                         )
-                    })
+                    }
+                    if obj.nombre not in candidatos_curacion_por_objetivo or curacion > candidatos_curacion_por_objetivo[obj.nombre]["curacion_estimada"]:
+                        candidatos_curacion_por_objetivo[obj.nombre] = op_cur
+
+    # Deduplicación: conservar a lo sumo la mejor curación por cada aliado herido
+    for op_cur in candidatos_curacion_por_objetivo.values():
+        acciones_soporte.append(op_cur)
 
     # 3b. Pociones y Vulnerarios
     for aliado in aliados_activos:
@@ -1066,9 +1367,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 })
 
     # 3c. Táctica de Emblema (Burst con Fusión vs Conservar para Jefe)
-    # Daño agregado necesario para vaciar todas las barras del jefe.
+    # Daño agregado necesario para vaciar barras del jefe o debilitarlo decisivamente.
     dano_jefe_por_nombre = {}
-    for op in oportunidades_jugador:
+    for op in (oportunidades_jugador + combos_coordinados):
         ficha_obj = tablero.obtener_ficha(op.get("enemigo"))
         if not ficha_obj or not _es_jefe(ficha_obj):
             continue
@@ -1083,10 +1384,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
         hp_barra = int(getattr(ficha_jefe, "hp_max", 0) or getattr(ficha_jefe.stats, "hp", 0) or 0)
         hp_actual = int(getattr(ficha_jefe, "hp_actual", hp_barra) or hp_barra)
         hp_total_restante = hp_actual + max(0, _barras_vida(ficha_jefe) - 1) * hp_barra
-        if hp_barra > 0 and sum(por_aliado.values()) >= hp_total_restante:
+        # Se considera objetivo prioritario si el daño conjunto derrota todas las barras, quiebra la barra actual o inflige >= 15 dmg
+        if hp_barra > 0 and (sum(por_aliado.values()) >= hp_total_restante or sum(por_aliado.values()) >= hp_actual or sum(por_aliado.values()) >= 15):
             jefes_derrotables.add(nombre_jefe)
 
-    for op in oportunidades_jugador:
+    for op in (oportunidades_jugador + combos_coordinados):
         aliado_nom = op.get("aliado")
         enemigo_nom = op.get("enemigo")
         ficha_ali = tablero.obtener_ficha(aliado_nom)
@@ -1127,9 +1429,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 op["recomendacion"] += f" | OPCION: Si necesitas asegurar la baja o sobrevivir, considera activar Fusión con {emblema}."
 
     # ── 4. Filtrar y Priorizar Recomendaciones para Reducir Sobrecarga ──────
-    # Agrupar oportunidades de ataque por aliado: 1 mejor acción decisiva por aliado
+    # Agrupar oportunidades de ataque y combos coordinados por aliado: 1 mejor acción decisiva por aliado
     oportunidades_por_aliado = {}
-    for op in oportunidades_jugador:
+    todas_acciones_ofensivas = oportunidades_jugador + combos_coordinados
+    for op in todas_acciones_ofensivas:
         score_op = op.get("score_tactico", 0)
         if score_op <= 0:
             continue
@@ -1167,8 +1470,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
     soporte_urgente = [s for s in acciones_soporte if s.get("prioridad", 0) >= 300]
     soporte_normal = [s for s in acciones_soporte if s.get("prioridad", 0) < 300]
-    # No incluir alertas invasivas de peligro enemigo en el panel; mantenerlo limpio y enfocado a acciones aliadas
-    resultados = soporte_urgente + objetivo_avance + top_oportunidades + (soporte_normal[:2] if len(top_oportunidades) < 8 else [])
+    # No saturar el panel: si hay ataques o combos, colocar a lo sumo 1 curación urgente al principio
+    # para que las opciones ofensivas prioritarias no queden ocultas por soporte repetitivo.
+    if top_oportunidades:
+        resultados = soporte_urgente[:1] + top_oportunidades + soporte_urgente[1:2] + (soporte_normal[:1] if len(top_oportunidades) < 8 else [])
+    else:
+        resultados = soporte_urgente + top_oportunidades + soporte_normal[:2]
 
     # Fallback: zona segura
     if not resultados and distancias_frente:

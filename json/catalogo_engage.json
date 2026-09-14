@@ -80007,7 +80007,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Lodestar Rush (Acometida estelar)"
     },
     "GID_シグルド": {
       "id": "GID_シグルド",
@@ -80959,7 +80960,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Override (Superación)"
     },
     "GID_セリカ": {
       "id": "GID_セリカ",
@@ -81887,7 +81889,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Warp Ragnarök (Tele-Ragnarök)"
     },
     "GID_ミカヤ": {
       "id": "GID_ミカヤ",
@@ -82800,7 +82803,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Great Sacrifice (Gran sacrificio)"
     },
     "GID_ロイ": {
       "id": "GID_ロイ",
@@ -83679,7 +83683,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Blazing Lion (León ardiente)"
     },
     "GID_リーフ": {
       "id": "GID_リーフ",
@@ -84549,7 +84554,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Quadruple Hit (Tétragolpe)"
     },
     "GID_ルキナ": {
       "id": "GID_ルキナ",
@@ -85447,7 +85453,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "All for One (Todos para uno)"
     },
     "GID_リン": {
       "id": "GID_リン",
@@ -86317,7 +86324,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Astra Storm (Tormenta astral)"
     },
     "GID_アイク": {
       "id": "GID_アイク",
@@ -87304,7 +87312,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Great Aether (Gran Éter)"
     },
     "GID_ベレト": {
       "id": "GID_ベレト",
@@ -88121,7 +88130,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Goddess Dance (Danza de la Diosa)"
     },
     "GID_カムイ": {
       "id": "GID_カムイ",
@@ -89077,7 +89087,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Torrential Roar (Torrente rugiente)"
     },
     "GID_エイリーク": {
       "id": "GID_エイリーク",
@@ -90109,7 +90120,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Twin Strike (Golpe gemelo)"
     },
     "GID_エフラム": {
       "id": "GID_エフラム",
@@ -91141,7 +91153,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Twin Strike (Golpe gemelo)"
     },
     "GID_リュール": {
       "id": "GID_リュール",
@@ -91833,7 +91846,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Bond Blast (Ataque de Vínculo)"
     },
     "GID_DLC_EDELGARD": {
       "id": "GID_DLC_EDELGARD",
@@ -92736,7 +92750,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Houses Unite (Unión de Casas)"
     },
     "GID_DLC_TIKI": {
       "id": "GID_DLC_TIKI",
@@ -94031,7 +94046,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Divine Blessing (Bendición Divina)"
     },
     "GID_DLC_HECTOR": {
       "id": "GID_DLC_HECTOR",
@@ -94900,7 +94916,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Storm's Eye (Ojo de la tormenta)"
     },
     "GID_DLC_VERONICA": {
       "id": "GID_DLC_VERONICA",
@@ -95765,7 +95782,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Summon Hero (Invocar Héroe de FEH)"
     },
     "GID_DLC_SOREN": {
       "id": "GID_DLC_SOREN",
@@ -96622,7 +96640,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Cataclysm (Cataclismo)"
     },
     "GID_DLC_CAMILLA": {
       "id": "GID_DLC_CAMILLA",
@@ -97487,7 +97506,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Darkness (Torrente Sombrío)"
     },
     "GID_DLC_CHROM": {
       "id": "GID_DLC_CHROM",
@@ -98348,7 +98368,8 @@
           "inheritance_skills": [],
           "max_energia_emblema": 5
         }
-      }
+      },
+      "engage_attack": "Giga Levin Sword (Gigaespada Trueno)"
     }
   }
 }
