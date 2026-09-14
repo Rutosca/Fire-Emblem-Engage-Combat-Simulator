@@ -146,6 +146,14 @@ function esClaseQiAdept(ficha) {
   if (estilo.includes("qi") || estilo.includes("adept") || estilo.includes("adepto") || estilo.includes("気功") || estilo.includes("artes")) return true;
   if (["monk", "monje", "master", "maestro", "dancer", "bailar", "adept"].some(k => clase.includes(k))) return true;
   if (["framme", "seadall"].some(k => nombre.includes(k))) return true;
+  if (state && state.catalogo && state.catalogo.clases) {
+    for (const c of Object.values(state.catalogo.clases)) {
+      if (c && c.nombre && c.nombre.toLowerCase() === clase) {
+        const cEstilo = String(c.estilo_combate || "").toLowerCase();
+        if (cEstilo.includes("qi") || cEstilo.includes("adept") || cEstilo.includes("気功") || cEstilo.includes("artes")) return true;
+      }
+    }
+  }
   return false;
 }
 
@@ -838,6 +846,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   $("f-emblema").value = esAliado ? "Marth" : "";
   establecerLiderTresCasas("Dimitri");
   actualizarSelectorLiderTresCasas();
+  actualizarVisibilidadChainGuard();
   state.prevEmblemaModal = esAliado ? "Marth" : "";
   state.prevNivelVinculoModal = 1;
   if ($("f-nivel-vinculo")) {
@@ -928,6 +937,7 @@ function abrirModalEdicion(ficha) {
   state.prevNivelVinculoModal = nivV;
   establecerLiderTresCasas(ficha.lider_tres_casas || "Dimitri");
   actualizarSelectorLiderTresCasas();
+  actualizarVisibilidadChainGuard(ficha);
 
   const tieneEmblema = !!ficha.emblema_nombre;
   const enFusionActiva = (ficha.en_fusion || ficha.turnos_fusion > 0) && (ficha.turnos_fusion > 0);
@@ -1013,6 +1023,20 @@ function actualizarSelectorLiderTresCasas() {
   const seccion = $("seccion-lider-tres-casas");
   if (!seccion) return;
   seccion.classList.toggle("hidden", !esEmblemaTresCasas($("f-emblema")?.value));
+}
+
+function actualizarVisibilidadChainGuard(ficha) {
+  const fila = $("fila-chain-guard");
+  if (!fila) return;
+  const clase = $("f-clase") ? $("f-clase").value.trim() : "";
+  const nombre = $("f-nombre") ? $("f-nombre").value.trim() : "";
+  let esQi = false;
+  if (ficha && esClaseQiAdept(ficha)) {
+    esQi = true;
+  } else {
+    esQi = esClaseQiAdept({ clase_nombre: clase, nombre: nombre });
+  }
+  fila.classList.toggle("hidden", !esQi);
 }
 
 function actualizarTooltipNivelVinculo(nivel) {
@@ -1187,7 +1211,7 @@ async function guardarUnidadDesdeModal() {
   const lider3H = obtenerLiderTresCasasSeleccionado();
 
   const hpStockInput = $("f-hp-stock") ? parseInt($("f-hp-stock").value, 10) : 0;
-  const hpStock = isNaN(hpStockInput) ? 0 : Math.max(0, hpStockInput);
+  const hpStock = isNaN(hpStockInput) ? 0 : Math.max(0, Math.min(3, hpStockInput));
   const chainGuardActivo = $("f-chain-guard") ? $("f-chain-guard").checked : true;
 
   const payload = {
@@ -1388,6 +1412,16 @@ function initModalEvents() {
   if ($("btn-stock-0")) $("btn-stock-0").addEventListener("click", () => { $("f-hp-stock").value = 0; });
   if ($("btn-stock-1")) $("btn-stock-1").addEventListener("click", () => { $("f-hp-stock").value = 1; });
   if ($("btn-stock-2")) $("btn-stock-2").addEventListener("click", () => { $("f-hp-stock").value = 2; });
+  if ($("btn-stock-3")) $("btn-stock-3").addEventListener("click", () => { $("f-hp-stock").value = 3; });
+
+  if ($("f-clase")) {
+    $("f-clase").addEventListener("input", () => actualizarVisibilidadChainGuard());
+    $("f-clase").addEventListener("change", () => actualizarVisibilidadChainGuard());
+  }
+  if ($("f-nombre")) {
+    $("f-nombre").addEventListener("input", () => actualizarVisibilidadChainGuard());
+    $("f-nombre").addEventListener("change", () => actualizarVisibilidadChainGuard());
+  }
 
   // ─── Autorellenado Inteligente de Atributos desde el Catálogo ────────────────
   async function autoRellenarStatsDesdeCatalogo() {
@@ -1432,6 +1466,7 @@ function initModalEvents() {
         if (res.stats.suerte !== undefined) $("f-stat-lck").value = res.stats.suerte;
         if (res.stats.complexion !== undefined) $("f-stat-bld").value = res.stats.complexion;
         if (res.mov !== undefined) $("f-stat-mov").value = res.mov;
+        actualizarVisibilidadChainGuard();
 
         if (res.arma_nombre && (!$("f-arma").value || $("f-arma").value.trim() === "")) {
           const dArma = desglosarArmaString(res.arma_nombre);

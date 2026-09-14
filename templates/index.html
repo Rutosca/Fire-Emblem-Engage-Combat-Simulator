@@ -169,13 +169,14 @@
         <div class="form-row flex-1">
           <label for="f-hp-stock" title="Piedras resurrectoras / barras extra de vida (rombos bajo el círculo)">Piedras Resurrectoras (◆):</label>
           <div style="display: flex; gap: 4px; align-items: center;">
-            <input type="number" id="f-hp-stock" min="0" max="3" value="0" style="width: 50px;">
+            <input type="number" id="f-hp-stock" min="0" max="3" value="0" style="width: 44px;">
             <button type="button" id="btn-stock-0" class="btn-hp-tool" title="0 Piedras (normal)">0</button>
             <button type="button" id="btn-stock-1" class="btn-hp-tool btn-blue" title="1 Piedra (1 ◆)">1 ◆</button>
             <button type="button" id="btn-stock-2" class="btn-hp-tool btn-blue" title="2 Piedras (2 ◆◆)">2 ◆◆</button>
+            <button type="button" id="btn-stock-3" class="btn-hp-tool btn-blue" title="3 Piedras (3 ◆◆◆)">3 ◆◆◆</button>
           </div>
         </div>
-        <div class="form-row flex-1" id="fila-chain-guard">
+        <div class="form-row flex-1 hidden" id="fila-chain-guard">
           <label title="Guardia en Cadena (Adepto de Qi: Monjes, Maestros marciales, Bailarín)">Guardia en Cadena (Qi Adept):</label>
           <label class="checkbox-label" style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; margin-top: 4px;">
             <input type="checkbox" id="f-chain-guard" checked>
