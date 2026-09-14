@@ -59,6 +59,11 @@ class FichaUnidad:
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión, total 4)
     estilo_combate: str = ""           # Estilo de combate: Qi Adept, Backup, Dragon, Covert, etc.
 
+    @property
+    def arma_equipada(self):
+        """Alias para el arma activa equipada de combate."""
+        return self.arma
+
     def __post_init__(self):
         # Canónico FE Engage: 3 turnos de fusión base; nivel de vínculo >= 11 otorga +1 turno (4 turnos).
         # No se distingue entre tipos de unidades para los turnos de fusión.

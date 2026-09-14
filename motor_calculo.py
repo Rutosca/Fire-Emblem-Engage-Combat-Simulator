@@ -4,8 +4,15 @@ Motor matemático determinista que replica las fórmulas exactas de Fire Emblem:
 """
 
 import math
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Optional, TYPE_CHECKING
+
+def normalizar_texto(texto):
+    """Elimina tildes y caracteres diacríticos para comparaciones robustas."""
+    if not texto:
+        return ""
+    return unicodedata.normalize('NFKD', str(texto)).encode('ASCII', 'ignore').decode('utf-8').lower()
 
 if TYPE_CHECKING:
     from motor_de_movimiento_y_amenaza import ContextoMapaEnemigo
@@ -657,14 +664,20 @@ class CalculadoraEngage:
             pasivas_activas.append("¡Ponte detrás de mí! (+3 STR/ATK)")
 
         # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────
-        es_houses_unite = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('houses unite', 'union tres casas', 'unión tres casas', 'unión de casas', 'union de casas'))
-        es_warp_ragnarok = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('warp ragnarok', 'teleragnarok', 'tele-ragnarök', 'tele ragnarok', 'ragnarok fusion'))
-        es_lodestar_rush = es_engage_attack and any(t in engage_attack_nombre.lower() for t in ('lodestar', 'torrente estelar', 'acometida estelar'))
+        eng_nom_norm = normalizar_texto(engage_attack_nombre) if engage_attack_nombre else ""
+        es_houses_unite = es_engage_attack and any(t in eng_nom_norm for t in ('houses unite', 'union tres casas', 'union de casas'))
+        es_warp_ragnarok = es_engage_attack and any(t in eng_nom_norm for t in ('warp ragnarok', 'teleragnarok', 'tele ragnarok', 'ragnarok'))
+        es_lodestar_rush = es_engage_attack and any(t in eng_nom_norm for t in ('lodestar', 'torrente estelar', 'acometida estelar'))
+        es_override = es_engage_attack and any(t in eng_nom_norm for t in ('override', 'superacion'))
 
         if es_warp_ragnarok:
-            # Warp Ragnarok: Golpe devastador a gran distancia con tomo Ragnarok (Mt 20)
-            atk_base = atacante.magia + 20
+            # Warp Ragnarok: Tomo magico Ragnarok (Mt 18 canonico en Warp Ragnarok)
+            # Si el arma no traia Mt asignado, garantizar el aporte canonico de 18
+            if getattr(arma, 'mt', 0) <= 0:
+                atk_base += 18
             pasivas_activas.append("Ragnarök Fusión (Ataque de Emblema Celica)")
+        elif es_override:
+            pasivas_activas.append(f"Superación / Override ({arma.nombre})")
 
         atk_efectivo = atk_base
 
@@ -869,6 +882,7 @@ class CalculadoraEngage:
             "es_houses_unite": es_houses_unite,
             "es_lodestar_rush": es_lodestar_rush,
             "es_warp_ragnarok": es_warp_ragnarok,
+            "es_override": es_override,
             "es_engage_attack": es_engage_attack,
             "houses_unite_hits": houses_unite_hits,
             "lodestar_hits": lodestar_hits,
@@ -921,6 +935,11 @@ class CalculadoraEngage:
         # Normalizar aliados cercanos con distancia si se pasó pos_atk / pos_def
         norm_atk = normalizar_aliados_cercanos(aliados_cercanos_atk, pos_atk)
         norm_def = normalizar_aliados_cercanos(aliados_cercanos_def, pos_def)
+
+        if not es_engage_attack and getattr(arma_atk, 'es_engage_attack', False):
+            es_engage_attack = True
+        if not engage_attack_nombre and hasattr(arma_atk, 'engage_attack_nombre'):
+            engage_attack_nombre = getattr(arma_atk, 'engage_attack_nombre', '')
 
         stats_atk = cls._stats_de_golpe(
             atacante, arma_atk, defensor, arma_def, terreno_def,

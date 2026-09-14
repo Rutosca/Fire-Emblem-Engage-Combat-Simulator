@@ -1268,9 +1268,9 @@ class TestFixesTactical(unittest.TestCase):
 
         armas_fusion = _armas_aliado(chloe_stats)
         nombres_armas = [a.nombre for a, es_eng, _ in armas_fusion]
-        # A nivel 10, Edelgard otorga Aymr y Areadbhar
-        self.assertIn("Aymr", nombres_armas, "Aymr debe estar disponible como arma usable en fusión")
-        self.assertIn("Areadbhar", nombres_armas, "Areadbhar debe estar disponible como arma usable en fusión")
+        # A nivel 10, Edelgard otorga Aymr y Areadbhar (con sufijo (Emblema) para diferenciarlas)
+        self.assertTrue(any("Aymr" in n for n in nombres_armas), "Aymr debe estar disponible como arma usable en fusión")
+        self.assertTrue(any("Areadbhar" in n for n in nombres_armas), "Areadbhar debe estar disponible como arma usable en fusión")
         self.assertIn("Iron Lance", nombres_armas, "El arma de inventario normal debe seguir presente")
 
         # Marth a nivel 15 con Alear
@@ -1282,9 +1282,9 @@ class TestFixesTactical(unittest.TestCase):
 
         armas_marth = _armas_aliado(alear_stats)
         nombres_marth = [a.nombre for a, es_eng, _ in armas_marth]
-        self.assertIn("Rapier", nombres_marth)
-        self.assertIn("Mercurius", nombres_marth)
-        self.assertIn("Falchion", nombres_marth)
+        self.assertTrue(any("Rapier" in n for n in nombres_marth))
+        self.assertTrue(any("Mercurius" in n for n in nombres_marth))
+        self.assertTrue(any("Falchion" in n for n in nombres_marth))
 
     def test_33_solo_kill_priority_over_combos(self):
         """

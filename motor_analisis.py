@@ -340,21 +340,26 @@ def _armas_aliado(aliado):
                 break
         if e_info:
             nv = int(getattr(aliado, "nivel_vinculo", 1) or 1)
-            b_info = (e_info.get("bond_levels", {}) or {}).get(str(nv), {})
-            engage_items = b_info.get("engage_items")
-            if not engage_items:
-                engage_items = e_info.get("engage_items", [])
+            b_info = (e_info.get("bond_levels", {}) or {}).get(str(nv))
+            if not b_info and "bond_levels" in e_info:
+                disp = sorted([int(k) for k in e_info["bond_levels"].keys() if k.isdigit() and int(k) <= nv])
+                if disp:
+                    b_info = e_info["bond_levels"].get(str(disp[-1]), {})
+            engage_items = (b_info or {}).get("engage_items", [])
             for it in (engage_items or []):
                 item_raw = it.get("nombre") or it.get("iid") if isinstance(it, dict) else str(it)
                 if not item_raw:
                     continue
                 a_eng = _arma_desde_item(item_raw)
                 if a_eng and a_eng.mt > 0:
+                    setattr(a_eng, 'es_engage', True)
+                    if not a_eng.nombre.endswith("(Emblema)"):
+                        a_eng.nombre = f"{a_eng.nombre} (Emblema)"
                     tipo_l = str(getattr(a_eng, 'tipo', '')).lower()
                     nom_l = str(getattr(a_eng, 'nombre', '')).lower()
                     if not any(k in tipo_l for k in ('bastón', 'baston', 'staff')) and not any(k in nom_l for k in ('recover', 'curar', 'sanar', 'restituir', 'fortify', 'physic', 'mend', 'heal')):
                         if not any(normalizar_texto(w.nombre) == normalizar_texto(a_eng.nombre) for w, _, _ in armas):
-                            armas.append((a_eng, True, "Arma de Engage"))
+                            armas.append((a_eng, True, f"Arma de Engage ({a_eng.nombre})"))
 
         # Ataque de Emblema (Técnica Especial Engage) si no se ha usado
         atk_ya_usado = bool(
@@ -362,38 +367,83 @@ def _armas_aliado(aliado):
             or (hasattr(aliado, "stats") and getattr(aliado.stats, "ataque_emblema_usado", False))
         )
         if not atk_ya_usado:
-            from catalogo_loader import ATAQUES_ENGAGE_MAP
+            from catalogo_loader import ATAQUES_ENGAGE_MAP, ATAQUES_ENGAGE_CONFIG
             nombre_atk_engage = None
             for k_map, v_map in ATAQUES_ENGAGE_MAP.items():
                 if normalizar_texto(k_map) in buscado or buscado in normalizar_texto(k_map):
                     nombre_atk_engage = v_map
                     break
             if nombre_atk_engage:
-                clean_name = nombre_atk_engage.split(" (")[0]
-                clean_l = clean_name.lower()
+                clean_name = nombre_atk_engage.split(" (")[0].strip()
+                clean_norm = normalizar_texto(clean_name)
                 # Excluir técnicas que son de soporte grupal puro (no ataques contra enemigos)
-                if not any(k in clean_l for k in ("sacrifice", "sacrificio", "goddess dance", "baile de la diosa")):
-                    if "houses" in clean_l:
-                        a_eng_atk = Arma(nombre="Houses Unite", mt=19, hit=100, crit=0, wt=10, tipo="Lanza", rango=[1])
-                        setattr(a_eng_atk, 'es_engage_attack', True)
-                        setattr(a_eng_atk, 'engage_attack_nombre', 'Houses Unite')
-                        armas.append((a_eng_atk, True, "Ataque de Emblema (Houses Unite)"))
-                    elif "lodestar" in clean_l:
-                        espadas_aliado = [w for w, _, _ in armas if getattr(w, 'tipo', '') == "Espada"]
-                        if not espadas_aliado:
-                            espadas_aliado = [Arma(nombre="Silver Sword", mt=12, hit=90, crit=0, wt=11, tipo="Espada", rango=[1])]
-                        for sw in espadas_aliado:
-                            a_eng_atk = Arma(nombre=f"Lodestar Rush ({sw.nombre})", mt=sw.mt, hit=100, crit=0, wt=sw.wt, tipo="Espada", rango=[1])
+                if not any(k in clean_norm for k in ("sacrifice", "sacrificio", "goddess dance", "baile de la diosa", "divine blessing", "bendicion divina", "summon hero", "invocar heroe")):
+                    # Clasificación Fija vs Variable desde ATAQUES_ENGAGE_CONFIG
+                    cfg = None
+                    for k_cfg, v_cfg in ATAQUES_ENGAGE_CONFIG.items():
+                        if normalizar_texto(k_cfg) in clean_norm or clean_norm in normalizar_texto(k_cfg):
+                            cfg = v_cfg
+                            break
+
+                    es_variable = cfg.get("es_variable", False) if cfg else (
+                        "lodestar" in clean_norm or "override" in clean_norm or "blazing" in clean_norm
+                        or "great aether" in clean_norm or "twin strike" in clean_norm or "all for one" in clean_norm
+                        or "bond blast" in clean_norm
+                    )
+
+                    if es_variable:
+                        tipos_permitidos = cfg.get("tipos_permitidos", ["Espada", "Lanza"]) if cfg else (
+                            ["Espada", "Lanza"] if "override" in clean_norm else ["Espada"]
+                        )
+                        armas_candidatas = [
+                            w for w, _, _ in armas
+                            if getattr(w, 'tipo', '') in tipos_permitidos and not getattr(w, 'es_engage_attack', False)
+                        ]
+                        if not armas_candidatas:
+                            tipo_def = tipos_permitidos[0]
+                            armas_candidatas = [Arma(nombre=f"Iron {tipo_def}", mt=6, hit=90, crit=0, wt=5, tipo=tipo_def, rango=[1])]
+
+                        armas_candidatas_unicas = []
+                        nombres_vistos = set()
+                        for w_c in armas_candidatas:
+                            if w_c.nombre not in nombres_vistos:
+                                nombres_vistos.add(w_c.nombre)
+                                armas_candidatas_unicas.append(w_c)
+
+                        for w_c in armas_candidatas_unicas:
+                            a_eng_atk = Arma(
+                                nombre=f"{clean_name} ({w_c.nombre})",
+                                mt=w_c.mt,
+                                hit=100,
+                                crit=0,
+                                wt=w_c.wt,
+                                tipo=w_c.tipo,
+                                rango=w_c.rango if getattr(w_c, 'rango', None) else [1],
+                                es_magica=getattr(w_c, 'es_magica', False)
+                            )
                             setattr(a_eng_atk, 'es_engage_attack', True)
-                            setattr(a_eng_atk, 'engage_attack_nombre', 'Lodestar Rush')
-                            armas.append((a_eng_atk, True, f"Ataque de Emblema (Lodestar Rush - {sw.nombre})"))
-                    elif "warp" in clean_l or "ragnarok" in clean_l or "ragnarök" in clean_l:
-                        a_eng_atk = Arma(nombre="Warp Ragnarök", mt=20, hit=100, crit=0, wt=5, tipo="Tomo", rango=[1], es_magica=True)
-                        setattr(a_eng_atk, 'es_engage_attack', True)
-                        setattr(a_eng_atk, 'engage_attack_nombre', 'Warp Ragnarök')
-                        armas.append((a_eng_atk, True, "Ataque de Emblema (Warp Ragnarök)"))
+                            setattr(a_eng_atk, 'engage_attack_nombre', clean_name)
+                            setattr(a_eng_atk, 'arma_base_nombre', w_c.nombre)
+                            armas.append((a_eng_atk, True, f"Ataque de Emblema ({clean_name} - {w_c.nombre})"))
                     else:
-                        a_eng_atk = Arma(nombre=clean_name, mt=15, hit=100, crit=0, wt=8, tipo="Espada", rango=[1])
+                        arma_fija_data = (cfg or {}).get("arma_fija", {})
+                        f_mt = arma_fija_data.get("mt", 18 if ("warp" in clean_norm or "ragnarok" in clean_norm) else (19 if "houses" in clean_norm else 15))
+                        f_tipo = arma_fija_data.get("tipo", "Tomo" if ("warp" in clean_norm or "ragnarok" in clean_norm) else ("Lanza" if "houses" in clean_norm else "Espada"))
+                        f_hit = arma_fija_data.get("hit", 100)
+                        f_wt = arma_fija_data.get("wt", 5)
+                        f_rango = arma_fija_data.get("rango", [1])
+                        f_magica = arma_fija_data.get("es_magica", True if f_tipo == "Tomo" else False)
+
+                        a_eng_atk = Arma(
+                            nombre=clean_name,
+                            mt=f_mt,
+                            hit=f_hit,
+                            crit=0,
+                            wt=f_wt,
+                            tipo=f_tipo,
+                            rango=f_rango,
+                            es_magica=f_magica
+                        )
                         setattr(a_eng_atk, 'es_engage_attack', True)
                         setattr(a_eng_atk, 'engage_attack_nombre', clean_name)
                         armas.append((a_eng_atk, True, f"Ataque de Emblema ({clean_name})"))
@@ -422,8 +472,8 @@ def _emblema_equipado(ficha):
     return nombre
 
 
-def _detalle_acciones_emblema(nombre):
-    """Obtiene armas y habilidades de Engage desde el catálogo, sin hardcodear emblemas."""
+def _detalle_acciones_emblema(nombre, nivel_vinculo=None):
+    """Obtiene armas y habilidades de Engage desde el catálogo, respetando el nivel de vínculo."""
     buscado = normalizar_texto(nombre)
     info = None
     for dato in (_catalogo.get("emblemas", {}) or {}).values():
@@ -433,9 +483,20 @@ def _detalle_acciones_emblema(nombre):
     if not info:
         return []
     acciones = []
-    for iid in info.get("engage_items", []):
+    nv = int(nivel_vinculo or 1) if nivel_vinculo is not None else 20
+    b_info = (info.get("bond_levels", {}) or {}).get(str(nv))
+    if not b_info and "bond_levels" in info:
+        disp = sorted([int(k) for k in info["bond_levels"].keys() if k.isdigit() and int(k) <= nv])
+        if disp:
+            b_info = info["bond_levels"].get(str(disp[-1]), {})
+    items = (b_info or {}).get("engage_items", []) if b_info else info.get("engage_items", [])
+    for it in items:
+        iid = it.get("nombre") or it.get("iid") if isinstance(it, dict) else str(it)
         arma_info = (_catalogo.get("armas", {}) or {}).get(iid, {})
-        acciones.append(arma_info.get("nombre", iid))
+        nom = arma_info.get("nombre", iid)
+        if not nom.endswith("(Emblema)"):
+            nom = f"{nom} (Emblema)"
+        acciones.append(nom)
     for sid in info.get("engage_skills", []):
         skill_info = (_catalogo.get("habilidades", {}) or {}).get(sid, {})
         nombre_skill = skill_info.get("nombre", sid)
@@ -1409,8 +1470,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
         # Considerar fusiones y habilidades de emblema solo para el flujo del combate cuando sea necesario y viable:
         if tiene_emblema_listo:
             if es_jefe:
-                op["tactica_emblema"] = "burst"
-                acciones = _detalle_acciones_emblema(emblema)
+                nv_vinculo = int(getattr(ficha_ali, "nivel_vinculo", getattr(ficha_ali.stats, "nivel_vinculo", 1) if hasattr(ficha_ali, "stats") else 1) or 1)
+                acciones = _detalle_acciones_emblema(emblema, nivel_vinculo=nv_vinculo)
                 if not acciones and normalizar_texto(emblema) in {"edelgard", "three houses", "tres casas"}:
                     lider = getattr(ficha_ali, "lider_tres_casas", getattr(ficha_ali.stats, "lider_tres_casas", "Dimitri"))
                     acciones = [f"Houses Unite y el arte de combate de {lider}"]

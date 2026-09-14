@@ -434,7 +434,7 @@ const EMBLEMAS_DATA = {
     synchro_boosts: { def: 2, dex: 2, bld: 2, mov: 1 },
     engage_skills: ["Gallop"],
     engage_attack: "Override (Superación)",
-    engage_items: ["Ridersbane", "Brave Lance"]
+    engage_items: ["Ridersbane (Emblema)"]
   },
   "celica": {
     nombre: "Celica",
@@ -663,14 +663,47 @@ function buscarEmblemaInfo(nombre) {
 function obtenerDatosVinculoEmblema(eInfo, nivel) {
   if (!eInfo) return null;
   const n = Math.max(1, Math.min(20, parseInt(nivel || 1, 10)));
+  let baseData = null;
   if (eInfo.bond_levels && eInfo.bond_levels[String(n)]) {
-    return eInfo.bond_levels[String(n)];
+    baseData = eInfo.bond_levels[String(n)];
+  } else if (eInfo.bond_levels) {
+    const disp = Object.keys(eInfo.bond_levels)
+      .map(k => parseInt(k, 10))
+      .filter(k => !isNaN(k) && k <= n)
+      .sort((a, b) => a - b);
+    if (disp.length > 0) {
+      baseData = eInfo.bond_levels[String(disp[disp.length - 1])];
+    }
   }
+
+  if (baseData) {
+    return {
+      ...baseData,
+      engage_items: (baseData.engage_items || []).map(it => {
+        const nom = (typeof it === "object" ? (it.nombre || it.iid) : it) || "";
+        const nomDist = nom.endsWith("(Emblema)") ? nom : `${nom} (Emblema)`;
+        return typeof it === "object" ? { ...it, nombre: nomDist } : { iid: it, nombre: nomDist };
+      })
+    };
+  }
+
+  // Fallback con datos embebidos respetando nivel de vínculo
+  let fallbackItems = eInfo.engage_items || [];
+  if (eInfo.nombre && eInfo.nombre.toLowerCase().includes("sigurd")) {
+    fallbackItems = n >= 15 ? ["Ridersbane", "Brave Lance", "Tyrfing"] : (n >= 10 ? ["Ridersbane", "Brave Lance"] : ["Ridersbane"]);
+  } else if (eInfo.nombre && eInfo.nombre.toLowerCase().includes("marth")) {
+    fallbackItems = n >= 10 ? ["Rapier", "Mercurius"] : ["Rapier"];
+  }
+
   return {
     level: n,
     stat_boosts: eInfo.synchro_boosts || {},
     synchro_skills: (eInfo.synchro_skills || []).map(s => ({ sid: s, nombre: s })),
-    engage_items: (eInfo.engage_items || []).map(i => ({ iid: i, nombre: i })),
+    engage_items: fallbackItems.map(i => {
+      const iStr = String(i);
+      const nomDist = iStr.endsWith("(Emblema)") ? iStr : `${iStr} (Emblema)`;
+      return { iid: iStr, nombre: nomDist };
+    }),
     engage_skills: (eInfo.engage_skills || []).map(s => ({ sid: s, nombre: s })),
     max_energia_emblema: n >= 20 ? 5 : 6
   };
@@ -715,6 +748,205 @@ function construirArmaString(base, forja, grabado) {
   return res;
 }
 
+// ─── Utilidades del Sistema de Inventario de 5 Ranuras ───────────────────────
+
+function esItemBastonOObjeto(nombre) {
+  if (!nombre) return false;
+  const n = String(nombre).toLowerCase().trim();
+  const palabras = [
+    "bastón", "baston", "staff", "curar", "sanar", "recuperar", "fortalecer", "restituir",
+    "heal", "mend", "recover", "physic", "fortify", "restore", "warp", "rewarp", "rescue",
+    "entrap", "freeze", "silence", "fracture", "obstruct", "illume", "torch", "antorcha",
+    "poción", "pocion", "vulnerary", "elixir", "antídoto", "antidoto", "pure water", "agua pura",
+    "tónico", "tonico", "semilla", "seed"
+  ];
+  return palabras.some(p => n.includes(p));
+}
+
+function obtenerUsosMaxPorDefecto(nombre) {
+  if (!nombre) return 3;
+  const n = String(nombre).toLowerCase();
+  if (n.includes("heal") || n.includes("curar")) return 25;
+  if (n.includes("mend") || n.includes("sanar")) return 20;
+  if (n.includes("recover") || n.includes("recuperar")) return 10;
+  if (n.includes("physic")) return 10;
+  if (n.includes("fortify") || n.includes("fortalecer")) return 5;
+  if (n.includes("warp") || n.includes("rewarp") || n.includes("rescue")) return 5;
+  if (n.includes("entrap") || n.includes("freeze") || n.includes("silence")) return 3;
+  if (n.includes("pocion") || n.includes("poción") || n.includes("vulnerary")) return 3;
+  if (n.includes("elixir") || n.includes("antidoto") || n.includes("antídoto")) return 3;
+  if (n.includes("agua pura") || n.includes("pure water") || n.includes("antorcha") || n.includes("torch")) return 3;
+  return 3;
+}
+
+function actualizarFilaSlot(idx) {
+  const row = $(`inv-slot-row-${idx}`);
+  if (!row) return;
+  const inputNombre = $(`inv-nombre-${idx}`);
+  const radio = $(`inv-equip-${idx}`);
+  const modsWrap = $(`inv-weapon-mods-${idx}`);
+  const usosWrap = $(`inv-usos-wrap-${idx}`);
+  const usosInput = $(`inv-usos-${idx}`);
+  const usosBadge = $(`inv-usos-max-${idx}`);
+
+  const nombre = inputNombre ? inputNombre.value.trim() : "";
+  const esBastonObjeto = esItemBastonOObjeto(nombre);
+
+  if (esBastonObjeto) {
+    row.classList.add("slot-no-equipable");
+    if (radio) {
+      radio.disabled = true;
+      if (radio.checked) {
+        radio.checked = false;
+        // Reasignar equipada a la primera ranura con arma válida
+        for (let j = 0; j < 5; j++) {
+          if (j !== idx) {
+            const nomJ = $(`inv-nombre-${j}`)?.value.trim() || "";
+            if (nomJ && !esItemBastonOObjeto(nomJ)) {
+              const rJ = $(`inv-equip-${j}`);
+              if (rJ) { rJ.checked = true; break; }
+            }
+          }
+        }
+      }
+    }
+    if (modsWrap) modsWrap.classList.add("hidden");
+    if (usosWrap) {
+      usosWrap.classList.remove("hidden");
+      const uMax = obtenerUsosMaxPorDefecto(nombre);
+      if (usosInput) {
+        usosInput.max = uMax;
+        if (!usosInput.value || parseInt(usosInput.value, 10) > uMax || parseInt(usosInput.value, 10) <= 0) {
+          usosInput.value = uMax;
+        }
+      }
+      if (usosBadge) usosBadge.textContent = `/ ${uMax}`;
+    }
+  } else {
+    row.classList.remove("slot-no-equipable");
+    if (radio) radio.disabled = false;
+    if (modsWrap) modsWrap.classList.remove("hidden");
+    if (usosWrap) usosWrap.classList.add("hidden");
+  }
+
+  // Actualizar clase visual de equipado
+  if (radio && radio.checked && !esBastonObjeto) {
+    row.classList.add("slot-equipado");
+  } else {
+    row.classList.remove("slot-equipado");
+  }
+}
+
+function actualizarTodosLosSlots() {
+  for (let i = 0; i < 5; i++) {
+    actualizarFilaSlot(i);
+  }
+}
+
+function obtenerArmaEquipadaActual() {
+  // 1. Si hay un arma de Emblema activa seleccionada desde la Fusión
+  if (state.armaEmblemaEquipadaTemporal && $("f-fusion")?.checked) {
+    return {
+      nombreCompleto: state.armaEmblemaEquipadaTemporal,
+      base: state.armaEmblemaEquipadaTemporal,
+      forja: "0",
+      grabado: "",
+      esEmblema: true
+    };
+  }
+
+  // 2. Buscar qué slot tiene el radio marcado
+  let slotIdx = -1;
+  for (let i = 0; i < 5; i++) {
+    const r = $(`inv-equip-${i}`);
+    if (r && r.checked) {
+      slotIdx = i;
+      break;
+    }
+  }
+
+  // Si no hay ninguno o el seleccionado es bastón/objeto, buscar la primera arma válida
+  if (slotIdx === -1 || esItemBastonOObjeto($(`inv-nombre-${slotIdx}`)?.value)) {
+    for (let i = 0; i < 5; i++) {
+      const nom = $(`inv-nombre-${i}`)?.value.trim() || "";
+      if (nom && !esItemBastonOObjeto(nom)) {
+        slotIdx = i;
+        const r = $(`inv-equip-${i}`);
+        if (r) r.checked = true;
+        break;
+      }
+    }
+  }
+
+  if (slotIdx >= 0) {
+    const base = $(`inv-nombre-${slotIdx}`)?.value.trim() || "";
+    const forja = $(`inv-forja-${slotIdx}`)?.value || "0";
+    const grabado = $(`inv-grabado-${slotIdx}`)?.value || "";
+    const nombreCompleto = construirArmaString(base, forja, grabado);
+    return { nombreCompleto, base, forja, grabado, esEmblema: false };
+  }
+
+  return { nombreCompleto: "Iron Sword", base: "Iron Sword", forja: "0", grabado: "", esEmblema: false };
+}
+
+function renderizarArmasFusionModal(ficha) {
+  const cont = $("seccion-armas-emblema-fusion");
+  const grid = $("armas-fusion-grid");
+  if (!cont || !grid) return;
+
+  const enFusion = $("f-fusion")?.checked;
+  const embNom = $("f-emblema")?.value.trim() || (ficha ? ficha.emblema_nombre : "");
+
+  if (!enFusion || !embNom) {
+    cont.classList.add("hidden");
+    state.armaEmblemaEquipadaTemporal = null;
+    return;
+  }
+
+  const eInfo = buscarEmblemaInfo(embNom);
+  if (!eInfo) {
+    cont.classList.add("hidden");
+    return;
+  }
+
+  const nivelV = $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1;
+  const bond = obtenerDatosVinculoEmblema(eInfo, nivelV);
+  const items = bond?.engage_items || eInfo.engage_items || [];
+
+  if (!items || items.length === 0) {
+    cont.classList.add("hidden");
+    return;
+  }
+
+  cont.classList.remove("hidden");
+  grid.innerHTML = "";
+
+  items.forEach(it => {
+    let nom = it.nombre || it.iid || it;
+    if (typeof nom === "string" && !nom.endsWith("(Emblema)")) {
+      nom = `${nom} (Emblema)`;
+    }
+    const card = document.createElement("div");
+    card.className = "arma-fusion-card";
+    const esActiva = state.armaEmblemaEquipadaTemporal === nom;
+    if (esActiva) card.classList.add("activa");
+
+    card.innerHTML = `<span>${nom}</span><span class="af-tag">${esActiva ? "Equipada" : "Usar"}</span>`;
+    card.title = `Usar ${nom} para combate normal durante la fusión`;
+    card.addEventListener("click", () => {
+      if (state.armaEmblemaEquipadaTemporal === nom) {
+        state.armaEmblemaEquipadaTemporal = null;
+      } else {
+        state.armaEmblemaEquipadaTemporal = nom;
+      }
+      renderizarArmasFusionModal(ficha);
+      actualizarTodosLosSlots();
+      recalcularCombatStats();
+    });
+    grid.appendChild(card);
+  });
+}
+
 // ─── Recalcular Estadísticas de Combate Derivadas en Vivo ───────────────────
 
 async function recalcularCombatStats() {
@@ -727,11 +959,8 @@ async function recalcularCombatStats() {
   const lck = parseInt($("f-stat-lck")?.value || 0, 10);
   const bld = parseInt($("f-stat-bld")?.value || 1, 10);
 
-  const claseNombre = $("f-clase")?.value.trim() || "";
-  const baseArma = $("f-arma")?.value.trim() || "";
-  const forja = $("f-arma-forja")?.value || "0";
-  const grabado = $("f-arma-grabado")?.value || "";
-  const armaNombre = construirArmaString(baseArma, forja, grabado);
+  const armaInfo = obtenerArmaEquipadaActual();
+  const armaNombre = armaInfo.nombreCompleto;
 
   let mt = 5, wt = 5, hit = 80, crit = 0, rng = "1", esMagica = false, avoBonus = 0, ddgBonus = 0;
 
@@ -785,26 +1014,6 @@ async function recalcularCombatStats() {
   if ($("f-cstat-rng")) $("f-cstat-rng").value = rng;
 }
 
-// ─── Modal de Configuración de Unidad y Potenciadores ───────────────────────
-
-function renderizarBadgesPotenciadores() {
-  const cont = $("potenciadores-badge-list");
-  if (!cont) return;
-  cont.innerHTML = "";
-  if (!state.potenciadoresModal || state.potenciadoresModal.length === 0) return;
-
-  state.potenciadoresModal.forEach((nom, idx) => {
-    const badge = document.createElement("span");
-    badge.className = "booster-badge";
-    badge.innerHTML = `${nom} <span class="booster-badge-remove" title="Quitar">&times;</span>`;
-    badge.querySelector(".booster-badge-remove").addEventListener("click", () => {
-      state.potenciadoresModal.splice(idx, 1);
-      renderizarBadgesPotenciadores();
-    });
-    cont.appendChild(badge);
-  });
-}
-
 function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   state.modalModo = "crear";
   state.potenciadoresModal = [];
@@ -840,9 +1049,21 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   $("f-stat-bld").value = "7";
   $("f-stat-mov").value = "4";
 
-  $("f-arma").value = esAliado ? "Libération" : "Iron Sword";
-  if ($("f-arma-forja")) $("f-arma-forja").value = "0";
-  if ($("f-arma-grabado")) $("f-arma-grabado").value = "";
+  for (let i = 0; i < 5; i++) {
+    const nomEl = $(`inv-nombre-${i}`);
+    if (nomEl) nomEl.value = (i === 0) ? (esAliado ? "Libération" : "Iron Sword") : "";
+    const forjaEl = $(`inv-forja-${i}`);
+    if (forjaEl) forjaEl.value = "0";
+    const grabEl = $(`inv-grabado-${i}`);
+    if (grabEl) grabEl.value = "";
+    const usosEl = $(`inv-usos-${i}`);
+    if (usosEl) usosEl.value = "3";
+    const radioEl = $(`inv-equip-${i}`);
+    if (radioEl) radioEl.checked = (i === 0);
+  }
+  actualizarTodosLosSlots();
+  renderizarArmasFusionModal(null);
+
   $("f-emblema").value = esAliado ? "Marth" : "";
   establecerLiderTresCasas("Dimitri");
   actualizarSelectorLiderTresCasas();
@@ -861,7 +1082,6 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   if ($("f-hp-stock")) $("f-hp-stock").value = "0";
   if ($("f-chain-guard")) $("f-chain-guard").checked = true;
   limpiarChips("chips-pasivas");
-  limpiarChips("chips-inventario");
 
   if (esAliado) {
     const eInfo = buscarEmblemaInfo("Marth");
@@ -870,7 +1090,6 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
     }
   }
 
-  renderizarBadgesPotenciadores();
   recalcularCombatStats();
 
   $("btn-modal-eliminar").classList.add("hidden");
@@ -881,6 +1100,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
 function abrirModalEdicion(ficha) {
   state.modalModo = "editar";
   state.potenciadoresModal = Array.isArray(ficha.potenciadores_usados) ? [...ficha.potenciadores_usados] : [];
+  state.armaEmblemaEquipadaTemporal = null;
   state.prevEmblemaModal = ficha.emblema_nombre || "";
   $("modal-titulo").textContent = `Editar Unidad: ${ficha.nombre}`;
   $("f-edit-original-name").value = ficha.nombre;
@@ -921,11 +1141,65 @@ function abrirModalEdicion(ficha) {
   $("f-stat-bld").value = st.complexion !== undefined ? st.complexion : 7;
   $("f-stat-mov").value = ficha.mov !== undefined ? ficha.mov : 4;
 
-  const rawArma = ficha.arma_equipada ? (ficha.arma_equipada.nombre || ficha.arma_equipada) : (ficha.arma ? (ficha.arma.nombre || ficha.arma) : "");
-  const desglosada = desglosarArmaString(rawArma);
-  $("f-arma").value = desglosada.base;
-  if ($("f-arma-forja")) $("f-arma-forja").value = desglosada.forja;
-  if ($("f-arma-grabado")) $("f-arma-grabado").value = desglosada.grabado;
+  // Limpiar los 5 slots de inventario
+  for (let i = 0; i < 5; i++) {
+    if ($(`inv-nombre-${i}`)) $(`inv-nombre-${i}`).value = "";
+    if ($(`inv-forja-${i}`)) $(`inv-forja-${i}`).value = "0";
+    if ($(`inv-grabado-${i}`)) $(`inv-grabado-${i}`).value = "";
+    if ($(`inv-usos-${i}`)) $(`inv-usos-${i}`).value = "3";
+    if ($(`inv-equip-${i}`)) $(`inv-equip-${i}`).checked = false;
+  }
+
+  const items = Array.isArray(ficha.inventario) ? [...ficha.inventario] : [];
+  let equippedSlot = -1;
+
+  items.slice(0, 5).forEach((item, idx) => {
+    let rawStr = "";
+    let forja = "0";
+    let grabado = "";
+    let usos = 3;
+    let esEq = false;
+
+    if (typeof item === "string") {
+      const d = desglosarArmaString(item);
+      rawStr = d.base;
+      forja = d.forja;
+      grabado = d.grabado;
+    } else if (item && typeof item === "object") {
+      const nomOriginal = item.nombre_base || item.nombre || item.arma || "";
+      const d = desglosarArmaString(nomOriginal);
+      rawStr = d.base;
+      forja = String(item.refine_lvl !== undefined ? item.refine_lvl : (d.forja || "0"));
+      grabado = item.grabado !== undefined && item.grabado !== null ? item.grabado : (d.grabado || "");
+      usos = item.usos !== undefined && item.usos !== null ? item.usos : obtenerUsosMaxPorDefecto(rawStr);
+      esEq = !!item.equipada;
+    }
+
+    if ($(`inv-nombre-${idx}`)) $(`inv-nombre-${idx}`).value = rawStr;
+    if ($(`inv-forja-${idx}`)) $(`inv-forja-${idx}`).value = forja;
+    if ($(`inv-grabado-${idx}`)) $(`inv-grabado-${idx}`).value = grabado;
+    if ($(`inv-usos-${idx}`)) $(`inv-usos-${idx}`).value = usos;
+    if (esEq) equippedSlot = idx;
+  });
+
+  // Si no había inventario cargado pero sí arma_equipada / arma
+  if (items.length === 0) {
+    const rawArma = ficha.arma_equipada ? (ficha.arma_equipada.nombre || ficha.arma_equipada) : (ficha.arma ? (ficha.arma.nombre || ficha.arma) : "");
+    if (rawArma) {
+      const d = desglosarArmaString(rawArma);
+      if ($("inv-nombre-0")) $("inv-nombre-0").value = d.base;
+      if ($("inv-forja-0")) $("inv-forja-0").value = d.forja;
+      if ($("inv-grabado-0")) $("inv-grabado-0").value = d.grabado;
+      equippedSlot = 0;
+    }
+  }
+
+  // Marcar radio
+  if (equippedSlot >= 0 && $(`inv-equip-${equippedSlot}`)) {
+    $(`inv-equip-${equippedSlot}`).checked = true;
+  } else if ($("inv-equip-0")) {
+    $("inv-equip-0").checked = true;
+  }
 
   $("f-emblema").value = ficha.emblema_nombre || "";
   const nivV = ficha.nivel_vinculo || 1;
@@ -953,46 +1227,24 @@ function abrirModalEdicion(ficha) {
     $("label-fusion").title = "";
   }
 
-  // Rellenar chips de habilidades
+  // Rellenar chips de habilidades pasivas
   limpiarChips("chips-pasivas");
   const habs = Array.isArray(ficha.habilidades) ? ficha.habilidades : (ficha.habilidades ? [ficha.habilidades] : []);
   habs.filter(Boolean).forEach(h => addChip("chips-pasivas", h));
 
-  // Rellenar chips de inventario (todas las armas excepto la equipada principal)
-  limpiarChips("chips-inventario");
-  if (Array.isArray(ficha.inventario)) {
-    ficha.inventario.forEach((item, idx) => {
-      if (idx === 0) return; // la primera es la arma equipada, ya está en f-arma
-      const nombre = item.nombre || item.arma || "";
-      if (nombre) addChip("chips-inventario", nombre);
-    });
-  }
-
-  // Si la unidad está en Fusión (o tiene turnos activos), asegurar que aparezcan su ataque de emblema y armas Engage
+  // Si la unidad está en Fusión, asegurar que aparezca su ataque de emblema
   if (ficha.en_fusion || ficha.turnos_fusion > 0) {
     const eInfo = buscarEmblemaInfo(ficha.emblema_nombre);
-    if (eInfo) {
-      if (eInfo.engage_attack) {
-        const pasivasActuales = leerChips("chips-pasivas");
-        if (!pasivasActuales.includes(eInfo.engage_attack)) {
-          addChip("chips-pasivas", eInfo.engage_attack);
-        }
-      }
-      const bond = obtenerDatosVinculoEmblema(eInfo, ficha.nivel_vinculo);
-      if (bond && bond.engage_items) {
-        const invActual = leerChips("chips-inventario");
-        const armaPrincipal = $("f-arma") ? $("f-arma").value.trim() : "";
-        bond.engage_items.forEach(it => {
-          const iNom = it.nombre || it.iid || it;
-          if (iNom && iNom !== armaPrincipal && !invActual.includes(iNom)) {
-            addChip("chips-inventario", iNom);
-          }
-        });
+    if (eInfo && eInfo.engage_attack) {
+      const pasivasActuales = leerChips("chips-pasivas");
+      if (!pasivasActuales.includes(eInfo.engage_attack)) {
+        addChip("chips-pasivas", eInfo.engage_attack);
       }
     }
   }
 
-  renderizarBadgesPotenciadores();
+  actualizarTodosLosSlots();
+  renderizarArmasFusionModal(ficha);
   recalcularCombatStats();
 
   $("btn-modal-eliminar").classList.remove("hidden");
@@ -1095,11 +1347,6 @@ function sincronizarEmblemaModal() {
         const chip = document.querySelector(`#chips-pasivas .chip[data-valor="${sNom}"]`);
         if (chip) chip.remove();
       });
-      (oldBond.engage_items || []).forEach(it => {
-        const iNom = it.nombre || it.iid || it;
-        const chipIt = document.querySelector(`#chips-inventario .chip[data-valor="${iNom}"]`);
-        if (chipIt) chipIt.remove();
-      });
       if (oldE && oldE.engage_attack) {
         const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="${oldE.engage_attack}"]`);
         if (chipAtk) chipAtk.remove();
@@ -1124,16 +1371,6 @@ function sincronizarEmblemaModal() {
         if (newE && newE.engage_attack) {
           addChip("chips-pasivas", `${newE.engage_attack}`);
         }
-        if (newBond.engage_items) {
-          const armaPrincipal = $("f-arma") ? $("f-arma").value.trim() : "";
-          const invActual = leerChips("chips-inventario");
-          (newBond.engage_items || []).forEach(it => {
-            const iNom = it.nombre || it.iid || it;
-            if (iNom && iNom !== armaPrincipal && !invActual.includes(iNom)) {
-              addChip("chips-inventario", iNom);
-            }
-          });
-        }
       }
 
       if (nivelVal === 20 && (cambioNivel || cambioEmblema)) {
@@ -1145,6 +1382,7 @@ function sincronizarEmblemaModal() {
 
     state.prevEmblemaModal = val;
     state.prevNivelVinculoModal = nivelVal;
+    renderizarArmasFusionModal(null);
     recalcularCombatStats();
   }
 }
@@ -1163,12 +1401,8 @@ async function guardarUnidadDesdeModal() {
   const hpActual = parseInt($("f-hp-actual").value, 10);
   const hpMax = parseInt($("f-hp-max").value, 10);
   const claseNombre = $("f-clase").value.trim();
-  const baseArma = $("f-arma").value.trim();
-  const forja = $("f-arma-forja") ? $("f-arma-forja").value : "0";
-  const grabado = $("f-arma-grabado") ? $("f-arma-grabado").value : "";
-  const armaNombre = construirArmaString(baseArma, forja, grabado);
   const emblemaNombre = $("f-emblema").value.trim();
-  const enFusion = $("f-fusion").checked && !!emblemaNombre;
+  let enFusion = $("f-fusion").checked && !!emblemaNombre;
 
   const nivelVinculo = $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1;
   const str = parseInt($("f-stat-str").value, 10) || 0;
@@ -1181,9 +1415,8 @@ async function guardarUnidadDesdeModal() {
   const bld = parseInt($("f-stat-bld").value, 10) || 1;
   const mov = parseInt($("f-stat-mov").value, 10) || 4;
 
-  // Leer chips
+  // Leer chips de pasivas
   const pasivas = leerChips("chips-pasivas");
-  const inventarioExtra = leerChips("chips-inventario");
 
   // Si editó el nombre de una unidad existente, eliminar la anterior
   const nombreOriginal = $("f-edit-original-name").value;
@@ -1194,10 +1427,51 @@ async function guardarUnidadDesdeModal() {
     delete state.fichas[nombreOriginal];
   }
 
-  // Construir inventario completo: arma principal equipada + extras
+  // Construir inventario estructurado a partir de los 5 slots
   const inventario = [];
-  if (armaNombre) inventario.push({ arma: armaNombre, equipada: true });
-  inventarioExtra.forEach(nombre_item => inventario.push({ arma: nombre_item, equipada: false }));
+  let armaEquipadaNombre = "";
+
+  for (let i = 0; i < 5; i++) {
+    const nomEl = $(`inv-nombre-${i}`);
+    const nombreItem = nomEl ? nomEl.value.trim() : "";
+    if (!nombreItem) continue;
+
+    const esBastonObjeto = esItemBastonOObjeto(nombreItem);
+    const forjaVal = $(`inv-forja-${i}`) ? $(`inv-forja-${i}`).value : "0";
+    const grabadoVal = $(`inv-grabado-${i}`) ? $(`inv-grabado-${i}`).value : "";
+    const usosVal = $(`inv-usos-${i}`) ? parseInt($(`inv-usos-${i}`).value, 10) : 3;
+    const esEq = $(`inv-equip-${i}`) ? ($(`inv-equip-${i}`).checked && !esBastonObjeto) : false;
+
+    const fullArmaString = esBastonObjeto ? nombreItem : construirArmaString(nombreItem, forjaVal, grabadoVal);
+    const uMax = esBastonObjeto ? obtenerUsosMaxPorDefecto(nombreItem) : null;
+
+    if (esEq && !armaEquipadaNombre) {
+      armaEquipadaNombre = fullArmaString;
+    }
+
+    inventario.push({
+      arma: fullArmaString,
+      nombre: fullArmaString,
+      nombre_base: nombreItem,
+      refine_lvl: esBastonObjeto ? 0 : parseInt(forjaVal || 0, 10),
+      grabado: esBastonObjeto ? null : (grabadoVal || null),
+      equipada: esEq,
+      tipo: esBastonObjeto ? (nombreItem.toLowerCase().includes("pocion") || nombreItem.toLowerCase().includes("elixir") ? "Objeto" : "Bastón") : "Arma",
+      usos: esBastonObjeto ? (isNaN(usosVal) ? uMax : usosVal) : null,
+      usos_max: uMax
+    });
+  }
+
+  // Si no se marcó ningún slot como equipado, equipar la primera arma válida
+  if (!armaEquipadaNombre) {
+    const primerArma = inventario.find(it => !esItemBastonOObjeto(it.nombre_base));
+    if (primerArma) {
+      primerArma.equipada = true;
+      armaEquipadaNombre = primerArma.arma;
+    } else {
+      armaEquipadaNombre = "Espada de Hierro";
+    }
+  }
 
   const fichaExistente = state.fichas[nombreOriginal || nombre];
   const estabaEnFusion = fichaExistente && (fichaExistente.en_fusion || fichaExistente.turnos_fusion > 0) && (fichaExistente.turnos_fusion > 0);
@@ -1229,7 +1503,7 @@ async function guardarUnidadDesdeModal() {
     hp_stock: hpStock,
     chain_guard_activo: chainGuardActivo,
     clase_nombre: claseNombre,
-    arma_nombre: armaNombre,
+    arma_nombre: armaEquipadaNombre,
     emblema_nombre: emblemaNombre,
     en_fusion: enFusion,
     turnos_fusion: estabaEnFusion ? fichaExistente.turnos_fusion : undefined,
@@ -1468,11 +1742,13 @@ function initModalEvents() {
         if (res.mov !== undefined) $("f-stat-mov").value = res.mov;
         actualizarVisibilidadChainGuard();
 
-        if (res.arma_nombre && (!$("f-arma").value || $("f-arma").value.trim() === "")) {
+        if (res.arma_nombre && (!$("inv-nombre-0").value || $("inv-nombre-0").value.trim() === "")) {
           const dArma = desglosarArmaString(res.arma_nombre);
-          $("f-arma").value = dArma.base;
-          if ($("f-arma-forja")) $("f-arma-forja").value = dArma.forja;
-          if ($("f-arma-grabado")) $("f-arma-grabado").value = dArma.grabado;
+          $("inv-nombre-0").value = dArma.base;
+          if ($("inv-forja-0")) $("inv-forja-0").value = dArma.forja;
+          if ($("inv-grabado-0")) $("inv-grabado-0").value = dArma.grabado;
+          $("inv-equip-0").checked = true;
+          actualizarFilaSlot(0);
         }
 
         recalcularCombatStats();
@@ -1535,16 +1811,7 @@ function initModalEvents() {
       if (eInfo.engage_attack) {
         addChip("chips-pasivas", `${eInfo.engage_attack}`);
       }
-      if (bond && bond.engage_items) {
-        const armaPrincipal = $("f-arma") ? $("f-arma").value.trim() : "";
-        const invActual = leerChips("chips-inventario");
-        bond.engage_items.forEach(it => {
-          const iNom = it.nombre || it.iid || it;
-          if (iNom && iNom !== armaPrincipal && !invActual.includes(iNom)) {
-            addChip("chips-inventario", iNom);
-          }
-        });
-      }
+      renderizarArmasFusionModal(null);
       mostrarToast(`Fusión Engage con ${eInfo.nombre} activada!`, "ok");
     } else {
       if (bond && bond.engage_skills) {
@@ -1558,20 +1825,15 @@ function initModalEvents() {
         const chipAtk = document.querySelector(`#chips-pasivas .chip[data-valor="${eInfo.engage_attack}"]`);
         if (chipAtk) chipAtk.remove();
       }
-      if (bond && bond.engage_items) {
-        bond.engage_items.forEach(it => {
-          const iNom = it.nombre || it.iid || it;
-          const chipIt = document.querySelector(`#chips-inventario .chip[data-valor="${iNom}"]`);
-          if (chipIt) chipIt.remove();
-        });
-      }
+      state.armaEmblemaEquipadaTemporal = null;
+      renderizarArmasFusionModal(null);
       mostrarToast(`Fusión desactivada`, "info");
     }
     recalcularCombatStats();
   });
 
-  // Listeners para recalcular estadísticas de combate en vivo
-  ["f-stat-str", "f-stat-mag", "f-stat-dex", "f-stat-spd", "f-stat-def", "f-stat-res", "f-stat-lck", "f-stat-bld", "f-stat-mov", "f-arma", "f-arma-forja", "f-arma-grabado"].forEach(id => {
+  // Listeners para estadísticas de combate en vivo
+  ["f-stat-str", "f-stat-mag", "f-stat-dex", "f-stat-spd", "f-stat-def", "f-stat-res", "f-stat-lck", "f-stat-bld", "f-stat-mov"].forEach(id => {
     const el = $(id);
     if (el) {
       el.addEventListener("input", recalcularCombatStats);
@@ -1579,45 +1841,73 @@ function initModalEvents() {
     }
   });
 
+  // Listeners y autocompletados para las 5 ranuras de inventario
+  for (let i = 0; i < 5; i++) {
+    setupAutocomplete(`inv-nombre-${i}`, "list-armas", "armas");
+
+    const nomInput = $(`inv-nombre-${i}`);
+    if (nomInput) {
+      nomInput.addEventListener("input", () => {
+        actualizarFilaSlot(i);
+        recalcularCombatStats();
+      });
+      nomInput.addEventListener("change", () => {
+        actualizarFilaSlot(i);
+        recalcularCombatStats();
+      });
+    }
+
+    const forjaSelect = $(`inv-forja-${i}`);
+    if (forjaSelect) {
+      forjaSelect.addEventListener("change", () => {
+        recalcularCombatStats();
+      });
+    }
+
+    const grabadoSelect = $(`inv-grabado-${i}`);
+    if (grabadoSelect) {
+      grabadoSelect.addEventListener("change", () => {
+        recalcularCombatStats();
+      });
+    }
+
+    const usosInput = $(`inv-usos-${i}`);
+    if (usosInput) {
+      usosInput.addEventListener("change", () => {
+        recalcularCombatStats();
+      });
+    }
+
+    const radioEquip = $(`inv-equip-${i}`);
+    if (radioEquip) {
+      radioEquip.addEventListener("change", () => {
+        state.armaEmblemaEquipadaTemporal = null;
+        actualizarTodosLosSlots();
+        renderizarArmasFusionModal(null);
+        recalcularCombatStats();
+      });
+    }
+
+    const btnClear = document.querySelector(`.btn-clear-slot[data-slot="${i}"]`);
+    if (btnClear) {
+      btnClear.addEventListener("click", () => {
+        if ($(`inv-nombre-${i}`)) $(`inv-nombre-${i}`).value = "";
+        if ($(`inv-forja-${i}`)) $(`inv-forja-${i}`).value = "0";
+        if ($(`inv-grabado-${i}`)) $(`inv-grabado-${i}`).value = "";
+        if ($(`inv-usos-${i}`)) $(`inv-usos-${i}`).value = "3";
+        actualizarFilaSlot(i);
+        recalcularCombatStats();
+      });
+    }
+  }
+
   // Autocompletados de campos simples
   setupAutocomplete("f-nombre", "list-personajes", "personajes");
   setupAutocomplete("f-clase", "list-clases", "clases");
-  setupAutocomplete("f-arma", "list-armas", "armas");
   setupAutocomplete("f-emblema", "list-emblemas", "emblemas");
 
-  // Chip inputs: habilidades e inventario
+  // Chip input: habilidades pasivas
   setupChipInput("f-pasivas", "chips-pasivas", "habilidades");
-  setupChipInput("f-inventario", "chips-inventario", "armas");
-
-  // Botones de potenciadores rápidos en el modal
-  document.querySelectorAll(".btn-booster").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const stat = btn.dataset.stat;
-      const val = parseInt(btn.dataset.val, 10) || 1;
-      const nom = btn.dataset.nom;
-
-      if (stat === "hp") {
-        $("f-hp-max").value = parseInt($("f-hp-max").value || 30, 10) + val;
-        $("f-hp-actual").value = parseInt($("f-hp-actual").value || 30, 10) + val;
-      } else if (stat === "mov") {
-        $("f-stat-mov").value = parseInt($("f-stat-mov").value || 4, 10) + val;
-      } else if (stat === "tonico") {
-        ["str", "mag", "dex", "spd", "def", "res"].forEach(s => {
-          const el = $(`f-stat-${s}`);
-          if (el) el.value = parseInt(el.value || 0, 10) + 2;
-        });
-      } else {
-        const el = $(`f-stat-${stat}`);
-        if (el) el.value = parseInt(el.value || 0, 10) + val;
-      }
-
-      if (!state.potenciadoresModal) state.potenciadoresModal = [];
-      state.potenciadoresModal.push(nom);
-      renderizarBadgesPotenciadores();
-      recalcularCombatStats();
-      mostrarToast(`Potenciador aplicado: ${nom}`, "ok");
-    });
-  });
 
   // Botones de la toolbar
   $("btn-add-aliado").addEventListener("click", () => abrirModalCreacion(4, 8, true));

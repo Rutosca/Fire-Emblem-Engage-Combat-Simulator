@@ -1240,61 +1240,244 @@ button:disabled { opacity: .4; cursor: not-allowed; filter: none; }
   outline: none;
   box-shadow: 0 0 6px rgba(130, 177, 255, 0.4);
 }
-.boosters-section {
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  padding-top: 8px;
+/* ── Inventario Canónico de 5 Ranuras ─────────────────── */
+.inventario-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 10px;
+  margin-top: 6px;
+  margin-bottom: 10px;
 }
-.boosters-label {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-  display: block;
-}
-.boosters-btn-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  margin-bottom: 6px;
-}
-.btn-booster {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  font-size: 10px;
-  color: var(--text);
-  padding: 4px 2px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.12s ease;
-}
-.btn-booster:hover {
-  background: rgba(100, 180, 255, 0.18);
-  border-color: rgba(100, 180, 255, 0.4);
-}
-.potenciadores-badges {
+.inventario-header-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  min-height: 18px;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+  gap: 8px;
 }
-.booster-badge {
-  background: rgba(240, 192, 64, 0.15);
-  color: var(--gold);
-  border: 1px solid rgba(240, 192, 64, 0.4);
-  border-radius: 10px;
-  font-size: 9px;
-  padding: 2px 7px;
+.inventario-header-bar .section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gold, #ffd700);
+}
+.inv-subtitle-hint {
+  font-size: 10px;
+  color: var(--text-dim, #888);
+}
+.inventario-5slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.inv-slot-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px 8px;
+  transition: all 0.15s ease;
+}
+.inv-slot-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.inv-slot-row.slot-equipado {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.12) 0%, rgba(255, 215, 0, 0.06) 100%);
+  border-color: rgba(0, 229, 255, 0.55);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.15);
+}
+.inv-slot-equip-label {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-}
-.booster-badge-remove {
+  gap: 3px;
   cursor: pointer;
-  opacity: 0.7;
+  user-select: none;
+  margin: 0;
 }
-.booster-badge-remove:hover {
-  opacity: 1;
+.inv-slot-equip-label input[type="radio"] {
+  accent-color: #00e5ff;
+  cursor: pointer;
+  margin: 0;
+  width: 14px;
+  height: 14px;
+}
+.inv-equip-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-dim, #aaa);
+}
+.slot-equipado .inv-equip-badge {
+  background: #00e5ff;
+  color: #081018;
+  font-weight: 800;
+  box-shadow: 0 0 6px rgba(0, 229, 255, 0.4);
+}
+.inv-slot-row.slot-no-equipable .inv-slot-equip-label {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+.inv-slot-row.slot-no-equipable .inv-slot-equip-label input {
+  cursor: not-allowed;
+}
+.inv-slot-nombre-col {
+  flex: 3;
+  min-width: 130px;
+}
+.inv-slot-nombre-col input {
+  width: 100%;
+  padding: 5px 8px;
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: var(--text, #eee);
+  outline: none;
+}
+.inv-slot-nombre-col input:focus {
+  border-color: rgba(0, 229, 255, 0.6);
+}
+.inv-slot-mod-col {
+  flex: 3;
+  display: flex;
+  align-items: center;
+  min-width: 170px;
+}
+.inv-weapon-mods {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+.inv-weapon-mods select {
+  padding: 4px 6px;
+  font-size: 10.5px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: var(--text, #eee);
+  outline: none;
+}
+.inv-weapon-mods select:first-child {
+  width: 58px;
+  flex-shrink: 0;
+}
+.inv-weapon-mods select:last-child {
+  flex: 1;
+}
+.inv-usos-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  background: rgba(255, 171, 0, 0.08);
+  border: 1px dashed rgba(255, 171, 0, 0.35);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.usos-label {
+  font-size: 10px;
+  color: #ffb300;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.input-usos {
+  width: 48px;
+  padding: 3px 5px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 171, 0, 0.4);
+  border-radius: 4px;
+  color: #fff;
+}
+.usos-max-badge {
+  font-size: 10px;
+  color: var(--text-dim, #aaa);
+}
+.btn-clear-slot {
+  background: none;
+  border: none;
+  color: var(--text-dim, #777);
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.12s ease;
+}
+.btn-clear-slot:hover {
   color: #ff5252;
+  background: rgba(255, 82, 82, 0.15);
+}
+
+/* ── Armas de Emblema Dinámicas en Fusión ─────────────────── */
+.seccion-armas-emblema-fusion {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  background: linear-gradient(135deg, rgba(30, 60, 100, 0.35) 0%, rgba(10, 25, 45, 0.45) 100%);
+  border: 1px solid rgba(100, 180, 255, 0.3);
+  border-radius: 6px;
+}
+.armas-fusion-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+}
+.armas-fusion-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #82b1ff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.armas-fusion-hint {
+  font-size: 10px;
+  color: var(--text-dim, #9ab);
+}
+.armas-fusion-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.arma-fusion-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(130, 177, 255, 0.25);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.arma-fusion-card:hover {
+  background: rgba(130, 177, 255, 0.2);
+  border-color: rgba(130, 177, 255, 0.6);
+  transform: translateY(-1px);
+}
+.arma-fusion-card.activa {
+  background: rgba(0, 229, 255, 0.25);
+  border-color: #00e5ff;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+  font-weight: 700;
+}
+.arma-fusion-card .af-tag {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
 }
 
 /* ── Token de Unidad Agotado (Ha actuado) ─────────────────── */

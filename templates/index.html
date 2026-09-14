@@ -266,62 +266,239 @@
           </div>
         </div>
 
-        <!-- Potenciadores Rápidos (+1 Botas, +5 Túnica, +2 Gota, etc.) -->
-        <div class="boosters-section">
-          <label class="boosters-label">Potenciadores Permanentes / Temporales:</label>
-          <div class="boosters-btn-grid">
-            <button type="button" class="btn-booster" data-stat="mov" data-val="1" data-nom="Botas (+1 MOV)" title="Botas permanentes (+1 Movimiento)">+1 Botas</button>
-            <button type="button" class="btn-booster" data-stat="hp" data-val="5" data-nom="Túnica (+5 HP)" title="Túnica angelical (+5 HP Máx)">+5 Túnica</button>
-            <button type="button" class="btn-booster" data-stat="str" data-val="2" data-nom="Gota (+2 FUE)" title="Gota de energía (+2 Fuerza)">+2 Gota</button>
-            <button type="button" class="btn-booster" data-stat="mag" data-val="2" data-nom="Polvo (+2 MAG)" title="Polvo espiritual (+2 Magia)">+2 Polvo</button>
-            <button type="button" class="btn-booster" data-stat="dex" data-val="2" data-nom="Libro (+2 DES)" title="Libro secreto (+2 Destreza)">+2 Libro</button>
-            <button type="button" class="btn-booster" data-stat="spd" data-val="2" data-nom="Ala (+2 VEL)" title="Ala veloz (+2 Velocidad)">+2 Ala</button>
-            <button type="button" class="btn-booster" data-stat="def" data-val="2" data-nom="Escudo (+2 DEF)" title="Escudo dragón (+2 Defensa)">+2 Escudo</button>
-            <button type="button" class="btn-booster" data-stat="res" data-val="2" data-nom="Talismán (+2 RES)" title="Talismán (+2 Resistencia)">+2 Talismán</button>
-            <button type="button" class="btn-booster" data-stat="lck" data-val="2" data-nom="Icono (+2 SUE)" title="Icono de la Diosa (+2 Suerte)">+2 Icono</button>
-            <button type="button" class="btn-booster" data-stat="tonico" data-val="2" data-nom="Tónico (+2 Stats)" title="Tónico temporal (+2)">+2 Tónico</button>
+      <!-- Inventario Canónico de 5 Ranuras -->
+      <div class="inventario-section">
+        <div class="inventario-header-bar">
+          <label class="section-title">Inventario de la Unidad (5 Ranuras):</label>
+          <span class="inv-subtitle-hint">Marca el botón para equipar el arma de combate. Bastones y consumibles no se pueden equipar para combate.</span>
+        </div>
+        <div class="inventario-5slots-list" id="inventario-5slots-list">
+          <!-- Ranura 1 -->
+          <div class="inv-slot-row" data-slot="0" id="inv-slot-row-0">
+            <label class="inv-slot-equip-label" title="Equipar como arma activa de combate">
+              <input type="radio" name="inv-slot-equipada" value="0" id="inv-equip-0">
+              <span class="inv-equip-badge">Eq</span>
+            </label>
+            <div class="inv-slot-nombre-col">
+              <input type="text" id="inv-nombre-0" list="list-armas" placeholder="Ranura 1 (Arma u objeto)..." autocomplete="off">
+            </div>
+            <div class="inv-slot-mod-col" id="inv-mod-col-0">
+              <div class="inv-weapon-mods" id="inv-weapon-mods-0">
+                <select id="inv-forja-0" title="Nivel de mejora / forja (+0 a +5)">
+                  <option value="0">+0</option>
+                  <option value="1">+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                  <option value="4">+4</option>
+                  <option value="5">+5</option>
+                </select>
+                <select id="inv-grabado-0" title="Grabado de Emblema en la herrería">
+                  <option value="">(Sin grabado)</option>
+                  <option value="Marth">Marth (Comienzos)</option>
+                  <option value="Sigurd">Sigurd (Cruzada)</option>
+                  <option value="Celica">Celica (Ecos)</option>
+                  <option value="Micaiah">Micaiah (Aurora)</option>
+                  <option value="Roy">Roy (León)</option>
+                  <option value="Leif">Leif (Genealogía)</option>
+                  <option value="Lucina">Lucina (Despertar)</option>
+                  <option value="Lyn">Lyn (Llama)</option>
+                  <option value="Ike">Ike (Fulgor)</option>
+                  <option value="Byleth">Byleth (Academia)</option>
+                  <option value="Corrin">Corrin (Destino)</option>
+                  <option value="Eirika">Eirika (Sagrada)</option>
+                  <option value="Alear">Alear (Dragón)</option>
+                </select>
+              </div>
+              <div class="inv-usos-wrap hidden" id="inv-usos-wrap-0">
+                <span class="usos-label">Usos:</span>
+                <input type="number" id="inv-usos-0" min="1" max="99" value="3" class="input-usos">
+                <span class="usos-max-badge" id="inv-usos-max-0">/ 3</span>
+              </div>
+            </div>
+            <button type="button" class="btn-clear-slot" data-slot="0" title="Vaciar ranura 1">×</button>
           </div>
-          <div id="potenciadores-badge-list" class="potenciadores-badges"></div>
-        </div>
-      </div>
 
-      <!-- Arma Principal con Forja y Grabado de Emblema -->
-      <div class="form-cols" style="align-items: flex-end; gap: 8px;">
-        <div class="form-row flex-3">
-          <label for="f-arma">Arma Principal:</label>
-          <input type="text" id="f-arma" list="list-armas" placeholder="Ej: Liberation, Armorslayer, Iron Lance, Bolganone..." autocomplete="off">
-          <datalist id="list-armas"></datalist>
+          <!-- Ranura 2 -->
+          <div class="inv-slot-row" data-slot="1" id="inv-slot-row-1">
+            <label class="inv-slot-equip-label" title="Equipar como arma activa de combate">
+              <input type="radio" name="inv-slot-equipada" value="1" id="inv-equip-1">
+              <span class="inv-equip-badge">Eq</span>
+            </label>
+            <div class="inv-slot-nombre-col">
+              <input type="text" id="inv-nombre-1" list="list-armas" placeholder="Ranura 2 (Arma u objeto)..." autocomplete="off">
+            </div>
+            <div class="inv-slot-mod-col" id="inv-mod-col-1">
+              <div class="inv-weapon-mods" id="inv-weapon-mods-1">
+                <select id="inv-forja-1" title="Nivel de mejora / forja (+0 a +5)">
+                  <option value="0">+0</option>
+                  <option value="1">+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                  <option value="4">+4</option>
+                  <option value="5">+5</option>
+                </select>
+                <select id="inv-grabado-1" title="Grabado de Emblema en la herrería">
+                  <option value="">(Sin grabado)</option>
+                  <option value="Marth">Marth (Comienzos)</option>
+                  <option value="Sigurd">Sigurd (Cruzada)</option>
+                  <option value="Celica">Celica (Ecos)</option>
+                  <option value="Micaiah">Micaiah (Aurora)</option>
+                  <option value="Roy">Roy (León)</option>
+                  <option value="Leif">Leif (Genealogía)</option>
+                  <option value="Lucina">Lucina (Despertar)</option>
+                  <option value="Lyn">Lyn (Llama)</option>
+                  <option value="Ike">Ike (Fulgor)</option>
+                  <option value="Byleth">Byleth (Academia)</option>
+                  <option value="Corrin">Corrin (Destino)</option>
+                  <option value="Eirika">Eirika (Sagrada)</option>
+                  <option value="Alear">Alear (Dragón)</option>
+                </select>
+              </div>
+              <div class="inv-usos-wrap hidden" id="inv-usos-wrap-1">
+                <span class="usos-label">Usos:</span>
+                <input type="number" id="inv-usos-1" min="1" max="99" value="3" class="input-usos">
+                <span class="usos-max-badge" id="inv-usos-max-1">/ 3</span>
+              </div>
+            </div>
+            <button type="button" class="btn-clear-slot" data-slot="1" title="Vaciar ranura 2">×</button>
+          </div>
+
+          <!-- Ranura 3 -->
+          <div class="inv-slot-row" data-slot="2" id="inv-slot-row-2">
+            <label class="inv-slot-equip-label" title="Equipar como arma activa de combate">
+              <input type="radio" name="inv-slot-equipada" value="2" id="inv-equip-2">
+              <span class="inv-equip-badge">Eq</span>
+            </label>
+            <div class="inv-slot-nombre-col">
+              <input type="text" id="inv-nombre-2" list="list-armas" placeholder="Ranura 3 (Arma u objeto)..." autocomplete="off">
+            </div>
+            <div class="inv-slot-mod-col" id="inv-mod-col-2">
+              <div class="inv-weapon-mods" id="inv-weapon-mods-2">
+                <select id="inv-forja-2" title="Nivel de mejora / forja (+0 a +5)">
+                  <option value="0">+0</option>
+                  <option value="1">+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                  <option value="4">+4</option>
+                  <option value="5">+5</option>
+                </select>
+                <select id="inv-grabado-2" title="Grabado de Emblema en la herrería">
+                  <option value="">(Sin grabado)</option>
+                  <option value="Marth">Marth (Comienzos)</option>
+                  <option value="Sigurd">Sigurd (Cruzada)</option>
+                  <option value="Celica">Celica (Ecos)</option>
+                  <option value="Micaiah">Micaiah (Aurora)</option>
+                  <option value="Roy">Roy (León)</option>
+                  <option value="Leif">Leif (Genealogía)</option>
+                  <option value="Lucina">Lucina (Despertar)</option>
+                  <option value="Lyn">Lyn (Llama)</option>
+                  <option value="Ike">Ike (Fulgor)</option>
+                  <option value="Byleth">Byleth (Academia)</option>
+                  <option value="Corrin">Corrin (Destino)</option>
+                  <option value="Eirika">Eirika (Sagrada)</option>
+                  <option value="Alear">Alear (Dragón)</option>
+                </select>
+              </div>
+              <div class="inv-usos-wrap hidden" id="inv-usos-wrap-2">
+                <span class="usos-label">Usos:</span>
+                <input type="number" id="inv-usos-2" min="1" max="99" value="3" class="input-usos">
+                <span class="usos-max-badge" id="inv-usos-max-2">/ 3</span>
+              </div>
+            </div>
+            <button type="button" class="btn-clear-slot" data-slot="2" title="Vaciar ranura 3">×</button>
+          </div>
+
+          <!-- Ranura 4 -->
+          <div class="inv-slot-row" data-slot="3" id="inv-slot-row-3">
+            <label class="inv-slot-equip-label" title="Equipar como arma activa de combate">
+              <input type="radio" name="inv-slot-equipada" value="3" id="inv-equip-3">
+              <span class="inv-equip-badge">Eq</span>
+            </label>
+            <div class="inv-slot-nombre-col">
+              <input type="text" id="inv-nombre-3" list="list-armas" placeholder="Ranura 4 (Arma u objeto)..." autocomplete="off">
+            </div>
+            <div class="inv-slot-mod-col" id="inv-mod-col-3">
+              <div class="inv-weapon-mods" id="inv-weapon-mods-3">
+                <select id="inv-forja-3" title="Nivel de mejora / forja (+0 a +5)">
+                  <option value="0">+0</option>
+                  <option value="1">+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                  <option value="4">+4</option>
+                  <option value="5">+5</option>
+                </select>
+                <select id="inv-grabado-3" title="Grabado de Emblema en la herrería">
+                  <option value="">(Sin grabado)</option>
+                  <option value="Marth">Marth (Comienzos)</option>
+                  <option value="Sigurd">Sigurd (Cruzada)</option>
+                  <option value="Celica">Celica (Ecos)</option>
+                  <option value="Micaiah">Micaiah (Aurora)</option>
+                  <option value="Roy">Roy (León)</option>
+                  <option value="Leif">Leif (Genealogía)</option>
+                  <option value="Lucina">Lucina (Despertar)</option>
+                  <option value="Lyn">Lyn (Llama)</option>
+                  <option value="Ike">Ike (Fulgor)</option>
+                  <option value="Byleth">Byleth (Academia)</option>
+                  <option value="Corrin">Corrin (Destino)</option>
+                  <option value="Eirika">Eirika (Sagrada)</option>
+                  <option value="Alear">Alear (Dragón)</option>
+                </select>
+              </div>
+              <div class="inv-usos-wrap hidden" id="inv-usos-wrap-3">
+                <span class="usos-label">Usos:</span>
+                <input type="number" id="inv-usos-3" min="1" max="99" value="3" class="input-usos">
+                <span class="usos-max-badge" id="inv-usos-max-3">/ 3</span>
+              </div>
+            </div>
+            <button type="button" class="btn-clear-slot" data-slot="3" title="Vaciar ranura 4">×</button>
+          </div>
+
+          <!-- Ranura 5 -->
+          <div class="inv-slot-row" data-slot="4" id="inv-slot-row-4">
+            <label class="inv-slot-equip-label" title="Equipar como arma activa de combate">
+              <input type="radio" name="inv-slot-equipada" value="4" id="inv-equip-4">
+              <span class="inv-equip-badge">Eq</span>
+            </label>
+            <div class="inv-slot-nombre-col">
+              <input type="text" id="inv-nombre-4" list="list-armas" placeholder="Ranura 5 (Arma u objeto)..." autocomplete="off">
+            </div>
+            <div class="inv-slot-mod-col" id="inv-mod-col-4">
+              <div class="inv-weapon-mods" id="inv-weapon-mods-4">
+                <select id="inv-forja-4" title="Nivel de mejora / forja (+0 a +5)">
+                  <option value="0">+0</option>
+                  <option value="1">+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                  <option value="4">+4</option>
+                  <option value="5">+5</option>
+                </select>
+                <select id="inv-grabado-4" title="Grabado de Emblema en la herrería">
+                  <option value="">(Sin grabado)</option>
+                  <option value="Marth">Marth (Comienzos)</option>
+                  <option value="Sigurd">Sigurd (Cruzada)</option>
+                  <option value="Celica">Celica (Ecos)</option>
+                  <option value="Micaiah">Micaiah (Aurora)</option>
+                  <option value="Roy">Roy (León)</option>
+                  <option value="Leif">Leif (Genealogía)</option>
+                  <option value="Lucina">Lucina (Despertar)</option>
+                  <option value="Lyn">Lyn (Llama)</option>
+                  <option value="Ike">Ike (Fulgor)</option>
+                  <option value="Byleth">Byleth (Academia)</option>
+                  <option value="Corrin">Corrin (Destino)</option>
+                  <option value="Eirika">Eirika (Sagrada)</option>
+                  <option value="Alear">Alear (Dragón)</option>
+                </select>
+              </div>
+              <div class="inv-usos-wrap hidden" id="inv-usos-wrap-4">
+                <span class="usos-label">Usos:</span>
+                <input type="number" id="inv-usos-4" min="1" max="99" value="3" class="input-usos">
+                <span class="usos-max-badge" id="inv-usos-max-4">/ 3</span>
+              </div>
+            </div>
+            <button type="button" class="btn-clear-slot" data-slot="4" title="Vaciar ranura 5">×</button>
+          </div>
         </div>
-        <div class="form-row flex-1" style="max-width: 90px;">
-          <label for="f-arma-forja" title="Nivel de forja / refinamiento">+ Mejora:</label>
-          <select id="f-arma-forja" style="padding: 6px 8px; width: 100%;">
-            <option value="0">+0</option>
-            <option value="1">+1</option>
-            <option value="2">+2</option>
-            <option value="3">+3</option>
-            <option value="4">+4</option>
-            <option value="5">+5</option>
-          </select>
-        </div>
-        <div class="form-row flex-2">
-          <label for="f-arma-grabado" title="Grabado de Emblema en la herrería">Grabado / Marca:</label>
-          <select id="f-arma-grabado" style="padding: 6px 8px; width: 100%;">
-            <option value="">(Sin grabado)</option>
-            <option value="Marth">Marth (Comienzos) [Mt+1 Hit+10 Crit+10 Avo+5 Ddg+5]</option>
-            <option value="Sigurd">Sigurd (Cruzada) [Mt+1 Wt-1 Avo+20]</option>
-            <option value="Celica">Celica (Ecos) [Mt-1 Wt-1 Ddg+50]</option>
-            <option value="Micaiah">Micaiah (Aurora) [Mt-3 Wt-1 Avo+40 Ddg+20]</option>
-            <option value="Roy">Roy (León) [Mt+2 Wt+8 Avo-30]</option>
-            <option value="Leif">Leif (Genealogía) [Mt+1 Wt+1 Hit+20 Avo+10]</option>
-            <option value="Lucina">Lucina (Despertar) [Mt-1 Wt-1 Hit+30 Avo+30]</option>
-            <option value="Lyn">Lyn (Llama) [Mt-3 Wt-2 Hit+40 Crit+20]</option>
-            <option value="Ike">Ike (Fulgor) [Mt+3 Wt+15]</option>
-            <option value="Byleth">Byleth (Academia) [Wt+2 Hit+30 Crit+10 Avo+10 Ddg+30]</option>
-            <option value="Corrin">Corrin (Destino) [Mt-2 Crit+30 Avo+10 Ddg+30]</option>
-            <option value="Eirika">Eirika (Sagrada) [Hit+40 Crit+20 Avo-20 Ddg-20]</option>
-            <option value="Alear">Alear (Dragón) [Mt-1 Wt-1 Hit+20 Crit+20 Avo+20 Ddg+20]</option>
-          </select>
-        </div>
+        <datalist id="list-armas"></datalist>
       </div>
 
       <!-- Sección exclusiva para Aliados -->
@@ -353,23 +530,22 @@
           </div>
         </div>
 
-        <!-- Pasivas y Objetos / Pociones — ahora son listas de chips -->
-        <div class="form-cols">
-          <div class="form-row flex-1">
-            <label>Habilidades Pasivas:</label>
-            <div class="chip-container" id="chips-pasivas" tabindex="0"></div>
-            <div class="chip-input-row">
-              <input type="text" id="f-pasivas" list="list-pasivas" placeholder="Escribe y pulsa Enter..." autocomplete="off">
-              <datalist id="list-pasivas"></datalist>
-            </div>
+        <!-- Armas de Emblema Dinámicas en Fusión -->
+        <div id="seccion-armas-emblema-fusion" class="seccion-armas-emblema-fusion hidden">
+          <div class="armas-fusion-header">
+            <span class="armas-fusion-title">Armas de Emblema (Fusión Activa):</span>
+            <span class="armas-fusion-hint">Disponibles por nivel de vínculo. Haz clic en una para equiparla como arma activa de combate.</span>
           </div>
-          <div class="form-row flex-1">
-            <label>Inventario (armas, objetos):</label>
-            <div class="chip-container" id="chips-inventario" tabindex="0"></div>
-            <div class="chip-input-row">
-              <input type="text" id="f-inventario" list="list-inventario" placeholder="Escribe y pulsa Enter..." autocomplete="off">
-              <datalist id="list-inventario"></datalist>
-            </div>
+          <div class="armas-fusion-grid" id="armas-fusion-grid"></div>
+        </div>
+
+        <!-- Habilidades Pasivas -->
+        <div class="form-row">
+          <label>Habilidades Pasivas:</label>
+          <div class="chip-container" id="chips-pasivas" tabindex="0"></div>
+          <div class="chip-input-row">
+            <input type="text" id="f-pasivas" list="list-pasivas" placeholder="Escribe y pulsa Enter..." autocomplete="off">
+            <datalist id="list-pasivas"></datalist>
           </div>
         </div>
 

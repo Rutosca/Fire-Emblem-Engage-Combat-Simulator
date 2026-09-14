@@ -136,6 +136,71 @@ ATAQUES_ENGAGE_MAP = {
     "chrom": "Giga Levin Sword (Gigaespada Trueno)",
 }
 
+# =============================================================================
+# Configuración Canónica de Ataques de Emblema (Fijos vs Variables)
+# =============================================================================
+
+ATAQUES_ENGAGE_CONFIG = {
+    # Ataques de arma variable: el atacante usa una de las armas disponibles en su inventario / emblema del tipo permitido
+    "Lodestar Rush": {"es_variable": True, "tipos_permitidos": ["Espada"]},
+    "Override": {"es_variable": True, "tipos_permitidos": ["Espada", "Lanza"]},
+    "Blazing Lion": {"es_variable": True, "tipos_permitidos": ["Espada"]},
+    "Great Aether": {"es_variable": True, "tipos_permitidos": ["Espada", "Hacha"]},
+    "Twin Strike": {"es_variable": True, "tipos_permitidos": ["Espada", "Lanza"]},
+    "All for One": {"es_variable": True, "tipos_permitidos": ["Espada", "Lanza", "Arco", "Daga"]},
+    "Bond Blast": {"es_variable": True, "tipos_permitidos": ["Espada"]},
+
+    # Ataques de arma fija: utilizan una técnica / arma predeterminada con estadísticas canónicas
+    "Warp Ragnarök": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Warp Ragnarök", "mt": 18, "hit": 100, "crit": 0, "wt": 5, "tipo": "Tomo", "es_magica": True, "rango": [1]
+        }
+    },
+    "Houses Unite": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Houses Unite", "mt": 19, "hit": 100, "crit": 0, "wt": 10, "tipo": "Lanza", "es_magica": False, "rango": [1]
+        }
+    },
+    "Astra Storm": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Astra Storm", "mt": 16, "hit": 100, "crit": 0, "wt": 9, "tipo": "Arco", "es_magica": False, "rango": list(range(10, 16))
+        }
+    },
+    "Torrential Roar": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Torrential Roar", "mt": 15, "hit": 100, "crit": 0, "wt": 7, "tipo": "Tomo", "es_magica": True, "rango": [1]
+        }
+    },
+    "Quadruple Hit": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Quadruple Hit", "mt": 14, "hit": 100, "crit": 0, "wt": 8, "tipo": "Lanza", "es_magica": False, "rango": [1]
+        }
+    },
+    "Cataclysm": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Cataclysm", "mt": 16, "hit": 100, "crit": 0, "wt": 6, "tipo": "Tomo", "es_magica": True, "rango": [1, 2]
+        }
+    },
+    "Darkness": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Darkness", "mt": 15, "hit": 100, "crit": 0, "wt": 8, "tipo": "Hacha", "es_magica": True, "rango": [1]
+        }
+    },
+    "Giga Levin Sword": {
+        "es_variable": False,
+        "arma_fija": {
+            "nombre": "Giga Levin Sword", "mt": 17, "hit": 100, "crit": 0, "wt": 9, "tipo": "Espada", "es_magica": True, "rango": [1, 2]
+        }
+    },
+}
+
 # Carga inicial al importar el módulo
 cargar_catalogo()
 
@@ -327,9 +392,19 @@ def _buscar_en_catalogo(categoria: str, texto: str):
 def parsear_arma_string(raw_str):
     """
     Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
+    Acepta string o diccionario con campos 'nombre', 'refine_lvl', 'grabado'.
     """
     if not raw_str:
         return None
+    if isinstance(raw_str, dict):
+        base = raw_str.get("nombre_base") or raw_str.get("nombre") or raw_str.get("arma") or ""
+        ref = raw_str.get("refine_lvl", 0)
+        grab = raw_str.get("grabado", "")
+        raw_str = str(base)
+        if ref and f"+{ref}" not in raw_str:
+            raw_str += f"+{ref}"
+        if grab and f"({grab})" not in raw_str:
+            raw_str += f" ({grab})"
     raw_str = str(raw_str).strip()
 
     # 1. Detectar grabado de emblema entre paréntesis: (Marth), (Sigurd), etc.
@@ -420,8 +495,9 @@ def _arma_desde_item(item_dict):
 
     nombre_raw = item_dict.get("nombre", item_dict.get("arma", "Arma"))
     parsed = parsear_arma_string(nombre_raw)
+    arma_obj = None
     if parsed:
-        return Arma(
+        arma_obj = Arma(
             nombre=parsed["nombre"],
             mt=parsed["mt"],
             wt=parsed["wt"],
@@ -435,32 +511,40 @@ def _arma_desde_item(item_dict):
             ddg_bonus=parsed["ddg_bonus"],
             es_smash=parsed.get("es_smash", False),
         )
+    else:
+        tipo_raw = item_dict.get("tipo", "Espada")
+        TIPOS_VALIDOS = {'Espada', 'Hacha', 'Lanza', 'Artes', 'Arco', 'Tomo', 'Daga'}
+        if tipo_raw in ("Bastón", "Objeto", "Accesorio", "Especial") or tipo_raw not in TIPOS_VALIDOS:
+            return None
 
-    tipo_raw = item_dict.get("tipo", "Espada")
-    TIPOS_VALIDOS = {'Espada', 'Hacha', 'Lanza', 'Artes', 'Arco', 'Tomo', 'Daga'}
-    if tipo_raw in ("Bastón", "Objeto", "Accesorio", "Especial") or tipo_raw not in TIPOS_VALIDOS:
-        return None
+        es_smash = bool(item_dict.get("es_smash", False))
+        if not es_smash:
+            n_low = nombre_raw.lower()
+            if any(w in n_low for w in ("blade", "gran espada", "greatlance", "gran lanza", "greataxe", "gran hacha", "georgios", "venomous", "ukonvasara", "carnwenhan", "aymr")):
+                es_smash = True
 
-    es_smash = bool(item_dict.get("es_smash", False))
-    if not es_smash:
-        n_low = nombre_raw.lower()
-        if any(w in n_low for w in ("blade", "gran espada", "greatlance", "gran lanza", "greataxe", "gran hacha", "georgios", "venomous", "ukonvasara", "carnwenhan", "aymr")):
-            es_smash = True
+        arma_obj = Arma(
+            nombre=nombre_raw,
+            mt=int(item_dict.get("mt", 0)),
+            wt=int(item_dict.get("wt", 5)),
+            hit=int(item_dict.get("hit", 80)),
+            crit=int(item_dict.get("crit", 0)),
+            es_magica=bool(item_dict.get("es_magica", False)),
+            tipo=tipo_raw,
+            rango=inferir_rango_arma(nombre_raw, tipo_raw, item_dict.get("rango")),
+            efectividades=item_dict.get("efectividades", []),
+            avo_bonus=int(item_dict.get("avo_bonus", 0)),
+            ddg_bonus=int(item_dict.get("ddg_bonus", 0)),
+            es_smash=es_smash,
+        )
 
-    return Arma(
-        nombre=nombre_raw,
-        mt=int(item_dict.get("mt", 0)),
-        wt=int(item_dict.get("wt", 5)),
-        hit=int(item_dict.get("hit", 80)),
-        crit=int(item_dict.get("crit", 0)),
-        es_magica=bool(item_dict.get("es_magica", False)),
-        tipo=tipo_raw,
-        rango=inferir_rango_arma(nombre_raw, tipo_raw, item_dict.get("rango")),
-        efectividades=item_dict.get("efectividades", []),
-        avo_bonus=int(item_dict.get("avo_bonus", 0)),
-        ddg_bonus=int(item_dict.get("ddg_bonus", 0)),
-        es_smash=es_smash,
-    )
+    if arma_obj:
+        if item_dict.get("es_engage") or "(emblema)" in nombre_raw.lower():
+            setattr(arma_obj, 'es_engage', True)
+            if not arma_obj.nombre.endswith("(Emblema)"):
+                arma_obj.nombre = f"{arma_obj.nombre} (Emblema)"
+
+    return arma_obj
 
 def resolver_unidad_con_catalogo(data, tablero=None):
     """
@@ -863,25 +947,37 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         stats_obj.turnos_fusion_restantes = turnos_fusion
         
         # Armas y habilidades de Engage específicas para este nivel de vínculo
+        b_items = None
         if bond_data and "engage_items" in bond_data:
-            armas_engage_a_anadir = [it.get("nombre") or it.get("iid") if isinstance(it, dict) else it for it in bond_data["engage_items"]]
+            b_items = bond_data["engage_items"]
+        elif emblema_info and "bond_levels" in emblema_info:
+            disp = sorted([int(k) for k in emblema_info["bond_levels"].keys() if k.isdigit() and int(k) <= nivel_vinculo])
+            if disp:
+                b_items = emblema_info["bond_levels"][str(disp[-1])].get("engage_items")
+        if b_items is not None:
+            armas_engage_a_anadir = [it.get("nombre") or it.get("iid") if isinstance(it, dict) else it for it in b_items]
         else:
-            armas_engage_a_anadir = emblema_info.get("engage_items", [])
+            armas_engage_a_anadir = []
 
         if bond_data and "engage_skills" in bond_data:
             skills_engage_a_anadir = [sk.get("nombre") or sk.get("sid") if isinstance(sk, dict) else sk for sk in bond_data["engage_skills"]]
         else:
             skills_engage_a_anadir = emblema_info.get("engage_skills", [])
 
-        # Añadir armas de Engage al inventario temporal
-        for iid in armas_engage_a_anadir:
+        # Añadir armas de Engage al inventario temporal distinguidas con (Emblema)
+        for it_raw in armas_engage_a_anadir:
+            iid = str(it_raw)
+            w_info = (_catalogo.get("armas", {}) or {}).get(iid, {})
+            nombre_base = w_info.get("nombre", iid)
+            nombre_eng = nombre_base if nombre_base.endswith("(Emblema)") else f"{nombre_base} (Emblema)"
             ya_esta = any(
-                (isinstance(it, dict) and (it.get("id") == iid or it.get("arma") == iid or it.get("nombre") == iid))
-                or (isinstance(it, str) and (it == iid or iid in it))
+                (isinstance(it, dict) and (it.get("id") == iid or it.get("arma") == nombre_eng or it.get("nombre") == nombre_eng or it.get("arma") == nombre_base))
+                or (isinstance(it, str) and (it == iid or it == nombre_eng or it == nombre_base))
                 for it in inventario_raw
+                if (isinstance(it, dict) and it.get("es_engage"))
             )
             if not ya_esta:
-                inventario_raw.append({"arma": iid, "id": iid, "equipada": False, "es_engage": True})
+                inventario_raw.append({"arma": nombre_eng, "id": iid, "nombre": nombre_eng, "equipada": False, "es_engage": True})
 
         # Añadir habilidades de Engage
         habilidades_existentes = list(habs_lista)
@@ -899,10 +995,17 @@ def resolver_unidad_con_catalogo(data, tablero=None):
 
     for item in inventario_raw:
         if isinstance(item, dict):
-            aid = item.get("arma") or item.get("id") or item.get("nombre") or ""
-            es_eq = item.get("equipada", False)
-            es_eng = item.get("es_engage", False)
+            aid = item.get("arma") or item.get("nombre") or item.get("id") or ""
+            ref_i = item.get("refine_lvl", 0)
+            grab_i = item.get("grabado", "")
+            es_eq = bool(item.get("equipada", False))
+            es_eng = bool(item.get("es_engage", False))
             usos_override = item.get("usos")
+            # Si el dict trae forja o grabado pero no están en el string, anexarlos para el parseo
+            if ref_i and f"+{ref_i}" not in str(aid):
+                aid = f"{aid}+{ref_i}"
+            if grab_i and f"({grab_i})" not in str(aid):
+                aid = f"{aid} ({grab_i})"
         else:
             aid = str(item)
             es_eq = False
@@ -923,18 +1026,28 @@ def resolver_unidad_con_catalogo(data, tablero=None):
 
         parsed_w = parsear_arma_string(aid if aid else base_aid)
         if parsed_w:
+            tipo_w = parsed_w.get("tipo", "Espada")
+            es_staff_o_item = str(tipo_w).lower() in ("bastón", "baston", "staff", "objeto", "accesorio", "item")
             usos_max = parsed_w.get("usos_max")
             usos_actual = usos_override if (usos_override is not None) else usos_max
-            display_nombre = f"{parsed_w['nombre']} ({usos_actual})" if (usos_max and usos_max > 1) else parsed_w['nombre']
+
+            if es_staff_o_item:
+                display_nombre = parsed_w["nombre_base"]
+                es_eq = False  # Bastones y consumibles nunca se equipan como arma de combate
+            else:
+                display_nombre = parsed_w["nombre"]
+
+            if es_eng and not display_nombre.endswith("(Emblema)"):
+                display_nombre = f"{display_nombre} (Emblema)"
 
             item_dict = {
                 "id": parsed_w["id"],
                 "nombre": display_nombre,
                 "arma": display_nombre,
                 "nombre_base": parsed_w["nombre_base"],
-                "refine_lvl": parsed_w.get("refine_lvl", 0),
-                "grabado": parsed_w.get("grabado"),
-                "tipo": parsed_w["tipo"],
+                "refine_lvl": 0 if es_staff_o_item else parsed_w.get("refine_lvl", 0),
+                "grabado": None if es_staff_o_item else parsed_w.get("grabado"),
+                "tipo": tipo_w,
                 "mt": parsed_w["mt"],
                 "wt": parsed_w["wt"],
                 "hit": parsed_w["hit"],
@@ -952,7 +1065,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             }
             inventario_resuelto.append(item_dict)
 
-            if es_eq or arma_equipada is None:
+            if not es_staff_o_item and (es_eq or arma_equipada is None):
                 arma_equipada = Arma(
                     nombre=display_nombre,
                     mt=parsed_w["mt"],
@@ -973,10 +1086,17 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 base_aid = base_aid_k
 
             if ainfo:
+                tipo_w = ainfo.get("tipo", "Espada")
+                es_staff_o_item = str(tipo_w).lower() in ("bastón", "baston", "staff", "objeto", "accesorio", "item")
                 nombre_final = ainfo.get("nombre", "Arma")
                 usos_max = ainfo.get("usos_max")
                 usos_actual = usos_override if (usos_override is not None) else usos_max
-                display_nombre = f"{nombre_final} ({usos_actual})" if (usos_max and usos_max > 1) else nombre_final
+
+                if es_staff_o_item:
+                    display_nombre = nombre_final
+                    es_eq = False
+                else:
+                    display_nombre = nombre_final
 
                 es_smash_val = bool(ainfo.get("es_smash", False))
                 if not es_smash_val:
@@ -989,15 +1109,15 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     "nombre": display_nombre,
                     "arma": display_nombre,
                     "nombre_base": nombre_final,
-                    "tipo": ainfo.get("tipo", "Espada"),
+                    "tipo": tipo_w,
                     "mt": ainfo.get("mt", 5),
                     "wt": ainfo.get("wt", 5),
                     "hit": ainfo.get("hit", 80),
                     "crit": ainfo.get("crit", 0),
-                    "rango": inferir_rango_arma(nombre_final, ainfo.get("tipo", "Espada"), ainfo.get("rango")),
+                    "rango": inferir_rango_arma(nombre_final, tipo_w, ainfo.get("rango")),
                     "es_magica": ainfo.get("es_magica", False),
                     "es_smash": es_smash_val,
-                    "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
+                    "efectividades": ainfo.get("efectividades", ["volador"] if tipo_w == "Arco" else []),
                     "usos": usos_actual,
                     "usos_max": usos_max,
                     "es_engage": es_eng,
@@ -1005,7 +1125,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 }
                 inventario_resuelto.append(item_dict)
 
-                if es_eq or arma_equipada is None:
+                if not es_staff_o_item and (es_eq or arma_equipada is None):
                     arma_equipada = Arma(
                         nombre=display_nombre,
                         mt=ainfo.get("mt", 5),
@@ -1013,18 +1133,38 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                         hit=ainfo.get("hit", 80),
                         crit=ainfo.get("crit", 0),
                         es_magica=ainfo.get("es_magica", False),
-                        tipo=ainfo.get("tipo", "Espada"),
-                        rango=inferir_rango_arma(nombre_final, ainfo.get("tipo", "Espada"), ainfo.get("rango")),
+                        tipo=tipo_w,
+                        rango=inferir_rango_arma(nombre_final, tipo_w, ainfo.get("rango")),
                         efectividades=ainfo.get("efectividades", []),
                         es_smash=es_smash_val,
                     )
             else:
+                raw_tipo = item.get("tipo") if isinstance(item, dict) else None
+                item_tipo = raw_tipo if raw_tipo else ("Objeto" if any(w in str(aid).lower() for w in ("pocion", "poción", "elixir", "antidoto", "antídoto", "objeto", "item")) else "Espada")
+                es_staff_o_item = str(item_tipo).lower() in ("bastón", "baston", "staff", "objeto", "accesorio", "item")
+                es_eq_val = False if es_staff_o_item else es_eq
                 inventario_resuelto.append({
                     "nombre": aid,
                     "arma": aid,
-                    "equipada": es_eq,
+                    "nombre_base": aid,
+                    "tipo": item_tipo,
+                    "usos": item.get("usos") if isinstance(item, dict) else None,
+                    "usos_max": item.get("usos_max") if isinstance(item, dict) else None,
+                    "equipada": es_eq_val,
                     "es_engage": es_eng,
                 })
+                if not es_staff_o_item and (es_eq_val or arma_equipada is None):
+                    arma_equipada = Arma(
+                        nombre=aid,
+                        mt=5,
+                        wt=5,
+                        hit=80,
+                        crit=0,
+                        es_magica=False,
+                        tipo=item_tipo,
+                        rango=[1],
+                        efectividades=[]
+                    )
 
     if arma_equipada is None:
         arma_equipada = Arma("Espada de Hierro", mt=5, wt=5, hit=90, crit=0, es_magica=False, tipo="Espada", rango=[1], efectividades=[])
