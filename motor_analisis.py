@@ -353,13 +353,16 @@ def _armas_aliado(aliado):
                 a_eng = _arma_desde_item(item_raw)
                 if a_eng and a_eng.mt > 0:
                     setattr(a_eng, 'es_engage', True)
+                    if not es_fusion:
+                        setattr(a_eng, 'requiere_fusion', True)
                     if not a_eng.nombre.endswith("(Emblema)"):
                         a_eng.nombre = f"{a_eng.nombre} (Emblema)"
                     tipo_l = str(getattr(a_eng, 'tipo', '')).lower()
                     nom_l = str(getattr(a_eng, 'nombre', '')).lower()
                     if not any(k in tipo_l for k in ('bastón', 'baston', 'staff')) and not any(k in nom_l for k in ('recover', 'curar', 'sanar', 'restituir', 'fortify', 'physic', 'mend', 'heal')):
                         if not any(normalizar_texto(w.nombre) == normalizar_texto(a_eng.nombre) for w, _, _ in armas):
-                            armas.append((a_eng, True, f"Arma de Engage ({a_eng.nombre})"))
+                            nota_eng = f"⚡ Fusión: Arma de Emblema ({a_eng.nombre})" if not es_fusion else f"Arma de Engage ({a_eng.nombre})"
+                            armas.append((a_eng, True, nota_eng))
 
         # Ataque de Emblema (Técnica Especial Engage) si no se ha usado
         atk_ya_usado = bool(
@@ -419,12 +422,18 @@ def _armas_aliado(aliado):
                                 wt=w_c.wt,
                                 tipo=w_c.tipo,
                                 rango=w_c.rango if getattr(w_c, 'rango', None) else [1],
-                                es_magica=getattr(w_c, 'es_magica', False)
+                                es_magica=getattr(w_c, 'es_magica', False),
+                                efectividades=list(getattr(w_c, 'efectividades', []) or []),
+                                efectivo_contra=list(getattr(w_c, 'efectivo_contra', []) or [])
                             )
                             setattr(a_eng_atk, 'es_engage_attack', True)
+                            setattr(a_eng_atk, 'es_engage', getattr(w_c, 'es_engage', False))
                             setattr(a_eng_atk, 'engage_attack_nombre', clean_name)
                             setattr(a_eng_atk, 'arma_base_nombre', w_c.nombre)
-                            armas.append((a_eng_atk, True, f"Ataque de Emblema ({clean_name} - {w_c.nombre})"))
+                            if not es_fusion or getattr(w_c, 'requiere_fusion', False):
+                                setattr(a_eng_atk, 'requiere_fusion', True)
+                            nota_atk = f"⚡ Fusión: Ataque de Emblema ({clean_name} - {w_c.nombre})" if (not es_fusion or getattr(w_c, 'requiere_fusion', False)) else f"Ataque de Emblema ({clean_name} - {w_c.nombre})"
+                            armas.append((a_eng_atk, True, nota_atk))
                     else:
                         arma_fija_data = (cfg or {}).get("arma_fija", {})
                         f_mt = arma_fija_data.get("mt", 18 if ("warp" in clean_norm or "ragnarok" in clean_norm) else (19 if "houses" in clean_norm else 15))
@@ -446,7 +455,10 @@ def _armas_aliado(aliado):
                         )
                         setattr(a_eng_atk, 'es_engage_attack', True)
                         setattr(a_eng_atk, 'engage_attack_nombre', clean_name)
-                        armas.append((a_eng_atk, True, f"Ataque de Emblema ({clean_name})"))
+                        if not es_fusion:
+                            setattr(a_eng_atk, 'requiere_fusion', True)
+                        nota_atk = f"⚡ Fusión: Ataque de Emblema ({clean_name})" if not es_fusion else f"Ataque de Emblema ({clean_name})"
+                        armas.append((a_eng_atk, True, nota_atk))
 
     if not armas and aliado.arma:
         armas.append((aliado.arma, False, ""))
@@ -570,8 +582,15 @@ def _ataques_engage_catalogo(nombre):
 
 
 def _es_jefe(ficha):
+    if not ficha:
+        return False
     nombre = str(getattr(ficha, "nombre", "") or "").lower()
-    return bool(getattr(getattr(ficha, "stats", None), "es_jefe", False)) or bool(getattr(ficha, "es_jefe", False)) or nombre.endswith("(boss)") or "hortensia" in nombre
+    return (
+        bool(getattr(getattr(ficha, "stats", None), "es_jefe", False))
+        or bool(getattr(ficha, "es_jefe", False))
+        or "(boss)" in nombre
+        or (int(getattr(ficha, "hp_stock", 0) or 0) > 0 and not getattr(ficha, "es_aliado", False))
+    )
 
 
 def _barras_vida(ficha):
@@ -888,7 +907,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                     atacante_muere = verd.get("atacante_muere_si_falla", False) or verd.get("atacante_muere_en_contra", False)
                     prob_muerte = verd.get("prob_muerte_atacante", 0)
                     ruptura = res_info.get("aplica_ruptura", False)
-                    es_jefe_e = any(j in enemigo.nombre.lower() for j in ("hortensia", "nelucce", "marni", "zephia", "griss")) or bool(getattr(enemigo, 'es_jefe', False))
+                    es_jefe_e = _es_jefe(enemigo)
 
                     # ── Ratio Daño - Acierto - Supervivencia ──
                     if atacante_muere or prob_muerte >= 50:
@@ -1160,8 +1179,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
             pos_txt = f"Mover a ({pos_sug[0]},{pos_sug[1]}) · " if (pos_sug[0] != aliado.x or pos_sug[1] != aliado.y) else "En rango directo · "
 
+            req_fusion = bool(getattr(mejor_arma, 'requiere_fusion', False) or (getattr(mejor_arma, 'es_engage_attack', False) and not getattr(aliado, 'en_fusion', False)))
+            prefijo_fusion = "⚡ [FUSIÓN] " if req_fusion else ""
+
             rec_texto = (
-                f"{aliado.nombre} -> usa {mejor_arma.nombre}{eff_tag} contra {enemigo.nombre} | "
+                f"{prefijo_fusion}{aliado.nombre} -> usa {mejor_arma.nombre}{eff_tag} contra {enemigo.nombre} | "
                 f"{pos_txt}{golpe_txt} | Hit {precision}% | {resultado_tag}{riesgo_txt}{bonus_txt}"
             )
 
@@ -1171,6 +1193,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 "enemigo": enemigo.nombre,
                 "distancia_combate": abs(pos_sug[0] - enemigo.x) + abs(pos_sug[1] - enemigo.y),
                 "arma_recomendada": mejor_arma.nombre,
+                "requiere_fusion": req_fusion,
+                "es_engage": bool(getattr(mejor_arma, 'es_engage', False) or getattr(mejor_arma, 'es_engage_attack', False)),
                 "pos_sugerida": pos_sug,
                 "pos_canter": pos_canter,
                 "veredicto": verd,

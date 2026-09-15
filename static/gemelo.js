@@ -183,6 +183,20 @@ function crearToken(ficha) {
     badge.textContent = `${ficha.turnos_fusion || 3}`;
     badge.title = `Fusión activa: ${ficha.turnos_fusion || 3} turno(s) restante(s)${ficha.ataque_emblema_usado ? ' (Técnica Engage usada)' : ''}`;
     tok.appendChild(badge);
+  } else if (ficha.es_aliado && ficha.emblema_nombre) {
+    const maxE = ficha.max_energia_emblema || (ficha.nivel_vinculo >= 20 ? 5 : 6);
+    const curE = (ficha.energia_emblema !== undefined) ? ficha.energia_emblema : maxE;
+    const energyBadge = document.createElement("span");
+    if (curE < maxE) {
+      energyBadge.className = "token-recharge-badge";
+      energyBadge.textContent = `⚡${curE}/${maxE}`;
+      energyBadge.title = `Medidor de Emblema: ${curE}/${maxE} cargas (Recargando - Fusión bloqueada)`;
+    } else {
+      energyBadge.className = "token-ready-badge";
+      energyBadge.textContent = "⚡";
+      energyBadge.title = `Medidor de Emblema al 100% (${curE}/${maxE}) - ¡FUSIÓN LISTA!`;
+    }
+    tok.appendChild(energyBadge);
   }
 
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) {
@@ -1074,11 +1088,9 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
     $("f-nivel-vinculo").value = "1";
     actualizarTooltipNivelVinculo(1);
   }
+  if ($("f-energia-emblema")) $("f-energia-emblema").value = esAliado ? 6 : 0;
   $("f-fusion").checked = false;
-  $("f-fusion").disabled = !esAliado;
-  $("label-fusion").style.opacity = esAliado ? "1" : "0.5";
-  $("label-fusion").style.pointerEvents = esAliado ? "auto" : "none";
-  $("label-fusion").title = "";
+  actualizarEstadoEnergiaModal();
   if ($("f-hp-stock")) $("f-hp-stock").value = "0";
   if ($("f-chain-guard")) $("f-chain-guard").checked = true;
   limpiarChips("chips-pasivas");
@@ -1213,19 +1225,13 @@ function abrirModalEdicion(ficha) {
   actualizarSelectorLiderTresCasas();
   actualizarVisibilidadChainGuard(ficha);
 
-  const tieneEmblema = !!ficha.emblema_nombre;
-  const enFusionActiva = (ficha.en_fusion || ficha.turnos_fusion > 0) && (ficha.turnos_fusion > 0);
-  $("f-fusion").checked = ficha.en_fusion || false;
-  if (enFusionActiva) {
-    $("f-fusion").disabled = true;
-    $("label-fusion").style.opacity = "0.7";
-    $("label-fusion").title = `Fusión en curso: ${ficha.turnos_fusion} turno(s) restante(s). No se puede retirar hasta que acabe.`;
-  } else {
-    $("f-fusion").disabled = !tieneEmblema;
-    $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
-    $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
-    $("label-fusion").title = "";
+  const maxE = nivV >= 20 ? 5 : 6;
+  const curE = (ficha.energia_emblema !== undefined) ? ficha.energia_emblema : maxE;
+  if ($("f-energia-emblema")) {
+    $("f-energia-emblema").value = curE;
   }
+  $("f-fusion").checked = ficha.en_fusion || false;
+  actualizarEstadoEnergiaModal();
 
   // Rellenar chips de habilidades pasivas
   limpiarChips("chips-pasivas");
@@ -1307,16 +1313,62 @@ function actualizarTooltipNivelVinculo(nivel) {
   if (labelVinculo) labelVinculo.title = txt;
 }
 
+function actualizarEstadoEnergiaModal() {
+  const nivV = $("f-nivel-vinculo") ? Math.max(1, Math.min(20, parseInt($("f-nivel-vinculo").value || 1, 10))) : 1;
+  const maxE = nivV >= 20 ? 5 : 6;
+  if ($("label-max-energia")) $("label-max-energia").textContent = `/ ${maxE}`;
+  if ($("f-energia-emblema")) {
+    $("f-energia-emblema").max = maxE;
+    let curE = parseInt($("f-energia-emblema").value, 10);
+    if (isNaN(curE)) curE = maxE;
+    curE = Math.max(0, Math.min(maxE, curE));
+    $("f-energia-emblema").value = curE;
+
+    const tieneEmb = $("f-emblema") && $("f-emblema").value.trim().length > 0;
+    const nomFicha = $("f-edit-original-name") ? $("f-edit-original-name").value : null;
+    const fActual = nomFicha ? state.fichas[nomFicha] : null;
+    const enFusionActiva = fActual && (fActual.en_fusion || fActual.turnos_fusion > 0) && (fActual.turnos_fusion > 0);
+
+    if (enFusionActiva) {
+      $("f-fusion").disabled = true;
+      if ($("txt-fusion-label")) $("txt-fusion-label").textContent = `Fusión activa (${fActual.turnos_fusion}t)`;
+      $("label-fusion").title = `Fusión en curso: ${fActual.turnos_fusion} turno(s) restante(s). No se puede retirar manualmente.`;
+      $("label-fusion").style.opacity = "0.7";
+      $("label-fusion").style.pointerEvents = "none";
+      if ($("label-energia-estado")) $("label-energia-estado").textContent = "(Consumido por Fusión)";
+    } else if (!tieneEmb) {
+      $("f-fusion").disabled = true;
+      if ($("txt-fusion-label")) $("txt-fusion-label").textContent = "Activar Fusión";
+      $("label-fusion").style.opacity = "0.5";
+      $("label-fusion").style.pointerEvents = "none";
+      if ($("label-energia-estado")) $("label-energia-estado").textContent = "";
+    } else if (curE < maxE) {
+      $("f-fusion").checked = false;
+      $("f-fusion").disabled = true;
+      if ($("txt-fusion-label")) $("txt-fusion-label").textContent = `⚡ Recargando (${curE}/${maxE})`;
+      $("label-fusion").title = `Medidor incompleto (${curE}/${maxE}). Requiere ${maxE} cargas para activar Fusión.`;
+      $("label-fusion").style.opacity = "0.6";
+      $("label-fusion").style.pointerEvents = "none";
+      if ($("label-energia-estado")) $("label-energia-estado").textContent = `(Recargando - faltan ${maxE - curE} cargas)`;
+    } else {
+      $("f-fusion").disabled = false;
+      if ($("txt-fusion-label")) $("txt-fusion-label").textContent = "Activar Fusión";
+      $("label-fusion").title = "Medidor completo: ¡Listo para activar Fusión!";
+      $("label-fusion").style.opacity = "1";
+      $("label-fusion").style.pointerEvents = "auto";
+      if ($("label-energia-estado")) $("label-energia-estado").textContent = "(¡Listo para Fusión!)";
+    }
+  }
+}
+
 function sincronizarEmblemaModal() {
   const val = $("f-emblema") ? $("f-emblema").value.trim() : "";
   const nivelVal = $("f-nivel-vinculo") ? Math.max(1, Math.min(20, parseInt($("f-nivel-vinculo").value || 1, 10))) : 1;
   const tieneEmblema = val.length > 0;
 
-  $("label-fusion").style.opacity = tieneEmblema ? "1" : "0.5";
-  $("label-fusion").style.pointerEvents = tieneEmblema ? "auto" : "none";
-  if (!tieneEmblema) $("f-fusion").checked = false;
   actualizarSelectorLiderTresCasas();
   actualizarTooltipNivelVinculo(nivelVal);
+  actualizarEstadoEnergiaModal();
 
   const prevEmb = state.prevEmblemaModal || "";
   const prevNiv = state.prevNivelVinculoModal || 1;
@@ -1488,6 +1540,14 @@ async function guardarUnidadDesdeModal() {
   const hpStock = isNaN(hpStockInput) ? 0 : Math.max(0, Math.min(3, hpStockInput));
   const chainGuardActivo = $("f-chain-guard") ? $("f-chain-guard").checked : true;
 
+  const maxEnergia = nivelVinculo >= 20 ? 5 : 6;
+  const energiaEmblemaInput = $("f-energia-emblema") ? parseInt($("f-energia-emblema").value, 10) : NaN;
+  let energiaEmblema = isNaN(energiaEmblemaInput) ? (fichaExistente && fichaExistente.energia_emblema !== undefined ? fichaExistente.energia_emblema : maxEnergia) : energiaEmblemaInput;
+  if (enFusion && (!fichaExistente || !fichaExistente.en_fusion)) {
+    energiaEmblema = 0;
+  }
+  energiaEmblema = Math.max(0, Math.min(maxEnergia, energiaEmblema));
+
   const payload = {
     nombre,
     es_aliado: esAliado,
@@ -1505,6 +1565,8 @@ async function guardarUnidadDesdeModal() {
     clase_nombre: claseNombre,
     arma_nombre: armaEquipadaNombre,
     emblema_nombre: emblemaNombre,
+    energia_emblema: energiaEmblema,
+    max_energia_emblema: maxEnergia,
     en_fusion: enFusion,
     turnos_fusion: estabaEnFusion ? fichaExistente.turnos_fusion : undefined,
     ataque_emblema_usado: fichaExistente ? fichaExistente.ataque_emblema_usado : undefined,
@@ -1790,6 +1852,36 @@ function initModalEvents() {
     $("f-nivel-vinculo").addEventListener("change", sincronizarEmblemaModal);
   }
 
+  if ($("f-energia-emblema")) {
+    $("f-energia-emblema").addEventListener("input", actualizarEstadoEnergiaModal);
+    $("f-energia-emblema").addEventListener("change", actualizarEstadoEnergiaModal);
+  }
+  if ($("btn-energia-0")) {
+    $("btn-energia-0").addEventListener("click", () => {
+      if ($("f-energia-emblema")) $("f-energia-emblema").value = 0;
+      actualizarEstadoEnergiaModal();
+      mostrarToast("Medidor de Emblema vaciado (0 cargas)", "info");
+    });
+  }
+  if ($("btn-energia-mas1")) {
+    $("btn-energia-mas1").addEventListener("click", () => {
+      if ($("f-energia-emblema")) {
+        const cur = parseInt($("f-energia-emblema").value || 0, 10);
+        $("f-energia-emblema").value = cur + 1;
+      }
+      actualizarEstadoEnergiaModal();
+    });
+  }
+  if ($("btn-energia-max")) {
+    $("btn-energia-max").addEventListener("click", () => {
+      const nivV = $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1;
+      const maxE = nivV >= 20 ? 5 : 6;
+      if ($("f-energia-emblema")) $("f-energia-emblema").value = maxE;
+      actualizarEstadoEnergiaModal();
+      mostrarToast(`Medidor de Emblema al máximo (${maxE}/${maxE})`, "ok");
+    });
+  }
+
   $("f-fusion").addEventListener("change", (e) => {
     const isChecked = e.target.checked;
     const nombreOriginal = $("f-edit-original-name") ? $("f-edit-original-name").value : "";
@@ -1805,6 +1897,8 @@ function initModalEvents() {
     const bond = obtenerDatosVinculoEmblema(eInfo, nivelVal);
 
     if (isChecked) {
+      if ($("f-energia-emblema")) $("f-energia-emblema").value = 0;
+      actualizarEstadoEnergiaModal();
       if (bond && bond.engage_skills) {
         bond.engage_skills.forEach(sk => addChip("chips-pasivas", sk.nombre || sk.sid || sk));
       }
@@ -1814,6 +1908,7 @@ function initModalEvents() {
       renderizarArmasFusionModal(null);
       mostrarToast(`Fusión Engage con ${eInfo.nombre} activada!`, "ok");
     } else {
+      actualizarEstadoEnergiaModal();
       if (bond && bond.engage_skills) {
         bond.engage_skills.forEach(sk => {
           const sNom = sk.nombre || sk.sid || sk;
@@ -2130,7 +2225,9 @@ async function ejecutarJugada(r) {
     defensor: r.enemigo,
     arma_nombre: r.arma_recomendada,
     pos_destino: r.pos_sugerida,
-    pos_canter: r.pos_canter || null
+    pos_canter: r.pos_canter || null,
+    requiere_fusion: !!r.requiere_fusion,
+    es_engage_attack: !!(r.es_engage_attack || (r.arma_recomendada && (r.arma_recomendada.toLowerCase().includes("rush") || r.arma_recomendada.toLowerCase().includes("override") || r.arma_recomendada.toLowerCase().includes("ragnarok"))))
   };
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
@@ -2438,8 +2535,14 @@ function renderResultado(container, r) {
       btnExec.innerHTML = `⚔️ <b>Preparar Baja</b>${labelPos}${labelCanter} · Remata <b>${r.aliado_rematador || 'Aliado'}</b>`;
       btnExec.title = `Mueve a ${r.aliado} para desgastar a ${r.enemigo} con ${r.arma_recomendada || 'Arma'} y dejarlo a tiro de ${r.aliado_rematador || 'Aliado'}`;
     } else {
-      btnExec.innerHTML = `<b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
-      btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
+      if (r.requiere_fusion) {
+        btnExec.style.background = "linear-gradient(135deg, #00838f, #00acc1)";
+        btnExec.innerHTML = `⚡ <b>Fusionar y Atacar</b>${labelPos}${labelCanter}`;
+        btnExec.title = `Activa la Fusión de Emblema con ${r.aliado} y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
+      } else {
+        btnExec.innerHTML = `<b>Ejecutar Jugada</b>${labelPos}${labelCanter}`;
+        btnExec.title = `Mueve a ${r.aliado} a la casilla óptima y ataca a ${r.enemigo} con ${r.arma_recomendada || 'Arma'}`;
+      }
     }
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);

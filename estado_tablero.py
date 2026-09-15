@@ -58,6 +58,7 @@ class FichaUnidad:
     chain_guard_usado: bool = False    # True si ya absorbió un golpe este turno
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión, total 4)
     estilo_combate: str = ""           # Estilo de combate: Qi Adept, Backup, Dragon, Covert, etc.
+    es_jefe: bool = False              # True si la unidad es un jefe (boss)
 
     @property
     def arma_equipada(self):
@@ -151,6 +152,7 @@ class FichaUnidad:
             "hp_actual": hp_a,
             "hp_max": hp_m,
             "hp_stock": self.hp_stock,
+            "es_jefe": bool(self.es_jefe or (self.hp_stock > 0 and not self.es_aliado) or (getattr(self.stats, "es_jefe", False) if self.stats else False)),
             "pct_hp": pct,
             "energia_emblema": self.energia_emblema,
             "max_energia_emblema": self.max_energia_emblema,
@@ -326,6 +328,10 @@ class EstadoTablero:
         if prev and not getattr(ficha, '_hp_stock_explicito', False):
             if ficha.hp_stock == 0 and prev.hp_stock > 0:
                 ficha.hp_stock = prev.hp_stock
+        if prev and not getattr(ficha, '_energia_emblema_explicito', False):
+            ficha.energia_emblema = prev.energia_emblema
+            if ficha.stats:
+                setattr(ficha.stats, 'energia_emblema', ficha.energia_emblema)
 
         self.fichas[ficha.nombre] = ficha
 
@@ -510,6 +516,19 @@ class EstadoTablero:
                     f.en_fusion = False
                     f.energia_emblema = 0
                     f.ataque_emblema_usado = False
+                    # Si el arma equipada es de Emblema, volver a arma regular del inventario
+                    if f.arma and (getattr(f.arma, 'es_engage', False) or '(emblema)' in str(f.arma.nombre).lower()):
+                        arma_regular = None
+                        for it in getattr(f, 'inventario', []):
+                            if not it.get('es_engage') and '(emblema)' not in str(it.get('nombre', '')).lower():
+                                arma_regular = it
+                                break
+                        if arma_regular:
+                            from catalogo_loader import _arma_desde_item
+                            f.arma = _arma_desde_item(arma_regular)
+                        else:
+                            from motor_calculo import Arma
+                            f.arma = Arma("Espada de Hierro", mt=5, wt=5, hit=90, crit=0, es_magica=False, tipo="Espada", rango=[1])
                 if f.stats:
                     f.stats.turnos_fusion_restantes = f.turnos_fusion
                     f.stats.en_fusion = f.en_fusion

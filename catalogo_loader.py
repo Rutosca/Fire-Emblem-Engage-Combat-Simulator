@@ -37,6 +37,32 @@ def round_half_up(val):
     """Redondeo aritmético estándar (Round Half Up) usado en el motor de FE Engage."""
     return math.floor(float(val) + 0.5)
 
+def _construir_grabados_desde_catalogo():
+    """Construye el diccionario de grabados a partir de los datos oficiales de God.xml en el catálogo."""
+    grabados = {}
+    for eid, edata in (_catalogo.get("emblemas", {}) or {}).items():
+        eng = edata.get("engrave")
+        if eng:
+            nom = edata.get("nombre", "")
+            ascii_n = edata.get("ascii_name", "")
+            entry = {
+                "nombre": ascii_n or nom,
+                "emblema": nom,
+                "mt": eng.get("power", 0),
+                "wt": eng.get("weight", 0),
+                "hit": eng.get("hit", 0),
+                "crit": eng.get("critical", 0),
+                "avo": eng.get("avoid", 0),
+                "ddg": eng.get("secure", 0),
+            }
+            if ascii_n:
+                grabados[normalizar_texto(ascii_n)] = entry
+            if nom:
+                grabados[normalizar_texto(nom)] = entry
+    return grabados
+
+GRABADOS_EMBLEMA = {}
+
 def cargar_catalogo():
     """Carga catalogo_engage.json y datos_canonicos_engage.json in-place."""
     global _catalogo, _canonico
@@ -58,19 +84,10 @@ def cargar_catalogo():
         except Exception as e:
             print(f"Aviso al cargar catalogo_engage.json: {e}")
 
-    # El JSON histórico no incluía InternalLevel. Lo recuperamos del XML
-    # oficial para distinguir clases básicas (0) de avanzadas (20), sin
-    # inferirlo a partir de sus límites de estadísticas.
-    ruta_job = os.path.join(_dir_actual, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata", "Job.xml")
-    if os.path.exists(ruta_job) and _catalogo.get("clases"):
-        try:
-            for row in ET.parse(ruta_job).getroot().iter("Param"):
-                jid = row.get("Jid", "")
-                if jid in _catalogo["clases"]:
-                    raw = row.get("InternalLevel", "0")
-                    _catalogo["clases"][jid]["internal_level"] = int(raw or 0)
-        except (ET.ParseError, OSError, ValueError) as exc:
-            print(f"Aviso al cargar niveles internos de Job.xml: {exc}")
+    # Los niveles internos (InternalLevel) de Job.xml y los grabados de God.xml
+    # ya vienen compilados de origen en catalogo_engage.json vía compilar_catalogo.py.
+    global GRABADOS_EMBLEMA
+    GRABADOS_EMBLEMA = _construir_grabados_desde_catalogo()
 
     # Garantizar engage_attack canónico para los 21 Emblemas
     for eid, edata in _catalogo.get("emblemas", {}).items():
@@ -85,6 +102,8 @@ def cargar_catalogo():
                         break
             if atk:
                 edata["engage_attack"] = atk
+
+    return _catalogo
 
 # =============================================================================
 # Diccionario Canónico de Ataques de Emblema (Técnicas de Fusión Engage)
@@ -204,26 +223,9 @@ ATAQUES_ENGAGE_CONFIG = {
 # Carga inicial al importar el módulo
 cargar_catalogo()
 
-# =============================================================================
-# Diccionario Oficial de Grabados de Emblema (Datamine God.xml) y Refinado
-# =============================================================================
-
-GRABADOS_EMBLEMA = {
-    "marth": {"nombre": "Marth", "emblema": "Comienzos", "mt": 1, "wt": 0, "hit": 10, "crit": 10, "avo": 5, "ddg": 5},
-    "sigurd": {"nombre": "Sigurd", "emblema": "Cruzada", "mt": 1, "wt": -1, "hit": 0, "crit": 0, "avo": 20, "ddg": 0},
-    "celica": {"nombre": "Celica", "emblema": "Ecos", "mt": -1, "wt": -1, "hit": 0, "crit": 0, "avo": 0, "ddg": 50},
-    "micaiah": {"nombre": "Micaiah", "emblema": "Aurora", "mt": -3, "wt": -1, "hit": 0, "crit": 0, "avo": 40, "ddg": 20},
-    "roy": {"nombre": "Roy", "emblema": "León", "mt": 2, "wt": 8, "hit": 0, "crit": 0, "avo": -30, "ddg": 0},
-    "leif": {"nombre": "Leif", "emblema": "Genealogía", "mt": 1, "wt": 1, "hit": 20, "crit": 0, "avo": 10, "ddg": 0},
-    "lucina": {"nombre": "Lucina", "emblema": "Despertar", "mt": -1, "wt": -1, "hit": 30, "crit": 0, "avo": 30, "ddg": 0},
-    "lyn": {"nombre": "Lyn", "emblema": "Llama", "mt": -3, "wt": -2, "hit": 40, "crit": 20, "avo": 0, "ddg": 0},
-    "ike": {"nombre": "Ike", "emblema": "Fulgor", "mt": 3, "wt": 15, "hit": 0, "crit": 0, "avo": 0, "ddg": 0},
-    "byleth": {"nombre": "Byleth", "emblema": "Academia", "mt": 0, "wt": 2, "hit": 30, "crit": 10, "avo": 10, "ddg": 30},
-    "corrin": {"nombre": "Corrin", "emblema": "Destino", "mt": -2, "wt": 0, "hit": 0, "crit": 30, "avo": 10, "ddg": 30},
-    "eirika": {"nombre": "Eirika", "emblema": "Sagrada", "mt": 0, "wt": 0, "hit": 40, "crit": 20, "avo": -20, "ddg": -20},
-    "ephraim": {"nombre": "Ephraim", "emblema": "Sagrada", "mt": 0, "wt": 0, "hit": 40, "crit": 20, "avo": -20, "ddg": -20},
-    "alear": {"nombre": "Alear", "emblema": "Dragón", "mt": -1, "wt": -1, "hit": 20, "crit": 20, "avo": 20, "ddg": 20},
-}
+# GRABADOS_EMBLEMA se construye dinámicamente desde los datos de God.xml en el catálogo cargado.
+if not GRABADOS_EMBLEMA:
+    GRABADOS_EMBLEMA = _construir_grabados_desde_catalogo()
 
 REFINES_GENERICOS = {
     1: {"mt": 1, "hit": 5, "crit": 0, "wt": 0},
@@ -633,6 +635,12 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     nivel_vinculo = max(1, min(20, int(data.get("nivel_vinculo", getattr(unidad_previa, 'nivel_vinculo', 1) if unidad_previa else 1))))
     duracion_base = 4 if nivel_vinculo >= 11 else 3
     max_energia_emblema = 5 if nivel_vinculo >= 20 else 6
+    if data.get("energia_emblema") is not None:
+        energia_emblema_val = min(int(data["energia_emblema"]), max_energia_emblema)
+    elif unidad_previa and getattr(unidad_previa, "energia_emblema", None) is not None:
+        energia_emblema_val = min(int(unidad_previa.energia_emblema), max_energia_emblema)
+    else:
+        energia_emblema_val = max_energia_emblema
     bond_data = emblema_info.get("bond_levels", {}).get(str(nivel_vinculo)) if emblema_info else None
     emblem_mov = bond_data.get("stat_boosts", {}).get("mov", 0) if bond_data else (1 if es_sigurd else 0)
 
@@ -910,7 +918,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         suerte=calc_lck,
         complexion=calc_bld,
         es_lord=es_lord,
-        energia_emblema=min(int(data.get("energia_emblema", max_energia_emblema)), max_energia_emblema),
+        energia_emblema=energia_emblema_val,
         max_energia_emblema=max_energia_emblema,
         turnos_fusion_restantes=turnos_fusion if en_fusion else 0,
         es_dragon=(style == "Dragon" or "alear" in nombre.lower()),
@@ -923,8 +931,15 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
+    genero_val = int(data.get("genero", 0) or (p_info.get("gender", 0) if p_info else 0))
+    setattr(stats_obj, 'genero', genero_val)
+    setattr(stats_obj, 'pid', pid or (p_info.get("id", "") if p_info else ""))
     val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
-    es_jefe_val = bool(data.get("es_jefe", False)) or nombre.lower().endswith("(boss)") or int(data.get("hp_stock", 0)) > 0
+    es_jefe_val = (
+        bool(data.get("es_jefe", False))
+        or nombre.lower().endswith("(boss)")
+        or (int(data.get("hp_stock", 0)) > 0 and not bool(data.get("es_aliado", False)))
+    )
     val_lider_3h = data.get("lider_tres_casas") or (getattr(unidad_previa, 'lider_tres_casas', None) if unidad_previa else "Dimitri") or "Dimitri"
     if val_lider_3h not in ("Edelgard", "Dimitri", "Claude"):
         val_lider_3h = "Dimitri"
@@ -1205,7 +1220,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         chain_guard_usado=bool(data.get("chain_guard_usado", getattr(unidad_previa, 'chain_guard_usado', False) if unidad_previa else False)),
         ha_actuado=ha_actuado,
         cargas_ruptura=cargas_ruptura,
-        energia_emblema=min(int(data.get("energia_emblema", max_energia_emblema)), max_energia_emblema),
+        energia_emblema=energia_emblema_val,
         max_energia_emblema=max_energia_emblema,
         turnos_fusion=turnos_fusion,
         en_fusion=en_fusion,
@@ -1223,9 +1238,11 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         lider_tres_casas=val_lider_3h,
         estilo_combate=estilo_combate,
     )
-    # registrar_unidad conserva el estado anterior al editar una ficha para no perder datos.
-    # Si el formulario/API trae explícitamente estos campos nuevos, deben prevalecer.
+    setattr(ficha, 'genero', genero_val)
+    setattr(ficha, 'pid', pid or (p_info.get("id", "") if p_info else ""))
+    setattr(ficha, 'es_jefe', es_jefe_val)
     setattr(ficha, '_lider_tres_casas_explicito', 'lider_tres_casas' in data)
     setattr(ficha, '_chain_guard_activo_explicito', 'chain_guard_activo' in data)
     setattr(ficha, '_hp_stock_explicito', 'hp_stock' in data)
+    setattr(ficha, '_energia_emblema_explicito', 'energia_emblema' in data)
     return ficha

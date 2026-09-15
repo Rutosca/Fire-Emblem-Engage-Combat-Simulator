@@ -130,7 +130,7 @@ class CargadorDisposEngage:
         clase_nom = clase_info.get("nombre", jid.replace("JID_", "")) if clase_info else jid.replace("JID_", "")
         return f"{clase_nom} ({x},{y})"
 
-    def cargar_capitulo(self, dispos_id: str = "M007", dificultad: str = "Extremo") -> List[dict]:
+    def cargar_capitulo(self, dispos_id: str = "M007", dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> List[dict]:
         """
         Lee el XML de dispos/{dispos_id}.xml y retorna la lista de diccionarios de unidades
         listas para ser enviadas a la UI o cargadas en EstadoTablero.
@@ -175,9 +175,8 @@ class CargadorDisposEngage:
                 # (origen abajo-izquierda). Tiled/CSS tiene Y=0 en la fila SUPERIOR (origen arriba-izq).
                 # Por eso X = DisposX - 1  (solo restar 1)
                 # Pero Y = mapa_alto - DisposY  (invertir el eje Y)
-                mapa_alto_juego = 17  # El mapa del juego tiene 17 filas numeradas 1..17
-                x = max(0, min(23, int(x_str) - 1))
-                y = max(0, min(16, mapa_alto_juego - int(y_str)))
+                x = max(0, min(mapa_ancho - 1, int(x_str) - 1))
+                y = max(0, min(mapa_alto - 1, mapa_alto - int(y_str)))
             except ValueError:
                 continue
 
@@ -320,6 +319,7 @@ class CargadorDisposEngage:
                 "dificultad": dificultad,
                 "auto_grow_extra": auto_grow_extra,  # level-ups bonus para cálculo de crecimientos
                 "p_offset": p_offset,                # offsets de stats por dificultad desde Person.xml
+                "es_jefe": (hp_stock > 0 and not es_aliado) or "(Boss)" in nombre_unidad,
             })
 
         return unidades

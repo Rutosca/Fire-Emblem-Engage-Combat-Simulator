@@ -55,6 +55,8 @@ class Unidad:
     nivel_veneno: int = 0
     ataque_emblema_usado: bool = False # True si ya ejecutó el ataque o técnica especial de Engage
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión)
+    genero: int = 0                    # Género canónico (Person.xml Gender: 1=Hombre, 2=Mujer)
+    pid: str = ""                      # ID de Person.xml (ej. PID_リュール)
 
     def __post_init__(self):
         if self.hp_max <= 0:
@@ -275,11 +277,26 @@ TABLA_BONOS_APOYO = {
 }
 
 def obtener_genero_unidad(u) -> int:
-    """1: Masculino, 2: Femenino, 0: Indeterminado."""
-    if hasattr(u, 'genero') and u.genero in (1, 2):
-        return u.genero
+    """
+    1: Masculino, 2: Femenino, 0: Indeterminado.
+    Prioriza el valor canónico del datamine Person.xml ('Gender').
+    """
+    gen = getattr(u, 'genero', None) or getattr(getattr(u, 'stats', None), 'genero', None)
+    if gen in (1, 2):
+        return gen
+
+    pid = getattr(u, 'pid', None) or getattr(getattr(u, 'stats', None), 'pid', None)
+    if pid:
+        try:
+            from catalogo_loader import _catalogo
+            p_cat = _catalogo.get("personajes", {}).get(pid)
+            if p_cat and p_cat.get("gender") in (1, 2):
+                return p_cat["gender"]
+        except Exception:
+            pass
+
     nom = (getattr(u, 'nombre', '') or '').lower()
-    pid = (getattr(u, 'pid', '') or '').lower()
+    pid_str = (str(pid) or '').lower()
     females = {
         'céline', 'celine', 'chloé', 'chloe', 'yunaka', 'citrinne', 'citrinica',
         'lapis', 'framme', 'etie', 'ivy', 'hortensia', 'timerra', 'panette',
@@ -290,9 +307,9 @@ def obtener_genero_unidad(u) -> int:
         'diamant', 'amber', 'fogado', 'pandreo', 'bunet', 'seadall', 'kagetsu',
         'zelkov', 'lindon', 'mauvier', 'jean', 'rosado', 'morion', 'hyacinth'
     }
-    if any(f in nom or f in pid for f in females):
+    if any(f in nom or f in pid_str for f in females):
         return 2
-    if any(m in nom or m in pid for m in males):
+    if any(m in nom or m in pid_str for m in males):
         return 1
     if 'alear' in nom or 'lueur' in nom:
         return getattr(u, 'genero', 1)
@@ -622,7 +639,7 @@ class CalculadoraEngage:
             alear_adyacente = any(
                 ('alear' in (getattr(a, 'nombre', '') or '').lower() or
                  'lueur' in (getattr(a, 'nombre', '') or '').lower() or
-                 any('神竜の結束' in str(h) or 'divinely' in str(h).lower() for h in getattr(a, 'habilidades', [])))
+                 any(x in str(h).lower() for h in getattr(a, 'habilidades', []) for x in ('sid_神竜の結束', '神竜の結束', 'divinely', 'guía divina', 'guia divina')))
                 for a, d in aliados_cercanos_atk if d <= 1 and (getattr(a, 'nombre', '') != getattr(atacante, 'nombre', ''))
             )
             if alear_adyacente:
@@ -631,7 +648,7 @@ class CalculadoraEngage:
 
         # 2. Chloé: Gente de Cuento (Fairy-Tale Folk — SID_絵になる二人):
         # Si hay un aliado masculino y una femenina adyacentes entre sí a 2 casillas o menos, +2 de daño
-        tiene_fairy_tale = any('fairy-tale' in h or 'gente de cuento' in h or '絵になる二人' in h for h in habs_atk) or ('chloé' in nombre_atk or 'chloe' in nombre_atk)
+        tiene_fairy_tale = any(x in h for h in habs_atk for x in ('sid_絵になる二人', '絵になる二人', 'fairy-tale', 'fairy tale', 'gente de cuento')) or ('chloé' in nombre_atk or 'chloe' in nombre_atk)
         if tiene_fairy_tale and aliados_cercanos_atk:
             cercanos_2 = [a for a, d in aliados_cercanos_atk if d <= 2 and getattr(a, 'nombre', '') != getattr(atacante, 'nombre', '')]
             males = [a for a in cercanos_2 if obtener_genero_unidad(a) == 1]
@@ -649,7 +666,7 @@ class CalculadoraEngage:
                 pasivas_activas.append("Gente de Cuento (+2 Daño)")
 
         # 3. Alcryst: ¡Ponte detrás de mí! (Get Behind Me! — SID_僕が守ります！):
-        tiene_get_behind = any('get behind' in h or 'al rescate' in h or 'ponte detrás' in h or 'ponte detras' in h or '僕が守ります' in h for h in habs_atk) or ('alcryst' in nombre_atk or 'staluke' in nombre_atk)
+        tiene_get_behind = any(x in h for h in habs_atk for x in ('sid_僕が守ります！', 'sid_僕が守ります', '僕が守ります', 'get behind', 'al rescate', 'ponte detrás', 'ponte detras')) or ('alcryst' in nombre_atk or 'staluke' in nombre_atk)
         herido_adyacente = False
         if aliados_cercanos_atk:
             for a, d in aliados_cercanos_atk:
@@ -706,7 +723,7 @@ class CalculadoraEngage:
             alear_ady_def = any(
                 ('alear' in (getattr(a, 'nombre', '') or '').lower() or
                  'lueur' in (getattr(a, 'nombre', '') or '').lower() or
-                 any('神竜の結束' in str(h) or 'divinely' in str(h).lower() for h in getattr(a, 'habilidades', [])))
+                 any(x in str(h).lower() for h in getattr(a, 'habilidades', []) for x in ('sid_神竜の結束', '神竜の結束', 'divinely', 'guía divina', 'guia divina')))
                 for a, d in aliados_cercanos_def if d <= 1 and (getattr(a, 'nombre', '') != getattr(defensor, 'nombre', ''))
             )
             if alear_ady_def:
@@ -715,7 +732,7 @@ class CalculadoraEngage:
 
         # 3. Louis: Admiración (Admiration — SID_花園の門番):
         # Si dos aliadas femeninas están adyacentes entre sí a 2 casillas o menos, reduce el daño recibido en 2
-        tiene_admiration = any('admiration' in h or 'admiracion' in h or 'admiración' in h or '花園の門番' in h for h in habs_def) or ('louis' in nombre_def)
+        tiene_admiration = any(x in h for h in habs_def for x in ('sid_花園の門番', '花園の門番', 'admiration', 'admiracion', 'admiración')) or ('louis' in nombre_def)
         if tiene_admiration and aliados_cercanos_def and daño > 0:
             cercanas_fem = [a for a, d in aliados_cercanos_def if d <= 2 and obtener_genero_unidad(a) == 2 and getattr(a, 'nombre', '') != getattr(defensor, 'nombre', '')]
             par_fem_ady = False
@@ -746,6 +763,11 @@ class CalculadoraEngage:
             daño = math.floor(daño * 0.8)
 
         # ── Ataques de Emblema: Unión Tres Casas (Houses Unite) y Lodestar Rush ───────────────
+        # Casas de Fuego / Three Houses (Houses Unite - SID_計略_連撃):
+        # Datamine God.xml / Skill.xml: Tri-ataque secuencial que escala con Fuerza atacante vs DEF defensor al 50%:
+        # Golpe 1 (Aymr): Mt 24 + 5 (Engage+) vs DEF, factor 0.50 (floor, mín 1)
+        # Golpe 2 (Areadbhar): Mt 19 + 5 + 2 (bono de clase) vs DEF, factor 0.50 (floor, mín 1)
+        # Golpe 3 (Failnaught): Mt 15 + 3 vs DEF, factor 0.50 (floor, mín 1)
         houses_unite_hits = None
         lodestar_hits = None
         if es_houses_unite:
@@ -757,11 +779,20 @@ class CalculadoraEngage:
             houses_unite_hits = [d1, d2, d3]
             pasivas_activas.append(f"Unión Tres Casas (Tri-ataque Aymr/Areadbhar/Failnaught: {d1}, {d2}, {d3} dmg = {daño} dmg)")
         elif es_lodestar_rush:
+            # Datamine Marth (SID_スターラッシュ): múltiples golpes calculados al 30% del daño neto (ceil)
+            # Dragon style: 9 golpes (+2 por bono dragón)
+            # Backup style: 8 golpes (+1 por bono apoyo)
+            # Otros estilos: 7 golpes base
             es_dragon = any(d in estilo_atk for d in ('dragón', 'dragon', '竜族')) or getattr(atacante, 'tipo_movimiento', '') in ('dragón', 'dragon') or 'alear' in nombre_atk or 'lueur' in nombre_atk
-            num_golpes_lodestar = 9 if es_dragon else 7
-            d_hit = max(1, math.floor(max(0, atk_efectivo - stat_defensiva) * 0.30))
-            if "hortensia" in nombre_def and any(sw in str(arma.nombre).lower() for sw in ('fólkvangr', 'folkvangr', 'silver', 'plata', 'mercurius')):
-                d_hit = 3
+            es_backup = any(b in estilo_atk for b in ('apoyo', 'backup', '連携')) or getattr(atacante, 'tipo_movimiento', '') in ('apoyo', 'backup')
+            num_golpes_lodestar = 9 if es_dragon else (8 if es_backup else 7)
+            es_mistico = any(m in estilo_atk for m in ('místico', 'mistico', 'mystical', '魔道'))
+            stat_def_lodestar = (defensor.resistencia + terreno_dfn) if es_mistico else (defensor.defensa + terreno_dfn)
+            daño_neto_lodestar = max(0, atk_efectivo - stat_def_lodestar)
+            if daño_neto_lodestar <= 0:
+                d_hit = 0
+            else:
+                d_hit = math.ceil(daño_neto_lodestar * 0.30)
             daño = d_hit * num_golpes_lodestar
             lodestar_hits = (num_golpes_lodestar, d_hit)
             pasivas_activas.append(f"Acometida Estelar ({num_golpes_lodestar} golpes de {d_hit} dmg = {daño} dmg)")
@@ -773,11 +804,11 @@ class CalculadoraEngage:
         ddg_mod_pasivas = 0
 
         # Diamant: Lucha Limpia (Fair Fight — SID_真っ向勝負) (+15 Hit a ambos si inicia)
-        if es_iniciador and arma_def and any('真っ向勝負' in h or 'fair fight' in h for h in habs_atk):
+        if es_iniciador and arma_def and any(x in h for h in habs_atk for x in ('sid_真っ向勝負', '真っ向勝負', 'fair fight', 'lucha limpia')):
             hit_mod_pasivas += 15
 
         # Lapis: Solidaridad (Share Spoils — SID_戦果委譲) (+10 Hit, +10 Avo, -10 Crit con aliado a 1 casilla)
-        tiene_share_spoils = any('戦果委譲' in h or 'share spoils' in h or 'solidaridad' in h for h in (habs_atk if es_iniciador else habs_def)) or ('lapis' in (nombre_atk if es_iniciador else nombre_def))
+        tiene_share_spoils = any(x in h for h in (habs_atk if es_iniciador else habs_def) for x in ('sid_戦果委譲', '戦果委譲', 'share spoils', 'solidaridad')) or ('lapis' in (nombre_atk if es_iniciador else nombre_def))
         if tiene_share_spoils:
             cercanos_lapis = aliados_cercanos_atk if es_iniciador else aliados_cercanos_def
             u_lapis = atacante if es_iniciador else defensor
@@ -789,13 +820,13 @@ class CalculadoraEngage:
                 pasivas_activas.append("Solidaridad Lapis (+10 Hit, +10 Avo, -10 Crit)")
 
         # Yunaka: Asesina Nata (Trained to Kill — SID_殺しの技術) (+15 Crit en casilla con Avoid)
-        tiene_trained_to_kill = any('殺しの技術' in h or 'trained to kill' in h or 'asesina nata' in h for h in habs_atk) or ('yunaka' in nombre_atk)
+        tiene_trained_to_kill = any(x in h for h in habs_atk for x in ('sid_殺しの技術', '殺しの技術', 'trained to kill', 'asesina nata')) or ('yunaka' in nombre_atk)
         if tiene_trained_to_kill and terreno.avo > 0:
             crit_mod_pasivas += 15
             pasivas_activas.append("Asesina Nata (+15 Crit en Terreno)")
 
         # Framme: Entusiasmo Carmesí (Crimson Cheer — SID_熱き声援) (+10 Avo con Alear adyacente)
-        tiene_framme_cheer = any('熱き声援' in h or 'crimson cheer' in h for h in habs_atk) or ('framme' in nombre_atk)
+        tiene_framme_cheer = any(x in h for h in habs_atk for x in ('sid_熱き声援', '熱き声援', 'crimson cheer', 'entusiasmo carmesí', 'entusiasmo carmesi')) or ('framme' in nombre_atk)
         alear_adyacente_atk = any('alear' in (getattr(a, 'nombre', '') or '').lower() or 'lueur' in (getattr(a, 'nombre', '') or '').lower() for a, d in (aliados_cercanos_atk or []) if d <= 1)
         if tiene_framme_cheer and alear_adyacente_atk:
             avo_mod_pasivas += 10
@@ -806,7 +837,7 @@ class CalculadoraEngage:
             avo_mod_pasivas += 10
 
         # Vander: Deber Inmaculado (Alabaster Duty — SID_白の忠義) (+5 Crit con Alear adyacente)
-        tiene_alabaster = any('白の忠義' in h or 'alabaster duty' in h for h in habs_atk) or ('vander' in nombre_atk)
+        tiene_alabaster = any(x in h for h in habs_atk for x in ('sid_白の忠義', '白の忠義', 'alabaster duty', 'deber inmaculado')) or ('vander' in nombre_atk)
         if tiene_alabaster and alear_adyacente_atk:
             crit_mod_pasivas += 5
         # AURA RECÍPROCA: Si Alear tiene a Vander adyacente, Alear también recibe +5 Crit
@@ -1047,8 +1078,8 @@ class CalculadoraEngage:
                 if barra_rota:
                     break
 
-        # Sensitive (Boucheron - Muy sensible): +2 de daño si un aliado participa en Chain Attack
-        tiene_sensitive = any('sensitive' in h or 'sensible' in h or '心優しき怪力' in h for h in getattr(atacante, 'habilidades', [])) or 'boucheron' in getattr(atacante, 'nombre', '').lower()
+        # Sensitive (Boucheron - Muy sensible — SID_心優しき怪力): +2 de daño si un aliado participa en Chain Attack
+        tiene_sensitive = any(x in str(h).lower() for h in getattr(atacante, 'habilidades', []) for x in ('sid_心優しき怪力', '心優しき怪力', 'sensitive', 'sensible', 'muy sensible')) or 'boucheron' in getattr(atacante, 'nombre', '').lower()
         if tiene_sensitive and chain_dmg_total > 0 and hp_def > 0:
             golpear_defensor(atacante.nombre, "ataque (Muy Sensible)", 2)
             chain_dmg_total += 2

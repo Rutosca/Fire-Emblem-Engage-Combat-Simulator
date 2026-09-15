@@ -371,7 +371,9 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
     tablero.turno_actual = 1
     tablero.fase = "jugador"
 
-    unidades_dispos = _cargador_dispos.cargar_capitulo(capitulo_id, dificultad)
+    ancho_m = getattr(_mapa, "ancho", 24)
+    alto_m = getattr(_mapa, "alto", 17)
+    unidades_dispos = _cargador_dispos.cargar_capitulo(capitulo_id, dificultad, mapa_ancho=ancho_m, mapa_alto=alto_m)
     if not unidades_dispos:
         num = tablero.cargar_spawns_desde_mapa()
         return {
@@ -663,8 +665,10 @@ def ejecutar_combate():
     # 2. Equipar arma
     if nombre_arma:
         arma_encontrada = False
+        norm_nom_arma = normalizar_texto(nombre_arma)
         for item in f_atk.inventario:
-            if item.get("nombre") == nombre_arma or item.get("arma") == nombre_arma or item.get("id") == nombre_arma:
+            n_it = normalizar_texto(item.get("nombre") or item.get("arma") or "")
+            if n_it == norm_nom_arma or item.get("id") == nombre_arma:
                 for it in f_atk.inventario:
                     it["equipada"] = (it == item)
                 a_obj = _arma_desde_item(item)
@@ -674,13 +678,18 @@ def ejecutar_combate():
                 break
         if not arma_encontrada:
             for a_eng, es_eng, _ in _armas_aliado(f_atk):
-                if normalizar_texto(a_eng.nombre) == normalizar_texto(nombre_arma) or normalizar_texto(nombre_arma) in normalizar_texto(a_eng.nombre):
+                if normalizar_texto(a_eng.nombre) == norm_nom_arma or norm_nom_arma in normalizar_texto(a_eng.nombre):
                     f_atk.arma = a_eng
                     if getattr(a_eng, 'es_engage_attack', False):
                         es_engage_attack = True
                         engage_attack_nombre = getattr(a_eng, 'engage_attack_nombre', nombre_arma)
                     arma_encontrada = True
                     break
+        if not arma_encontrada:
+            a_obj = _arma_desde_item({"arma": nombre_arma})
+            if a_obj:
+                f_atk.arma = a_obj
+                arma_encontrada = True
 
     # 3. Detectar aliados de apoyo (Backup) cercanos al objetivo para Chain Attacks
     apoyos_fichas = obtener_aliados_backup(f_atk, f_def, tablero=tablero)
@@ -726,13 +735,24 @@ def ejecutar_combate():
 
     es_engage_attack = bool(data.get("es_engage_attack", False) or es_engage_attack)
     engage_attack_nombre = str(data.get("engage_attack_nombre", "") or engage_attack_nombre)
+    es_arma_emblema = bool(getattr(f_atk.arma, 'es_engage', False) or "(emblema)" in getattr(f_atk.arma, 'nombre', '').lower())
+    requiere_fusion = bool(data.get("requiere_fusion", False) or es_engage_attack or es_arma_emblema)
 
-    if es_engage_attack and not f_atk.en_fusion:
+    if requiere_fusion and not f_atk.en_fusion:
+        max_e = getattr(f_atk, "max_energia_emblema", 6) or 6
+        cur_e = getattr(f_atk, "energia_emblema", max_e)
+        if cur_e < max_e and not es_engage_attack:
+            return jsonify({
+                "error": f"{f_atk.nombre} no tiene energía suficiente ({cur_e}/{max_e}) para usar {f_atk.arma.nombre}. Debe recargar el medidor de Emblema."
+            }), 400
+        duracion_fusion = 4 if (getattr(f_atk, 'nivel_vinculo', 1) >= 11 or 'dragon' in getattr(f_atk, 'estilo_combate', '').lower() or 'dragon' in str(getattr(f_atk, 'clase_nombre', '')).lower()) else 3
         f_atk.en_fusion = True
-        f_atk.turnos_fusion = 4 if f_atk.nivel_vinculo >= 11 else 3
+        f_atk.turnos_fusion = duracion_fusion
+        f_atk.energia_emblema = 0
         if f_atk.stats:
             setattr(f_atk.stats, 'en_fusion', True)
             setattr(f_atk.stats, 'turnos_fusion_restantes', f_atk.turnos_fusion)
+            setattr(f_atk.stats, 'energia_emblema', 0)
 
     # Sincronización estricta de HP actual con el objeto de stats antes de simular
     if f_atk.stats:
@@ -832,13 +852,8 @@ def ejecutar_combate():
     # Registrar uso de ataque o tecnica especial de Engage (solo 1 vez por fusion)
     if es_engage_attack:
         f_atk.ataque_emblema_usado = True
-        if not f_atk.en_fusion:
-            f_atk.en_fusion = True
-            f_atk.turnos_fusion = 4 if f_atk.nivel_vinculo >= 11 else 3
         if f_atk.stats:
             setattr(f_atk.stats, 'ataque_emblema_usado', True)
-            setattr(f_atk.stats, 'en_fusion', True)
-            setattr(f_atk.stats, 'turnos_fusion_restantes', f_atk.turnos_fusion)
 
     # Medidor de Emblema (Engage Gauge):
     # La recarga de emblema solo entra en vigor cuando se hayan usado y gastado todos los turnos de fusion

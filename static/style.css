@@ -617,6 +617,56 @@ header h1 {
   z-index: 12;
 }
 
+.token-recharge-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 15px;
+  padding: 0 2px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fbbf24;
+  border: 1px solid #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 12;
+  letter-spacing: -0.5px;
+}
+
+.token-ready-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffd700, #ff9100);
+  color: #1a0f00;
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 12;
+  animation: readyGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes readyGlow {
+  0% { transform: scale(1); box-shadow: 0 0 6px rgba(255, 215, 0, 0.7); }
+  100% { transform: scale(1.15); box-shadow: 0 0 12px rgba(255, 215, 0, 1); }
+}
+
 /* Ruptura (Break) activo */
 .token.en-ruptura {
   border-color: #ff3b69 !important;

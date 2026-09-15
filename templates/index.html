@@ -513,7 +513,7 @@
           <p>Sincronía Armamentística solo se aplica al arma del líder activo.</p>
         </div>
         <!-- Emblema y Fusión -->
-        <div class="form-cols" style="align-items: flex-end;">
+        <div class="form-cols" style="align-items: flex-end; margin-bottom: 6px;">
           <div class="form-row flex-2">
             <label for="f-emblema">Emblema Equipado (Opcional):</label>
             <input type="text" id="f-emblema" list="list-emblemas" placeholder="Ej: Marth, Edelgard, Tiki, Hector, Byleth..." autocomplete="off">
@@ -523,9 +523,25 @@
             <label for="f-nivel-vinculo" title="Nivel >= 11 otorga +1 turno de Fusión (4 turnos). Nivel 20 reduce el medidor de recarga de 6 a 5 cargas.">Nivel Vínculo:</label>
             <input type="number" id="f-nivel-vinculo" min="1" max="20" value="1" placeholder="1..20">
           </div>
-          <div class="form-row flex-1" style="padding-bottom: 6px;">
-            <label class="radio-label" style="justify-content: center;" id="label-fusion">
-              <input type="checkbox" id="f-fusion"> Activar Fusión
+        </div>
+
+        <!-- Medidor de Energía de Emblema (Recarga 0/6) y Activar Fusión -->
+        <div class="form-cols" style="align-items: center; margin-bottom: 8px; background: rgba(0, 229, 255, 0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.2);">
+          <div class="form-row flex-2" style="margin-bottom: 0;">
+            <label for="f-energia-emblema" title="Cargas del Medidor de Emblema (se consumen a 0 al fusionar; requiere 6 cargas, o 5 con Vínculo 20, para poder fusionarse)">
+              ⚡ Medidor de Emblema (Energía): <span id="label-energia-estado" style="font-weight: normal; font-size: 0.8rem; color: #aaa;"></span>
+            </label>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="number" id="f-energia-emblema" min="0" max="6" value="6" style="width: 48px; text-align: center; font-weight: bold;">
+              <span id="label-max-energia" style="font-size: 0.9rem; font-weight: bold; color: #81d4fa;">/ 6</span>
+              <button type="button" id="btn-energia-0" class="btn-hp-tool btn-red" title="Vaciar medidor (0 cargas - fin de fusión)">0</button>
+              <button type="button" id="btn-energia-mas1" class="btn-hp-tool btn-blue" title="+1 carga por ataque/kill">+1</button>
+              <button type="button" id="btn-energia-max" class="btn-hp-tool btn-green" title="Llenar medidor al máximo (casilla de energía)">Max</button>
+            </div>
+          </div>
+          <div class="form-row flex-1" style="margin-bottom: 0; display: flex; justify-content: flex-end;">
+            <label class="radio-label" style="justify-content: center; width: 100%;" id="label-fusion">
+              <input type="checkbox" id="f-fusion"> <span id="txt-fusion-label">Activar Fusión</span>
             </label>
           </div>
         </div>

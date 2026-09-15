@@ -348,6 +348,7 @@ def compilar():
         clases[jid] = {
             "id": jid,
             "nombre": nombre,
+            "internal_level": to_int(j.get("InternalLevel"), 0),
             "estilo_combate": style,
             "mov": mov,
             "tipo_movimiento": tipo_movimiento,
@@ -497,6 +498,8 @@ def compilar():
         personajes[pid] = {
             "id": pid,
             "nombre": nombre,
+            "genero": to_int(p.get("Gender"), 0),
+            "common_sids": [s.strip() for s in p.get("CommonSids", "").split(";") if s.strip()],
             "jid_default": default_jid,
             "clase_default": clase_def.get("nombre", ""),
             "nivel_base": join_lvl,
@@ -653,6 +656,20 @@ def compilar():
                 "max_energia_emblema": 5 if l >= 20 else 6
             }
 
+        # Grabado oficial del Emblema (God.xml)
+        engrave_word = g.attrib.get("EngraveWord", "")
+        engrave_data = None
+        if engrave_word:
+            engrave_data = {
+                "power": to_int(g.attrib.get("EngravePower")),
+                "weight": to_int(g.attrib.get("EngraveWeight")),
+                "hit": to_int(g.attrib.get("EngraveHit")),
+                "critical": to_int(g.attrib.get("EngraveCritical")),
+                "avoid": to_int(g.attrib.get("EngraveAvoid")),
+                "secure": to_int(g.attrib.get("EngraveSecure")),
+                "word": engrave_word
+            }
+
         fb10 = bond_levels.get("10", bond_levels.get("1", {}))
         emblemas[gid] = {
             "id": gid,
@@ -660,6 +677,8 @@ def compilar():
             "ascii_name": ascii_name,
             "link_name": g.attrib.get("LinkName", ""),
             "grow_table": gt,
+            "engage_attack": g.attrib.get("EngageAttack", ""),
+            "engrave": engrave_data,
             "engage_items": [it["iid"] for it in fb10.get("engage_items", [])],
             "engage_skills": [sk["sid"] for sk in fb10.get("engage_skills", [])],
             "synchro_skills": [sk["sid"] for sk in fb10.get("synchro_skills", [])],
