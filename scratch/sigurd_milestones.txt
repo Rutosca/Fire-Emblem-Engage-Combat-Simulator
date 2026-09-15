@@ -1,6 +1,0 @@
-Lv 1: stats={'dex': 1, 'def': 1, 'bld': 1, 'mov': 1} items=['Ridersbane'] sync=['Canter', 'SID_ロプトウス特効']
-Lv 5: stats={'dex': 2, 'def': 2, 'bld': 1, 'mov': 1} items=['Ridersbane'] sync=['Canter', 'SID_ロプトウス特効', 'Momentum']
-Lv 10: stats={'dex': 2, 'def': 2, 'bld': 2, 'mov': 1} items=['Ridersbane', 'Brave Lance'] sync=['Canter', 'SID_ロプトウス特効', 'Momentum', 'Headlong Rush']
-Lv 11: stats={'dex': 2, 'def': 2, 'bld': 2, 'mov': 1} items=['Ridersbane', 'Brave Lance'] sync=['Canter', 'SID_ロプトウス特効', 'Momentum', 'Headlong Rush']
-Lv 15: stats={'dex': 3, 'def': 3, 'bld': 2, 'mov': 1} items=['Ridersbane', 'Brave Lance', 'Tyrfing'] sync=['Canter+', 'SID_ロプトウス特効', 'Momentum', 'Headlong Rush']
-Lv 20: stats={'dex': 4, 'def': 4, 'bld': 3, 'mov': 1} items=['Ridersbane', 'Brave Lance', 'Tyrfing'] sync=['Canter+', 'SID_ロプトウス特効', 'Momentum+', 'Headlong Rush']

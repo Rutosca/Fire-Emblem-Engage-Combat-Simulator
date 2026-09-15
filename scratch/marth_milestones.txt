@@ -1,6 +1,0 @@
-Lv 1: stats={'str': 1, 'dex': 1, 'spd': 1} items=['Rapier'] sync=['Perceptive', 'SID_メディウス特効']
-Lv 5: stats={'str': 1, 'dex': 2, 'spd': 2} items=['Rapier'] sync=['Perceptive', 'SID_メディウス特効', 'Break Defenses']
-Lv 10: stats={'str': 2, 'dex': 3, 'spd': 2} items=['Rapier', 'Mercurius'] sync=['Perceptive', 'SID_メディウス特効', 'Break Defenses', 'Unyielding']
-Lv 11: stats={'str': 2, 'dex': 3, 'spd': 2} items=['Rapier', 'Mercurius'] sync=['Perceptive', 'SID_メディウス特効', 'Break Defenses', 'Unyielding']
-Lv 15: stats={'str': 3, 'dex': 3, 'spd': 3} items=['Rapier', 'Mercurius', 'Falchion'] sync=['Perceptive', 'SID_メディウス特効', 'Break Defenses', 'Unyielding+']
-Lv 20: stats={'str': 3, 'dex': 4, 'spd': 4} items=['Rapier', 'Mercurius', 'Falchion'] sync=['Perceptive+', 'SID_メディウス特効', 'Break Defenses', 'Unyielding++']

@@ -1,6 +1,0 @@
-Lv 1 : stats={'mag': 2, 'res': 1, 'lck': 2} items=['Hliðskjálf'] sync=['Reprisal'] max_eng=6
-Lv 5 : stats={'mag': 2, 'res': 2, 'lck': 4} items=['Hliðskjálf'] sync=['Reprisal', 'Book of Worlds'] max_eng=6
-Lv 10: stats={'mag': 3, 'res': 3, 'lck': 4} items=['Hliðskjálf', 'Fortify+'] sync=['Reprisal', 'Book of Worlds', 'Level Boost'] max_eng=6
-Lv 11: stats={'mag': 3, 'res': 3, 'lck': 4} items=['Hliðskjálf', 'Fortify+'] sync=['Reprisal', 'Book of Worlds', 'Level Boost'] max_eng=6
-Lv 15: stats={'mag': 4, 'res': 3, 'lck': 6} items=['Hliðskjálf', 'Fortify+', 'Élivágar'] sync=['Reprisal', 'Book of Worlds', 'Level Boost', 'SP Conversion'] max_eng=6
-Lv 20: stats={'mag': 5, 'res': 4, 'lck': 6} items=['Hliðskjálf', 'Fortify+', 'Élivágar'] sync=['Reprisal+', 'Book of Worlds', 'Level Boost', 'SP Conversion'] max_eng=5
