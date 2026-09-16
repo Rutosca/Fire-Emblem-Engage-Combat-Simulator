@@ -369,6 +369,40 @@ class TestGroundTruthCapitulo7(unittest.TestCase):
         assert res_comb["hp_defensor_final"] == 0
         assert "Unión Tres Casas" in str(res_comb.get("pasivas_activas", []))
 
+    def test_07_stalwart_reduces_effectividad_a_x2_no_inmunidad(self):
+        """
+        Regresión de la migración a la DSL Condition/Act* (SID_特効耐性_効果):
+        Skill.xml dice que Stalwart reduce la efectividad del rival a x2, NO
+        concede inmunidad total (x1) como hacía una versión anterior del motor.
+        """
+        flier_con_stalwart = Unidad(
+            nombre="Flier Stalwart",
+            fuerza=8, magia=0, destreza=10, velocidad=12,
+            defensa=6, resistencia=4, suerte=8,
+            hp_max=30, hp=30, bando="enemigo",
+            tipo_movimiento="volador",
+            habilidades=["Stalwart", "SID_特効耐性"],
+        )
+        arquero = Unidad(
+            nombre="Arquero", fuerza=10, magia=0, destreza=10, velocidad=8,
+            defensa=5, resistencia=3, suerte=5,
+            hp_max=25, hp=25, bando="aliado",
+        )
+        arco_anti_volador = Arma(
+            nombre="Arco anti-volador", tipo="Arco",
+            mt=5, hit=80, crit=0, wt=5, rango=[2],
+            efectividades=["volador"],
+        )
+
+        res = CalculadoraEngage.simular_combate(
+            atacante=arquero, defensor=flier_con_stalwart,
+            arma_atk=arco_anti_volador, arma_def=None,
+            terreno_atk=Terreno(), terreno_def=Terreno(),
+            distancia=2,
+        )
+
+        assert res["atacante"]["multiplicador_efectividad"] == 2
+
 
 if __name__ == "__main__":
     unittest.main()

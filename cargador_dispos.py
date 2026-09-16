@@ -9,6 +9,7 @@ import sys
 import json
 import xml.etree.ElementTree as ET
 from typing import List, Dict, Tuple, Optional
+from motor_calculo import resolver_estilo_combate
 
 # Rutas base
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -258,10 +259,10 @@ class CargadorDisposEngage:
             tipo_mov_c = str(clase_info.get("tipo_movimiento", "")).lower()
             c_nombre_c = str(clase_nombre).lower()
             c_jid_c = str(jid).lower()
-            estilo_str_c = str(clase_info.get("estilo_combate", "")).lower()
+            estilo_str_c = clase_info.get("estilo_combate", "")
 
             es_volador = (
-                estilo_str_c in ("flier", "volador", "飛行スタイル", "飛行", "flying")
+                resolver_estilo_combate(estilo_str_c) == 'volador'
                 or tipo_mov_c in ("volador", "flier", "flying")
                 or any(w in c_nombre_c for w in ["flier", "pegas", "wyvern", "griffin", "grifo", "wing tamer", "sleipnir", "lindwurm", "melusine"])
                 or any(w in c_jid_c for w in ["ペガサス", "ドラゴンナイト", "グリフォン", "スレイプニル", "リンドブルム", "メリュジーヌ", "flier", "wyvern", "pegas"])

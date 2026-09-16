@@ -44,6 +44,7 @@ class FichaUnidad:
     emblema_id: str = ""
     emblema_nombre: str = ""
     habilidades: list = field(default_factory=list)
+    habilidades_sids: list = field(default_factory=list)  # Sids crudos (SID_...) para lookups deterministas por Condition/Act*
     inventario: list = field(default_factory=list)
     potenciadores_usados: list = field(default_factory=list) # e.g. ["Botas (+1 MOV)", "Túnica Angelical (+5 HP)"]
     es_verde: bool = False             # True para aliados que se unen en turno 1 (Alcryst, Citrinne, Lapis)
@@ -59,6 +60,7 @@ class FichaUnidad:
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión, total 4)
     estilo_combate: str = ""           # Estilo de combate: Qi Adept, Backup, Dragon, Covert, etc.
     es_jefe: bool = False              # True si la unidad es un jefe (boss)
+    bonus_ponte_detras_turnos: int = 0  # ¡Ponte detrás de mí! (Alcryst): turnos restantes de +3 Fuerza
 
     @property
     def arma_equipada(self):
@@ -332,6 +334,10 @@ class EstadoTablero:
             ficha.energia_emblema = prev.energia_emblema
             if ficha.stats:
                 setattr(ficha.stats, 'energia_emblema', ficha.energia_emblema)
+        if prev and getattr(prev, 'bonus_ponte_detras_turnos', 0) > 0 and getattr(ficha, 'bonus_ponte_detras_turnos', 0) <= 0:
+            ficha.bonus_ponte_detras_turnos = prev.bonus_ponte_detras_turnos
+            if ficha.stats:
+                setattr(ficha.stats, 'bonus_ponte_detras_turnos', ficha.bonus_ponte_detras_turnos)
 
         self.fichas[ficha.nombre] = ficha
 
@@ -534,6 +540,12 @@ class EstadoTablero:
                     f.stats.en_fusion = f.en_fusion
                     f.stats.energia_emblema = f.energia_emblema
                     f.stats.ataque_emblema_usado = f.ataque_emblema_usado
+
+            # ¡Ponte detrás de mí! (Alcryst): el bonus dura exactamente 1 turno
+            if f.bonus_ponte_detras_turnos > 0:
+                f.bonus_ponte_detras_turnos = max(0, f.bonus_ponte_detras_turnos - 1)
+                if f.stats:
+                    f.stats.bonus_ponte_detras_turnos = f.bonus_ponte_detras_turnos
 
     def iniciar_fase_enemigo(self) -> None:
         """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""

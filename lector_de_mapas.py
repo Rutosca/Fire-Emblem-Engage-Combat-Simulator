@@ -6,16 +6,17 @@ import struct
 from dataclasses import dataclass
 from typing import List, Optional
 
-_candidatos_canonico = [
-    os.path.join(os.path.dirname(__file__), "json", "datos_canonicos_engage.json"),
-    os.path.join(os.path.dirname(__file__), "datos_canonicos_engage.json"),
-]
-_RUTA_CANONICO = next((p for p in _candidatos_canonico if os.path.exists(p)), _candidatos_canonico[0])
+_ruta_catalogo_json = os.path.join(os.path.dirname(__file__), "json", "catalogo_engage.json")
+_ruta_catalogo = _ruta_catalogo_json if os.path.exists(_ruta_catalogo_json) else os.path.join(os.path.dirname(__file__), "catalogo_engage.json")
 _CANONICO_TERRENOS = {}
-if os.path.exists(_RUTA_CANONICO):
+if os.path.exists(_ruta_catalogo):
     try:
-        with open(_RUTA_CANONICO, "r", encoding="utf-8") as f:
-            _CANONICO_TERRENOS = json.load(f).get("terrenos", {})
+        with open(_ruta_catalogo, "r", encoding="utf-8") as f:
+            _terrenos_raw = json.load(f).get("terrenos", {})
+        for _tid, _info in _terrenos_raw.items():
+            _CANONICO_TERRENOS[_tid.lower()] = _info
+            if _info.get("nombre"):
+                _CANONICO_TERRENOS[_info["nombre"].lower()] = _info
     except Exception:
         pass
 

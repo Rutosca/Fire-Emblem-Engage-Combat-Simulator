@@ -166,6 +166,108 @@ def parsear_xml_generico(filepath):
 
 # TIPO_ARMA_KIND importado de constants.py
 
+# =============================================================================
+# Reglas canónicas de Estilo de Combate (StyleName de Job.xml)
+# =============================================================================
+# No proviene de un XML — es conocimiento de diseño del juego, igual que
+# TRIANGULO_ARMAS en motor_calculo.py. Los 8 valores de nombre_jp fueron
+# verificados contra `StyleName` real en Job.xml (grep -o 'StyleName="[^"]*"'
+# Job.xml | sort -u): 気功/竜族/連携/重装/隠密/飛行/騎馬/魔法. Nota: el estilo
+# Místico usa 魔法スタイル, NUNCA 魔道スタイル (ese último token es solo un
+# glosario JP genérico para "Mystic" usado en otro contexto, ver
+# constants.JAPANESE_FALLBACK_TERMS["魔道"]).
+ESTILOS_COMBATE = {
+    "Mystical": {
+        "nombre_jp": "魔法スタイル",
+        "regla_combate": "Ignora bonos de evasión (Avoid) del terreno al atacar con magia.",
+        "ignora_terreno_avo": True,
+        "duplica_terreno": False,
+        "inmune_ruptura": False,
+        "chain_attack": False,
+    },
+    "Covert": {
+        "nombre_jp": "隠密スタイル",
+        "regla_combate": "Duplica los bonos de evasión (Avoid) y defensa otorgados por el terreno.",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": True,
+        "inmune_ruptura": False,
+        "chain_attack": False,
+    },
+    "Armored": {
+        "nombre_jp": "重装スタイル",
+        "regla_combate": "Inmunidad total a sufrir Ruptura (Break) en combate.",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": False,
+        "inmune_ruptura": True,
+        "chain_attack": False,
+    },
+    "Backup": {
+        "nombre_jp": "連携スタイル",
+        "regla_combate": "Participa en ataques en cadena (Chain Attacks) a rango de arma (Hit fijo 80%, 10% Max HP).",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": False,
+        "inmune_ruptura": False,
+        "chain_attack": True,
+    },
+    "Dragon": {
+        "nombre_jp": "竜族スタイル",
+        "regla_combate": "Potenciadores de Engage máximos en habilidades y sincronías de Emblemas.",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": False,
+        "inmune_ruptura": False,
+        "chain_attack": False,
+    },
+    "Cavalry": {
+        "nombre_jp": "騎馬スタイル",
+        "regla_combate": "Mayor movilidad base en el mapa.",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": False,
+        "inmune_ruptura": False,
+        "chain_attack": False,
+    },
+    "Flying": {
+        "nombre_jp": "飛行スタイル",
+        "regla_combate": "Ignora costes de movimiento del terreno y sobrevuela obstáculos transitables.",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": False,
+        "inmune_ruptura": False,
+        "chain_attack": False,
+    },
+    "Qi Adept": {
+        "nombre_jp": "気功スタイル",
+        "regla_combate": "Capacidad de activar Guardia en Cadena (Chain Guard) a aliados adyacentes.",
+        "ignora_terreno_avo": False,
+        "duplica_terreno": False,
+        "inmune_ruptura": False,
+        "chain_attack": False,
+    },
+}
+
+
+def extraer_terrenos(trans):
+    """Parsea Terrain.xml y decodifica sus flags a propiedades estructuradas."""
+    filas = parsear_xml_generico(os.path.join(DATAMINE_DIR, "Terrain.xml"))
+    terrenos = {}
+    for row in filas:
+        tid = row.get("Tid")
+        if not tid:
+            continue
+        mtid = row.get("Name", "")
+        nombre = trans.get(mtid) or trans.get(tid) or mtid.replace("MTID_", "")
+        flag = to_int(row.get("Flag"))
+        terrenos[tid] = {
+            "tid": tid,
+            "nombre": nombre,
+            "avoid": to_int(row.get("Avoid")),
+            "defense": to_int(row.get("Defense")),
+            "heal_turno": to_int(row.get("Heal")),
+            # Flag 4096 = inmunidad a Ruptura (Break) al defender en esta casilla
+            "es_antirruptura": bool(flag & 4096),
+            "combate_prohibido": to_int(row.get("Prohibition")) > 0,
+            "coste_mov": to_int(row.get("MoveCost"), 1),
+        }
+    return terrenos
+
 def limpiar_nombre(ident, name_tag, trans):
     """Obtiene un nombre legible en inglés a partir del identificador de mensaje."""
     # 1. Intentar con name_tag directo
@@ -546,7 +648,26 @@ def compilar():
                 "crit": to_int(s.get("Critical")),
                 "avo": to_int(s.get("Avoid")),
                 "ddg": to_int(s.get("Secure")),
-            }
+            },
+            # Campos crudos de la DSL Condition/Act* (ver condicion_dsl.py). No se parsean
+            # aquí — el intérprete decide en tiempo de combate si Condition se cumple y
+            # aplica ActNames/ActOperations/ActValues. Calculator.xml's fórmulas "共通" se
+            # descartan deliberadamente: no existe (ni se necesita) un intérprete para ellas.
+            "flag": to_int(s.get("Flag")),
+            "priority": to_int(s.get("Priority")),
+            "condition": s.get("Condition", ""),
+            "act_names": [a for a in s.get("ActNames", "").split(";") if a],
+            "act_operations": [a for a in s.get("ActOperations", "").split(";") if a],
+            "act_values": [a for a in s.get("ActValues", "").split(";") if a],
+            "around_condition": s.get("AroundCondition", ""),
+            "around_name": s.get("AroundName", ""),
+            "around_operation": s.get("AroundOperation", ""),
+            "around_value": s.get("AroundValue", ""),
+            "give_target": to_int(s.get("GiveTarget")),
+            "give_condition": s.get("GiveCondition", ""),
+            "give_sids": [a for a in s.get("GiveSids", "").split(";") if a],
+            "sync_sids": [a for a in s.get("SyncSids", "").split(";") if a],
+            "removable": to_int(s.get("Removable")),
         }
 
     print(f"Habilidades procesadas: {len(habilidades)}")
@@ -696,6 +817,10 @@ def compilar():
 
     print(f"Total Emblemas procesados (Base + DLC): {len(emblemas)}")
 
+    # 6. Terrenos (Terrain.xml) y reglas de Estilo de Combate
+    terrenos = extraer_terrenos(trans)
+    print(f"Terrenos procesados: {len(terrenos)}")
+
     # Guardar catálogo maestro compilado
     catalogo_final = {
         "armas": armas,
@@ -703,6 +828,8 @@ def compilar():
         "personajes": personajes,
         "habilidades": habilidades,
         "emblemas": emblemas,
+        "terrenos": terrenos,
+        "estilos_combate": ESTILOS_COMBATE,
     }
 
     output_path = os.path.join(BASE_DIR, "catalogo_engage.json")

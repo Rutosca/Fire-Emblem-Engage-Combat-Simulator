@@ -1563,6 +1563,65 @@ class TestFixesTactical(unittest.TestCase):
         self.assertFalse(es_unidad_qi_adept(lapis), "Backup no es Qi Adept")
         self.assertFalse(es_unidad_qi_adept(celine), "Mystical no es Qi Adept")
 
+    def test_37_fusion_reservada_para_jefes_no_enemigos_normales(self):
+        """
+        La Fusión de Emblema debe reservarse para jefes: contra un enemigo normal
+        que ya puede ser eliminado con un arma corriente, la recomendación NO debe
+        usar el ataque de Fusión aunque esté disponible. Contra un jefe, sí debe
+        preferirse el ataque de Fusión.
+        """
+        from motor_analisis import analizar_situacion_tactica
+        tablero.limpiar()
+
+        alear = resolver_unidad_con_catalogo({
+            "nombre": "Alear", "x": 5, "y": 5, "es_aliado": True,
+            "clase_nombre": "Dragon Child", "nivel": 10,
+            "emblema_nombre": "Marth", "nivel_vinculo": 15, "en_fusion": True,
+            "energia_emblema": 0, "max_energia_emblema": 6,
+            "inventario": [{"nombre": "Iron Sword"}],
+            "stats": {"hp": 28, "fuerza": 12, "destreza": 12, "velocidad": 12, "defensa": 9, "resistencia": 6, "suerte": 8}
+        })
+        tablero.registrar_unidad(alear)
+
+        enemigo_normal = resolver_unidad_con_catalogo({
+            "nombre": "Soldado Débil", "x": 5, "y": 4, "es_aliado": False,
+            "hp_actual": 8, "hp_max": 8, "arma_nombre": "Iron Lance",
+            "stats": {"hp": 8, "defensa": 1, "resistencia": 1, "velocidad": 3, "fuerza": 4, "suerte": 0}
+        })
+        tablero.registrar_unidad(enemigo_normal)
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        ataques = [r for r in res["resultados"] if r.get("aliado") == "Alear" and r.get("enemigo") == "Soldado Débil"]
+        self.assertTrue(len(ataques) > 0, "Debe existir una recomendación de ataque de Alear contra el enemigo normal")
+        mejor = ataques[0]
+        self.assertFalse(mejor.get("requiere_fusion"), "No debe recomendarse gastar la Fusión contra un enemigo normal derrotable con arma corriente")
+        self.assertFalse(mejor.get("es_engage"), "El arma recomendada contra un enemigo normal no debe ser de Engage")
+        self.assertEqual(mejor.get("arma_recomendada"), "Iron Sword", "Debe preferirse el arma corriente que ya asegura la baja")
+
+        # Contra un jefe, el ataque de Fusión SÍ debe ser el preferido
+        tablero.limpiar()
+        alear2 = resolver_unidad_con_catalogo({
+            "nombre": "Alear", "x": 5, "y": 5, "es_aliado": True,
+            "clase_nombre": "Dragon Child", "nivel": 10,
+            "emblema_nombre": "Marth", "nivel_vinculo": 15, "en_fusion": True,
+            "energia_emblema": 0, "max_energia_emblema": 6,
+            "inventario": [{"nombre": "Iron Sword"}],
+            "stats": {"hp": 28, "fuerza": 12, "destreza": 12, "velocidad": 12, "defensa": 9, "resistencia": 6, "suerte": 8}
+        })
+        tablero.registrar_unidad(alear2)
+        jefe = resolver_unidad_con_catalogo({
+            "nombre": "Jefe Enemigo", "x": 5, "y": 4, "es_aliado": False, "es_jefe": True,
+            "hp_actual": 40, "hp_max": 40, "arma_nombre": "Iron Lance",
+            "stats": {"hp": 40, "defensa": 10, "resistencia": 8, "velocidad": 5, "fuerza": 10, "suerte": 5}
+        })
+        tablero.registrar_unidad(jefe)
+
+        res2 = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        ataques_jefe = [r for r in res2["resultados"] if r.get("aliado") == "Alear" and r.get("enemigo") == "Jefe Enemigo"]
+        self.assertTrue(len(ataques_jefe) > 0, "Debe existir una recomendación de ataque de Alear contra el jefe")
+        self.assertTrue(ataques_jefe[0].get("es_engage"), "Contra un jefe debe preferirse el ataque de Fusión de Emblema")
+
+
 if __name__ == "__main__":
     unittest.main()
 

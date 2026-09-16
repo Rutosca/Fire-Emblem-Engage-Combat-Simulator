@@ -13,7 +13,7 @@ import json
 import math
 import unicodedata
 import xml.etree.ElementTree as ET
-from motor_calculo import Unidad, Arma, inferir_rango_arma
+from motor_calculo import Unidad, Arma, inferir_rango_arma, resolver_estilo_combate
 from estado_tablero import FichaUnidad
 
 # Rutas de catálogos oficiales
@@ -21,11 +21,7 @@ _dir_actual = os.path.dirname(__file__)
 _ruta_catalogo_json = os.path.join(_dir_actual, "json", "catalogo_engage.json")
 _ruta_catalogo = _ruta_catalogo_json if os.path.exists(_ruta_catalogo_json) else os.path.join(_dir_actual, "catalogo_engage.json")
 
-_ruta_canonico_json = os.path.join(_dir_actual, "json", "datos_canonicos_engage.json")
-_ruta_canonico = _ruta_canonico_json if os.path.exists(_ruta_canonico_json) else os.path.join(_dir_actual, "datos_canonicos_engage.json")
-
 _catalogo = {}
-_canonico = {}
 
 def normalizar_texto(texto):
     """Elimina tildes y caracteres diacríticos para búsquedas insensibles a acentos."""
@@ -64,17 +60,8 @@ def _construir_grabados_desde_catalogo():
 GRABADOS_EMBLEMA = {}
 
 def cargar_catalogo():
-    """Carga catalogo_engage.json y datos_canonicos_engage.json in-place."""
-    global _catalogo, _canonico
-    if os.path.exists(_ruta_canonico):
-        try:
-            with open(_ruta_canonico, "r", encoding="utf-8") as f:
-                _canonico.clear()
-                _canonico.update(json.load(f))
-            print(f"[OK] Datos Canónicos cargados: {len(_canonico.get('terrenos', {}))} terrenos, {len(_canonico.get('armas', {}))} armas, {len(_canonico.get('habilidades', {}))} habilidades, {len(_canonico.get('clases', {}))} clases")
-        except Exception as e:
-            print(f"Aviso al cargar datos_canonicos_engage.json: {e}")
-
+    """Carga catalogo_engage.json in-place."""
+    global _catalogo
     if os.path.exists(_ruta_catalogo):
         try:
             with open(_ruta_catalogo, "r", encoding="utf-8") as f:
@@ -805,10 +792,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     tipo_mov_c = str(clase_info.get("tipo_movimiento", "")).lower() if clase_info else ""
     c_nombre_c = str(clase_info.get("nombre", "")).lower() if clase_info else ""
     c_jid_c = str(clase_id).lower()
-    estilo_str_c = str(style).lower()
 
     es_volador = (
-        estilo_str_c in ("flier", "volador", "飛行スタイル", "飛行", "flying")
+        resolver_estilo_combate(style) == 'volador'
         or tipo_mov_c in ("volador", "flier", "flying")
         or any(w in c_nombre_c for w in ["flier", "pegas", "wyvern", "griffin", "grifo", "wing tamer", "sleipnir", "lindwurm", "melusine"])
         or any(w in c_jid_c for w in ["ペガサス", "ドラゴンナイト", "グリフォン", "スレイプニル", "リンドブルム", "メリュジーヌ", "flier", "wyvern", "pegas"])
@@ -849,32 +835,32 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             if sig_hab not in habs_lista and sig_hab in ["Canter", "Momentum"]:
                 habs_lista.append(sig_hab)
 
-    # Enriquecer habilidades personales y de clase desde datos canónicos
-    if _canonico:
-        p_canon = _canonico.get("personajes", {}).get(pid) or _canonico.get("personajes", {}).get(normalizar_texto(nombre))
+    # Enriquecer habilidades personales y de clase desde el catálogo compilado
+    if _catalogo:
+        p_canon = _catalogo.get("personajes", {}).get(pid) or _catalogo.get("personajes", {}).get(normalizar_texto(nombre))
         if p_canon:
             for sid in p_canon.get("common_sids", []):
                 if sid not in habs_lista:
                     habs_lista.append(sid)
-                s_nom = _canonico.get("habilidades", {}).get(sid, {}).get("nombre")
+                s_nom = _catalogo.get("habilidades", {}).get(sid, {}).get("nombre")
                 if s_nom and s_nom not in habs_lista:
                     habs_lista.append(s_nom)
             if dificultad in ("difícil", "dificil", "hard", "extremo", "lunatic", "maddening"):
                 for sid in p_canon.get("hard_sids", []):
                     if sid not in habs_lista:
                         habs_lista.append(sid)
-                    s_nom = _canonico.get("habilidades", {}).get(sid, {}).get("nombre")
+                    s_nom = _catalogo.get("habilidades", {}).get(sid, {}).get("nombre")
                     if s_nom and s_nom not in habs_lista:
                         habs_lista.append(s_nom)
             if dificultad in ("extremo", "lunatic", "maddening"):
                 for sid in p_canon.get("lunatic_sids", []):
                     if sid not in habs_lista:
                         habs_lista.append(sid)
-                    s_nom = _canonico.get("habilidades", {}).get(sid, {}).get("nombre")
+                    s_nom = _catalogo.get("habilidades", {}).get(sid, {}).get("nombre")
                     if s_nom and s_nom not in habs_lista:
                         habs_lista.append(s_nom)
 
-        c_canon = _canonico.get("clases", {}).get(clase_id) or _canonico.get("clases", {}).get(normalizar_texto(clase_info.get("nombre", "") if clase_info else ""))
+        c_canon = _catalogo.get("clases", {}).get(clase_id) or _catalogo.get("clases", {}).get(normalizar_texto(clase_info.get("nombre", "") if clase_info else ""))
         if c_canon:
             if not estilo_combate or estilo_combate in ("Infantería", "infantería", "None", ""):
                 estilo_combate = c_canon.get("estilo_combate", estilo_combate)
@@ -889,13 +875,16 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     # Los SID se conservan internamente en los XML, pero la UI debe mostrar
     # el nombre traducido. Si existe traducción, no expongas el identificador
     # japonés como una segunda pasiva duplicada.
+    # Se guarda una copia de los Sids crudos ANTES de traducir/filtrar: el
+    # motor de combate (intérprete de Condition/Act*) necesita identificadores
+    # deterministas, no los nombres mostrados en la UI.
+    habs_sids_crudos = [str(h) for h in habs_lista if str(h).startswith("SID_")]
     habilidades_limpias = []
     for habilidad in habs_lista:
         valor = str(habilidad)
         era_sid = valor.startswith("SID_")
         if valor.startswith("SID_"):
-            info = (_canonico.get("habilidades", {}).get(valor)
-                    or _catalogo.get("habilidades", {}).get(valor))
+            info = _catalogo.get("habilidades", {}).get(valor)
             traducida = info.get("nombre") if info else None
             valor = traducida or valor
         # Algunos registros canónicos no tienen traducción inglesa y dejan
@@ -928,6 +917,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         tipo_movimiento=tipo_movimiento,
         hp_max=calc_hp,
         habilidades=habs_lista,
+        habilidades_sids=habs_sids_crudos,
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
@@ -1232,6 +1222,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         emblema_id=emblema_id,
         emblema_nombre=emblema_info.get("nombre", "") if emblema_info else data.get("emblema_nombre", ""),
         habilidades=habs_lista,
+        habilidades_sids=habs_sids_crudos,
         inventario=inventario_resuelto,
         potenciadores_usados=list(data.get("potenciadores_usados", [])),
         nivel_veneno=val_veneno,

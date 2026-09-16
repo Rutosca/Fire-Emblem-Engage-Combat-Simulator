@@ -12,7 +12,7 @@ Contiene:
 
 import math
 from collections import deque
-from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept
+from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept, resolver_estilo_combate
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock
 from catalogo_loader import _arma_desde_item, _catalogo, normalizar_texto
 
@@ -30,10 +30,10 @@ def es_unidad_backup(ficha_o_stats) -> bool:
         return False
     stats = getattr(ficha_o_stats, 'stats', ficha_o_stats)
     clase = str(getattr(ficha_o_stats, 'clase_nombre', '') or getattr(stats, 'clase_nombre', '') or '').lower().strip()
-    estilo = str(getattr(stats, 'estilo_combate', '') or getattr(ficha_o_stats, 'estilo_combate', '') or '').lower().strip()
+    estilo = str(getattr(stats, 'estilo_combate', '') or getattr(ficha_o_stats, 'estilo_combate', '') or '')
     nombre = str(getattr(ficha_o_stats, 'nombre', '') or getattr(stats, 'nombre', '') or '').lower().strip()
 
-    if any(k in estilo for k in ('apoyo', 'backup', '連', '携')):
+    if resolver_estilo_combate(estilo) == 'apoyo':
         return True
     if clase in BACKUP_CLASSES:
         return True
@@ -958,6 +958,16 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         score += 300
                         if es_engage_candidato:
                             score += 1000
+                    elif es_engage_candidato and not es_jefe_e:
+                        # Reservar la Fusión de Emblema para jefes: contra enemigos normales,
+                        # un ataque de fusión nunca debe competir con (ni superar a) un kill
+                        # seguro/conjunto ni un ataque de desgaste sin kill. Solo se exceptúa
+                        # cuando esta acción es la que evita la muerte propia del atacante
+                        # (supervivencia extrema); la supervivencia de otros aliados se sigue
+                        # sugiriendo aparte como "OPCION" en la sección de táctica de Emblema.
+                        es_supervivencia_extrema = (atacante_muere or prob_muerte >= 50) and (kill_seguro or quiebra_barra)
+                        if not es_supervivencia_extrema:
+                            score = min(score, 40)
                     if is_tele and not (kill_seguro or quiebra_barra or es_jefe_e):
                         score -= 150
                     if verd.get("nivel_riesgo") == "critico" and not kill_seguro:
@@ -1226,12 +1236,18 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
         hp_ene = getattr(enemigo.stats, 'hp', enemigo.hp_actual)
         if hp_ene <= 0:
             continue
+        es_jefe_combo = _es_jefe(enemigo)
 
         # Recopilar todos los ataques viables y seguros de cada aliado contra este enemigo
         ataques_por_aliado = {}
         for a in aliados_activos:
             candidatos_a = []
             for arma, es_eng, nota_a in _armas_aliado(a):
+                # Reservar la Fusión de Emblema para jefes: un ataque coordinado
+                # (desgastar + rematar) contra un enemigo normal nunca debe apoyarse
+                # en un arma de Emblema — hay sobra de armas normales para esto.
+                if es_eng and not es_jefe_combo:
+                    continue
                 rango_max = max(arma.rango) if arma.rango else 1
                 is_tele_c = "ragnarok" in (arma.nombre or "").lower() or getattr(arma, 'engage_attack_nombre', '').lower().startswith('warp')
                 alcance_c = (10 if is_tele_c else a.mov) + rango_max

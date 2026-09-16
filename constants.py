@@ -42,6 +42,40 @@ SID_A_EFECTIVIDAD = {
 }
 
 # ---------------------------------------------------------------------------
+# Estilo de combate (StyleName de Job.xml): alias JP crudo + EN + ES por cada
+# id canónico. Los alias JP fueron verificados contra los 8 valores reales de
+# StyleName en Job.xml (気功/竜族/連携/重装/隠密/飛行/騎馬/魔法). IMPORTANTE:
+# 魔道 NO es alias de "mistico" — es un glosario JP genérico para "Mystic"
+# usado en JAPANESE_FALLBACK_TERMS, sin relación con StyleName; confundirlos
+# fue un bug real detectado en una versión anterior de este catálogo.
+# ---------------------------------------------------------------------------
+ESTILOS_COMBATE_ALIASES = {
+    "mistico":    ["魔法スタイル", "魔法", "mystical", "místico", "mistico", "magic"],
+    "encubierto": ["隠密スタイル", "隠密", "covert", "espía", "espia", "stealth"],
+    "acorazado":  ["重装スタイル", "重装", "armored", "acorazado", "armor"],
+    "apoyo":      ["連携スタイル", "連携", "backup", "de apoyo", "apoyo", "alianza"],
+    "dragon":     ["竜族スタイル", "竜族", "dragon", "dragón", "dragon lord"],
+    "caballeria": ["騎馬スタイル", "騎馬", "cavalry", "caballería", "caballeria", "horse"],
+    "volador":    ["飛行スタイル", "飛行", "flying", "volador", "flier"],
+    "qi_adept":   ["気功スタイル", "気功", "qi adept", "qiadept", "artes marciales", "adepto"],
+}
+
+# Reglas de combate por id canónico (misma info que catalogo_engage.json
+# "estilos_combate", pero indexada por id corto en vez de nombre en inglés,
+# para uso directo desde motor_calculo.py).
+ESTILOS_COMBATE_REGLAS = {
+    "mistico":    {"ignora_terreno_avo": True,  "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": False},
+    "encubierto": {"ignora_terreno_avo": False, "duplica_terreno": True,  "inmune_ruptura": False, "chain_attack": False},
+    "acorazado":  {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": True,  "chain_attack": False},
+    "apoyo":      {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": True},
+    "dragon":     {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": False},
+    "caballeria": {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": False},
+    "volador":    {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": False},
+    "qi_adept":   {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": False},
+    "infanteria": {"ignora_terreno_avo": False, "duplica_terreno": False, "inmune_ruptura": False, "chain_attack": False},
+}
+
+# ---------------------------------------------------------------------------
 # Términos japoneses internos de Intelligent Systems sin traducción oficial
 # en los archivos de mensajes.  Actúan de último recurso en limpiar_nombre().
 # ---------------------------------------------------------------------------

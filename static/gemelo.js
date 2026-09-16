@@ -20,6 +20,7 @@ const state = {
   mapaAncho: 24,
   mapaAlto: 17,
   modalModo: "crear", // "crear" | "editar"
+  fusionActivandoseEnModal: false, // true entre marcar "Activar Fusión" y guardar/cerrar el modal
 };
 
 // ─── Utilidad fetch ────────────────────────────────────────────────────────
@@ -1090,6 +1091,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   }
   if ($("f-energia-emblema")) $("f-energia-emblema").value = esAliado ? 6 : 0;
   $("f-fusion").checked = false;
+  state.fusionActivandoseEnModal = false;
   actualizarEstadoEnergiaModal();
   if ($("f-hp-stock")) $("f-hp-stock").value = "0";
   if ($("f-chain-guard")) $("f-chain-guard").checked = true;
@@ -1231,6 +1233,7 @@ function abrirModalEdicion(ficha) {
     $("f-energia-emblema").value = curE;
   }
   $("f-fusion").checked = ficha.en_fusion || false;
+  state.fusionActivandoseEnModal = false;
   actualizarEstadoEnergiaModal();
 
   // Rellenar chips de habilidades pasivas
@@ -1336,6 +1339,17 @@ function actualizarEstadoEnergiaModal() {
       $("label-fusion").style.opacity = "0.7";
       $("label-fusion").style.pointerEvents = "none";
       if ($("label-energia-estado")) $("label-energia-estado").textContent = "(Consumido por Fusión)";
+    } else if (state.fusionActivandoseEnModal) {
+      // El medidor está a 0 porque se acaba de marcar "Activar Fusión" en este
+      // modal (aún sin guardar) — no es un estado de "recargando", así que no
+      // se debe desmarcar ni deshabilitar el checkbox.
+      $("f-fusion").checked = true;
+      $("f-fusion").disabled = false;
+      if ($("txt-fusion-label")) $("txt-fusion-label").textContent = "Fusión Engage activada (pendiente de guardar)";
+      $("label-fusion").title = "Fusión activada. Guarda la unidad para confirmarla.";
+      $("label-fusion").style.opacity = "1";
+      $("label-fusion").style.pointerEvents = "auto";
+      if ($("label-energia-estado")) $("label-energia-estado").textContent = "(Consumido por Fusión, pendiente de guardar)";
     } else if (!tieneEmb) {
       $("f-fusion").disabled = true;
       if ($("txt-fusion-label")) $("txt-fusion-label").textContent = "Activar Fusión";
@@ -1593,6 +1607,7 @@ async function guardarUnidadDesdeModal() {
   const res = await api("/api/unidad/guardar", "POST", payload);
   if (res.ok && res.ficha) {
     state.fichas[nombre] = res.ficha;
+    state.fusionActivandoseEnModal = false;
     crearToken(res.ficha);
     autoGuardarLocal();
     cerrarModal();
@@ -1897,6 +1912,7 @@ function initModalEvents() {
     const bond = obtenerDatosVinculoEmblema(eInfo, nivelVal);
 
     if (isChecked) {
+      state.fusionActivandoseEnModal = true;
       if ($("f-energia-emblema")) $("f-energia-emblema").value = 0;
       actualizarEstadoEnergiaModal();
       if (bond && bond.engage_skills) {
@@ -1908,6 +1924,7 @@ function initModalEvents() {
       renderizarArmasFusionModal(null);
       mostrarToast(`Fusión Engage con ${eInfo.nombre} activada!`, "ok");
     } else {
+      state.fusionActivandoseEnModal = false;
       actualizarEstadoEnergiaModal();
       if (bond && bond.engage_skills) {
         bond.engage_skills.forEach(sk => {

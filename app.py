@@ -19,7 +19,7 @@ from cargador_dispos import CargadorDisposEngage
 
 from catalogo_loader import (
     normalizar_texto, round_half_up, cargar_catalogo,
-    _catalogo, _canonico, GRABADOS_EMBLEMA, REFINES_GENERICOS,
+    _catalogo, GRABADOS_EMBLEMA, REFINES_GENERICOS,
     parsear_arma_string, _buscar_en_catalogo, _arma_desde_item,
     resolver_unidad_con_catalogo
 )
@@ -745,7 +745,9 @@ def ejecutar_combate():
             return jsonify({
                 "error": f"{f_atk.nombre} no tiene energía suficiente ({cur_e}/{max_e}) para usar {f_atk.arma.nombre}. Debe recargar el medidor de Emblema."
             }), 400
-        duracion_fusion = 4 if (getattr(f_atk, 'nivel_vinculo', 1) >= 11 or 'dragon' in getattr(f_atk, 'estilo_combate', '').lower() or 'dragon' in str(getattr(f_atk, 'clase_nombre', '')).lower()) else 3
+        # Todas las clases reciben 3 turnos de Fusión; solo el nivel de vínculo
+        # con el Emblema (>=11) lo eleva a 4, sin excepción por estilo de clase.
+        duracion_fusion = 4 if getattr(f_atk, 'nivel_vinculo', 1) >= 11 else 3
         f_atk.en_fusion = True
         f_atk.turnos_fusion = duracion_fusion
         f_atk.energia_emblema = 0
@@ -835,6 +837,29 @@ def ejecutar_combate():
             f_def.cargas_ruptura = 1
         elif getattr(f_def, 'cargas_ruptura', 0) > 0:
             f_def.cargas_ruptura = 0
+
+    # ¡Ponte detrás de mí! (Get Behind Me! — Alcryst): cuando un aliado en radio
+    # <=2 casillas de un portador de esta pasiva es atacado (iniciador o
+    # contraataque), ese portador gana +3 Fuerza durante su próximo turno.
+    def _tiene_ponte_detras(ficha):
+        habs = [str(h).lower() for h in getattr(ficha, 'habilidades', [])]
+        return (any(x in h for h in habs for x in ('sid_僕が守ります！', 'sid_僕が守ります', '僕が守ります', 'get behind', 'al rescate', 'ponte detrás', 'ponte detras'))
+                or 'alcryst' in ficha.nombre.lower() or 'staluke' in ficha.nombre.lower())
+
+    unidades_atacadas = [f_def]
+    if combate["defensor"]["puede_contraatacar"] and not combate["defensor"]["contraataque_anulado_por_ruptura"]:
+        unidades_atacadas.append(f_atk)
+    for u_atacada in unidades_atacadas:
+        if not u_atacada.es_aliado:
+            continue
+        for f in tablero.fichas.values():
+            if not f.viva or not f.es_aliado or f.nombre == u_atacada.nombre:
+                continue
+            dist_gb = abs(f.x - u_atacada.x) + abs(f.y - u_atacada.y)
+            if dist_gb <= 2 and _tiene_ponte_detras(f):
+                f.bonus_ponte_detras_turnos = 1
+                if f.stats:
+                    setattr(f.stats, 'bonus_ponte_detras_turnos', 1)
 
     # Repliegue táctico de Canter (Movimiento ágil tras combate si atacante sobrevive)
     pos_canter = data.get("pos_canter")
