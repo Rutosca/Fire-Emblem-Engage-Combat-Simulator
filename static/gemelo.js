@@ -1966,6 +1966,15 @@ function initModalEvents() {
         mostrarToast(`Datos de ${entrada.nombre} cargados de tu roster`, "info");
         return;
       }
+      // Venía de una precarga del roster y el nuevo nombre no está guardado: al crear,
+      // volver a los valores por defecto para no arrastrar clase/emblema/inventario ajenos.
+      if (state.nombrePrecargadoRoster && state.modalModo === "crear") {
+        const x = parseInt($("f-x").value, 10) || 0;
+        const y = parseInt($("f-y").value, 10) || 0;
+        abrirModalCreacion(x, y, true);
+        $("f-nombre").value = nombre;
+      }
+      state.nombrePrecargadoRoster = "";
     }
     await autoRellenarStatsDesdeCatalogo();
   }
@@ -2916,11 +2925,16 @@ function normalizarEntradaRoster(f) {
   };
 }
 
+// Huecos genéricos del preset ("Aliado 3"): van al escuadrón por su posición, pero no al roster.
+function esAliadoGenerico(nombre) {
+  return /^aliado(\s|$)/i.test(String(nombre || "").trim());
+}
+
 function upsertRoster(fichas) {
   const roster = cargarRoster();
   let n = 0;
   (fichas || []).forEach(f => {
-    if (!f || !f.nombre || f.es_aliado === false) return;
+    if (!f || !f.nombre || f.es_aliado === false || esAliadoGenerico(f.nombre)) return;
     roster[claveRoster(f.nombre)] = normalizarEntradaRoster(f);
     n++;
   });
