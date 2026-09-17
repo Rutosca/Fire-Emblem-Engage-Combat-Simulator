@@ -3,6 +3,7 @@ Motor de Cálculo — FE Engage Tactical Assistant
 Motor matemático determinista que replica las fórmulas exactas de Fire Emblem: Engage.
 """
 
+import copy
 import math
 import unicodedata
 from dataclasses import dataclass, field
@@ -86,7 +87,7 @@ class Unidad:
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión)
     genero: int = 0                    # Género canónico (Person.xml Gender: 1=Hombre, 2=Mujer)
     pid: str = ""                      # ID de Person.xml (ej. PID_リュール)
-    bonus_ponte_detras_turnos: int = 0  # ¡Ponte detrás de mí! (Alcryst): turnos restantes de +3 Fuerza
+    estados_temporales: list = field(default_factory=list)  # Buffs "de 1 turno" activos (ver pasivas_temporales.py)
 
     def __post_init__(self):
         if self.hp_max <= 0:
@@ -114,12 +115,15 @@ def es_unidad_qi_adept(ficha_o_stats) -> bool:
     estilo = str(getattr(stats, 'estilo_combate', '') or getattr(ficha_o_stats, 'estilo_combate', '') or '')
     nombre = str(getattr(ficha_o_stats, 'nombre', '') or getattr(stats, 'nombre', '') or '').lower().strip()
 
-    # 1. Comprobar estilo de combate explícito
-    if resolver_estilo_combate(estilo) == 'qi_adept':
-        return True
+    # 1. Estilo de combate explícito (StyleName de Job.xml): es la fuente canónica.
+    # Si la unidad trae estilo y NO es 気功, no es Qi Adept aunque el nombre de la
+    # clase engañe (p.ej. "Swordmaster" contiene "master" pero es 連携/Backup).
+    # "Infantería"/"None" son el placeholder por defecto de la herramienta, no un estilo real.
+    if estilo and normalizar_texto(estilo) not in ('infanteria', 'none', 'infantry'):
+        return resolver_estilo_combate(estilo) == 'qi_adept'
 
-    # 2. Comprobar clases canónicas Qi Adept
-    if clase in QI_ADEPT_CLASSES or any(k in clase for k in ('monk', 'monje', 'master', 'maestro', 'dancer', 'bailar', 'adept')):
+    # 2. Sin estilo: clases canónicas Qi Adept (palabras completas, no "master" suelto)
+    if clase in QI_ADEPT_CLASSES or any(k in clase for k in ('martial monk', 'martial master', 'monje', 'maestro marcial', 'dancer', 'bailar', 'qi adept', 'adepto')):
         return True
 
     # 3. Comprobar personajes canónicos si no tienen clase asignada
@@ -544,6 +548,37 @@ class CalculadoraEngage:
 
         return 1, None
 
+    _CAMPOS_STAT_BOOST = {
+        "str": "fuerza", "mag": "magia", "dex": "destreza", "spd": "velocidad",
+        "def": "defensa", "res": "resistencia", "lck": "suerte", "bld": "complexion",
+    }
+
+    @classmethod
+    def _con_estados_temporales(cls, unidad):
+        """
+        Devuelve una copia superficial de `unidad` con los stat_boosts de sus
+        estados temporales (buffs "de 1 turno") ya sumados, más una lista
+        `_desc_estados_temporales` para documentarlos en pasivas_activas.
+        Si no tiene estados activos devuelve la misma instancia sin tocar.
+        """
+        estados = getattr(unidad, 'estados_temporales', None) or []
+        if not estados:
+            return unidad
+        u = copy.copy(unidad)
+        descs = []
+        for est in estados:
+            partes = []
+            for k, v in (est.get("stat_boosts") or {}).items():
+                campo = cls._CAMPOS_STAT_BOOST.get(k)
+                if not campo or not v:
+                    continue
+                setattr(u, campo, getattr(u, campo, 0) + int(v))
+                partes.append(f"{'+' if int(v) > 0 else ''}{int(v)} {campo.capitalize()}")
+            if partes:
+                descs.append(f"{est.get('nombre', est.get('sid', 'Estado temporal'))} ({', '.join(partes)})")
+        u._desc_estados_temporales = descs
+        return u
+
     @classmethod
     def _stats_de_golpe(
         cls,
@@ -736,16 +771,11 @@ class CalculadoraEngage:
                 atk_base += bonus_ft
                 pasivas_activas.append(f"Gente de Cuento (+{int(bonus_ft)} Daño)")
 
-        # 3. Alcryst: ¡Ponte detrás de mí! (Get Behind Me! — SID_僕が守ります！):
-        # Confirmado: es un autobuff de Alcryst, no un buff al aliado cercano.
-        # Cuando un aliado en radio <=2 de Alcryst es atacado (por cualquiera),
-        # Alcryst gana +3 Fuerza durante 1 turno completo. El disparo (detectar
-        # "un aliado cercano fue atacado" y activar bonus_ponte_detras_turnos=1)
-        # ocurre en app.py::ejecutar_combate, no aquí — esta función solo
-        # consume el contador ya activado, igual que hace con turnos_fusion.
-        if getattr(atacante, 'bonus_ponte_detras_turnos', 0) > 0:
-            atk_base += 3
-            pasivas_activas.append("¡Ponte detrás de mí! (+3 Fuerza)")
+        # 3. Estados temporales (¡Ponte detrás de mí!, Self-Improver, ...): sus
+        # stat_boosts ya vienen sumados en `atacante` (ver simular_combate →
+        # _con_estados_temporales); aquí solo se documentan en pasivas_activas.
+        for desc in getattr(atacante, '_desc_estados_temporales', []) or []:
+            pasivas_activas.append(desc)
 
         # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────
         eng_nom_norm = normalizar_texto(engage_attack_nombre) if engage_attack_nombre else ""
@@ -755,10 +785,10 @@ class CalculadoraEngage:
         es_override = es_engage_attack and any(t in eng_nom_norm for t in ('override', 'superacion'))
 
         if es_warp_ragnarok:
-            # Warp Ragnarok: Tomo magico Ragnarok (Mt 18 canonico en Warp Ragnarok)
-            # Si el arma no traia Mt asignado, garantizar el aporte canonico de 18
+            # Warp Ragnarok: ataca con el tomo Ragnarok (IID_セリカ_ライナロック, Mt 15).
+            # Si el arma no traia Mt asignado, garantizar el aporte canonico de 15
             if getattr(arma, 'mt', 0) <= 0:
-                atk_base += 18
+                atk_base += 15
             pasivas_activas.append("Ragnarök Fusión (Ataque de Emblema Celica)")
         elif es_override:
             pasivas_activas.append(f"Superación / Override ({arma.nombre})")
@@ -776,6 +806,19 @@ class CalculadoraEngage:
         daño = max(0, atk_efectivo - stat_defensiva)
         if daño > 0:
             daño += nivel_veneno
+
+        # Bono de estilo Místico en Warp Ragnarök (SID_セリカエンゲージ技_魔法: Act "威力;*;1.2"):
+        # multiplica el DAÑO (威力) por 1.2, truncando. Ground truth: Céline (Mística,
+        # Mag 16 + Mt 15 + Resonancia 2) vs Hortensia (Res 18) = 15 → 18 en el juego.
+        if es_warp_ragnarok and estilo_atk_canon == 'mistico' and daño > 0:
+            info_wr_mistico = condicion_dsl.HABILIDADES_CATALOGO.get('SID_セリカエンゲージ技_魔法')
+            mult_wr = 1.2
+            if info_wr_mistico:
+                acumulador_wr = {'power': daño}
+                condicion_dsl.aplicar_acts(info_wr_mistico, acumulador_wr)
+                mult_wr = acumulador_wr.get('power', daño) / daño if daño else 1.2
+            daño = math.floor(daño * mult_wr)
+            pasivas_activas.append(f"Estilo Místico (Warp Ragnarök ×{mult_wr:g} daño)")
 
         # ── Pasivas defensivas de reducción de daño ─────────────────────────
         # 1. Gentileza (Eirika)
@@ -980,7 +1023,9 @@ class CalculadoraEngage:
         # lo que indica que es un efecto de nivel de Estilo/Engage del dragón, no una
         # habilidad Sid independiente — no migrable al intérprete sin más ingeniería
         # inversa. Se deja el comportamiento manual existente sin cambios.
-        tiene_divine_speed = es_engage_activo and (
+        # Velocidad Divina (Marth): al iniciar combate, golpe extra al 50% del daño
+        # (truncado) tras el primer ataque, y cura al atacante el daño de ese golpe.
+        tiene_divine_speed = es_iniciador and es_engage_activo and (
             any('divine speed' in h or 'velocidad divina' in h or '神速' in h for h in habs_atk)
             or 'marth' in emblema_atk or 'マルス' in emblema_atk
         )
@@ -1051,6 +1096,11 @@ class CalculadoraEngage:
         if arma_def:
             cls._validar_arma(arma_def)
 
+        # Buffs temporales (¡Ponte detrás de mí!, Self-Improver, ...): se aplican
+        # sobre copias para no mutar las stats persistentes de la ficha.
+        atacante = cls._con_estados_temporales(atacante)
+        defensor = cls._con_estados_temporales(defensor)
+
         if distancia not in arma_atk.rango:
             raise ValueError(
                 f"'{arma_atk.nombre}' no alcanza a distancia {distancia}. "
@@ -1076,8 +1126,17 @@ class CalculadoraEngage:
             defensor_en_ruptura=defensor_en_ruptura,
         )
 
-        # Los ataques de Emblema no permiten contraataque del defensor
-        puede_contra = (not es_engage_attack) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
+        # Ballesta de mapa (arco de la unidad disparado desde el objeto): un solo
+        # golpe, sin contraataque, sin follow-up ni Chain Attacks ni golpes extra.
+        es_ballesta = bool(getattr(arma_atk, 'es_ballesta', False))
+        if es_ballesta:
+            aliados_apoyo_backup = None
+            stats_atk["tiene_divine_speed"] = False
+            stats_atk["dmg_break_def"] = 0
+            stats_atk["tiene_alacrity"] = False
+
+        # Los ataques de Emblema y las ballestas no permiten contraataque del defensor
+        puede_contra = (not es_engage_attack) and (not es_ballesta) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
         stats_def = None
         if puede_contra:
             stats_def = cls._stats_de_golpe(
@@ -1091,7 +1150,7 @@ class CalculadoraEngage:
         es_smash_def = getattr(arma_def, 'es_smash', False) if arma_def else False
 
         diff_as_atk = stats_atk["as_atk"] - stats_atk["as_def"]
-        follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk) and (not es_engage_attack)
+        follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk) and (not es_engage_attack) and (not es_ballesta)
         follow_up_def = puede_contra and ((stats_atk["as_def"] - stats_atk["as_atk"]) >= 5) and (not es_smash_def)
 
         # Alacrity (Lyn): si AS >= rival + 9 (o +4), follow-up va antes del contraataque
@@ -1120,6 +1179,9 @@ class CalculadoraEngage:
             cg_enabled = getattr(chain_guard_protector, 'chain_guard_activo', True) and not getattr(chain_guard_protector, 'chain_guard_usado', False)
             if es_qi and hp_p >= hp_max_p and cg_enabled:
                 chain_guard_activo = True
+
+        curacion_divine_speed = 0
+        veneno_divine_speed = False
 
         def registrar(actor, tipo, daño, hp_obj):
             secuencia.append({
@@ -1191,10 +1253,6 @@ class CalculadoraEngage:
                 if stats_atk["inflige_ruptura"]:
                     defensor_roto = True
 
-                if stats_atk.get("tiene_divine_speed") and hp_def > 0 and not barra_rota:
-                    dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
-                    golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
-
             # ── Follow-up del defensor si doblaba, atacante sigue vivo y defensor no quedó roto ──
             if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 hp_atk -= stats_def["daño"]
@@ -1228,12 +1286,9 @@ class CalculadoraEngage:
                     if stats_atk["inflige_ruptura"]:
                         defensor_roto = True
 
-                    # Golpe extra de Divine Speed (Marth)
-                    if stats_atk.get("tiene_divine_speed") and hp_def > 0 and not barra_rota:
-                        dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
-                        golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
-
-                    # Golpe extra de Break Defenses (Marth - Rompedefensas)
+                    # Golpe extra de Break Defenses (Marth - Rompedefensas): inmediatamente
+                    # tras el golpe que rompe, al 50%, SIN curación (verificado en capturas
+                    # del juego: "Break! 10 → 5" y luego el combate sigue con normalidad)
                     if stats_atk.get("dmg_break_def", 0) > 0 and hp_def > 0 and not barra_rota:
                         golpear_defensor(atacante.nombre, "ataque (Break Defenses)", stats_atk["dmg_break_def"])
 
@@ -1257,10 +1312,37 @@ class CalculadoraEngage:
                 hp_atk -= stats_def["daño"]
                 registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
 
+        # 2f. Velocidad Divina (Marth): SIEMPRE el último golpe del combate, tras
+        # todos los follow-ups, al 50% del daño truncado. Verificado en capturas
+        # del juego: "11 → ←15 → 11 → (verde 5) 5".
+        # La curación es el bono de estilo Dragón (SID_カウンター_竜族効果, que
+        # concede SID_神速スタイル効果発動済み): cond "総手番回数 == 手番回数 - 1 &&
+        # HP < MaxHP && HP > 0", act "回復 + min(相手のHP, 相手のダメージ)" — es
+        # decir, cura el daño REAL (topado por los HP que le quedaban al rival).
+        if (stats_atk.get("tiene_divine_speed") and hp_atk > 0 and hp_def > 0
+                and not barra_resucitada and not stats_atk.get("es_engage_attack")):
+            dmg_divine = max(1, math.floor(stats_atk["daño"] * 0.50))
+            golpear_defensor(atacante.nombre, "divine_speed", dmg_divine)
+            estilo_atk_ds = resolver_estilo_combate(getattr(atacante, 'estilo_combate', ''))
+            if estilo_atk_ds == 'dragon' or getattr(atacante, 'es_dragon', False):
+                curacion_divine_speed += dano_aplicado_ultimo
+            # Bono de estilo Encubierto (SID_カウンター_隠密効果_発動チェック): el golpe
+            # de Velocidad Divina envenena al rival (+1 nivel, como una daga).
+            elif estilo_atk_ds == 'encubierto' and dano_aplicado_ultimo > 0:
+                veneno_divine_speed = True
+
         # 3. Recoil de HP por Resonancia
         recoil = stats_atk.get("recoil_hp", 0)
         if recoil > 0 and hp_atk > 1:
             hp_atk = max(1, hp_atk - recoil)
+
+        # 3b. Velocidad Divina: el atacante recupera el daño real del golpe extra
+        hp_atk_max = getattr(atacante, 'hp_max', 0) or hp_atk_inicial
+        if curacion_divine_speed > 0 and hp_atk > 0:
+            curacion_divine_speed = min(curacion_divine_speed, max(0, hp_atk_max - hp_atk))
+            hp_atk += curacion_divine_speed
+        else:
+            curacion_divine_speed = 0
 
         # 4. Hold Out (Roy): si defensor recibía daño letal pero tenía HP >= 30%
         if stats_atk.get("tiene_hold_out") and hp_def <= 0 and defensor.hp >= math.floor(hp_def_max * 0.30):
@@ -1320,7 +1402,7 @@ class CalculadoraEngage:
 
         # Efectos de Veneno (Dagas aplican Veneno si conectan al menos 1 golpe)
         es_daga_atk = bool(arma_atk and (getattr(arma_atk, 'tipo', '') in ('Daga', 'Dagger') or 'daga' in str(arma_atk.nombre).lower() or 'dagger' in str(arma_atk.nombre).lower() or 'knife' in str(arma_atk.nombre).lower()))
-        aplica_veneno = bool(es_daga_atk and golpes_atk > 0 and stats_atk["precision"] > 0)
+        aplica_veneno = bool((es_daga_atk and golpes_atk > 0 and stats_atk["precision"] > 0) or veneno_divine_speed)
         veneno_def_previo = max(0, min(3, int(getattr(defensor, 'nivel_veneno', 0) or 0)))
         veneno_def_post = min(3, veneno_def_previo + (1 if aplica_veneno else 0))
 
@@ -1341,6 +1423,8 @@ class CalculadoraEngage:
                 "daño_total_ronda": daño_total_atk,
                 "tiene_follow_up": follow_up_atk,
                 "recoil_hp": recoil,
+                "tiene_divine_speed": stats_atk.get("tiene_divine_speed", False),
+                "curacion_divine_speed": curacion_divine_speed,
                 "puede_canter": stats_atk.get("tiene_canter", False),
                 "es_smash": es_smash_atk,
                 "efectividad_activa": stats_atk.get("efectividad_activa"),
@@ -1353,6 +1437,7 @@ class CalculadoraEngage:
                 "lodestar_hits": stats_atk.get("lodestar_hits", (0, 0)),
                 "es_warp_ragnarok": stats_atk.get("es_warp_ragnarok", False),
                 "es_engage_attack": stats_atk.get("es_engage_attack", False),
+                "es_ballesta": es_ballesta,
             },
             "defensor": {
                 "nombre": defensor.nombre,
@@ -1678,9 +1763,9 @@ class CalculadoraEngage:
             umbral_moderado = 0.1
         else:
             # Agresivo/Speedrun: acepta más riesgo
-            umbral_critico = 30
-            umbral_alto = 15
-            umbral_moderado = 5
+            umbral_critico = 40
+            umbral_alto = 25
+            umbral_moderado = 10
 
         # Si la unidad es Lord/Esencial (ej: Alear), elevar nivel de alerta por Game Over
         es_game_over_riesgo = atacante.es_lord and (atacante_muere_si_falla or prob_muerte_total > 0)

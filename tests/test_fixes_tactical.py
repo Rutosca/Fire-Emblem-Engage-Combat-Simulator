@@ -854,14 +854,18 @@ class TestFixesTactical(unittest.TestCase):
         solo entran en vigor cuando se han agotado todos los turnos de fusión.
         """
         tablero.limpiar()
-        # Aliado en fusión activa
+        # Aliado en fusión activa (HP alto para sobrevivir a varios contraataques
+        # de EnemigoTest a lo largo del test y poder seguir contraatacando)
         tablero.registrar_unidad(resolver_unidad_con_catalogo({
             "nombre": "Alear", "x": 5, "y": 5, "es_aliado": True,
-            "emblema_nombre": "Marth", "en_fusion": True, "energia_emblema": 0
+            "emblema_nombre": "Marth", "en_fusion": True, "energia_emblema": 0,
+            "stats": {"hp": 40, "defensa": 12}
         }))
+        # Arma sin ventaja de triángulo sobre la Espada de Alear (Liberation), para
+        # que en el paso 4 su contraataque no quede anulado por Ruptura instantánea.
         tablero.registrar_unidad(resolver_unidad_con_catalogo({
             "nombre": "EnemigoTest", "x": 5, "y": 6, "es_aliado": False,
-            "arma_nombre": "Iron Lance", "stats": {"hp": 30, "defensa": 5}
+            "arma_nombre": "Iron Sword", "stats": {"hp": 30, "defensa": 5}
         }))
 
         client = app.test_client()
@@ -891,17 +895,19 @@ class TestFixesTactical(unittest.TestCase):
         # 4. Fuera de fusión: defender da 1 recarga
         energia_previa = f_alear.energia_emblema
         res = client.post("/api/combate/ejecutar", json={
-            "atacante": "EnemigoTest", "defensor": "Alear", "arma_nombre": "Iron Lance"
+            "atacante": "EnemigoTest", "defensor": "Alear", "arma_nombre": "Iron Sword"
         })
         self.assertEqual(res.status_code, 200)
         self.assertEqual(f_alear.energia_emblema, energia_previa + 1, "Recibir un ataque da otra recarga (+1)")
 
-        # 5. Casilla de recarga de Emblema completa el medidor al 100% (6/6)
-        # Colocar casilla recarga en mapa (13, 6) o grid
+        # 5. Casilla de recarga de Emblema completa el medidor al 100% (6/6) cuando la
+        # unidad TERMINA su acción encima (pisarla sin actuar no recarga)
         if tablero.mapa and hasattr(tablero.mapa, 'grid') and len(tablero.mapa.grid) > 13:
             tablero.mapa.grid[13][6].es_recarga_emblema = True
             tablero.mover_unidad("Alear", 13, 6)
-            self.assertEqual(f_alear.energia_emblema, f_alear.max_energia_emblema, "Pisar casilla recarga llena al 100%")
+            self.assertLess(f_alear.energia_emblema, f_alear.max_energia_emblema, "Pisar la casilla no recarga todavía")
+            tablero.aplicar_recarga_emblema_en_casilla("Alear")
+            self.assertEqual(f_alear.energia_emblema, f_alear.max_energia_emblema, "Terminar la acción en la casilla llena al 100%")
 
     def test_21_ataque_emblema_una_vez_por_fusion(self):
         """
@@ -1023,6 +1029,7 @@ class TestFixesTactical(unittest.TestCase):
         if tablero.mapa and hasattr(tablero.mapa, 'grid') and len(tablero.mapa.grid) > 13:
             tablero.mapa.grid[13][6].es_recarga_emblema = True
             tablero.mover_unidad("Alear", 13, 6)
+            tablero.aplicar_recarga_emblema_en_casilla("Alear")
             f_alear = tablero.obtener_ficha("Alear")
             self.assertEqual(f_alear.energia_emblema, 5, "Casilla de recarga a Nivel 20 debe llenar a 5")
             self.assertEqual(f_alear.max_energia_emblema, 5)
@@ -1620,6 +1627,93 @@ class TestFixesTactical(unittest.TestCase):
         ataques_jefe = [r for r in res2["resultados"] if r.get("aliado") == "Alear" and r.get("enemigo") == "Jefe Enemigo"]
         self.assertTrue(len(ataques_jefe) > 0, "Debe existir una recomendación de ataque de Alear contra el jefe")
         self.assertTrue(ataques_jefe[0].get("es_engage"), "Contra un jefe debe preferirse el ataque de Fusión de Emblema")
+
+    def test_38_grabado_emblema_como_campo_separado_se_aplica(self):
+        """
+        _arma_desde_item no debe perder el grabado de Emblema cuando viene como
+        campo separado del dict de inventario (no embebido en "nombre").
+        """
+        item = {"nombre": "Levin Sword", "nombre_base": "Levin Sword", "grabado": "Sigurd", "refine_lvl": 0}
+        arma = _arma_desde_item(item)
+        self.assertEqual(arma.mt, 14, "El grabado de Sigurd debe sumar +1 Mt (13 base + 1)")
+        self.assertEqual(arma.avo_bonus, 20, "El grabado de Sigurd debe dar +20 Avoid")
+
+    def test_39_usar_objeto_consume_uso_y_marca_actuado_definitivamente(self):
+        """
+        /api/unidad/usar_objeto debe: 1) descontar un uso del objeto indicado
+        (eliminándolo del inventario al llegar a 0), y 2) marcar ha_actuado=True
+        de forma definitiva (no alternable), a diferencia de alternar_actuado.
+        """
+        tablero.limpiar()
+        yunaka = resolver_unidad_con_catalogo({
+            "nombre": "Yunaka", "x": 5, "y": 5, "es_aliado": True,
+            "inventario": [{"nombre": "Heal", "usos": 1, "usos_max": 3}],
+            "stats": {"hp": 24, "magia": 8}
+        })
+        tablero.registrar_unidad(yunaka)
+
+        client = app.test_client()
+        res = client.post("/api/unidad/usar_objeto", json={"nombre": "Yunaka", "item_nombre": "Heal"})
+        data = res.get_json()
+        self.assertTrue(data["ok"])
+        self.assertTrue(data["ficha"]["ha_actuado"], "La unidad debe quedar marcada como actuada")
+        nombres_inv = [it.get("nombre") for it in data["ficha"]["inventario"]]
+        self.assertNotIn("Heal", nombres_inv, "El bastón debe eliminarse del inventario al agotar sus usos")
+
+        # Llamar de nuevo (p.ej. tras curar a otro objetivo por error) NO debe
+        # des-marcar ha_actuado, a diferencia de lo que haría alternar_actuado
+        res2 = client.post("/api/unidad/usar_objeto", json={"nombre": "Yunaka", "item_nombre": "Heal"})
+        data2 = res2.get_json()
+        self.assertTrue(data2["ficha"]["ha_actuado"], "Una segunda llamada no debe des-marcar ha_actuado")
+
+    def test_40_recarga_emblema_proporcional_a_golpes_reales(self):
+        """
+        La recarga de Fusión del defensor debe basarse en los contraataques que
+        REALMENTE ocurrieron, no asumir siempre +1: si el defensor tiene
+        follow-up (podría contraatacar 2 veces) pero su primer contraataque ya
+        mata al atacante, el segundo golpe nunca ocurre y solo debe dar 1 carga.
+        """
+        tablero.limpiar()
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Rapido", "x": 5, "y": 5, "es_aliado": True,
+            "arma_nombre": "Iron Sword",
+            "emblema_nombre": "Marth", "energia_emblema": 0,
+            "stats": {"hp": 30, "fuerza": 10, "velocidad": 20, "defensa": 8}
+        }))
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Debil", "x": 5, "y": 6, "es_aliado": False,
+            "arma_nombre": "Iron Sword",
+            "hp_actual": 3, "hp_max": 3,
+            "stats": {"hp": 3, "velocidad": 1, "defensa": 0}
+        }))
+
+        client = app.test_client()
+        res = client.post("/api/combate/ejecutar", json={
+            "atacante": "Debil", "defensor": "Rapido", "arma_nombre": "Iron Sword"
+        })
+        self.assertEqual(res.status_code, 200)
+        secuencia = res.get_json()["combate"]["resultado"]["secuencia"]
+        golpes_rapido = [s for s in secuencia if s["actor"] == "Rapido"]
+        self.assertEqual(len(golpes_rapido), 1, "Rapido debe matar a Debil en su primer contraataque, sin llegar al follow-up")
+
+        f_rapido = tablero.obtener_ficha("Rapido")
+        self.assertEqual(f_rapido.energia_emblema, 1, "Solo debe recibir 1 carga por el único contraataque que ocurrió, no 2")
+
+    def test_41_grabado_sobrevive_reparseo_tras_mostrarse(self):
+        """
+        GRABADOS_EMBLEMA debe usar el nombre localizado oficial (God.xml "nombre"),
+        no la transliteración interna "ascii_name" (que trae erratas: Sigurd-Siglud,
+        Leif-Leaf, Lyn-Lin, Corrin-Kamui, Eirika-Eirik, Alear-Lueur). De lo contrario,
+        el nombre formateado que se le muestra al jugador no coincide con ninguna
+        clave al reparsearlo (p.ej. al reguardar la unidad), y el grabado desaparece.
+        """
+        from catalogo_loader import parsear_arma_string
+        for emblema in ("Sigurd", "Leif", "Lyn", "Corrin", "Eirika", "Alear"):
+            primera = parsear_arma_string(f"Iron Sword ({emblema})")
+            self.assertIsNotNone(primera.get("grabado"), f"{emblema}: el grabado debe aplicarse en la primera pasada")
+            segunda = parsear_arma_string(primera["nombre"])
+            self.assertIsNotNone(segunda.get("grabado"), f"{emblema}: el grabado debe sobrevivir al reparsear el nombre ya formateado")
+            self.assertEqual(primera["avo_bonus"], segunda["avo_bonus"], f"{emblema}: el bono debe mantenerse igual tras el reparseo")
 
 
 if __name__ == "__main__":

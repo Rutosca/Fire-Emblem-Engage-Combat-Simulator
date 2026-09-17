@@ -436,7 +436,7 @@ def _armas_aliado(aliado):
                             armas.append((a_eng_atk, True, nota_atk))
                     else:
                         arma_fija_data = (cfg or {}).get("arma_fija", {})
-                        f_mt = arma_fija_data.get("mt", 18 if ("warp" in clean_norm or "ragnarok" in clean_norm) else (19 if "houses" in clean_norm else 15))
+                        f_mt = arma_fija_data.get("mt", 19 if "houses" in clean_norm else 15)
                         f_tipo = arma_fija_data.get("tipo", "Tomo" if ("warp" in clean_norm or "ragnarok" in clean_norm) else ("Lanza" if "houses" in clean_norm else "Espada"))
                         f_hit = arma_fija_data.get("hit", 100)
                         f_wt = arma_fija_data.get("wt", 5)
@@ -1061,12 +1061,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 golpe_txt = f"1x{dpp}{chain_txt} = {dpp + chain_dmg} dmg (Warp Ragnarök)"
             elif follow_up and tiene_ds:
                 dmg_ds = max(1, math.floor(dpp * 0.50))
-                golpe_txt = f"2x{dpp} + {dmg_ds} (Velocidad Divina){chain_txt} = {dano_arma_base + dmg_ds + chain_dmg} dmg"
+                cura_ds = atk_f.get("curacion_divine_speed", 0)
+                golpe_txt = f"2x{dpp} + {dmg_ds} (Velocidad Divina){chain_txt} = {dano_arma_base + dmg_ds + chain_dmg} dmg" + (f" · cura {cura_ds} HP" if cura_ds else "")
             elif follow_up:
                 golpe_txt = f"2x{dpp}{chain_txt} = {dano_arma_base + chain_dmg} dmg" + (" (Follow-up)" if not chain_txt else "")
             elif tiene_ds:
                 dmg_ds = max(1, math.floor(dpp * 0.50))
-                golpe_txt = f"1x{dpp} + {dmg_ds} (Velocidad Divina){chain_txt} = {dpp + dmg_ds + chain_dmg} dmg"
+                cura_ds = atk_f.get("curacion_divine_speed", 0)
+                golpe_txt = f"1x{dpp} + {dmg_ds} (Velocidad Divina){chain_txt} = {dpp + dmg_ds + chain_dmg} dmg" + (f" · cura {cura_ds} HP" if cura_ds else "")
             else:
                 if chain_dmg > 0:
                     golpe_txt = f"1x{dpp} + {chain_dmg} (Chain Attack) = {dpp + chain_dmg} dmg"
@@ -1378,6 +1380,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
         bastones = []
         for it in (sanador.inventario or []):
             nom_it = (it.get("nombre") or "").lower()
+            usos_it = it.get("usos")
+            if usos_it is not None and usos_it <= 0:
+                continue
             if any(b in nom_it for b in palabras_curar):
                 bastones.append(it)
 
@@ -1449,6 +1454,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             pocion = None
             for it in (aliado.inventario or []):
                 nom_p = (it.get("nombre") or "").lower()
+                usos_p = it.get("usos")
+                if usos_p is not None and usos_p <= 0:
+                    continue
                 if any(p in nom_p for p in ("pocion", "poción", "vulnerary", "elixir", "brebaje")):
                     pocion = it
                     break

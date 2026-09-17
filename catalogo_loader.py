@@ -41,8 +41,14 @@ def _construir_grabados_desde_catalogo():
         if eng:
             nom = edata.get("nombre", "")
             ascii_n = edata.get("ascii_name", "")
+            # "nombre" (God.xml, nombre localizado oficial) es el que se usa para
+            # mostrar y volver a guardar el grabado — "ascii_name" es una
+            # transliteración interna del datamine con erratas conocidas
+            # (Sigurd->Siglud, Leif->Leaf, Lyn->Lin, Corrin->Kamui, Eirika->Eirik,
+            # Alear->Lueur) que rompía el guardado/reparseo del arma al no
+            # coincidir con ninguna clave de GRABADOS_EMBLEMA.
             entry = {
-                "nombre": ascii_n or nom,
+                "nombre": nom or ascii_n,
                 "emblema": nom,
                 "mt": eng.get("power", 0),
                 "wt": eng.get("weight", 0),
@@ -157,10 +163,13 @@ ATAQUES_ENGAGE_CONFIG = {
     "Bond Blast": {"es_variable": True, "tipos_permitidos": ["Espada"]},
 
     # Ataques de arma fija: utilizan una técnica / arma predeterminada con estadísticas canónicas
+    # Warp Ragnarök ataca con el tomo Ragnarok (IID_セリカ_ライナロック: Mt 15). El x1.2 de
+    # Místico (SID_セリカエンゲージ技_魔法: 威力 * 1.2) se aplica al DAÑO en motor_calculo,
+    # no al Mt — por eso ya no se usa el Mt 18 "fudge" que solo cuadraba con unidades Místicas.
     "Warp Ragnarök": {
         "es_variable": False,
         "arma_fija": {
-            "nombre": "Warp Ragnarök", "mt": 18, "hit": 100, "crit": 0, "wt": 5, "tipo": "Tomo", "es_magica": True, "rango": [1]
+            "nombre": "Warp Ragnarök", "mt": 15, "hit": 100, "crit": 0, "wt": 5, "tipo": "Tomo", "es_magica": True, "rango": [1]
         }
     },
     "Houses Unite": {
@@ -378,6 +387,94 @@ def _buscar_en_catalogo(categoria: str, texto: str):
 
     return None, None
 
+_ALIAS_TIPO_ARMA = {
+    "espada": "Espada", "sword": "Espada",
+    "lanza": "Lanza", "lance": "Lanza",
+    "hacha": "Hacha", "axe": "Hacha",
+    "arco": "Arco", "bow": "Arco",
+    "daga": "Daga", "dagger": "Daga", "knife": "Daga",
+    "tomo": "Tomo", "tome": "Tomo", "magia": "Tomo", "magic": "Tomo",
+    "baston": "Bastón", "bastón": "Bastón", "staff": "Bastón", "rod": "Bastón",
+    "artes": "Artes", "arts": "Artes", "fist": "Artes", "puño": "Artes",
+    "especial": "Especial", "special": "Especial",
+}
+
+
+def normalizar_tipo_arma(tipo) -> str:
+    """'bow' / 'Arco' / 'arco' → 'Arco' (clave canónica de armas_permitidas)."""
+    return _ALIAS_TIPO_ARMA.get(normalizar_texto(tipo), str(tipo or "").capitalize())
+
+
+def armas_permitidas_clase(clase_id: str = "", clase_nombre: str = "") -> list:
+    """Tipos de arma en que la clase tiene maestría (Job.xml WeaponBow="1", etc.)."""
+    info = _catalogo.get("clases", {}).get(clase_id) if clase_id else None
+    if not info and clase_nombre:
+        _, info = _buscar_en_catalogo("clases", clase_nombre)
+    return list((info or {}).get("armas_permitidas", []))
+
+
+def puede_usar_tipo_arma(ficha, tipo) -> bool:
+    """True si la clase de la ficha tiene maestría en ese tipo de arma."""
+    tipo_c = normalizar_tipo_arma(tipo)
+    return tipo_c in armas_permitidas_clase(getattr(ficha, 'clase_id', ''), getattr(ficha, 'clase_nombre', ''))
+
+
+def tiene_arma_de_tipo(ficha, tipo) -> bool:
+    """True si la ficha lleva en el inventario (o equipada) un arma de ese tipo."""
+    tipo_c = normalizar_tipo_arma(tipo)
+    if getattr(ficha, 'arma', None) and normalizar_tipo_arma(getattr(ficha.arma, 'tipo', '')) == tipo_c:
+        return True
+    for it in getattr(ficha, 'inventario', []) or []:
+        t_it = it.get("tipo")
+        if not t_it:
+            a_obj = _arma_desde_item(it)
+            t_it = getattr(a_obj, 'tipo', '') if a_obj else ''
+        if normalizar_tipo_arma(t_it) == tipo_c:
+            return True
+    return False
+
+
+def puede_usar_ballesta(ficha) -> bool:
+    """
+    Ballestas / arcos de mapa (p.ej. Capítulo 8): solo unidades cuya clase tiene
+    maestría en Arco Y que llevan un arco en el inventario.
+    """
+    return puede_usar_tipo_arma(ficha, "Arco") and tiene_arma_de_tipo(ficha, "Arco")
+
+
+def arco_de_ficha(ficha):
+    """El arco equipado o, si no, el primer arco del inventario (objeto Arma) — None si no hay."""
+    if getattr(ficha, 'arma', None) and normalizar_tipo_arma(getattr(ficha.arma, 'tipo', '')) == "Arco":
+        return ficha.arma
+    for it in getattr(ficha, 'inventario', []) or []:
+        a_obj = _arma_desde_item(it)
+        if a_obj and normalizar_tipo_arma(getattr(a_obj, 'tipo', '')) == "Arco":
+            return a_obj
+    return None
+
+
+def arma_ballesta_desde(ficha, props_objeto: dict):
+    """
+    Arma efectiva al disparar una ballesta de mapa con el arco de la unidad
+    (verificado en el juego, Cap. 8): usa el Mt/efectividad del arco propio,
+    Hit +20, alcance `distancia_min`..`distancia_max` (3–7), UN solo golpe y
+    sin contraataque. Ataque = Fue + Mt (x3 contra voladores) − Def del rival.
+    """
+    import copy
+    arco = arco_de_ficha(ficha)
+    if not arco:
+        return None
+    arma = copy.copy(arco)
+    d_min = int(props_objeto.get("distancia_min", 3))
+    d_max = int(props_objeto.get("distancia_max", 7))
+    arma.nombre = f"Ballesta ({arco.nombre})"
+    arma.rango = list(range(d_min, d_max + 1))
+    arma.hit = int(getattr(arco, 'hit', 0) or 0) + int(props_objeto.get("hit_bonus", 20))
+    setattr(arma, 'es_ballesta', True)
+    setattr(arma, 'arma_base_nombre', arco.nombre)
+    return arma
+
+
 def parsear_arma_string(raw_str):
     """
     Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
@@ -483,7 +580,11 @@ def _arma_desde_item(item_dict):
             item_dict = {"nombre": item_dict}
 
     nombre_raw = item_dict.get("nombre", item_dict.get("arma", "Arma"))
-    parsed = parsear_arma_string(nombre_raw)
+    # Pasar el dict completo (no solo el nombre): si el grabado/refine_lvl viene
+    # como campo separado y no embebido en "nombre" (p.ej. {"nombre": "Levin
+    # Sword", "grabado": "Sigurd"}), parsear_arma_string solo lo detecta a
+    # partir del dict — con solo el string se pierde el grabado en silencio.
+    parsed = parsear_arma_string(item_dict)
     arma_obj = None
     if parsed:
         arma_obj = Arma(
@@ -628,6 +729,11 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         energia_emblema_val = min(int(unidad_previa.energia_emblema), max_energia_emblema)
     else:
         energia_emblema_val = max_energia_emblema
+    # Emblema Oscuro (jefes): nivel de vínculo fijo 1 y sin fusión posible (EngageCount 0 en God.xml)
+    es_emblema_oscuro = bool(emblema_info and emblema_info.get("es_oscuro"))
+    if es_emblema_oscuro:
+        nivel_vinculo = 1
+        energia_emblema_val = 0
     bond_data = emblema_info.get("bond_levels", {}).get(str(nivel_vinculo)) if emblema_info else None
     emblem_mov = bond_data.get("stat_boosts", {}).get("mov", 0) if bond_data else (1 if es_sigurd else 0)
 
@@ -1228,8 +1334,11 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         nivel_veneno=val_veneno,
         lider_tres_casas=val_lider_3h,
         estilo_combate=estilo_combate,
+        accion_turno=str(data.get("accion_turno", getattr(unidad_previa, 'accion_turno', "") if unidad_previa else "") or ""),
+        estados_temporales=list(data.get("estados_temporales", getattr(unidad_previa, 'estados_temporales', []) if unidad_previa else []) or []),
     )
     setattr(ficha, 'genero', genero_val)
+    setattr(ficha, 'emblema_oscuro', es_emblema_oscuro)
     setattr(ficha, 'pid', pid or (p_info.get("id", "") if p_info else ""))
     setattr(ficha, 'es_jefe', es_jefe_val)
     setattr(ficha, '_lider_tres_casas_explicito', 'lider_tres_casas' in data)

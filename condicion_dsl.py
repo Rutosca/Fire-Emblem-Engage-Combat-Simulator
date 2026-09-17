@@ -403,13 +403,17 @@ def leer_acts(info_habilidad: dict):
 
 def aplicar_acts(info_habilidad: dict, acumulador: dict) -> dict:
     """Aplica los Act* de una habilidad sobre `acumulador` (dict mutable) y lo
-    devuelve para encadenar. '=' sobreescribe, '+'/'-' suman/restan."""
+    devuelve para encadenar. '=' sobreescribe, '+'/'-' suman/restan, '*'
+    multiplica el valor ya presente (p.ej. "威力;*;1.2" en los bonos de estilo
+    de los Ataques de Emblema)."""
     for clave, op, valor in leer_acts(info_habilidad):
         actual = acumulador.get(clave, 0)
         if op == "+":
             acumulador[clave] = actual + valor
         elif op == "-":
             acumulador[clave] = actual - valor
+        elif op == "*":
+            acumulador[clave] = actual * valor
         elif op == "=":
             acumulador[clave] = valor
     return acumulador

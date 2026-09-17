@@ -76,8 +76,9 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
 
     def test_03_warp_ragnarok_exact_18_damage(self):
         """
-        Céline (Mag 16) con tomo Ragnarök (Mt 18) y pasiva Resonancia (+2 ATK)
-        contra Hortensia (Res 18) debe hacer exactamente 18 de daño.
+        Céline (Noble Mística, Mag 16) con tomo Ragnarök (Mt 15) y pasiva Resonancia
+        (+2 ATK) contra Hortensia (Res 18): 16 + 15 + 2 - 18 = 15, y el bono de estilo
+        Místico de Warp Ragnarök (威力 * 1.2) lo eleva a 18, que es lo observado en el juego.
         """
         celine = Unidad(
             nombre="Céline",
@@ -91,7 +92,8 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
             suerte=15,
             complexion=4,
             habilidades=["Resonance", "Holy Stance", "Favorite Food"],
-            emblema_nombre="Celica"
+            emblema_nombre="Celica",
+            estilo_combate="魔法スタイル",
         )
         hortensia = Unidad(
             nombre="Hortensia (Boss)",
@@ -105,7 +107,7 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
         # Arma fija Warp Ragnarök generada canónicamente
         warp_ragnarok = Arma(
             nombre="Warp Ragnarök",
-            mt=18,
+            mt=15,
             hit=100,
             crit=0,
             wt=5,
@@ -130,6 +132,15 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
         self.assertEqual(dano_por_golpe, 18, f"El daño de Warp Ragnarök debe ser 18, pero fue {dano_por_golpe}")
         self.assertIn("Resonancia (+2 ATK, 1 recoil)", res["resultado"]["pasivas_activas"])
         self.assertIn("Ragnarök Fusión (Ataque de Emblema Celica)", res["resultado"]["pasivas_activas"])
+        self.assertIn("Estilo Místico (Warp Ragnarök ×1.2 daño)", res["resultado"]["pasivas_activas"])
+
+        # Sin estilo Místico (p.ej. Alear con Celica) no hay x1.2: se queda en 15
+        celine.estilo_combate = "Infantería"
+        res_no_mistico = CalculadoraEngage.simular_combate(
+            atacante=celine, defensor=hortensia, arma_atk=warp_ragnarok, arma_def=None,
+            terreno_atk=Terreno(), terreno_def=Terreno(), distancia=1
+        )
+        self.assertEqual(res_no_mistico["atacante"]["daño_por_golpe"], 15)
 
     def test_04_fixed_vs_variable_emblem_attacks(self):
         """Verifica la distinción entre técnicas de arma fija y arma variable."""
@@ -141,7 +152,7 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
         self.assertEqual(ATAQUES_ENGAGE_CONFIG["Lodestar Rush"]["tipos_permitidos"], ["Espada"])
 
         self.assertFalse(ATAQUES_ENGAGE_CONFIG["Warp Ragnarök"]["es_variable"])
-        self.assertEqual(ATAQUES_ENGAGE_CONFIG["Warp Ragnarök"]["arma_fija"]["mt"], 18)
+        self.assertEqual(ATAQUES_ENGAGE_CONFIG["Warp Ragnarök"]["arma_fija"]["mt"], 15)
         self.assertEqual(ATAQUES_ENGAGE_CONFIG["Warp Ragnarök"]["arma_fija"]["tipo"], "Tomo")
 
         self.assertFalse(ATAQUES_ENGAGE_CONFIG["Houses Unite"]["es_variable"])

@@ -6,6 +6,7 @@ API REST Flask que conecta la UI del Gemelo con el motor de cálculo.
 from flask import Flask, jsonify, request, render_template, abort
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from estado_tablero import EstadoTablero, FichaUnidad
+import pasivas_temporales
 from lector_de_mapas import MapaTactico
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock
 
@@ -21,7 +22,7 @@ from catalogo_loader import (
     normalizar_texto, round_half_up, cargar_catalogo,
     _catalogo, GRABADOS_EMBLEMA, REFINES_GENERICOS,
     parsear_arma_string, _buscar_en_catalogo, _arma_desde_item,
-    resolver_unidad_con_catalogo
+    resolver_unidad_con_catalogo, puede_usar_ballesta, arma_ballesta_desde
 )
 from motor_analisis import (
     BACKUP_CLASSES, es_unidad_backup, obtener_aliados_backup,
@@ -35,9 +36,48 @@ app = Flask(__name__)
 # Estado global del tablero (singleton por sesión Flask)
 # =============================================================================
 
-# Cargar el JSON de mapa del capítulo 7 (formato datamine, generado por generar_mapas.py)
-_ruta_mapa = os.path.join(os.path.dirname(__file__), "mapas", "CAP_7_Tiled.json")
+# Mapas por capítulo: mapas/CAP_<n>_Tiled.json. El capítulo activo se cambia en
+# caliente con /api/mapa/seleccionar; el tablero se vacía (las unidades se
+# despliegan aparte con los presets / dispos de cada capítulo).
+_DIR_MAPAS = os.path.join(os.path.dirname(__file__), "mapas")
+_capitulo_actual = 7
 
+
+def _ruta_mapa_capitulo(n: int) -> str:
+    return os.path.join(_DIR_MAPAS, f"CAP_{int(n)}_Tiled.json")
+
+
+def capitulos_disponibles() -> list:
+    """Números de capítulo con mapa Tiled en la carpeta mapas/, ordenados."""
+    caps = []
+    for fn in os.listdir(_DIR_MAPAS) if os.path.isdir(_DIR_MAPAS) else []:
+        m = re.fullmatch(r"CAP_(\d+)_Tiled\.json", fn)
+        if m:
+            caps.append(int(m.group(1)))
+    return sorted(caps)
+
+
+def _info_capitulo(n: int) -> dict:
+    """Nombre del capítulo desde el datamine (mapas/M0NN.json) si existe."""
+    ruta_dm = os.path.join(_DIR_MAPAS, f"M{int(n):03d}.json")
+    nombre = f"Capítulo {n}"
+    try:
+        with open(ruta_dm, "r", encoding="utf-8") as f:
+            nombre = json.load(f).get("nombre_en", nombre)
+    except Exception:
+        pass
+    disponibles = capitulos_disponibles()
+    return {
+        "capitulo": n,
+        "nombre": nombre,
+        "tiene_mapa": n in disponibles,
+        "anterior": max((c for c in disponibles if c < n), default=None),
+        "siguiente": min((c for c in disponibles if c > n), default=None),
+        "disponibles": disponibles,
+    }
+
+
+_ruta_mapa = _ruta_mapa_capitulo(_capitulo_actual)
 _mapa = MapaTactico(_ruta_mapa)
 tablero = EstadoTablero(mapa=_mapa)
 
@@ -52,8 +92,66 @@ def recargar_catalogo_endpoint():
 
 @app.route("/api/catalogo/emblemas", methods=["GET"])
 def obtener_catalogo_emblemas():
-    """Devuelve el diccionario completo de Emblemas con sus 20 niveles de vínculo."""
-    return jsonify({"ok": True, "emblemas": _catalogo.get("emblemas", {})})
+    """
+    Devuelve los Emblemas equipables (14 base + DLC) con sus 20 niveles de vínculo.
+    Los Emblemas Oscuros de jefe (es_oscuro) se excluyen: los asigna el preset del capítulo.
+    """
+    return jsonify({"ok": True, "emblemas": {k: v for k, v in _catalogo.get("emblemas", {}).items() if not v.get("es_oscuro")}})
+
+
+@app.route("/api/mapa/capitulos", methods=["GET"])
+def listar_capitulos():
+    """Capítulo activo y lista de capítulos con mapa disponible (para las flechas de navegación)."""
+    return jsonify({"ok": True, **_info_capitulo(_capitulo_actual)})
+
+
+@app.route("/api/mapa/seleccionar", methods=["POST"])
+def seleccionar_mapa():
+    """
+    Cambia el capítulo activo (mapas/CAP_<n>_Tiled.json). Vacía el tablero,
+    reinicia turno/fase y los objetos de mapa; las unidades se despliegan aparte.
+    Body: {"capitulo": 8}  o  {"direccion": 1 | -1} (siguiente/anterior disponible).
+    """
+    global _mapa, _ruta_mapa, _capitulo_actual
+    data = request.get_json(force=True) or {}
+    if "capitulo" in data:
+        objetivo = int(data["capitulo"])
+    else:
+        info = _info_capitulo(_capitulo_actual)
+        objetivo = info["siguiente"] if int(data.get("direccion", 1)) > 0 else info["anterior"]
+    if objetivo is None or objetivo not in capitulos_disponibles():
+        return jsonify({"error": f"No hay mapa para el capítulo {objetivo}", **_info_capitulo(_capitulo_actual)}), 400
+    try:
+        nuevo_mapa = MapaTactico(_ruta_mapa_capitulo(objetivo))
+    except Exception as e:
+        return jsonify({"error": f"No se pudo cargar el mapa del capítulo {objetivo}: {e}"}), 500
+
+    _capitulo_actual = objetivo
+    _ruta_mapa = _ruta_mapa_capitulo(objetivo)
+    _mapa = nuevo_mapa
+    tablero.mapa = _mapa
+    tablero.limpiar()
+    tablero.historial.clear()
+    tablero.turno_actual = 1
+    tablero.fase = "jugador"
+    tablero.inicializar_objetos_mapa()
+    tablero.programar_refuerzos({})
+    snap = tablero.snapshot()
+    snap["mapa"] = _mapa_como_dict()
+    return jsonify({"ok": True, **_info_capitulo(objetivo), "estado": snap})
+
+
+def _mapa_como_dict() -> dict:
+    """Bloque `mapa` de /api/estado: dimensiones, objetivos, propiedades, objetos y capítulo."""
+    if not _mapa:
+        return {"ancho": 24, "alto": 17}
+    return {
+        "ancho": _mapa.ancho, "alto": _mapa.alto,
+        "casillas_objetivo": [{"x": x, "y": y, "objetivo": o} for x, y, o in _mapa.casillas_objetivo()] if hasattr(_mapa, 'casillas_objetivo') else [],
+        "propiedades": getattr(_mapa, 'propiedades_mapa', {}) or {},
+        "objetos": tablero.objetos_como_lista(),
+        **{k: v for k, v in _info_capitulo(_capitulo_actual).items() if k != "tiene_mapa"},
+    }
 
 
 @app.route("/api/mapa/recargar", methods=["POST", "GET"])
@@ -64,6 +162,7 @@ def recargar_mapa_endpoint():
     try:
         _mapa = MapaTactico(_ruta_mapa)
         tablero.mapa = _mapa
+        tablero.inicializar_objetos_mapa()
         tipos = {}
         for x in range(_mapa.ancho):
             for y in range(_mapa.alto):
@@ -87,8 +186,62 @@ def index():
 def obtener_estado():
     """Devuelve el estado completo del tablero."""
     snap = tablero.snapshot()
-    snap["mapa"] = {"ancho": _mapa.ancho, "alto": _mapa.alto} if _mapa else {"ancho": 24, "alto": 17}
+    snap["mapa"] = _mapa_como_dict()
     return jsonify(snap)
+
+
+@app.route("/api/mapa/objetos", methods=["GET"])
+def listar_objetos_mapa():
+    """Objetos de la capa de objetos (ballestas, destructibles, pozos de Emblema) con su estado."""
+    return jsonify({"ok": True, "objetos": tablero.objetos_como_lista()})
+
+
+@app.route("/api/mapa/objeto/consumir", methods=["POST"])
+def consumir_objeto_mapa():
+    """
+    Gasta/destruye un objeto de mapa: un uso de ballesta, destruir una caja
+    (libera todas sus casillas), agotar un pozo de Emblema.
+    """
+    data = request.get_json(force=True) or {}
+    id_obj = str(data.get("id", ""))
+    if not id_obj:
+        return jsonify({"error": "Falta campo id"}), 400
+    tablero.guardar_snapshot()
+    ok = tablero.consumir_objeto_mapa(id_obj)
+    if not ok:
+        tablero.historial.pop()
+        return jsonify({"error": f"Objeto '{id_obj}' no existe o ya estaba inactivo"}), 400
+    return jsonify({"ok": True, "objetos": tablero.objetos_como_lista()})
+
+
+@app.route("/api/mapa/objeto/dañar", methods=["POST"])
+@app.route("/api/mapa/objeto/danar", methods=["POST"])
+def dañar_objeto_mapa():
+    """Resta `daño` HP a un destructible con vida; al llegar a 0 se destruye entero."""
+    data = request.get_json(force=True) or {}
+    id_obj = str(data.get("id", ""))
+    if not id_obj:
+        return jsonify({"error": "Falta campo id"}), 400
+    tablero.guardar_snapshot()
+    est = tablero.dañar_objeto_mapa(id_obj, int(data.get("daño", data.get("dano", 0)) or 0))
+    if est is None:
+        tablero.historial.pop()
+        return jsonify({"error": f"Objeto '{id_obj}' no existe o ya estaba destruido"}), 400
+    return jsonify({"ok": True, "objeto": est, "objetos": tablero.objetos_como_lista()})
+
+
+@app.route("/api/mapa/objeto/restaurar", methods=["POST"])
+def restaurar_objeto_mapa():
+    """Reactiva un objeto de mapa (corrección manual)."""
+    data = request.get_json(force=True) or {}
+    id_obj = str(data.get("id", ""))
+    if not id_obj:
+        return jsonify({"error": "Falta campo id"}), 400
+    tablero.guardar_snapshot()
+    if not tablero.restaurar_objeto_mapa(id_obj):
+        tablero.historial.pop()
+        return jsonify({"error": f"Objeto '{id_obj}' no existe"}), 400
+    return jsonify({"ok": True, "objetos": tablero.objetos_como_lista()})
 
 @app.route("/api/terreno/<int:x>/<int:y>", methods=["GET"])
 def obtener_info_terreno(x, y):
@@ -108,6 +261,7 @@ def obtener_info_terreno(x, y):
         "curacion_turno": getattr(t, 'curacion_turno', 0),
         "es_antirruptura": getattr(t, 'es_antirruptura', False),
         "es_recarga_emblema": getattr(t, 'es_recarga_emblema', False),
+        "objetivo": getattr(t, 'objetivo', ''),
     })
 
 @app.route("/api/catalogo/buscar", methods=["GET"])
@@ -208,8 +362,6 @@ def buscar_catalogo():
 # =============================================================================
 
 _ruta_squad_file_json = os.path.join(os.path.dirname(__file__), "json", "escuadron_guardado.json")
-
-_ruta_squad_file_json = os.path.join(os.path.dirname(__file__), "json", "escuadron_guardado.json")
 _ruta_squad_file = _ruta_squad_file_json if os.path.exists(_ruta_squad_file_json) else os.path.join(os.path.dirname(__file__), "escuadron_guardado.json")
 
 @app.route("/api/unidad/guardar", methods=["POST"])
@@ -222,43 +374,28 @@ def guardar_unidad():
     if not data or "nombre" not in data:
         return jsonify({"error": "Falta campo 'nombre'"}), 400
 
+    # Nombre original (edición con renombrado) para detectar bajadas de HP respecto a la ficha previa
+    prev = tablero.obtener_ficha(data.get("nombre_original") or data.get("nombre"))
+    hp_previo = prev.hp_actual if prev else None
+
     ficha = resolver_unidad_con_catalogo(data)
     tablero.registrar_unidad(ficha)
-    return jsonify({"ok": True, "ficha": ficha.como_dict()})
 
-@app.route("/api/escuadron/guardar", methods=["POST"])
-def guardar_escuadron():
-    """Guarda la plantilla actual de unidades aliadas activas en el servidor."""
-    aliados = [f.como_dict() for f in tablero.fichas.values() if f.es_aliado and f.viva]
-    # Deduplicar por nombre y por posición (priorizando nombres de personajes reales)
-    aliados_dedup = []
-    vistos_nombres = set()
-    vistos_pos = set()
-    
-    # Primero añadir personajes con nombre propio
-    for a in sorted(aliados, key=lambda x: 1 if "Aliado" in x.get("nombre", "") else 0):
-        nom = a.get("nombre")
-        pos = (a.get("x"), a.get("y"))
-        if nom not in vistos_nombres and pos not in vistos_pos:
-            vistos_nombres.add(nom)
-            vistos_pos.add(pos)
-            aliados_dedup.append(a)
-
-    try:
-        with open(_ruta_squad_file, "w", encoding="utf-8") as f:
-            json.dump(aliados_dedup, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Error al guardar escuadrón: {e}")
-
+    # Editar la vida a la baja de un aliado en fase enemiga == "ha sido atacado" (ver ajustar_hp)
+    estados_otorgados = []
+    if hp_previo is not None and ficha.hp_actual < hp_previo:
+        estados_otorgados = pasivas_temporales.al_danar_aliado(tablero, ficha)
     return jsonify({
         "ok": True,
-        "mensaje": f"Escuadrón guardado con éxito ({len(aliados_dedup)} aliados)",
-        "escuadron": aliados_dedup
+        "ficha": ficha.como_dict(),
+        "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
     })
 
+# El escuadrón y el roster de aliados viven en el localStorage del navegador (ver gemelo.js).
+# El servidor solo conserva el fichero legado como fuente de migración inicial (solo lectura).
 @app.route("/api/escuadron/cargar", methods=["GET"])
 def cargar_escuadron():
-    """Devuelve la plantilla guardada de aliados."""
+    """Devuelve la plantilla legada de aliados guardada en disco (migración al roster del navegador)."""
     if os.path.exists(_ruta_squad_file):
         try:
             with open(_ruta_squad_file, "r", encoding="utf-8") as f:
@@ -271,20 +408,13 @@ def cargar_escuadron():
 @app.route("/api/escuadron/desplegar", methods=["POST"])
 def desplegar_escuadron():
     """
-    Despliega la plantilla del escuadrón en el mapa actual.
+    Despliega en el mapa actual el escuadrón que envía el navegador (lista de aliados con posición).
     Sustituye limpiamente a los aliados existentes / genéricos sin solapamientos ni duplicados.
     """
-    if not os.path.exists(_ruta_squad_file):
+    data = request.get_json(force=True, silent=True) or {}
+    squad = data.get("escuadron")
+    if not isinstance(squad, list) or not squad:
         return jsonify({"error": "No hay ningún escuadrón guardado previamente."}), 404
-
-    try:
-        with open(_ruta_squad_file, "r", encoding="utf-8") as f:
-            squad_guardado = json.load(f)
-    except Exception as e:
-        return jsonify({"error": f"Error al leer plantilla de escuadrón: {e}"}), 500
-
-    if not squad_guardado:
-        return jsonify({"error": "La plantilla de escuadrón está vacía."}), 400
 
     tablero.guardar_snapshot()
 
@@ -294,13 +424,13 @@ def desplegar_escuadron():
         del tablero.fichas[nom]
 
     # Registrar cada aliado del escuadrón
-    for s_data in squad_guardado:
+    for s_data in squad:
         f_res = resolver_unidad_con_catalogo(s_data)
         tablero.registrar_unidad(f_res, resolver_colision=True)
 
     return jsonify({
         "ok": True,
-        "mensaje": f"Escuadrón desplegado con éxito ({len(squad_guardado)} aliados)",
+        "mensaje": f"Escuadrón desplegado con éxito ({len(squad)} aliados)",
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
 
@@ -370,6 +500,7 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
     tablero.fichas.clear()
     tablero.turno_actual = 1
     tablero.fase = "jugador"
+    tablero.inicializar_objetos_mapa()   # pozos, ballestas y destructibles vuelven al estado inicial
 
     ancho_m = getattr(_mapa, "ancho", 24)
     alto_m = getattr(_mapa, "alto", 17)
@@ -386,10 +517,17 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
         ficha = resolver_unidad_con_catalogo(u)
         tablero.registrar_unidad(ficha)
 
+    # Refuerzos del capítulo (calendario del .lua + grupos del dispos filtrados por dificultad)
+    calendario = _cargador_dispos.calendario_refuerzos(capitulo_id, dificultad, mapa_ancho=ancho_m, mapa_alto=alto_m)
+    tablero.programar_refuerzos(calendario)
+    n_ref = sum(len(v) for v in calendario.values())
+    txt_ref = f" · {n_ref} refuerzos programados (turnos {', '.join(str(t) for t in sorted(calendario))})" if n_ref else ""
+
     return {
         "ok": True,
-        "mensaje": f"Despliegue de {capitulo_id} ({len(unidades_dispos)} unidades) en {dificultad}",
-        "fichas": [f.como_dict() for f in tablero.fichas.values()]
+        "mensaje": f"Despliegue de {capitulo_id} ({len(unidades_dispos)} unidades) en {dificultad}{txt_ref}",
+        "fichas": [f.como_dict() for f in tablero.fichas.values()],
+        "refuerzos_previstos": tablero.refuerzos_previstos(),
     }
 
 
@@ -414,17 +552,23 @@ def _auto_despliegue_inicial():
 _auto_despliegue_inicial()
 
 
-@app.route("/api/preset/<capitulo_id>", methods=["POST"])
+def _dispos_id_activo() -> str:
+    """Id de dispos del capítulo activo: M007, M008, ... (o el del mapa datamine si lo trae)."""
+    return getattr(_mapa, "dispos_id", None) or f"M{int(_capitulo_actual):03d}"
+
+
+@app.route("/api/preset/actual", methods=["POST"])
 @app.route("/api/preset/capitulo7", methods=["POST"])
+@app.route("/api/preset/<capitulo_id>", methods=["POST"])
 def cargar_preset_capitulo(capitulo_id=None):
     """
-    Carga el despliegue oficial desde dispos/ del datamine de Engage para el capitulo solicitado.
-    Si no se especifica capitulo_id, usa el del mapa activo o por defecto M007.
+    Carga el despliegue oficial (grupos iniciales, sin refuerzos) desde dispos/ del
+    datamine para el capítulo solicitado; sin capitulo_id, el del mapa activo.
     """
     data = request.get_json(silent=True) or {}
     dificultad = data.get("dificultad", "Extremo")
-    if not capitulo_id:
-        capitulo_id = getattr(_mapa, "dispos_id", None) or "M007"
+    if not capitulo_id or capitulo_id in ("actual", "capitulo7"):
+        capitulo_id = _dispos_id_activo() if capitulo_id != "capitulo7" else "M007"
     return jsonify(_desplegar_capitulo(capitulo_id, dificultad))
 
 @app.route("/api/unidad/rango_movimiento", methods=["GET"])
@@ -597,9 +741,59 @@ def alternar_actuado():
     tablero.guardar_snapshot()
     ok = tablero.alternar_actuado(nombre)
     f = tablero.obtener_ficha(nombre)
+    # Marcar como actuado = "Esperar" en esa casilla: aplica pozos de Emblema
+    recarga = tablero.aplicar_recarga_emblema_en_casilla(nombre) if (f and f.ha_actuado) else None
     return jsonify({
         "ok": ok,
         "ficha": f.como_dict() if f else None,
+        "recarga_emblema": recarga,
+        "objetos": tablero.objetos_como_lista() if recarga else None,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()]
+    })
+
+@app.route("/api/unidad/usar_objeto", methods=["POST"])
+def usar_objeto():
+    """
+    Consume un uso de un objeto del inventario (bastón, poción, etc.) y marca
+    la unidad como que ha actuado este turno de forma DEFINITIVA (a diferencia
+    de /api/unidad/alternar_actuado, que alterna y puede des-marcar por error
+    si se invoca dos veces — p.ej. al curar a dos objetivos distintos seguidos).
+    """
+    data = request.get_json(force=True) or {}
+    nombre = data.get("nombre")
+    item_nombre = data.get("item_nombre")
+    if not nombre:
+        return jsonify({"error": "Falta campo nombre"}), 400
+    f = tablero.obtener_ficha(nombre)
+    if not f:
+        return jsonify({"error": f"Unidad '{nombre}' no encontrada"}), 404
+
+    tablero.guardar_snapshot()
+
+    if item_nombre:
+        norm_buscado = normalizar_texto(item_nombre)
+        for it in (f.inventario or []):
+            nom_it = normalizar_texto(it.get("nombre") or it.get("arma") or "")
+            if nom_it == norm_buscado or norm_buscado in nom_it or nom_it in norm_buscado:
+                usos = it.get("usos")
+                if usos is not None:
+                    usos = max(0, int(usos) - 1)
+                    if usos <= 0:
+                        f.inventario.remove(it)
+                    else:
+                        it["usos"] = usos
+                break
+
+    f.ha_actuado = True
+    # Usar objeto/bastón no es "Esperar": pasivas como Self-Improver no deben dispararse
+    f.accion_turno = "baston" if any(k in normalizar_texto(item_nombre or "") for k in ("baston", "staff", "cura", "heal", "mend", "physic")) else "objeto"
+    recarga = tablero.aplicar_recarga_emblema_en_casilla(nombre)
+
+    return jsonify({
+        "ok": True,
+        "ficha": f.como_dict(),
+        "recarga_emblema": recarga,
+        "objetos": tablero.objetos_como_lista() if recarga else None,
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
@@ -650,6 +844,23 @@ def ejecutar_combate():
     if not f_atk or not f_def:
         return jsonify({"error": "No se encontraron las unidades especificadas"}), 400
 
+    # 0. Ballesta de mapa (objeto_id): la unidad dispara su propio arco desde la
+    # casilla de la ballesta. Requiere maestría en Arco + un arco en el inventario.
+    objeto_id = str(data.get("objeto_id", "") or "")
+    objeto_ballesta = None
+    if objeto_id:
+        est_obj = tablero.objetos.get(objeto_id)
+        ent_obj = next((e for e in _mapa.objetos_mapa() if e.id_entidad == objeto_id), None) if hasattr(_mapa, 'objetos_mapa') else None
+        if not est_obj or not ent_obj or est_obj.get("tipo") != "arma_usable":
+            return jsonify({"error": f"No hay un arma usable con id '{objeto_id}' en el mapa"}), 400
+        if not est_obj.get("activo") or (est_obj.get("usos") is not None and est_obj["usos"] <= 0):
+            return jsonify({"error": f"{ent_obj.nombre} ya no tiene usos"}), 400
+        if not puede_usar_ballesta(f_atk):
+            return jsonify({"error": f"{f_atk.nombre} no puede usar {ent_obj.nombre}: necesita una clase con maestría en Arco y un arco en el inventario"}), 400
+        objeto_ballesta = ent_obj
+        pos_destino = list(ent_obj.casillas[0])   # hay que disparar desde la propia ballesta
+        nombre_arma = None                          # el arma se construye a partir del arco propio
+
     # Guardar snapshot antes de la acción para la Cronogema
     tablero.guardar_snapshot()
 
@@ -691,8 +902,17 @@ def ejecutar_combate():
                 f_atk.arma = a_obj
                 arma_encontrada = True
 
+    # 2b. Arma efectiva de la ballesta (arco propio + Hit 20, alcance 3–7, un golpe)
+    arma_original_ballesta = None
+    if objeto_ballesta:
+        arma_b = arma_ballesta_desde(f_atk, objeto_ballesta.propiedades)
+        if not arma_b:
+            return jsonify({"error": f"{f_atk.nombre} no lleva ningún arco"}), 400
+        arma_original_ballesta = f_atk.arma
+        f_atk.arma = arma_b
+
     # 3. Detectar aliados de apoyo (Backup) cercanos al objetivo para Chain Attacks
-    apoyos_fichas = obtener_aliados_backup(f_atk, f_def, tablero=tablero)
+    apoyos_fichas = obtener_aliados_backup(f_atk, f_def, tablero=tablero) if not objeto_ballesta else []
     for a in apoyos_fichas:
         if a.stats and a.arma:
             setattr(a.stats, 'arma', a.arma)
@@ -838,28 +1058,12 @@ def ejecutar_combate():
         elif getattr(f_def, 'cargas_ruptura', 0) > 0:
             f_def.cargas_ruptura = 0
 
-    # ¡Ponte detrás de mí! (Get Behind Me! — Alcryst): cuando un aliado en radio
-    # <=2 casillas de un portador de esta pasiva es atacado (iniciador o
-    # contraataque), ese portador gana +3 Fuerza durante su próximo turno.
-    def _tiene_ponte_detras(ficha):
-        habs = [str(h).lower() for h in getattr(ficha, 'habilidades', [])]
-        return (any(x in h for h in habs for x in ('sid_僕が守ります！', 'sid_僕が守ります', '僕が守ります', 'get behind', 'al rescate', 'ponte detrás', 'ponte detras'))
-                or 'alcryst' in ficha.nombre.lower() or 'staluke' in ficha.nombre.lower())
-
-    unidades_atacadas = [f_def]
-    if combate["defensor"]["puede_contraatacar"] and not combate["defensor"]["contraataque_anulado_por_ruptura"]:
-        unidades_atacadas.append(f_atk)
-    for u_atacada in unidades_atacadas:
-        if not u_atacada.es_aliado:
-            continue
-        for f in tablero.fichas.values():
-            if not f.viva or not f.es_aliado or f.nombre == u_atacada.nombre:
-                continue
-            dist_gb = abs(f.x - u_atacada.x) + abs(f.y - u_atacada.y)
-            if dist_gb <= 2 and _tiene_ponte_detras(f):
-                f.bonus_ponte_detras_turnos = 1
-                if f.stats:
-                    setattr(f.stats, 'bonus_ponte_detras_turnos', 1)
+    # Disparadores de pasivas temporales: un aliado atacado en fase enemiga
+    # (p.ej. ¡Ponte detrás de mí! en portadores a <=2 casillas). Se considera
+    # atacado a cualquier aliado que participe en el combate, aunque no pierda HP.
+    estados_otorgados = []
+    for u_atacada in (f_def, f_atk):
+        estados_otorgados += pasivas_temporales.al_danar_aliado(tablero, u_atacada)
 
     # Repliegue táctico de Canter (Movimiento ágil tras combate si atacante sobrevive)
     pos_canter = data.get("pos_canter")
@@ -873,6 +1077,7 @@ def ejecutar_combate():
     # Marcar atacante como que ha actuado este turno si es aliado
     if f_atk.es_aliado:
         f_atk.ha_actuado = True
+        f_atk.accion_turno = "combate"
 
     # Registrar uso de ataque o tecnica especial de Engage (solo 1 vez por fusion)
     if es_engage_attack:
@@ -881,13 +1086,29 @@ def ejecutar_combate():
             setattr(f_atk.stats, 'ataque_emblema_usado', True)
 
     # Medidor de Emblema (Engage Gauge):
-    # La recarga de emblema solo entra en vigor cuando se hayan usado y gastado todos los turnos de fusion
-    # Atacar da 1 recarga (+1 o +2 extra por remate/Libération)
-    if f_atk.es_aliado and not f_atk.en_fusion and getattr(f_atk, 'turnos_fusion', 0) <= 0:
+    # La recarga de emblema solo entra en vigor cuando se hayan usado y gastado todos los turnos de fusion.
+    # La ganancia se basa en los golpes REALES ejecutados (secuencia devuelta por
+    # simular_combate), no en asumir siempre "ataque + contraataque" (+2): un
+    # intercambio que en teoría podría tener 3 golpes pero acaba en el primero
+    # (el enemigo muere) solo debe dar 1 carga, y un doble ataque (follow-up)
+    # sí debe dar 2.
+    secuencia_combate = res.get("secuencia", [])
+    golpes_atk_ejecutados = sum(
+        1 for s in secuencia_combate
+        if s.get("actor") == f_atk.nombre and s.get("tipo") != "piedra_resurrectora"
+    )
+    golpes_def_ejecutados = sum(
+        1 for s in secuencia_combate
+        if s.get("actor") == f_def.nombre and s.get("tipo") != "piedra_resurrectora"
+    )
+
+    # Ballesta: gasta el turno como un ataque normal pero NO recarga el medidor de
+    # Emblema (sin verificar en el juego; cambiar aquí si se confirma lo contrario).
+    if f_atk.es_aliado and not f_atk.en_fusion and getattr(f_atk, 'turnos_fusion', 0) <= 0 and not objeto_ballesta:
         if getattr(t_atk, 'es_recarga_emblema', False):
             f_atk.energia_emblema = f_atk.max_energia_emblema
         else:
-            ganancia = 1
+            ganancia = max(1, golpes_atk_ejecutados)
             if hp_def_final <= 0:
                 nombre_arma_l = str(getattr(f_atk.arma, 'nombre', '')).lower() if f_atk.arma else ""
                 es_lib = any(w in nombre_arma_l for w in ('liberation', 'libération')) or (f_atk.stats and getattr(f_atk.stats, 'tiene_liberation', False))
@@ -896,17 +1117,29 @@ def ejecutar_combate():
         if f_atk.stats:
             f_atk.stats.energia_emblema = f_atk.energia_emblema
 
-    # Recibir un ataque da otra recarga para defensores aliados fuera de fusion
-    if f_def.es_aliado and not f_def.en_fusion and getattr(f_def, 'turnos_fusion', 0) <= 0:
-        f_def.energia_emblema = min(f_def.max_energia_emblema, f_def.energia_emblema + 1)
+    # Contraatacar/recibir golpes da recarga proporcional a los golpes reales encajados
+    if f_def.es_aliado and not f_def.en_fusion and getattr(f_def, 'turnos_fusion', 0) <= 0 and golpes_def_ejecutados > 0:
+        f_def.energia_emblema = min(f_def.max_energia_emblema, f_def.energia_emblema + golpes_def_ejecutados)
         if f_def.stats:
             f_def.stats.energia_emblema = f_def.energia_emblema
+
+    # Ballesta: gastar un uso y devolver a la unidad su arma equipada real
+    if objeto_ballesta:
+        tablero.consumir_objeto_mapa(objeto_ballesta.id_entidad)
+        if arma_original_ballesta is not None:
+            f_atk.arma = arma_original_ballesta
+
+    # Pozo de Emblema: la acción termina sobre la casilla final (tras Canter) → recarga y se agota
+    recarga = tablero.aplicar_recarga_emblema_en_casilla(f_atk.nombre) if (f_atk.es_aliado and hp_atk_final > 0) else None
 
     return jsonify({
         "ok": True,
         "combate": combate,
         "atacante": f_atk.como_dict(),
         "defensor": f_def.como_dict(),
+        "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
+        "recarga_emblema": recarga,
+        "objetos": tablero.objetos_como_lista() if (objeto_ballesta or recarga) else None,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
 
@@ -955,11 +1188,19 @@ def ajustar_hp():
     if not nombre or hp is None:
         return jsonify({"error": "Faltan campos nombre y hp_actual"}), 400
     tablero.guardar_snapshot()
-    ok = tablero.modificar_hp(nombre, int(hp))
     f = tablero.obtener_ficha(nombre)
+    hp_previo = f.hp_actual if f else None
+    ok = tablero.modificar_hp(nombre, int(hp))
+    # Una bajada manual de HP de un aliado durante la fase enemiga se interpreta
+    # como "ha sido atacado" (no hay otra fuente de daño aliado en esa fase):
+    # dispara pasivas como ¡Ponte detrás de mí! sin necesitar acciones enemigas.
+    estados_otorgados = []
+    if ok and f and hp_previo is not None and int(hp) < hp_previo:
+        estados_otorgados = pasivas_temporales.al_danar_aliado(tablero, f)
     return jsonify({
         "ok": ok,
         "ficha": f.como_dict() if f else None,
+        "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
@@ -1044,8 +1285,25 @@ def resolver_unidad_preview():
 @app.route("/api/turno/inicio_fase_enemigo", methods=["POST"])
 def iniciar_fase_enemigo():
     """Marca que el jugador está arrastrando fichas del turno enemigo."""
+    estados_otorgados = []
+    recargas = []
+    if tablero.fase == "jugador":
+        # Cerrar la fase de jugador: quien no actuó, esperó (dispara Self-Improver, etc.)
+        estados_otorgados = pasivas_temporales.al_terminar_fase_jugador(tablero)
+        # ...y si esperó sobre un pozo de Emblema, lo usa
+        for f in list(tablero.fichas.values()):
+            if f.viva and f.es_aliado and not f.accion_turno:
+                r = tablero.aplicar_recarga_emblema_en_casilla(f.nombre)
+                if r:
+                    recargas.append(r)
     tablero.iniciar_fase_enemigo()
-    return jsonify({"ok": True, "fase": tablero.fase, "turno": tablero.turno_actual, "fichas": [f.como_dict() for f in tablero.fichas.values()]})
+    return jsonify({
+        "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
+        "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
+        "recargas_emblema": recargas,
+        "objetos": tablero.objetos_como_lista(),
+        "fichas": [f.como_dict() for f in tablero.fichas.values()]
+    })
 
 @app.route("/api/turno/fin", methods=["POST"])
 def fin_turno():
@@ -1054,7 +1312,18 @@ def fin_turno():
     Avanza al siguiente turno y vuelve a la fase del jugador, reactivando aliados.
     """
     tablero.avanzar_turno()
-    return jsonify({"ok": True, "fase": tablero.fase, "turno": tablero.turno_actual, "fichas": [f.como_dict() for f in tablero.fichas.values()]})
+    return jsonify({
+        "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
+        "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,
+        "refuerzos_previstos": tablero.refuerzos_previstos(),
+        "fichas": [f.como_dict() for f in tablero.fichas.values()],
+    })
+
+
+@app.route("/api/refuerzos", methods=["GET"])
+def listar_refuerzos():
+    """Refuerzos pendientes del capítulo activo, con el turno en que aparecen."""
+    return jsonify({"ok": True, "turno_actual": tablero.turno_actual, "refuerzos": tablero.refuerzos_previstos()})
 
 
 # =============================================================================
@@ -1100,6 +1369,7 @@ def reset():
     - Mapa Tiled: limpia el tablero y carga los spawns de la capa de objetos del mapa.
     """
     tablero.guardar_snapshot()
+    tablero.inicializar_objetos_mapa()  # ballestas, destructibles y pozos vuelven a estar activos
     cap_id = getattr(_mapa, "dispos_id", None)
     if cap_id:
         # Mapa Datamine: despliegue normal desde XML de dispos

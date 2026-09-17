@@ -4,7 +4,7 @@
  "layers":[
         {
          "compression":"zlib",
-         "data":"eJz7z8DA8H8U48TnCYjpM+JWA5KDYWLUwPB\/LOLIYujy6HL41BKL8ekjxsxEBtxqAylwF6nuwecOSs0mRx2p+hLJNJfc8CeU9oj1BzFpkNg0TUn44cu\/hNQQa84oxo0BPwz1Fw==",
+         "data":"eJz7z8DA8H8U48TnCYjpM+JWA5KDYWLUwPB\/LOLIYujy6HL41BKL8ekjxsxEBvxqyXUXqWYRcgclZlPDP4T0JZJpLrnhTyjtEesPYtIgsWmakvDDl38JqSHWnFGMGwMAZ0300w==",
          "encoding":"base64",
          "height":17,
          "id":1,
@@ -15,9 +15,46 @@
          "width":24,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":2,
+         "name":"usable",
+         "objects":[
+                {
+                 "gid":337,
+                 "height":32,
+                 "id":1,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":416,
+                 "y":224
+                }, 
+                {
+                 "gid":337,
+                 "height":32,
+                 "id":2,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":416,
+                 "y":352
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":2,
- "nextobjectid":1,
+ "nextlayerid":3,
+ "nextobjectid":3,
  "orientation":"orthogonal",
  "renderorder":"left-down",
  "tiledversion":"1.12.2",
@@ -34,60 +71,83 @@
          "spacing":0,
          "tilecount":336,
          "tileheight":32,
-         "tileproperties":
-            {
-             "206":
+         "tiles":[
                 {
-                 "caminable":false,
-                 "tipo":"muro",
-                 "volable":false
-                },
-             "254":
+                 "id":96,
+                 "properties":[
+                        {
+                         "name":"caminable",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"tipo",
+                         "type":"string",
+                         "value":"curacion"
+                        }, 
+                        {
+                         "name":"volable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
                 {
-                 "caminable":false,
-                 "tipo":"foso",
-                 "volable":true
-                },
-             "302":
+                 "id":206,
+                 "properties":[
+                        {
+                         "name":"caminable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"tipo",
+                         "type":"string",
+                         "value":"muro"
+                        }, 
+                        {
+                         "name":"volable",
+                         "type":"bool",
+                         "value":false
+                        }]
+                }, 
                 {
-                 "caminable":true,
-                 "tipo":"llanura",
-                 "volable":true
-                },
-             "96":
+                 "id":254,
+                 "properties":[
+                        {
+                         "name":"caminable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"tipo",
+                         "type":"string",
+                         "value":"foso"
+                        }, 
+                        {
+                         "name":"volable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }, 
                 {
-                 "caminable":true,
-                 "tipo":"curacion",
-                 "volable":true
-                }
-            },
-         "tilepropertytypes":
-            {
-             "206":
-                {
-                 "caminable":"bool",
-                 "tipo":"string",
-                 "volable":"bool"
-                },
-             "254":
-                {
-                 "caminable":"bool",
-                 "tipo":"string",
-                 "volable":"bool"
-                },
-             "302":
-                {
-                 "caminable":"bool",
-                 "tipo":"string",
-                 "volable":"bool"
-                },
-             "96":
-                {
-                 "caminable":"bool",
-                 "tipo":"string",
-                 "volable":"bool"
-                }
-            },
+                 "id":302,
+                 "properties":[
+                        {
+                         "name":"caminable",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"tipo",
+                         "type":"string",
+                         "value":"llanura"
+                        }, 
+                        {
+                         "name":"volable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }],
          "tilewidth":32
         }, 
         {
@@ -101,36 +161,39 @@
          "spacing":0,
          "tilecount":528,
          "tileheight":32,
-         "tileproperties":
-            {
-             "0":
+         "tiles":[
                 {
-                 "caminable":true,
-                 "tipo":"recarga",
-                 "volable":true
-                }
-            },
-         "tilepropertytypes":
-            {
-             "0":
-                {
-                 "caminable":"bool",
-                 "tipo":"string",
-                 "volable":"bool"
-                }
-            },
+                 "id":0,
+                 "properties":[
+                        {
+                         "name":"caminable",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"tipo",
+                         "type":"string",
+                         "value":"recarga"
+                        }, 
+                        {
+                         "name":"usos",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"volable",
+                         "type":"bool",
+                         "value":true
+                        }]
+                }],
          "tilewidth":32
         }, 
         {
          "firstgid":865,
-         "source":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Grass_pipo.json"
-        }, 
-        {
-         "firstgid":1393,
-         "source":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Dirt_pipo.json"
+         "source":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[Base]BaseChip_pipo.json"
         }],
  "tilewidth":32,
  "type":"map",
- "version":1.1,
+ "version":"1.10",
  "width":24
 }

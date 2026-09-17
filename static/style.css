@@ -153,6 +153,21 @@ header h1 {
   color: var(--text);
   border-color: var(--text-dim);
 }
+.btn-tool:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+#nav-capitulo { gap: 4px; }
+#nav-capitulo .btn-tool { padding: 6px 8px; }
+.label-capitulo {
+  min-width: 64px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  cursor: default;
+}
 
 /* ── Panel izquierdo — mapa ──────────────────────────────── */
 #mapa-container {
@@ -526,6 +541,48 @@ header h1 {
   filter: drop-shadow(0 0 4px #4f8ef7);
 }
 .t-desconocido  { background: #1a1f2e; }
+
+/* ── Objetos de mapa (capa de objetos de Tiled): pozos de Emblema, ballestas, destructibles ── */
+.obj-marca {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  font-size: 11px;
+  line-height: 1;
+  padding: 1px 2px;
+  box-sizing: border-box;
+  z-index: 1;
+}
+/* Pozo de Emblema: solo el marco azul (1 uso: está o no está) */
+.obj-recarga_emblema {
+  box-shadow: inset 0 0 10px rgba(79, 142, 247, 0.6);
+  border: 2px solid rgba(79, 142, 247, 0.95);
+}
+.obj-arma_usable {
+  box-shadow: inset 0 0 10px rgba(247, 196, 79, 0.55);
+  border: 1px solid rgba(247, 196, 79, 0.9);
+}
+.obj-arma_usable > .obj-marca::before { content: '🏹'; filter: drop-shadow(0 0 4px #f7c44f); }
+.obj-destructible {
+  box-shadow: inset 0 0 10px rgba(180, 120, 70, 0.6);
+  border: 1px solid rgba(180, 120, 70, 0.9);
+}
+.obj-destructible > .obj-marca::before { content: '🪵'; filter: drop-shadow(0 0 4px #b47846); }
+.obj-usos {
+  position: absolute;
+  left: 2px; bottom: 1px;
+  font-size: 9px;
+  color: #e8ecf5;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Casillas objetivo (condiciones de victoria / derrota) */
+.objetivo-derrota  { outline: 2px dashed rgba(230, 70, 70, 0.85);  outline-offset: -3px; }
+.objetivo-victoria { outline: 2px dashed rgba(82, 192, 122, 0.85); outline-offset: -3px; }
 
 /* Coordenadas en hover (tooltip) */
 .celda[data-tip]:hover::after {
@@ -1654,3 +1711,52 @@ button:disabled { opacity: .4; cursor: not-allowed; filter: none; }
   background: linear-gradient(135deg, #2b1212, #3d1717);
   color: #ffb5b5;
 }
+
+/* ── Roster de aliados (localStorage) ─────────────────────── */
+.roster-dialog { max-width: 520px; }
+.roster-body {
+  padding: 12px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.roster-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 0 0 10px;
+}
+.roster-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.roster-vacio {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 18px 0;
+}
+.roster-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.roster-item:hover {
+  border-color: #82b1ff;
+  background: rgba(45, 110, 220, 0.12);
+}
+.roster-item-nombre { font-weight: 700; font-size: 13px; flex: 1; }
+.roster-item-meta { font-size: 11px; color: var(--text-dim); }
+.roster-item-emblema { font-size: 11px; color: #ffd54f; }
+.roster-footer-left { display: flex; gap: 6px; align-items: center; }
+.btn-label { display: inline-block; }
+.roster-dialog .modal-footer { padding: 10px 20px 14px; }
+.btn-label { cursor: pointer; border-radius: var(--radius); font-size: 12px; }

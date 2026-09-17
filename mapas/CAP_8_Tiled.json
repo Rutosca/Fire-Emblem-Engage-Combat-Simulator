@@ -1,0 +1,846 @@
+{ "compressionlevel":-1,
+ "height":19,
+ "infinite":false,
+ "layers":[
+        {
+         "compression":"zlib",
+         "data":"eJzTZ2Rg0Afi8wwIDOPrM2JiZHlk9bjUEGsWLnWEzCBHPalmEVLzH4qxycPkiLVzMOLzSH5A9wdMbKj7EVeckuovUsOAGul01KzhjQE3I2PQ",
+         "encoding":"base64",
+         "height":19,
+         "id":1,
+         "name":"Capa de patrones 1",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":19,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":3,
+         "name":"estructuras",
+         "objects":[
+                {
+                 "gid":434,
+                 "height":64,
+                 "id":1,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":192,
+                 "y":320
+                }, 
+                {
+                 "gid":434,
+                 "height":64,
+                 "id":3,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":384,
+                 "y":320
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"usables",
+         "objects":[
+                {
+                 "gid":1999,
+                 "height":32,
+                 "id":5,
+                 "name":"",
+                 "opacity":1,
+                 "properties":
+                    {
+                     "usos":5
+                    },
+                 "propertytypes":
+                    {
+                     "usos":"int"
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":288,
+                 "y":288
+                }, 
+                {
+                 "gid":1401,
+                 "height":32,
+                 "id":6,
+                 "name":"",
+                 "opacity":1,
+                 "properties":
+                    {
+                     "usos":1
+                    },
+                 "propertytypes":
+                    {
+                     "usos":"int"
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":96,
+                 "y":160
+                }, 
+                {
+                 "gid":1401,
+                 "height":32,
+                 "id":7,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":160,
+                 "y":128
+                }, 
+                {
+                 "gid":1401,
+                 "height":32,
+                 "id":8,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":416,
+                 "y":128
+                }, 
+                {
+                 "gid":1401,
+                 "height":32,
+                 "id":9,
+                 "name":"",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":32,
+                 "x":480,
+                 "y":160
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "compression":"zlib",
+         "data":"eJxjYMANlrNh4lEwCkbBKBgF9AMAnBQDYg==",
+         "encoding":"base64",
+         "height":19,
+         "id":2,
+         "name":"objetivos",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":19,
+         "x":0,
+         "y":0
+        }],
+ "nextlayerid":5,
+ "nextobjectid":10,
+ "orientation":"orthogonal",
+ "renderorder":"left-down",
+ "tiledversion":"1.12.2",
+ "tileheight":32,
+ "tilesets":[
+        {
+         "columns":8,
+         "firstgid":1,
+         "image":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Dirt_pipo.png",
+         "imageheight":1344,
+         "imagewidth":256,
+         "margin":0,
+         "name":"[A]Dirt_pipo",
+         "spacing":0,
+         "tilecount":336,
+         "tileheight":32,
+         "tileproperties":
+            {
+             "206":
+                {
+                 "caminable":false,
+                 "tipo":"muro",
+                 "volable":false
+                },
+             "254":
+                {
+                 "caminable":false,
+                 "tipo":"foso",
+                 "volable":true
+                },
+             "302":
+                {
+                 "caminable":true,
+                 "tipo":"llanura",
+                 "volable":true
+                },
+             "96":
+                {
+                 "caminable":true,
+                 "tipo":"curacion",
+                 "volable":true
+                }
+            },
+         "tilepropertytypes":
+            {
+             "206":
+                {
+                 "caminable":"bool",
+                 "tipo":"string",
+                 "volable":"bool"
+                },
+             "254":
+                {
+                 "caminable":"bool",
+                 "tipo":"string",
+                 "volable":"bool"
+                },
+             "302":
+                {
+                 "caminable":"bool",
+                 "tipo":"string",
+                 "volable":"bool"
+                },
+             "96":
+                {
+                 "caminable":"bool",
+                 "tipo":"string",
+                 "volable":"bool"
+                }
+            },
+         "tilewidth":32
+        }, 
+        {
+         "columns":8,
+         "firstgid":337,
+         "image":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[Base]BaseChip_pipo.png",
+         "imageheight":4256,
+         "imagewidth":256,
+         "margin":0,
+         "name":"[Base]BaseChip_pipo",
+         "spacing":0,
+         "tilecount":1064,
+         "tileheight":32,
+         "tileproperties":
+            {
+             "97":
+                {
+                 "caminable":false,
+                 "destructible":true,
+                 "tipo":"valla",
+                 "vida":30,
+                 "volable":false
+                }
+            },
+         "tilepropertytypes":
+            {
+             "97":
+                {
+                 "caminable":"bool",
+                 "destructible":"bool",
+                 "tipo":"string",
+                 "vida":"int",
+                 "volable":"bool"
+                }
+            },
+         "tiles":
+            {
+             "10":
+                {
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":5,
+                             "name":"",
+                             "opacity":1,
+                             "polygon":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":-17.1505687295161,
+                                     "y":15.8550221708116
+                                    }, 
+                                    {
+                                     "x":9.37728937728938,
+                                     "y":12.9554655870445
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":19.8650472334683,
+                             "y":3.88663967611336
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    }
+                }
+            },
+         "tilewidth":32
+        }, 
+        {
+         "columns":8,
+         "firstgid":1401,
+         "image":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Grass_pipo.png",
+         "imageheight":2112,
+         "imagewidth":256,
+         "margin":0,
+         "name":"[A]Grass_pipo",
+         "spacing":0,
+         "tilecount":528,
+         "tileheight":32,
+         "tileproperties":
+            {
+             "0":
+                {
+                 "caminable":true,
+                 "tipo":"recarga",
+                 "usos":1,
+                 "volable":true
+                },
+             "302":
+                {
+                 "caminable":true,
+                 "condicion":"derrota",
+                 "tipo":"objetivo",
+                 "volable":true
+                }
+            },
+         "tilepropertytypes":
+            {
+             "0":
+                {
+                 "caminable":"bool",
+                 "tipo":"string",
+                 "usos":"int",
+                 "volable":"bool"
+                },
+             "302":
+                {
+                 "caminable":"bool",
+                 "condicion":"string",
+                 "tipo":"string",
+                 "volable":"bool"
+                }
+            },
+         "tilewidth":32
+        }, 
+        {
+         "columns":64,
+         "firstgid":1929,
+         "image":"..\/..\/..\/..\/Users\/rutos\/PycharmProjects\/plantilla-2025-Equipo-E\/resources\/tilesets\/[A]Water_pipo.png",
+         "imageheight":1536,
+         "imagewidth":2048,
+         "margin":0,
+         "name":"[A]Water_pipo",
+         "spacing":0,
+         "tilecount":3072,
+         "tileheight":32,
+         "tileproperties":
+            {
+             "70":
+                {
+                 "arma_permitida":"Arco",
+                 "caminable":true,
+                 "distancia_max":7,
+                 "distancia_min":3,
+                 "tipo":"ballesta",
+                 "volable":true
+                }
+            },
+         "tilepropertytypes":
+            {
+             "70":
+                {
+                 "arma_permitida":"string",
+                 "caminable":"bool",
+                 "distancia_max":"int",
+                 "distancia_min":"int",
+                 "tipo":"string",
+                 "volable":"bool"
+                }
+            },
+         "tilewidth":32,
+         "wangsets":[
+                {
+                 "colors":[
+                        {
+                         "color":"#ff0000",
+                         "name":"water1",
+                         "probability":1,
+                         "tile":70
+                        }, 
+                        {
+                         "color":"#00ff00",
+                         "name":"water2",
+                         "probability":1,
+                         "tile":454
+                        }, 
+                        {
+                         "color":"#0000ff",
+                         "name":"water3",
+                         "probability":1,
+                         "tile":838
+                        }, 
+                        {
+                         "color":"#ff7700",
+                         "name":"water4",
+                         "probability":1,
+                         "tile":1222
+                        }, 
+                        {
+                         "color":"#00e9ff",
+                         "name":"waterway1",
+                         "probability":1,
+                         "tile":1606
+                        }, 
+                        {
+                         "color":"#ff00d8",
+                         "name":"waterway2",
+                         "probability":1,
+                         "tile":1990
+                        }, 
+                        {
+                         "color":"#ffff00",
+                         "name":"waterway3",
+                         "probability":1,
+                         "tile":2374
+                        }, 
+                        {
+                         "color":"#a000ff",
+                         "name":"wave",
+                         "probability":1,
+                         "tile":2758
+                        }],
+                 "name":"Terrains",
+                 "tile":-1,
+                 "type":"corner",
+                 "wangtiles":[
+                        {
+                         "tileid":5,
+                         "wangid":[0, 0, 0, 1, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":6,
+                         "wangid":[0, 0, 0, 1, 0, 1, 0, 0]
+                        }, 
+                        {
+                         "tileid":7,
+                         "wangid":[0, 0, 0, 0, 0, 1, 0, 0]
+                        }, 
+                        {
+                         "tileid":69,
+                         "wangid":[0, 1, 0, 1, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":71,
+                         "wangid":[0, 0, 0, 0, 0, 1, 0, 1]
+                        }, 
+                        {
+                         "tileid":133,
+                         "wangid":[0, 1, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":134,
+                         "wangid":[0, 1, 0, 0, 0, 0, 0, 1]
+                        }, 
+                        {
+                         "tileid":135,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 1]
+                        }, 
+                        {
+                         "tileid":196,
+                         "wangid":[0, 1, 0, 0, 0, 1, 0, 1]
+                        }, 
+                        {
+                         "tileid":197,
+                         "wangid":[0, 1, 0, 1, 0, 0, 0, 1]
+                        }, 
+                        {
+                         "tileid":260,
+                         "wangid":[0, 0, 0, 1, 0, 1, 0, 1]
+                        }, 
+                        {
+                         "tileid":261,
+                         "wangid":[0, 1, 0, 1, 0, 1, 0, 0]
+                        }, 
+                        {
+                         "tileid":389,
+                         "wangid":[0, 0, 0, 2, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":390,
+                         "wangid":[0, 0, 0, 2, 0, 2, 0, 0]
+                        }, 
+                        {
+                         "tileid":391,
+                         "wangid":[0, 0, 0, 0, 0, 2, 0, 0]
+                        }, 
+                        {
+                         "tileid":453,
+                         "wangid":[0, 2, 0, 2, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":455,
+                         "wangid":[0, 0, 0, 0, 0, 2, 0, 2]
+                        }, 
+                        {
+                         "tileid":517,
+                         "wangid":[0, 2, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":518,
+                         "wangid":[0, 2, 0, 0, 0, 0, 0, 2]
+                        },
+                    
+                        {
+                         "tileid":519,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 2]
+                        }, 
+                        {
+                         "tileid":580,
+                         "wangid":[0, 2, 0, 0, 0, 2, 0, 2]
+                        }, 
+                        {
+                         "tileid":581,
+                         "wangid":[0, 2, 0, 2, 0, 0, 0, 2]
+                        }, 
+                        {
+                         "tileid":644,
+                         "wangid":[0, 0, 0, 2, 0, 2, 0, 2]
+                        }, 
+                        {
+                         "tileid":645,
+                         "wangid":[0, 2, 0, 2, 0, 2, 0, 0]
+                        }, 
+                        {
+                         "tileid":773,
+                         "wangid":[0, 0, 0, 3, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":774,
+                         "wangid":[0, 0, 0, 3, 0, 3, 0, 0]
+                        }, 
+                        {
+                         "tileid":775,
+                         "wangid":[0, 0, 0, 0, 0, 3, 0, 0]
+                        }, 
+                        {
+                         "tileid":837,
+                         "wangid":[0, 3, 0, 3, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":839,
+                         "wangid":[0, 0, 0, 0, 0, 3, 0, 3]
+                        }, 
+                        {
+                         "tileid":901,
+                         "wangid":[0, 3, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":902,
+                         "wangid":[0, 3, 0, 0, 0, 0, 0, 3]
+                        }, 
+                        {
+                         "tileid":903,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 3]
+                        }, 
+                        {
+                         "tileid":964,
+                         "wangid":[0, 3, 0, 0, 0, 3, 0, 3]
+                        }, 
+                        {
+                         "tileid":965,
+                         "wangid":[0, 3, 0, 3, 0, 0, 0, 3]
+                        }, 
+                        {
+                         "tileid":1028,
+                         "wangid":[0, 0, 0, 3, 0, 3, 0, 3]
+                        }, 
+                        {
+                         "tileid":1029,
+                         "wangid":[0, 3, 0, 3, 0, 3, 0, 0]
+                        }, 
+                        {
+                         "tileid":1157,
+                         "wangid":[0, 0, 0, 4, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1158,
+                         "wangid":[0, 0, 0, 4, 0, 4, 0, 0]
+                        },
+                    
+                        {
+                         "tileid":1159,
+                         "wangid":[0, 0, 0, 0, 0, 4, 0, 0]
+                        }, 
+                        {
+                         "tileid":1221,
+                         "wangid":[0, 4, 0, 4, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1223,
+                         "wangid":[0, 0, 0, 0, 0, 4, 0, 4]
+                        }, 
+                        {
+                         "tileid":1285,
+                         "wangid":[0, 4, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1286,
+                         "wangid":[0, 4, 0, 0, 0, 0, 0, 4]
+                        }, 
+                        {
+                         "tileid":1287,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 4]
+                        }, 
+                        {
+                         "tileid":1348,
+                         "wangid":[0, 4, 0, 0, 0, 4, 0, 4]
+                        }, 
+                        {
+                         "tileid":1349,
+                         "wangid":[0, 4, 0, 4, 0, 0, 0, 4]
+                        }, 
+                        {
+                         "tileid":1412,
+                         "wangid":[0, 0, 0, 4, 0, 4, 0, 4]
+                        }, 
+                        {
+                         "tileid":1413,
+                         "wangid":[0, 4, 0, 4, 0, 4, 0, 0]
+                        }, 
+                        {
+                         "tileid":1541,
+                         "wangid":[0, 0, 0, 5, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1542,
+                         "wangid":[0, 0, 0, 5, 0, 5, 0, 0]
+                        }, 
+                        {
+                         "tileid":1543,
+                         "wangid":[0, 0, 0, 0, 0, 5, 0, 0]
+                        }, 
+                        {
+                         "tileid":1605,
+                         "wangid":[0, 5, 0, 5, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1607,
+                         "wangid":[0, 0, 0, 0, 0, 5, 0, 5]
+                        }, 
+                        {
+                         "tileid":1669,
+                         "wangid":[0, 5, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1670,
+                         "wangid":[0, 5, 0, 0, 0, 0, 0, 5]
+                        }, 
+                        {
+                         "tileid":1671,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 5]
+                        }, 
+                        {
+                         "tileid":1732,
+                         "wangid":[0, 5, 0, 0, 0, 5, 0, 5]
+                        },
+                    
+                        {
+                         "tileid":1733,
+                         "wangid":[0, 5, 0, 5, 0, 0, 0, 5]
+                        }, 
+                        {
+                         "tileid":1796,
+                         "wangid":[0, 0, 0, 5, 0, 5, 0, 5]
+                        }, 
+                        {
+                         "tileid":1797,
+                         "wangid":[0, 5, 0, 5, 0, 5, 0, 0]
+                        }, 
+                        {
+                         "tileid":1925,
+                         "wangid":[0, 0, 0, 6, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1926,
+                         "wangid":[0, 0, 0, 6, 0, 6, 0, 0]
+                        }, 
+                        {
+                         "tileid":1927,
+                         "wangid":[0, 0, 0, 0, 0, 6, 0, 0]
+                        }, 
+                        {
+                         "tileid":1989,
+                         "wangid":[0, 6, 0, 6, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":1991,
+                         "wangid":[0, 0, 0, 0, 0, 6, 0, 6]
+                        }, 
+                        {
+                         "tileid":2053,
+                         "wangid":[0, 6, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":2054,
+                         "wangid":[0, 6, 0, 0, 0, 0, 0, 6]
+                        }, 
+                        {
+                         "tileid":2055,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 6]
+                        }, 
+                        {
+                         "tileid":2116,
+                         "wangid":[0, 6, 0, 0, 0, 6, 0, 6]
+                        }, 
+                        {
+                         "tileid":2117,
+                         "wangid":[0, 6, 0, 6, 0, 0, 0, 6]
+                        }, 
+                        {
+                         "tileid":2180,
+                         "wangid":[0, 0, 0, 6, 0, 6, 0, 6]
+                        }, 
+                        {
+                         "tileid":2181,
+                         "wangid":[0, 6, 0, 6, 0, 6, 0, 0]
+                        }, 
+                        {
+                         "tileid":2309,
+                         "wangid":[0, 0, 0, 7, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":2310,
+                         "wangid":[0, 0, 0, 7, 0, 7, 0, 0]
+                        }, 
+                        {
+                         "tileid":2311,
+                         "wangid":[0, 0, 0, 0, 0, 7, 0, 0]
+                        }, 
+                        {
+                         "tileid":2373,
+                         "wangid":[0, 7, 0, 7, 0, 0, 0, 0]
+                        },
+                    
+                        {
+                         "tileid":2375,
+                         "wangid":[0, 0, 0, 0, 0, 7, 0, 7]
+                        }, 
+                        {
+                         "tileid":2437,
+                         "wangid":[0, 7, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":2438,
+                         "wangid":[0, 7, 0, 0, 0, 0, 0, 7]
+                        }, 
+                        {
+                         "tileid":2439,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 7]
+                        }, 
+                        {
+                         "tileid":2500,
+                         "wangid":[0, 7, 0, 0, 0, 7, 0, 7]
+                        }, 
+                        {
+                         "tileid":2501,
+                         "wangid":[0, 7, 0, 7, 0, 0, 0, 7]
+                        }, 
+                        {
+                         "tileid":2564,
+                         "wangid":[0, 0, 0, 7, 0, 7, 0, 7]
+                        }, 
+                        {
+                         "tileid":2565,
+                         "wangid":[0, 7, 0, 7, 0, 7, 0, 0]
+                        }, 
+                        {
+                         "tileid":2693,
+                         "wangid":[0, 0, 0, 8, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":2694,
+                         "wangid":[0, 0, 0, 8, 0, 8, 0, 0]
+                        }, 
+                        {
+                         "tileid":2695,
+                         "wangid":[0, 0, 0, 0, 0, 8, 0, 0]
+                        }, 
+                        {
+                         "tileid":2757,
+                         "wangid":[0, 8, 0, 8, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":2759,
+                         "wangid":[0, 0, 0, 0, 0, 8, 0, 8]
+                        }, 
+                        {
+                         "tileid":2821,
+                         "wangid":[0, 8, 0, 0, 0, 0, 0, 0]
+                        }, 
+                        {
+                         "tileid":2822,
+                         "wangid":[0, 8, 0, 0, 0, 0, 0, 8]
+                        }, 
+                        {
+                         "tileid":2823,
+                         "wangid":[0, 0, 0, 0, 0, 0, 0, 8]
+                        }, 
+                        {
+                         "tileid":2884,
+                         "wangid":[0, 8, 0, 0, 0, 8, 0, 8]
+                        }, 
+                        {
+                         "tileid":2885,
+                         "wangid":[0, 8, 0, 8, 0, 0, 0, 8]
+                        }, 
+                        {
+                         "tileid":2948,
+                         "wangid":[0, 0, 0, 8, 0, 8, 0, 8]
+                        },
+                    
+                        {
+                         "tileid":2949,
+                         "wangid":[0, 8, 0, 8, 0, 8, 0, 0]
+                        }]
+                }]
+        }],
+ "tilewidth":32,
+ "type":"map",
+ "version":1.1,
+ "width":19
+}

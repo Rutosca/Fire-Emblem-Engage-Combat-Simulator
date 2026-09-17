@@ -60,7 +60,12 @@ class FichaUnidad:
     nivel_vinculo: int = 1             # Nivel de vínculo con el Emblema (>=11 otorga +1 turno de Fusión, total 4)
     estilo_combate: str = ""           # Estilo de combate: Qi Adept, Backup, Dragon, Covert, etc.
     es_jefe: bool = False              # True si la unidad es un jefe (boss)
-    bonus_ponte_detras_turnos: int = 0  # ¡Ponte detrás de mí! (Alcryst): turnos restantes de +3 Fuerza
+    es_refuerzo: bool = False          # True si entró como refuerzo (no estaba en el despliegue inicial)
+    accion_turno: str = ""             # Acción consumida este turno: "combate" | "objeto" | "baston" | "" (esperó / aún no actuó)
+    # Estados temporales (buffs "de 1 turno" del juego, p.ej. SID_力＋２_１ターン). Cada uno:
+    #   {"sid", "nombre", "stat_boosts": {str,mag,...}, "expira_fase", "expira_turno", "origen"}
+    # Caduca al ENTRAR en (expira_fase, expira_turno). Ver otorgar_estado_temporal / purgar_estados_temporales.
+    estados_temporales: list = field(default_factory=list)
 
     @property
     def arma_equipada(self):
@@ -104,9 +109,59 @@ class FichaUnidad:
             setattr(self.stats, 'energia_emblema', self.energia_emblema)
             setattr(self.stats, 'max_energia_emblema', self.max_energia_emblema)
             setattr(self.stats, 'hp_stock', self.hp_stock)
+            setattr(self.stats, 'estados_temporales', self.estados_temporales)
         elif self.hp_max <= 0:
             self.hp_max = 30
             self.hp_actual = 30
+
+    # ── Estados temporales ───────────────────────────────────────────────
+
+    def _sincronizar_estados_temporales(self):
+        if self.stats and self.stats is not self:
+            setattr(self.stats, 'estados_temporales', self.estados_temporales)
+
+    def tiene_estado_temporal(self, sid: str) -> bool:
+        return any(e.get("sid") == sid for e in self.estados_temporales)
+
+    def otorgar_estado_temporal(self, sid: str, nombre: str, stat_boosts: dict,
+                                expira_fase: str, expira_turno: int, origen: str = "") -> dict:
+        """
+        Otorga (o refresca) un buff temporal. Como en el juego, un mismo SID no se
+        acumula: si ya estaba activo se sustituye por el nuevo, extendiendo su caducidad.
+        """
+        self.estados_temporales = [e for e in self.estados_temporales if e.get("sid") != sid]
+        estado = {
+            "sid": sid,
+            "nombre": nombre,
+            "stat_boosts": {k: int(v) for k, v in (stat_boosts or {}).items() if int(v or 0) != 0},
+            "expira_fase": expira_fase,
+            "expira_turno": int(expira_turno),
+            "origen": origen,
+        }
+        self.estados_temporales.append(estado)
+        self._sincronizar_estados_temporales()
+        return estado
+
+    def purgar_estados_temporales(self, fase: str, turno: int) -> list:
+        """Elimina los estados que caducan al entrar en (fase, turno). Devuelve los eliminados."""
+        vencidos = [e for e in self.estados_temporales
+                    if e.get("expira_fase") == fase and int(e.get("expira_turno", 0)) <= int(turno)]
+        if vencidos:
+            self.estados_temporales = [e for e in self.estados_temporales if e not in vencidos]
+            self._sincronizar_estados_temporales()
+        return vencidos
+
+    @property
+    def armas_permitidas(self) -> list:
+        """Tipos de arma con maestría según la clase (Job.xml). Vacío si la clase no está en el catálogo."""
+        from catalogo_loader import armas_permitidas_clase
+        return armas_permitidas_clase(self.clase_id, self.clase_nombre)
+
+    @property
+    def puede_usar_ballesta(self) -> bool:
+        """Maestría en Arco + un arco en el inventario (requisito de las ballestas de mapa)."""
+        from catalogo_loader import puede_usar_ballesta
+        return puede_usar_ballesta(self)
 
     @property
     def hp(self) -> int:
@@ -142,6 +197,9 @@ class FichaUnidad:
             "es_verde": self.es_verde,
             "es_fijo": self.es_fijo,
             "ha_actuado": self.ha_actuado,
+            "accion_turno": self.accion_turno,
+            "es_refuerzo": self.es_refuerzo,
+            "estados_temporales": self.estados_temporales,
             "cargas_ruptura": self.cargas_ruptura,
             "en_ruptura": self.cargas_ruptura > 0,
             "nivel_veneno": max(0, min(3, self.nivel_veneno)),
@@ -166,6 +224,8 @@ class FichaUnidad:
             "nivel_vinculo": self.nivel_vinculo,
             "clase_id": self.clase_id,
             "clase_nombre": self.clase_nombre,
+            "armas_permitidas": self.armas_permitidas,
+            "puede_usar_ballesta": self.puede_usar_ballesta,
             "estilo_combate": self.estilo_combate or (getattr(self.stats, 'estilo_combate', '') if self.stats else ''),
             "nivel": self.nivel,
             "emblema_id": self.emblema_id,
@@ -216,9 +276,97 @@ class EstadoTablero:
         self.turno_actual: int = 1
         self.fase: str = "jugador"   # "jugador" | "enemigo"
         self.historial: List[dict] = []  # Pila de snapshots para Cronogema (Deshacer)
+        # Estado de los objetos de mapa (ballestas, destructibles, pozos de Emblema):
+        #   {id: {"activo": bool, "usos": int|None, "tipo": str, "nombre": str}}
+        self.objetos: Dict[str, dict] = {}
+        self.inicializar_objetos_mapa()
+        # Refuerzos pendientes: {turno: [dict de unidad resuelto por el cargador de dispos]}.
+        # Se despliegan al entrar en la fase de jugador de ese turno (avanzar_turno).
+        self.refuerzos_pendientes: Dict[int, list] = {}
+        self.refuerzos_desplegados_ultimo: list = []
 
         if auto_cargar_spawns and self.mapa:
             self.cargar_spawns_desde_mapa()
+
+    # ── Objetos de mapa (capa de objetos de Tiled) ───────────────────────
+
+    def inicializar_objetos_mapa(self) -> None:
+        """Reconstruye el estado de los objetos desde el mapa (todos activos, usos a tope)."""
+        self.objetos = {}
+        if not self.mapa or not hasattr(self.mapa, 'objetos_mapa'):
+            return
+        for ent in self.mapa.objetos_mapa():
+            usos = ent.propiedades.get("usos")
+            vida = ent.propiedades.get("vida", ent.propiedades.get("hp"))
+            self.objetos[ent.id_entidad] = {
+                "activo": True,
+                "usos": int(usos) if usos is not None else None,
+                "vida": int(vida) if vida is not None else None,   # HP de los destructibles
+                "vida_max": int(vida) if vida is not None else None,
+                "tipo": str(ent.tipo).lower(),
+                "nombre": ent.nombre,
+            }
+        self.sincronizar_objetos_mapa()
+
+    def sincronizar_objetos_mapa(self) -> None:
+        """Vuelca el estado actual de los objetos sobre el grid del mapa."""
+        if self.mapa and hasattr(self.mapa, 'aplicar_objetos'):
+            self.mapa.aplicar_objetos(self.objetos)
+
+    def objetos_como_lista(self) -> List[dict]:
+        """Objetos del mapa con su estado, para la API / UI."""
+        if not self.mapa or not hasattr(self.mapa, 'objetos_mapa'):
+            return []
+        return [{**ent.como_dict(), **self.objetos.get(ent.id_entidad, {"activo": True})}
+                for ent in self.mapa.objetos_mapa()]
+
+    def consumir_objeto_mapa(self, id_objeto: str) -> bool:
+        """
+        Gasta un uso del objeto (ballesta con `usos`) o lo desactiva del todo
+        (destructible destruido, pozo de Emblema agotado, arma sin `usos`).
+        Devuelve False si no existe o ya estaba inactivo.
+        """
+        est = self.objetos.get(str(id_objeto))
+        if not est or not est.get("activo"):
+            return False
+        if est.get("usos") is not None and est["tipo"] == "arma_usable":
+            est["usos"] = max(0, est["usos"] - 1)
+            if est["usos"] > 0:
+                return True
+        est["activo"] = False
+        self.sincronizar_objetos_mapa()
+        return True
+
+    def dañar_objeto_mapa(self, id_objeto: str, daño: int) -> Optional[dict]:
+        """
+        Resta HP a un destructible con `vida`; al llegar a 0 se destruye entero
+        (todas sus casillas quedan libres). Si no tiene `vida`, se destruye directamente.
+        """
+        est = self.objetos.get(str(id_objeto))
+        if not est or not est.get("activo"):
+            return None
+        if est.get("vida") is None:
+            self.consumir_objeto_mapa(id_objeto)
+            return est
+        est["vida"] = max(0, int(est["vida"]) - max(0, int(daño)))
+        if est["vida"] <= 0:
+            est["activo"] = False
+            self.sincronizar_objetos_mapa()
+        return est
+
+    def restaurar_objeto_mapa(self, id_objeto: str) -> bool:
+        """Reactiva un objeto (corrección manual)."""
+        est = self.objetos.get(str(id_objeto))
+        if not est:
+            return False
+        est["activo"] = True
+        ent = next((e for e in self.mapa.objetos_mapa() if e.id_entidad == str(id_objeto)), None) if self.mapa else None
+        if ent and ent.propiedades.get("usos") is not None:
+            est["usos"] = int(ent.propiedades["usos"])
+        if est.get("vida_max") is not None:
+            est["vida"] = est["vida_max"]
+        self.sincronizar_objetos_mapa()
+        return True
 
     def cargar_spawns_desde_mapa(self) -> int:
         """
@@ -233,6 +381,8 @@ class EstadoTablero:
 
         cargadas = 0
         for ent in self.mapa.entidades:
+            if getattr(ent, 'es_objeto_mapa', False):
+                continue  # ballestas, destructibles, pozos: no son unidades
             tipo_l = str(ent.tipo).lower()
             es_aliado = tipo_l in ('aliado', 'player', 'ally', 'lord') or ent.propiedades.get('es_aliado', True)
 
@@ -334,10 +484,11 @@ class EstadoTablero:
             ficha.energia_emblema = prev.energia_emblema
             if ficha.stats:
                 setattr(ficha.stats, 'energia_emblema', ficha.energia_emblema)
-        if prev and getattr(prev, 'bonus_ponte_detras_turnos', 0) > 0 and getattr(ficha, 'bonus_ponte_detras_turnos', 0) <= 0:
-            ficha.bonus_ponte_detras_turnos = prev.bonus_ponte_detras_turnos
-            if ficha.stats:
-                setattr(ficha.stats, 'bonus_ponte_detras_turnos', ficha.bonus_ponte_detras_turnos)
+        if prev and prev.estados_temporales and not ficha.estados_temporales:
+            ficha.estados_temporales = list(prev.estados_temporales)
+            ficha._sincronizar_estados_temporales()
+        if prev and prev.accion_turno and not ficha.accion_turno:
+            ficha.accion_turno = prev.accion_turno
 
         self.fichas[ficha.nombre] = ficha
 
@@ -395,17 +546,38 @@ class EstadoTablero:
         ficha = self.fichas[nombre]
         ficha.x = nueva_x
         ficha.y = nueva_y
-
-        # Casilla de recarga de Emblema al 100%: solo surte efecto si la unidad no esta en fusion y agoto sus turnos
-        if self.mapa and hasattr(self.mapa, 'grid'):
-            if 0 <= nueva_x < len(self.mapa.grid) and 0 <= nueva_y < len(self.mapa.grid[0]):
-                casilla = self.mapa.grid[nueva_x][nueva_y]
-                if getattr(casilla, 'es_recarga_emblema', False) and ficha.es_aliado and not ficha.en_fusion and ficha.turnos_fusion <= 0:
-                    ficha.energia_emblema = ficha.max_energia_emblema
-                    if ficha.stats:
-                        ficha.stats.energia_emblema = ficha.max_energia_emblema
-
+        # La casilla de recarga de Emblema NO actúa al pisarla: se aplica cuando la
+        # unidad termina su acción encima (ver aplicar_recarga_emblema_en_casilla).
         return True
+
+    def aplicar_recarga_emblema_en_casilla(self, nombre: str) -> Optional[dict]:
+        """
+        La unidad ha terminado su acción (ataque, objeto, esperar) sobre su casilla
+        actual. Si es una casilla de recarga de Emblema y la unidad no está en
+        fusión, recarga el medidor al 100%; si la recarga viene de un pozo de la
+        capa de objetos, el pozo se agota y desaparece.
+        Devuelve {"unidad", "pozo"} si hubo recarga, None si no.
+        """
+        ficha = self.fichas.get(nombre)
+        if not ficha or not ficha.viva or not ficha.es_aliado or not self.mapa or not hasattr(self.mapa, 'grid'):
+            return None
+        if not (0 <= ficha.x < len(self.mapa.grid) and 0 <= ficha.y < len(self.mapa.grid[0])):
+            return None
+        casilla = self.mapa.grid[ficha.x][ficha.y]
+        if not getattr(casilla, 'es_recarga_emblema', False):
+            return None
+        if ficha.en_fusion or ficha.turnos_fusion > 0:
+            return None
+        ficha.energia_emblema = ficha.max_energia_emblema
+        if ficha.stats:
+            ficha.stats.energia_emblema = ficha.max_energia_emblema
+        pozo_id = None
+        if hasattr(self.mapa, 'objeto_en'):
+            pozo = self.mapa.objeto_en(ficha.x, ficha.y, "recarga_emblema")
+            if pozo:
+                self.consumir_objeto_mapa(pozo.id_entidad)
+                pozo_id = pozo.id_entidad
+        return {"unidad": ficha.nombre, "pozo": pozo_id}
 
     def alternar_lider_tres_casas(self, nombre: str, nuevo_lider: Optional[str] = None) -> Optional[str]:
         """Alterna o establece el líder activo de Tres Casas (Edelgard, Dimitri, Claude)."""
@@ -458,7 +630,9 @@ class EstadoTablero:
         snap = {
             "turno": self.turno_actual,
             "fase": self.fase,
-            "fichas": copy.deepcopy(self.fichas)
+            "fichas": copy.deepcopy(self.fichas),
+            "objetos": copy.deepcopy(self.objetos),
+            "refuerzos_pendientes": copy.deepcopy(self.refuerzos_pendientes),
         }
         self.historial.append(snap)
         if len(self.historial) > 50:
@@ -472,6 +646,9 @@ class EstadoTablero:
         self.turno_actual = snap["turno"]
         self.fase = snap["fase"]
         self.fichas = snap["fichas"]
+        self.objetos = snap.get("objetos", self.objetos)
+        self.refuerzos_pendientes = snap.get("refuerzos_pendientes", self.refuerzos_pendientes)
+        self.sincronizar_objetos_mapa()
         return True
 
     # ── Gestión de Acciones de Turno ─────────────────────────────────────
@@ -481,6 +658,7 @@ class EstadoTablero:
         for f in self.fichas.values():
             f.ha_actuado = False
             f.chain_guard_usado = False
+            f.accion_turno = ""
             if f.es_aliado:
                 f.cargas_ruptura = 0
 
@@ -501,6 +679,53 @@ class EstadoTablero:
         else:
             ficha.chain_guard_activo = not ficha.chain_guard_activo
         return True
+
+    # ── Refuerzos ────────────────────────────────────────────────────────
+
+    def programar_refuerzos(self, calendario: dict) -> None:
+        """Fija el calendario {turno: [unidades]} del capítulo (se usa al cargar el preset)."""
+        self.refuerzos_pendientes = {int(t): list(us) for t, us in (calendario or {}).items() if us}
+        self.refuerzos_desplegados_ultimo = []
+
+    def refuerzos_previstos(self, turno: Optional[int] = None) -> list:
+        """Refuerzos que aparecerán en `turno` (o todos los pendientes, ordenados) — para la UI / análisis."""
+        if turno is not None:
+            return list(self.refuerzos_pendientes.get(int(turno), []))
+        return [dict(u, turno=t) for t in sorted(self.refuerzos_pendientes) for u in self.refuerzos_pendientes[t]]
+
+    def desplegar_refuerzos(self, turno: int) -> list:
+        """
+        Coloca los refuerzos programados para `turno`. Si su casilla de aparición
+        está ocupada, en el juego el refuerzo no aparece ese turno: se pospone al
+        siguiente. Devuelve las fichas desplegadas (como_dict).
+        """
+        pendientes = self.refuerzos_pendientes.pop(int(turno), [])
+        if not pendientes:
+            self.refuerzos_desplegados_ultimo = []
+            return []
+        from catalogo_loader import resolver_unidad_con_catalogo
+        desplegados, pospuestos = [], []
+        ocupadas = {(f.x, f.y) for f in self.fichas.values() if f.viva}
+        for u in pendientes:
+            if (u["x"], u["y"]) in ocupadas:
+                pospuestos.append(u)
+                continue
+            datos = dict(u)
+            # Nombre único si ya existiera una ficha (viva o muerta) con ese nombre
+            base = datos["nombre"]
+            n = 2
+            while datos["nombre"] in self.fichas:
+                datos["nombre"] = f"{base} #{n}"
+                n += 1
+            ficha = resolver_unidad_con_catalogo(datos)
+            ficha.es_refuerzo = True
+            self.registrar_unidad(ficha, resolver_colision=False)
+            ocupadas.add((ficha.x, ficha.y))
+            desplegados.append(ficha.como_dict())
+        if pospuestos:
+            self.refuerzos_pendientes.setdefault(int(turno) + 1, []).extend(pospuestos)
+        self.refuerzos_desplegados_ultimo = desplegados
+        return desplegados
 
     # ── Turno ────────────────────────────────────────────────────────────
 
@@ -541,11 +766,12 @@ class EstadoTablero:
                     f.stats.energia_emblema = f.energia_emblema
                     f.stats.ataque_emblema_usado = f.ataque_emblema_usado
 
-            # ¡Ponte detrás de mí! (Alcryst): el bonus dura exactamente 1 turno
-            if f.bonus_ponte_detras_turnos > 0:
-                f.bonus_ponte_detras_turnos = max(0, f.bonus_ponte_detras_turnos - 1)
-                if f.stats:
-                    f.stats.bonus_ponte_detras_turnos = f.bonus_ponte_detras_turnos
+        # Buffs temporales que caducan al entrar en la fase de jugador (p.ej. Self-Improver)
+        for f in self.fichas.values():
+            f.purgar_estados_temporales("jugador", self.turno_actual)
+
+        # Refuerzos enemigos programados para este turno (aparecen al inicio de la fase de jugador)
+        self.desplegar_refuerzos(self.turno_actual)
 
     def iniciar_fase_enemigo(self) -> None:
         """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""
@@ -555,6 +781,8 @@ class EstadoTablero:
             f.chain_guard_usado = False
             if not f.es_aliado:
                 f.cargas_ruptura = 0
+            # Buffs temporales que caducan al entrar en la fase enemiga (p.ej. ¡Ponte detrás de mí!)
+            f.purgar_estados_temporales("enemigo", self.turno_actual)
 
     # ── Serialización ────────────────────────────────────────────────────
 

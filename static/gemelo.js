@@ -19,7 +19,8 @@ const state = {
   turno: 1,
   mapaAncho: 24,
   mapaAlto: 17,
-  modalModo: "crear", // "crear" | "editar"
+  modalModo: "crear", // "crear" | "editar" | "roster" (edita el roster del navegador, no el tablero)
+  nombrePrecargadoRoster: "", // último nombre volcado desde el roster al modal (evita recargas en blur)
   fusionActivandoseEnModal: false, // true entre marcar "Activar Fusión" y guardar/cerrar el modal
 };
 
@@ -124,7 +125,12 @@ async function loadTerrenoAsync(ancho, alto) {
             if (t.es_antirruptura) perks.push(`Inmune Ruptura`);
             if (t.es_recarga_emblema) perks.push(`Recarga Emblema 100%`);
 
-            celda.title = perks.join(" · ");
+            // No pisar el título de un objeto de mapa / casilla objetivo ya pintado
+            if (celda.dataset.objetoId || celda.classList.contains("objetivo-derrota") || celda.classList.contains("objetivo-victoria")) {
+              celda.title = `${celda.title} · ${perks.join(" · ")}`;
+            } else {
+              celda.title = perks.join(" · ");
+            }
             let tagExtra = "";
             if (t.curacion_turno) tagExtra += ` · +${t.curacion_turno}HP Antirruptura`;
             if (t.es_recarga_emblema) tagExtra += ` · Recarga Fusión`;
@@ -139,13 +145,33 @@ async function loadTerrenoAsync(ancho, alto) {
 
 // ─── Tokens ────────────────────────────────────────────────────────────────
 
+const NOMBRES_STAT_BOOST = { str: "Fue", mag: "Mag", dex: "Des", spd: "Vel", def: "Def", res: "Res", lck: "Sue", bld: "Com", mov: "Mov" };
+
+function describirStatBoosts(boosts) {
+  return Object.entries(boosts || {})
+    .filter(([, v]) => v)
+    .map(([k, v]) => `${v > 0 ? "+" : ""}${v} ${NOMBRES_STAT_BOOST[k] || k}`)
+    .join(", ");
+}
+
+// Avisa de los buffs temporales otorgados por pasivas (Self-Improver, ¡Ponte detrás de mí!, ...)
+function notificarEstadosOtorgados(res) {
+  for (const e of (res && res.estados_otorgados) || []) {
+    mostrarToast(`${e.unidad}: ${e.nombre} (${describirStatBoosts(e.stat_boosts)}) — ${e.origen}`, "ok");
+  }
+}
+
 function esClaseQiAdept(ficha) {
   if (!ficha) return false;
   const clase = String(ficha.clase_nombre || (ficha.stats ? ficha.stats.clase_nombre : "") || "").toLowerCase();
   const estilo = String(ficha.estilo_combate || (ficha.stats ? ficha.stats.estilo_combate : "") || "").toLowerCase();
   const nombre = String(ficha.nombre || "").toLowerCase();
-  if (estilo.includes("qi") || estilo.includes("adept") || estilo.includes("adepto") || estilo.includes("気功") || estilo.includes("artes")) return true;
-  if (["monk", "monje", "master", "maestro", "dancer", "bailar", "adept"].some(k => clase.includes(k))) return true;
+  // El estilo de combate (StyleName de Job.xml) manda: si viene y no es 気功, no es Qi Adept
+  // (p.ej. "Swordmaster" contiene "master" pero es Backup).
+  if (estilo && !["infantería", "infanteria", "none", "infantry"].includes(estilo)) {
+    return estilo.includes("qi") || estilo.includes("adept") || estilo.includes("adepto") || estilo.includes("気功");
+  }
+  if (["martial monk", "martial master", "monje", "maestro marcial", "dancer", "bailar", "qi adept", "adepto"].some(k => clase.includes(k))) return true;
   if (["framme", "seadall"].some(k => nombre.includes(k))) return true;
   if (state && state.catalogo && state.catalogo.clases) {
     for (const c of Object.values(state.catalogo.clases)) {
@@ -229,6 +255,9 @@ function crearToken(ficha) {
   if (ficha.nivel_veneno > 0) desc += `\n[VENENO NIVEL ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} dmg de todo ataque]`;
   if (ficha.ha_actuado) desc += `\n[HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n[RUPTURA ACTIVA: No puede contraatacar]`;
+  for (const est of (ficha.estados_temporales || [])) {
+    desc += `\n[⬆ ${est.nombre}: ${describirStatBoosts(est.stat_boosts)} hasta fase ${est.expira_fase} T${est.expira_turno}]`;
+  }
   if (ficha.en_fusion || ficha.turnos_fusion > 0) desc += `\n[MODO ENGAGE ACTIVO: ${ficha.turnos_fusion} turno(s) restante(s)${ficha.ataque_emblema_usado ? ' - Técnica Engage consumida' : ''}]`;
   else if (ficha.es_aliado && ficha.emblema_nombre) {
     const maxE = ficha.max_energia_emblema || (ficha.nivel_vinculo >= 20 ? 5 : 6);
@@ -294,6 +323,7 @@ function autoGuardarLocal() {
       fichas: fichasVivas,
       turno_actual: state.turno || 1,
       fase: state.fase || "jugador",
+      capitulo: state.capitulo || null,
       guardadoEn: new Date().toISOString()
     };
     localStorage.setItem("engage_tracker_partida_local", JSON.stringify(estado));
@@ -631,6 +661,49 @@ async function cargarCatalogoEmblemas() {
     }
   } catch (e) {
     console.warn("No se pudo cargar catalogo de emblemas:", e);
+  }
+}
+
+// Subtítulos cosméticos conocidos para los grabados (solo decorativos, no
+// afectan a la lógica). Un emblema sin entrada aquí se muestra sin subtítulo
+// en vez de quedar fuera del selector — así un DLC nuevo aparece igual aunque
+// no se le haya asignado todavía un subtítulo.
+const SUBTITULOS_GRABADO = {
+  "marth": "Comienzos", "sigurd": "Cruzada", "celica": "Ecos",
+  "micaiah": "Aurora", "roy": "León", "leif": "Genealogía",
+  "lucina": "Despertar", "lyn": "Llama", "ike": "Fulgor",
+  "byleth": "Academia", "corrin": "Destino", "eirika": "Sagrada",
+  "alear": "Dragón",
+};
+
+/** Rellena dinámicamente los 5 selectores de grabado (uno por ranura de
+ * inventario) a partir del catálogo real de Emblemas (base + DLC), en vez de
+ * depender de la lista fija escrita a mano en el HTML — así un Emblema DLC
+ * nuevo (o uno cuyo grabado se corrija) aparece sin tener que editar 5 <select>
+ * repetidos. */
+function poblarSelectoresGrabado() {
+  const emblemasConGrabado = Object.values(CATALOGO_EMBLEMAS)
+    .filter(e => e && e.engrave && e.nombre)
+    .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  if (emblemasConGrabado.length === 0) return;
+
+  for (let i = 0; i < 5; i++) {
+    const sel = $(`inv-grabado-${i}`);
+    if (!sel) continue;
+    const valorActual = sel.value;
+    sel.innerHTML = "";
+    const optVacia = document.createElement("option");
+    optVacia.value = "";
+    optVacia.textContent = "(Sin grabado)";
+    sel.appendChild(optVacia);
+    for (const emb of emblemasConGrabado) {
+      const opt = document.createElement("option");
+      opt.value = emb.nombre;
+      const sub = SUBTITULOS_GRABADO[emb.nombre.toLowerCase()];
+      opt.textContent = sub ? `${emb.nombre} (${sub})` : emb.nombre;
+      sel.appendChild(opt);
+    }
+    if (valorActual) sel.value = valorActual;
   }
 }
 
@@ -1031,6 +1104,9 @@ async function recalcularCombatStats() {
 
 function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   state.modalModo = "crear";
+  state.nombrePrecargadoRoster = "";
+  $("row-pos-indicator").classList.remove("hidden");
+  $("btn-modal-eliminar").textContent = "Eliminar Ficha";
   state.potenciadoresModal = [];
   state.prevEmblemaModal = "";
   $("modal-titulo").textContent = esAliado ? "Añadir Nuevo Aliado" : "Añadir Nuevo Enemigo";
@@ -1111,13 +1187,12 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   $("f-nombre").focus();
 }
 
-function abrirModalEdicion(ficha) {
-  state.modalModo = "editar";
+// Vuelca una ficha (del tablero o del roster) en todos los campos del modal.
+// No toca el modo, el título ni el nombre original: eso lo decide quien abre el modal.
+function rellenarFormularioDesdeFicha(ficha) {
   state.potenciadoresModal = Array.isArray(ficha.potenciadores_usados) ? [...ficha.potenciadores_usados] : [];
   state.armaEmblemaEquipadaTemporal = null;
   state.prevEmblemaModal = ficha.emblema_nombre || "";
-  $("modal-titulo").textContent = `Editar Unidad: ${ficha.nombre}`;
-  $("f-edit-original-name").value = ficha.nombre;
   $("f-x").value = ficha.x;
   $("f-y").value = ficha.y;
   $("label-pos-x").textContent = ficha.x;
@@ -1256,7 +1331,18 @@ function abrirModalEdicion(ficha) {
   renderizarArmasFusionModal(ficha);
   recalcularCombatStats();
 
+}
+
+function abrirModalEdicion(ficha) {
+  state.modalModo = "editar";
+  state.nombrePrecargadoRoster = ficha.nombre;
+  $("modal-titulo").textContent = `Editar Unidad: ${ficha.nombre}`;
+  $("f-edit-original-name").value = ficha.nombre;
+  $("row-pos-indicator").classList.remove("hidden");
+  rellenarFormularioDesdeFicha(ficha);
+
   $("btn-modal-eliminar").classList.remove("hidden");
+  $("btn-modal-eliminar").textContent = "Eliminar Ficha";
   $("modal-backdrop").classList.remove("hidden");
 }
 
@@ -1453,12 +1539,10 @@ function sincronizarEmblemaModal() {
   }
 }
 
-async function guardarUnidadDesdeModal() {
+// Lee todos los campos del modal y devuelve el payload de unidad (formato /api/unidad/guardar).
+// `fichaExistente` aporta el estado transitorio (fusión, ha_actuado…) que el modal no edita.
+function construirPayloadDesdeModal(fichaExistente) {
   const nombre = $("f-nombre").value.trim();
-  if (!nombre) {
-    mostrarToast("Introduce un nombre para la unidad", "error");
-    return;
-  }
 
   const esAliado = $("f-bando-aliado").checked;
   const x = parseInt($("f-x").value, 10);
@@ -1483,15 +1567,6 @@ async function guardarUnidadDesdeModal() {
 
   // Leer chips de pasivas
   const pasivas = leerChips("chips-pasivas");
-
-  // Si editó el nombre de una unidad existente, eliminar la anterior
-  const nombreOriginal = $("f-edit-original-name").value;
-  if (nombreOriginal && nombreOriginal !== nombre) {
-    await api("/api/unidad/eliminar", "POST", { nombre: nombreOriginal });
-    const viejo = document.querySelector(`.token[data-nombre="${nombreOriginal}"]`);
-    if (viejo) viejo.remove();
-    delete state.fichas[nombreOriginal];
-  }
 
   // Construir inventario estructurado a partir de los 5 slots
   const inventario = [];
@@ -1539,7 +1614,6 @@ async function guardarUnidadDesdeModal() {
     }
   }
 
-  const fichaExistente = state.fichas[nombreOriginal || nombre];
   const estabaEnFusion = fichaExistente && (fichaExistente.en_fusion || fichaExistente.turnos_fusion > 0) && (fichaExistente.turnos_fusion > 0);
   if (estabaEnFusion) {
     enFusion = true;
@@ -1603,6 +1677,33 @@ async function guardarUnidadDesdeModal() {
     habilidades: pasivas,
     inventario
   };
+  return payload;
+
+}
+
+async function guardarUnidadDesdeModal() {
+  const nombre = $("f-nombre").value.trim();
+  if (!nombre) {
+    mostrarToast("Introduce un nombre para la unidad", "error");
+    return;
+  }
+
+  if (state.modalModo === "roster") {
+    guardarEntradaRosterDesdeModal(nombre);
+    return;
+  }
+
+  // Si editó el nombre de una unidad existente, eliminar la anterior
+  const nombreOriginal = $("f-edit-original-name").value;
+  if (nombreOriginal && nombreOriginal !== nombre) {
+    await api("/api/unidad/eliminar", "POST", { nombre: nombreOriginal });
+    const viejo = document.querySelector(`.token[data-nombre="${nombreOriginal}"]`);
+    if (viejo) viejo.remove();
+    delete state.fichas[nombreOriginal];
+  }
+
+  const fichaExistente = state.fichas[nombreOriginal || nombre];
+  const payload = construirPayloadDesdeModal(fichaExistente);
 
   const res = await api("/api/unidad/guardar", "POST", payload);
   if (res.ok && res.ficha) {
@@ -1612,6 +1713,12 @@ async function guardarUnidadDesdeModal() {
     autoGuardarLocal();
     cerrarModal();
     mostrarToast(`Unidad '${nombre}' guardada con éxito.`, "ok");
+    if (res.estados_otorgados && res.estados_otorgados.length) {
+      // Otras fichas (p.ej. Alcryst) pueden haber recibido un buff: refrescar el tablero completo
+      const est = await api("/api/estado", "GET");
+      if (est && est.fichas) actualizarTokens(est.fichas);
+      notificarEstadosOtorgados(res);
+    }
   } else {
     mostrarToast(`Error: ${res.error || "No se pudo guardar"}`, "error");
   }
@@ -1620,6 +1727,14 @@ async function guardarUnidadDesdeModal() {
 async function eliminarUnidadDesdeModal() {
   const nombre = $("f-edit-original-name").value || $("f-nombre").value.trim();
   if (!nombre) return;
+
+  if (state.modalModo === "roster") {
+    eliminarEntradaRoster(nombre);
+    cerrarModal();
+    abrirRoster();
+    mostrarToast(`'${nombre}' eliminado del roster.`, "info");
+    return;
+  }
 
   await api("/api/unidad/eliminar", "POST", { nombre });
   const tok = document.querySelector(`.token[data-nombre="${nombre}"]`);
@@ -1836,10 +1951,29 @@ function initModalEvents() {
     }
   }
 
+  // Al escribir un nombre: si está en el roster del navegador se precarga entero;
+  // si no, se rellenan las stats base del catálogo como hasta ahora.
+  async function autoRellenarDesdeRosterOCatalogo() {
+    const nombre = $("f-nombre")?.value.trim() || "";
+    const esAliado = $("f-bando-aliado")?.checked ?? true;
+    if (esAliado && nombre && nombre !== state.nombrePrecargadoRoster) {
+      const entrada = obtenerEntradaRoster(nombre);
+      if (entrada) {
+        const x = parseInt($("f-x").value, 10) || 0;
+        const y = parseInt($("f-y").value, 10) || 0;
+        rellenarFormularioDesdeFicha({ ...entrada, x, y, es_aliado: true });
+        state.nombrePrecargadoRoster = entrada.nombre;
+        mostrarToast(`Datos de ${entrada.nombre} cargados de tu roster`, "info");
+        return;
+      }
+    }
+    await autoRellenarStatsDesdeCatalogo();
+  }
+
   // Listeners de autorellenado al elegir/cambiar Nombre, Clase o Nivel
-  $("f-nombre").addEventListener("change", autoRellenarStatsDesdeCatalogo);
+  $("f-nombre").addEventListener("change", autoRellenarDesdeRosterOCatalogo);
   $("f-nombre").addEventListener("blur", () => {
-    if ($("f-nombre").value.trim().length >= 3) autoRellenarStatsDesdeCatalogo();
+    if ($("f-nombre").value.trim().length >= 3) autoRellenarDesdeRosterOCatalogo();
   });
   $("f-clase").addEventListener("change", autoRellenarStatsDesdeCatalogo);
   $("f-clase").addEventListener("blur", () => {
@@ -2028,7 +2162,7 @@ function initModalEvents() {
   $("btn-preset-cap7").addEventListener("click", async () => {
     const selDif = $("select-dificultad");
     const dificultad = selDif ? selDif.value : "Hard";
-    const res = await api("/api/preset/capitulo7", "POST", { dificultad });
+    const res = await api("/api/preset/actual", "POST", { dificultad });
     if (res.ok && res.fichas) {
       actualizarTokens(res.fichas);
       mostrarToast(`${res.mensaje || "Preset cargado con éxito"}`, "ok");
@@ -2050,18 +2184,23 @@ function initModalEvents() {
     mostrarToast("Tablero limpio: todas las fichas eliminadas", "info");
   });
 
-  // Gestión de Escuadrón Persistente
-  $("btn-guardar-squad").addEventListener("click", async () => {
-    const res = await api("/api/escuadron/guardar", "POST", {});
-    if (res.ok) {
-      mostrarToast(`${res.mensaje || "Escuadrón guardado con éxito"}`, "ok");
+  // Gestión de Escuadrón Persistente (localStorage del navegador)
+  $("btn-guardar-squad").addEventListener("click", () => {
+    const n = guardarEscuadronLocal();
+    if (n > 0) {
+      mostrarToast(`Escuadrón guardado en este navegador (${n} aliados)`, "ok");
     } else {
-      mostrarToast(`Error al guardar escuadrón: ${res.error}`, "error");
+      mostrarToast("No hay aliados vivos en el mapa que guardar", "error");
     }
   });
 
   $("btn-desplegar-squad").addEventListener("click", async () => {
-    const res = await api("/api/escuadron/desplegar", "POST", {});
+    const escuadron = cargarEscuadronLocal();
+    if (!escuadron.length) {
+      mostrarToast("No hay escuadrón guardado en este navegador", "error");
+      return;
+    }
+    const res = await api("/api/escuadron/desplegar", "POST", { escuadron });
     if (res.ok && res.fichas) {
       actualizarTokens(res.fichas);
       mostrarToast(`${res.mensaje || "Escuadrón desplegado"}`, "ok");
@@ -2069,6 +2208,29 @@ function initModalEvents() {
     } else {
       mostrarToast(`${res.error || "No hay escuadrón guardado"}`, "error");
     }
+  });
+
+  // Roster de aliados
+  $("btn-roster").addEventListener("click", abrirRoster);
+  $("btn-roster-close").addEventListener("click", cerrarRoster);
+  $("roster-backdrop").addEventListener("click", (e) => { if (e.target.id === "roster-backdrop") cerrarRoster(); });
+  $("btn-roster-nuevo").addEventListener("click", () => abrirModalRoster(null));
+  $("btn-roster-exportar").addEventListener("click", exportarRoster);
+  $("input-importar-roster").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const n = importarRoster(JSON.parse(ev.target.result));
+        renderizarRoster();
+        mostrarToast(`Roster importado: ${n} aliados`, "ok");
+      } catch (err) {
+        mostrarToast("Archivo de roster no válido", "error");
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
   });
 
   // Exportar / Importar Partida en JSON
@@ -2161,6 +2323,7 @@ $("btn-deshacer").addEventListener("click", async () => {
     state.turno = res.turno || state.turno;
     state.fase = res.fase || state.fase;
     actualizarBadge();
+    refrescarObjetosMapa();
     mostrarToast(res.mensaje || "⏱️ Acción deshecha con la Cronogema", "info");
     setTimeout(lanzarAnalisis, 250);
   } else {
@@ -2202,6 +2365,10 @@ $("btn-turno-fin").addEventListener("click", async () => {
     $("btn-turno-fin").textContent = "Confirmar Turno Enemigo";
     $("btn-turno-fin").style.color = "var(--red)";
     mostrarToast("Fase Enemiga: puedes aplicar los ataques enemigos previstos o mover sus tokens.", "info");
+    avisarRefuerzosProximoTurno();
+    notificarEstadosOtorgados(res);
+    notificarRecargaEmblema(res);
+    refrescarObjetosMapa(res);
     setTimeout(lanzarAnalisis, 250);
   } else {
     const res = await api("/api/turno/fin", "POST");
@@ -2216,6 +2383,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
     $("btn-turno-fin").textContent = "Turno Enemigo";
     $("btn-turno-fin").style.color = "";
     mostrarToast(`Turno ${state.turno} — Fase del jugador`, "ok");
+    notificarRefuerzos(res);
     setTimeout(lanzarAnalisis, 350);
   }
 });
@@ -2229,6 +2397,7 @@ $("btn-reset").addEventListener("click", async () => {
     actualizarTokens(res.fichas || []);
     $("analisis-scroll").innerHTML = "";
     localStorage.removeItem("engage_tracker_partida_local");
+    refrescarObjetosMapa();
     mostrarToast("Tablero reiniciado al Turno 1", "ok");
     setTimeout(lanzarAnalisis, 350);
   }
@@ -2291,6 +2460,8 @@ async function ejecutarJugada(r) {
   }
 
   mostrarToast(toastMsg, kill ? "ok" : "info");
+  notificarRecargaEmblema(res);
+  if (res.objetos) refrescarObjetosMapa(res);
 
   // Re-evaluar automáticamente tras el combate para continuar ofreciendo jugadas con los aliados restantes
   setTimeout(lanzarAnalisis, 400);
@@ -2320,6 +2491,7 @@ async function ejecutarAtaqueEnemigo(r) {
     `${r.enemigo} atacó a ${r.aliado}. ${r.aliado} queda en ${dfn.hp_actual}/${dfn.hp_max} HP.`,
     kill ? "error" : "info"
   );
+  notificarEstadosOtorgados(res);
 
   setTimeout(lanzarAnalisis, 400);
 }
@@ -2344,7 +2516,10 @@ async function ejecutarCuracion(r) {
     const res = await api("/api/unidad/ajustar_hp", "POST", { nombre: r.objetivo, hp_actual: nuevoHp });
     if (res.fichas) actualizarTokens(res.fichas);
   }
-  await api("/api/unidad/alternar_actuado", "POST", { nombre: r.aliado });
+  const resUso = await api("/api/unidad/usar_objeto", "POST", { nombre: r.aliado, item_nombre: r.baston });
+  if (resUso.fichas) actualizarTokens(resUso.fichas);
+  notificarRecargaEmblema(resUso);
+  if (resUso.objetos) refrescarObjetosMapa(resUso);
   mostrarToast(`${r.aliado} usó ${r.baston} en ${r.objetivo} (+${r.curacion_estimada} HP)`, "ok");
   setTimeout(lanzarAnalisis, 400);
 }
@@ -2357,7 +2532,10 @@ async function ejecutarPocion(r) {
     const res = await api("/api/unidad/ajustar_hp", "POST", { nombre: r.aliado, hp_actual: nuevoHp });
     if (res.fichas) actualizarTokens(res.fichas);
   }
-  await api("/api/unidad/alternar_actuado", "POST", { nombre: r.aliado });
+  const resUso = await api("/api/unidad/usar_objeto", "POST", { nombre: r.aliado, item_nombre: r.item });
+  if (resUso.fichas) actualizarTokens(resUso.fichas);
+  notificarRecargaEmblema(resUso);
+  if (resUso.objetos) refrescarObjetosMapa(resUso);
   mostrarToast(`${r.aliado} usó ${r.item} (+HP recuperados)`, "ok");
   setTimeout(lanzarAnalisis, 400);
 }
@@ -2628,20 +2806,420 @@ function mostrarToast(msg, tipo = "info") {
 
 async function init() {
   await cargarCatalogoEmblemas();
-  const estado = await api("/api/estado");
-  const ancho = estado.mapa ? estado.mapa.ancho : 24;
-  const alto  = estado.mapa ? estado.mapa.alto  : 17;
+  poblarSelectoresGrabado();
+  let estado = await api("/api/estado");
 
-  state.turno = estado.turno || 1;
-  state.fase  = estado.fase  || "jugador";
-  actualizarBadge();
+  // Si la partida guardada en el navegador era de otro capítulo, cargar ese mapa primero
+  try {
+    const raw = localStorage.getItem("engage_tracker_partida_local");
+    const guardado = raw ? JSON.parse(raw) : null;
+    if (guardado && guardado.capitulo && estado.mapa && guardado.capitulo !== estado.mapa.capitulo) {
+      const sel = await api("/api/mapa/seleccionar", "POST", { capitulo: guardado.capitulo });
+      if (sel && sel.ok) estado = sel.estado;
+    }
+  } catch (e) { /* sin partida local */ }
 
-  buildGrid(ancho, alto);
+  aplicarMapaCargado(estado);
   initModalEvents();
+  initNavCapitulo();
+  await migrarEscuadronLegado();
 
   const restaurado = await restaurarDesdeLocalStorage();
   if (!restaurado && estado.fichas) {
     actualizarTokens(estado.fichas);
+  }
+}
+
+
+// ─── Roster de aliados y escuadrón (localStorage del navegador) ─────────────
+// El roster guarda la "build" de cada aliado (clase, nivel, stats, inventario, emblema,
+// vínculo, pasivas, potenciadores). El escuadrón guarda además las posiciones del último
+// despliegue. Ninguno de los dos pasa por el servidor salvo al desplegar.
+
+const ROSTER_KEY = "engage_tracker_roster";
+const ESCUADRON_KEY = "engage_tracker_escuadron";
+const ROSTER_MIGRADO_KEY = "engage_tracker_roster_migrado";
+
+function cargarRoster() {
+  try {
+    const raw = localStorage.getItem(ROSTER_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    return (obj && typeof obj === "object" && !Array.isArray(obj)) ? obj : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function guardarRoster(roster) {
+  try {
+    localStorage.setItem(ROSTER_KEY, JSON.stringify(roster));
+  } catch (e) {
+    console.warn("No se pudo guardar el roster en localStorage:", e);
+  }
+}
+
+function claveRoster(nombre) {
+  return String(nombre || "").trim().toLowerCase();
+}
+
+function obtenerEntradaRoster(nombre) {
+  return cargarRoster()[claveRoster(nombre)] || null;
+}
+
+// Reduce una ficha del tablero (o un payload del modal) a su build persistente:
+// HP al máximo, energía llena, sin fusión ni estado de turno.
+function normalizarEntradaRoster(f) {
+  const st = f.stats || {};
+  const hpMax = f.hp_max || st.hp_max || st.hp || 30;
+  const hpStock = f.hp_stock !== undefined ? f.hp_stock : (st.hp_stock || 0);
+  const nivelVinculo = f.nivel_vinculo || 1;
+  const maxEnergia = nivelVinculo >= 20 ? 5 : 6;
+  return {
+    nombre: String(f.nombre || "").trim(),
+    es_aliado: true,
+    nivel: f.nivel || 1,
+    clase_nombre: f.clase_nombre || "",
+    hp_max: hpMax,
+    hp_actual: hpMax,
+    hp_stock: hpStock,
+    chain_guard_activo: f.chain_guard_activo !== false,
+    arma_nombre: f.arma_nombre || (f.arma_equipada && (f.arma_equipada.nombre || f.arma_equipada)) || (f.arma && (f.arma.nombre || f.arma)) || "",
+    emblema_nombre: f.emblema_nombre || "",
+    nivel_vinculo: nivelVinculo,
+    energia_emblema: maxEnergia,
+    max_energia_emblema: maxEnergia,
+    en_fusion: false,
+    turnos_fusion: 0,
+    ataque_emblema_usado: false,
+    ha_actuado: false,
+    cargas_ruptura: 0,
+    nivel_veneno: 0,
+    lider_tres_casas: f.lider_tres_casas || "Dimitri",
+    es_volador: f.es_volador,
+    mov: f.mov !== undefined ? f.mov : 4,
+    potenciadores_usados: Array.isArray(f.potenciadores_usados) ? [...f.potenciadores_usados] : [],
+    stats: {
+      hp: hpMax,
+      hp_max: hpMax,
+      hp_stock: hpStock,
+      fuerza: st.fuerza || 0,
+      magia: st.magia || 0,
+      destreza: st.destreza || 0,
+      velocidad: st.velocidad || 0,
+      defensa: st.defensa || 0,
+      resistencia: st.resistencia || 0,
+      suerte: st.suerte || 0,
+      complexion: st.complexion || 1
+    },
+    habilidades: Array.isArray(f.habilidades) ? [...f.habilidades] : (f.habilidades ? [f.habilidades] : []),
+    inventario: Array.isArray(f.inventario) ? JSON.parse(JSON.stringify(f.inventario)) : []
+  };
+}
+
+function upsertRoster(fichas) {
+  const roster = cargarRoster();
+  let n = 0;
+  (fichas || []).forEach(f => {
+    if (!f || !f.nombre || f.es_aliado === false) return;
+    roster[claveRoster(f.nombre)] = normalizarEntradaRoster(f);
+    n++;
+  });
+  guardarRoster(roster);
+  return n;
+}
+
+function eliminarEntradaRoster(nombre) {
+  const roster = cargarRoster();
+  delete roster[claveRoster(nombre)];
+  guardarRoster(roster);
+}
+
+// Escuadrón: aliados vivos del tablero con su posición, deduplicados por nombre.
+function guardarEscuadronLocal() {
+  const vistos = new Set();
+  const aliados = Object.values(state.fichas)
+    .filter(f => f.es_aliado && f.viva && (f.hp_actual === undefined || f.hp_actual > 0))
+    .filter(f => { const k = claveRoster(f.nombre); if (vistos.has(k)) return false; vistos.add(k); return true; });
+  if (!aliados.length) return 0;
+  try {
+    localStorage.setItem(ESCUADRON_KEY, JSON.stringify({
+      capitulo: state.capitulo || null,
+      guardadoEn: new Date().toISOString(),
+      aliados
+    }));
+  } catch (e) {
+    console.warn("No se pudo guardar el escuadrón en localStorage:", e);
+  }
+  upsertRoster(aliados);
+  return aliados.length;
+}
+
+function cargarEscuadronLocal() {
+  try {
+    const raw = localStorage.getItem(ESCUADRON_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    return (obj && Array.isArray(obj.aliados)) ? obj.aliados : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// Primera apertura tras el cambio: vuelca el escuadrón legado del servidor al navegador.
+async function migrarEscuadronLegado() {
+  try {
+    if (localStorage.getItem(ROSTER_MIGRADO_KEY)) return;
+    if (Object.keys(cargarRoster()).length === 0 && cargarEscuadronLocal().length === 0) {
+      const res = await api("/api/escuadron/cargar", "GET");
+      const aliados = (res && res.ok && Array.isArray(res.escuadron)) ? res.escuadron : [];
+      if (aliados.length) {
+        localStorage.setItem(ESCUADRON_KEY, JSON.stringify({ capitulo: 7, guardadoEn: new Date().toISOString(), aliados }));
+        upsertRoster(aliados);
+        mostrarToast(`Escuadrón anterior migrado a este navegador (${aliados.length} aliados)`, "info");
+      }
+    }
+    localStorage.setItem(ROSTER_MIGRADO_KEY, "1");
+  } catch (e) {
+    console.warn("No se pudo migrar el escuadrón legado:", e);
+  }
+}
+
+// ── UI del roster ──
+function abrirRoster() {
+  renderizarRoster();
+  $("roster-backdrop").classList.remove("hidden");
+}
+
+function cerrarRoster() {
+  $("roster-backdrop").classList.add("hidden");
+}
+
+function renderizarRoster() {
+  const cont = $("roster-lista");
+  cont.innerHTML = "";
+  const entradas = Object.values(cargarRoster()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  if (!entradas.length) {
+    cont.innerHTML = '<div class="roster-vacio">Aún no hay aliados guardados. Usa "Guardar" en el escuadrón o "+ Nuevo aliado".</div>';
+    return;
+  }
+  entradas.forEach(e => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "roster-item";
+    const nom = document.createElement("span");
+    nom.className = "roster-item-nombre";
+    nom.textContent = e.nombre;
+    const meta = document.createElement("span");
+    meta.className = "roster-item-meta";
+    meta.textContent = `${e.clase_nombre || "—"} · Nv ${e.nivel || 1}`;
+    const emb = document.createElement("span");
+    emb.className = "roster-item-emblema";
+    emb.textContent = e.emblema_nombre ? `◆ ${e.emblema_nombre}` : "";
+    btn.append(nom, meta, emb);
+    btn.addEventListener("click", () => abrirModalRoster(e));
+    cont.appendChild(btn);
+  });
+}
+
+// Abre el modal de unidad en modo roster: guarda/borra en localStorage, no en el tablero.
+function abrirModalRoster(entrada) {
+  cerrarRoster();
+  if (entrada) {
+    state.modalModo = "roster";
+    state.nombrePrecargadoRoster = entrada.nombre;
+    $("modal-titulo").textContent = `Aliado del roster: ${entrada.nombre}`;
+    $("f-edit-original-name").value = entrada.nombre;
+    rellenarFormularioDesdeFicha({ ...entrada, x: 0, y: 0, es_aliado: true });
+    $("btn-modal-eliminar").classList.remove("hidden");
+    $("modal-backdrop").classList.remove("hidden");
+  } else {
+    abrirModalCreacion(0, 0, true);
+    state.modalModo = "roster";
+    $("modal-titulo").textContent = "Nuevo aliado del roster";
+    $("btn-modal-eliminar").classList.add("hidden");
+  }
+  $("row-pos-indicator").classList.add("hidden");
+  $("btn-modal-eliminar").textContent = "Quitar del roster";
+}
+
+function guardarEntradaRosterDesdeModal(nombre) {
+  const nombreOriginal = $("f-edit-original-name").value;
+  const payload = construirPayloadDesdeModal(null);
+  const roster = cargarRoster();
+  if (nombreOriginal && claveRoster(nombreOriginal) !== claveRoster(nombre)) {
+    delete roster[claveRoster(nombreOriginal)];
+  }
+  roster[claveRoster(nombre)] = normalizarEntradaRoster(payload);
+  guardarRoster(roster);
+  cerrarModal();
+  abrirRoster();
+  mostrarToast(`'${nombre}' guardado en el roster.`, "ok");
+}
+
+function exportarRoster() {
+  const entradas = Object.values(cargarRoster());
+  if (!entradas.length) {
+    mostrarToast("El roster está vacío", "error");
+    return;
+  }
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ roster: entradas }, null, 2));
+  const a = document.createElement("a");
+  a.setAttribute("href", dataStr);
+  a.setAttribute("download", "roster_engage.json");
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// Acepta {roster:[...]}, una lista de fichas, o un escuadrón/partida exportados ({fichas:[...]}).
+function importarRoster(data) {
+  let lista = [];
+  if (Array.isArray(data)) lista = data;
+  else if (data && Array.isArray(data.roster)) lista = data.roster;
+  else if (data && Array.isArray(data.fichas)) lista = data.fichas;
+  else if (data && Array.isArray(data.aliados)) lista = data.aliados;
+  else if (data && typeof data === "object") lista = Object.values(data);
+  const validas = lista.filter(f => f && typeof f === "object" && f.nombre && f.es_aliado !== false);
+  if (!validas.length) throw new Error("sin aliados");
+  return upsertRoster(validas);
+}
+
+// ─── Navegación entre capítulos ────────────────────────────────────────────
+
+// Reconstruye el tablero a partir de un bloque `estado` de la API (mapa + turno + fase)
+function aplicarMapaCargado(estado) {
+  const mapa = estado.mapa || {};
+  state.capitulo = mapa.capitulo || state.capitulo || null;
+  state.turno = estado.turno || 1;
+  state.fase  = estado.fase  || "jugador";
+  actualizarBadge();
+  buildGrid(mapa.ancho || 24, mapa.alto || 17);
+  renderObjetosMapa(mapa.objetos || []);
+  renderCasillasObjetivo(mapa.casillas_objetivo || []);
+  actualizarNavCapitulo(mapa);
+}
+
+function actualizarNavCapitulo(info) {
+  if (!info || !info.capitulo) return;
+  $("label-capitulo").textContent = `Cap. ${info.capitulo}`;
+  $("label-capitulo").title = info.nombre || `Capítulo ${info.capitulo}`;
+  $("btn-cap-prev").disabled = (info.anterior === null || info.anterior === undefined);
+  $("btn-cap-next").disabled = (info.siguiente === null || info.siguiente === undefined);
+  $("btn-cap-prev").title = info.anterior ? `Capítulo ${info.anterior}` : "No hay mapa anterior";
+  $("btn-cap-next").title = info.siguiente ? `Capítulo ${info.siguiente}` : "No hay mapa siguiente";
+}
+
+async function cambiarCapitulo(direccion) {
+  const res = await api("/api/mapa/seleccionar", "POST", { direccion });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo cambiar de capítulo", "error");
+    return;
+  }
+  // El servidor vacía el tablero al cambiar de mapa: no arrastrar fichas del capítulo anterior
+  localStorage.removeItem("engage_tracker_partida_local");
+  state.fichas = {};
+  $("analisis-scroll").innerHTML = "";
+  $("btn-turno-fin").textContent = "Turno Enemigo";
+  $("btn-turno-fin").style.color = "";
+  aplicarMapaCargado(res.estado);
+  actualizarTokens(res.estado.fichas || []);
+  mostrarToast(`${res.nombre || "Capítulo " + res.capitulo} cargado`, "ok");
+}
+
+function initNavCapitulo() {
+  $("btn-cap-prev").addEventListener("click", () => cambiarCapitulo(-1));
+  $("btn-cap-next").addEventListener("click", () => cambiarCapitulo(1));
+}
+
+// ─── Objetos de mapa y casillas objetivo ───────────────────────────────────
+
+const ETIQUETA_OBJETO = { recarga_emblema: "Pozo de Emblema (recarga 100% al terminar la acción aquí)", arma_usable: "Arma usable", destructible: "Destructible" };
+
+function renderObjetosMapa(objetos) {
+  // Limpiar marcas previas
+  document.querySelectorAll(".celda .obj-marca, .celda .obj-usos").forEach(el => el.remove());
+  document.querySelectorAll(".celda").forEach(c => {
+    c.classList.remove("obj-recarga_emblema", "obj-arma_usable", "obj-destructible");
+    delete c.dataset.objetoId;
+  });
+  for (const o of objetos || []) {
+    if (!o.activo) continue;   // agotado / destruido: desaparece icono y efecto
+    for (const [x, y] of o.casillas || []) {
+      const celda = $(`c-${x}-${y}`);
+      if (!celda) continue;
+      celda.classList.add(`obj-${o.tipo}`);
+      celda.dataset.objetoId = o.id;
+      // El pozo de Emblema es de 1 uso: basta el marco azul (está o no está).
+      // Armas usables y destructibles sí muestran icono y usos / HP restantes.
+      let detalle = "";
+      if (o.tipo !== "recarga_emblema") {
+        const marca = document.createElement("div");
+        marca.className = "obj-marca";
+        celda.appendChild(marca);
+        if (o.usos !== null && o.usos !== undefined) detalle = `${o.usos} uso${o.usos === 1 ? "" : "s"}`;
+        if (o.vida !== null && o.vida !== undefined) detalle = `${o.vida}/${o.vida_max} HP`;
+      }
+      if (detalle) {
+        const usos = document.createElement("div");
+        usos.className = "obj-usos";
+        usos.textContent = detalle;
+        celda.appendChild(usos);
+      }
+      const p = o.propiedades || {};
+      let desc = `${o.nombre || ETIQUETA_OBJETO[o.tipo] || o.tipo}`;
+      if (o.tipo === "arma_usable") desc += ` (${p.arma_permitida || "Arco"}, alcance ${p.distancia_min || 3}-${p.distancia_max || 7}, Hit +20, 1 golpe sin contraataque)`;
+      else if (o.tipo === "recarga_emblema") desc += ` — ${ETIQUETA_OBJETO.recarga_emblema}`;
+      celda.title = detalle ? `${desc} · ${detalle}` : desc;
+    }
+  }
+}
+
+function renderCasillasObjetivo(casillas) {
+  document.querySelectorAll(".celda").forEach(c => c.classList.remove("objetivo-derrota", "objetivo-victoria"));
+  for (const c of casillas || []) {
+    const celda = $(`c-${c.x}-${c.y}`);
+    if (!celda) continue;
+    celda.classList.add(`objetivo-${c.objetivo}`);
+    celda.title = (c.objetivo === "derrota")
+      ? "DERROTA si un enemigo termina aquí su movimiento"
+      : "VICTORIA si un aliado llega aquí";
+  }
+}
+
+// ─── Refuerzos enemigos ────────────────────────────────────────────────────
+
+function notificarRefuerzos(res) {
+  const lista = (res && res.refuerzos_desplegados) || [];
+  if (!lista.length) return;
+  const txt = lista.map(f => `${f.nombre}${(f.habilidades || []).includes("Void Curse") ? " (Void Curse)" : ""}`).join(", ");
+  mostrarToast(`⚠ Refuerzos enemigos (turno ${res.turno}): ${txt}`, "error");
+}
+
+// Al cerrar la fase de jugador, avisar de lo que aparecerá al empezar el turno siguiente
+async function avisarRefuerzosProximoTurno() {
+  const r = await api("/api/refuerzos");
+  if (!r || !r.ok) return;
+  const proximo = (r.refuerzos || []).filter(u => u.turno === (r.turno_actual + 1));
+  if (!proximo.length) return;
+  const txt = proximo.map(u => `${u.nombre} en (${u.x},${u.y})`).join(", ");
+  mostrarToast(`Al empezar el turno ${r.turno_actual + 1} llegan refuerzos: ${txt}`, "info");
+}
+
+// Vuelve a pedir el estado de los objetos (tras acciones que pueden consumirlos)
+async function refrescarObjetosMapa(res) {
+  if (res && Array.isArray(res.objetos)) {
+    renderObjetosMapa(res.objetos);
+    return;
+  }
+  const r = await api("/api/mapa/objetos");
+  if (r && r.ok) renderObjetosMapa(r.objetos);
+}
+
+function notificarRecargaEmblema(res) {
+  const lista = [];
+  if (res && res.recarga_emblema) lista.push(res.recarga_emblema);
+  if (res && Array.isArray(res.recargas_emblema)) lista.push(...res.recargas_emblema);
+  for (const r of lista) {
+    mostrarToast(`${r.unidad}: medidor de Emblema recargado al 100%${r.pozo ? " — el pozo se ha agotado" : ""}`, "ok");
   }
 }
 

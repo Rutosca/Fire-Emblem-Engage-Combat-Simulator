@@ -25,6 +25,13 @@ if os.path.exists(_ruta_catalogo):
 # Hay que eliminarlos antes de buscar propiedades de terreno.
 FLIP_MASK = 0x1FFFFFFF
 
+
+def _props_a_dict(props) -> dict:
+    """Propiedades de Tiled → dict. Admite lista [{name, value}] (>=1.2) o dict {name: value} (1.1)."""
+    if isinstance(props, dict):
+        return dict(props)
+    return {p['name']: p['value'] for p in (props or [])}
+
 # Asumimos que Terreno viene de nuestro motor_calculo_engage.py
 @dataclass
 class Terreno:
@@ -37,6 +44,42 @@ class Terreno:
     curacion_turno: int = 0       # HP recuperados por turno (ej. +10 en casillas de curación)
     es_antirruptura: bool = False  # Inmunidad a Ruptura (Break) al defender en esta casilla
     es_recarga_emblema: bool = False # Recarga inmediata de energía de Emblema (Fusión al 100%)
+    # Objetivo de mapa asociado a la casilla (independiente del terreno físico):
+    #   "derrota"  → si un ENEMIGO termina su movimiento aquí, se pierde el mapa (Cap. 8: "toman tu posición")
+    #   "victoria" → si un ALIADO termina aquí, se gana el mapa (mapas de "llega a X")
+    # Se marca en Tiled con la propiedad de tile `objetivo` en una capa aparte
+    # sobre el terreno; el cargador la fusiona sin sobreescribir avo/dfn/etc.
+    objetivo: str = ""
+
+
+
+# Tipos (campo "Clase"/type de Tiled) de los objetos de mapa con estado, en minúsculas.
+# Todo lo que no esté aquí se trata como spawn de unidad (Aliado / Enemigo / Lord...).
+#   arma_usable      → ballesta, cañón, cañón mágico: lo usa una unidad que cumpla los
+#                      requisitos (p.ej. puede_usar_ballesta) y tiene `usos`.
+#   destructible     → cajas, muros rompibles: bloquean sus casillas hasta ser destruidos
+#                      (todas a la vez, aunque ocupen varias).
+#   recarga_emblema  → pozo de Emblema: recarga al 100% y desaparece al usarse.
+TIPOS_OBJETO_MAPA = {"arma_usable", "destructible", "recarga_emblema"}
+
+# `tipo` del tile (tileset) → clase de objeto de mapa. Permite colocar objetos-tile
+# en Tiled sin rellenar la clase a mano: las propiedades viven en el tileset.
+_TIPO_TILE_A_CLASE = {
+    "recarga": "recarga_emblema", "pozo": "recarga_emblema", "emblema": "recarga_emblema",
+    "ballesta": "arma_usable", "cañon": "arma_usable", "canon": "arma_usable",
+    "cañon_magico": "arma_usable", "canon_magico": "arma_usable", "arma_usable": "arma_usable",
+    "valla": "destructible", "caja": "destructible", "barril": "destructible",
+    "muro_rompible": "destructible", "destructible": "destructible",
+}
+
+
+def clasificar_objeto_por_props(props: dict) -> str:
+    """Clase de objeto de mapa deducida de sus propiedades ('' si no es un objeto de mapa)."""
+    if not props:
+        return ""
+    if props.get("destructible") is True:
+        return "destructible"
+    return _TIPO_TILE_A_CLASE.get(str(props.get("tipo", "")).lower(), "")
 
 
 @dataclass
@@ -44,10 +87,28 @@ class EntidadMapa:
     """Representa una unidad, cofre o ballesta colocada en la Capa de Objetos de Tiled."""
     id_entidad: str
     nombre: str
-    tipo: str  # ej: "Aliado", "Enemigo", "Arma_Usable"
+    tipo: str  # ej: "Aliado", "Enemigo", "Arma_Usable", "Destructible", "Recarga_Emblema"
     x: int
     y: int
     propiedades: dict
+    ancho: int = 1   # tamaño en casillas (los destructibles suelen ocupar 2 o más)
+    alto: int = 1
+
+    @property
+    def es_objeto_mapa(self) -> bool:
+        return str(self.tipo).lower() in TIPOS_OBJETO_MAPA
+
+    @property
+    def casillas(self) -> List[tuple]:
+        """Todas las casillas que ocupa el objeto."""
+        return [(self.x + dx, self.y + dy) for dx in range(self.ancho) for dy in range(self.alto)]
+
+    def como_dict(self) -> dict:
+        return {
+            "id": self.id_entidad, "nombre": self.nombre, "tipo": self.tipo,
+            "x": self.x, "y": self.y, "ancho": self.ancho, "alto": self.alto,
+            "casillas": self.casillas, "propiedades": self.propiedades,
+        }
 
 class MapaTactico:
     """
@@ -64,7 +125,24 @@ class MapaTactico:
         self.dispos_id: Optional[str] = None
         self.terrain_id: Optional[str] = None
         self.entidades: List[EntidadMapa] = []
+        self.propiedades_mapa: dict = {}
         self._cargar_mapa()
+
+    def casillas_objetivo(self, objetivo: Optional[str] = None) -> List[tuple]:
+        """[(x, y, objetivo), ...] de las casillas marcadas; filtra por 'derrota' / 'victoria' si se indica."""
+        return [
+            (x, y, self.grid[x][y].objetivo)
+            for x in range(self.ancho) for y in range(self.alto)
+            if self.grid[x][y].objetivo and (objetivo is None or self.grid[x][y].objetivo == objetivo)
+        ]
+
+    def casillas_derrota(self) -> List[tuple]:
+        """Casillas que, ocupadas por un enemigo al final de su movimiento, hacen perder el mapa."""
+        return [(x, y) for x, y, _ in self.casillas_objetivo("derrota")]
+
+    def casillas_victoria(self) -> List[tuple]:
+        """Casillas que, ocupadas por un aliado, hacen ganar el mapa."""
+        return [(x, y) for x, y, _ in self.casillas_objetivo("victoria")]
 
     def _init_llanuras(self, ancho: int, alto: int):
         """Inicializa el grid con Terreno generico de llanura."""
@@ -129,10 +207,15 @@ class MapaTactico:
         for tileset in data.get('tilesets', []):
             primer_gid = tileset.get('firstgid', 1)
 
-            # Formato MODERNO: array "tiles" con lista "properties"
-            for tile in tileset.get('tiles', []):
+            # Formato MODERNO: array "tiles" con lista "properties".
+            # Algunas exportaciones (Tiled 1.1 con metadatos extra) guardan "tiles"
+            # como dict {id_str: {...}} sin propiedades: se normaliza a lista.
+            tiles_ts = tileset.get('tiles', [])
+            if isinstance(tiles_ts, dict):
+                tiles_ts = [{'id': int(k), **(v if isinstance(v, dict) else {})} for k, v in tiles_ts.items()]
+            for tile in tiles_ts:
                 tile_id = tile['id'] + primer_gid
-                props_dict = {p['name']: p['value'] for p in tile.get('properties', [])}
+                props_dict = _props_a_dict(tile.get('properties', []))
                 if props_dict:
                     propiedades_tiles[tile_id] = props_dict
 
@@ -184,6 +267,15 @@ class MapaTactico:
                 # Si el gid tiene propiedades personalizadas (nuestros stats tácticos), las aplicamos
                 if gid in propiedades_tiles:
                     props = propiedades_tiles[gid]
+
+                    # Tile de capa "objetivos": solo marca la casilla, conserva el terreno de debajo.
+                    # Admite `tipo=objetivo` + `condicion=derrota|victoria` (convención de los mapas)
+                    # o directamente `objetivo=derrota|victoria`.
+                    tipo_prop = str(props.get('tipo', '')).lower()
+                    if tipo_prop == 'objetivo' or ('objetivo' in props and 'tipo' not in props):
+                        self.grid[x][y].objetivo = str(props.get('condicion', props.get('objetivo', ''))).lower()
+                        continue
+
                     tipo_nombre = str(props.get('tipo', 'Desconocido')).lower()
                     tid_nombre = str(props.get('tid', '')).lower()
                     name_nombre = str(props.get('name', '')).lower()
@@ -214,30 +306,107 @@ class MapaTactico:
                         coste_mov=props.get('coste_mov', def_coste),
                         curacion_turno=props.get('curacion_turno', def_curacion),
                         es_antirruptura=props.get('es_antirruptura', def_antirruptura),
-                        es_recarga_emblema=props.get('es_recarga_emblema', def_recarga)
+                        es_recarga_emblema=props.get('es_recarga_emblema', def_recarga),
+                        # Un tile puede llevar tipo y objetivo a la vez (p.ej. trono + victoria);
+                        # si el objetivo ya venía de una capa inferior, se conserva.
+                        objetivo=str(props.get('objetivo', self.grid[x][y].objetivo or '')).lower(),
                     )
 
-        # 4. Leer entidades/objetos (Spawns, Cofres, Ballestas)
+        # 3b. Condiciones globales del mapa (Tiled: Mapa → Propiedades personalizadas),
+        # p.ej. victoria="derrotar_jefe", derrota="alear_muere;posicion_tomada", turnos_limite=15
+        self.propiedades_mapa = _props_a_dict(data.get('properties', []))
+
+        # 4. Leer entidades/objetos (Spawns, Cofres, Ballestas, Destructibles, Pozos de Emblema)
         for capa_obj in capas_objetos:
             for obj in capa_obj.get('objects', []):
                 # Tiled guarda x,y en píxeles. Convertimos a coordenadas de la cuadrícula
                 tile_w = data.get('tilewidth', 32)
                 tile_h = data.get('tileheight', 32)
-                
+
                 grid_x = int(obj['x'] // tile_w)
-                # Ajuste porque Tiled usa la esquina inferior para algunos objetos
-                grid_y = int((obj['y'] - obj.get('height', 0)) // tile_h)
-                
-                props_obj = {p['name']: p['value'] for p in obj.get('properties', [])}
-                
+                # Los objetos-tile (con gid) tienen el origen en la esquina INFERIOR
+                # izquierda; los rectángulos, en la superior izquierda.
+                if obj.get('gid'):
+                    grid_y = int((obj['y'] - obj.get('height', 0)) // tile_h)
+                else:
+                    grid_y = int(obj['y'] // tile_h)
+
+                # Huella en casillas (un rectángulo de 64x32 px sobre tiles de 32 = 2x1)
+                ancho_t = max(1, int(round(obj.get('width', tile_w) / tile_w)))
+                alto_t = max(1, int(round(obj.get('height', tile_h) / tile_h)))
+
+                # Propiedades: las del tile del tileset (si es un objeto-tile) como base,
+                # y las propias del objeto encima (p.ej. `usos` distinto en cada ballesta).
+                gid_obj = (obj.get('gid') or 0) & FLIP_MASK
+                props_obj = dict(propiedades_tiles.get(gid_obj, {})) if gid_obj else {}
+                props_obj.update(_props_a_dict(obj.get('properties', [])))
+
+                # Tiled >= 1.9 llama "class" a lo que antes era "type"; si el objeto no
+                # trae clase, se deduce del `tipo` del tile (convención de los mapas).
+                tipo_obj = obj.get('type') or obj.get('class') or clasificar_objeto_por_props(props_obj) or 'Generico'
+                nombre_obj = obj.get('name') or str(props_obj.get('tipo', tipo_obj)).capitalize()
+
                 self.entidades.append(EntidadMapa(
                     id_entidad=str(obj.get('id', '')),
-                    nombre=obj.get('name', 'Desconocido'),
-                    tipo=obj.get('type', 'Generico'),
+                    nombre=nombre_obj,
+                    tipo=tipo_obj,
                     x=grid_x,
                     y=grid_y,
-                    propiedades=props_obj
+                    propiedades=props_obj,
+                    ancho=ancho_t,
+                    alto=alto_t,
                 ))
+
+        # 5. Guardar el terreno base bajo cada objeto de mapa para poder
+        # aplicar/retirar sus efectos (bloqueo, recarga) según su estado.
+        import copy as _copy
+        self._terreno_base = {}
+        for ent in self.objetos_mapa():
+            for (cx, cy) in ent.casillas:
+                if 0 <= cx < self.ancho and 0 <= cy < self.alto and (cx, cy) not in self._terreno_base:
+                    self._terreno_base[(cx, cy)] = _copy.copy(self.grid[cx][cy])
+        # Por defecto todos los objetos están activos
+        self.aplicar_objetos({ent.id_entidad: {"activo": True} for ent in self.objetos_mapa()})
+
+    def objetos_mapa(self) -> List[EntidadMapa]:
+        """Entidades de la capa de objetos que NO son unidades (ballestas, destructibles, pozos)."""
+        return [e for e in self.entidades if e.es_objeto_mapa]
+
+    def objeto_en(self, x: int, y: int, tipo: Optional[str] = None) -> Optional[EntidadMapa]:
+        """Objeto de mapa (opcionalmente de un tipo) que ocupa la casilla (x, y)."""
+        for ent in self.objetos_mapa():
+            if (x, y) in ent.casillas and (tipo is None or str(ent.tipo).lower() == tipo.lower()):
+                return ent
+        return None
+
+    def aplicar_objetos(self, estados: dict) -> None:
+        """
+        Proyecta sobre el grid el efecto de cada objeto según su estado
+        (`estados[id] = {"activo": bool, ...}`, mantenido por EstadoTablero):
+          - destructible activo    → sus casillas no son transitables (ni volables salvo
+                                     que el objeto diga volable=True). Destruido → terreno base.
+          - recarga_emblema activo → es_recarga_emblema en sus casillas. Usado → terreno base.
+          - arma_usable            → no altera el terreno (es una acción, no un obstáculo).
+        """
+        import copy as _copy
+        base = getattr(self, '_terreno_base', {})
+        for (cx, cy), t_base in base.items():
+            self.grid[cx][cy] = _copy.copy(t_base)
+        for ent in self.objetos_mapa():
+            activo = bool((estados.get(ent.id_entidad) or {}).get("activo", True))
+            if not activo:
+                continue
+            tipo_l = str(ent.tipo).lower()
+            for (cx, cy) in ent.casillas:
+                if not (0 <= cx < self.ancho and 0 <= cy < self.alto):
+                    continue
+                t = self.grid[cx][cy]
+                if tipo_l == "destructible":
+                    t.caminable = bool(ent.propiedades.get("caminable", False))
+                    t.volable = bool(ent.propiedades.get("volable", False))
+                    t.nombre = str(ent.propiedades.get("nombre_terreno", ent.propiedades.get("tipo", ent.nombre or "Obstáculo"))).capitalize()
+                elif tipo_l == "recarga_emblema":
+                    t.es_recarga_emblema = True
 
     def obtener_terreno(self, x: int, y: int) -> Optional[Terreno]:
         """Devuelve las propiedades del terreno en la coordenada dada."""

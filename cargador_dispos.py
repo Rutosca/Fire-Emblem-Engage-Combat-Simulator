@@ -16,6 +16,31 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATAMINE_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata")
 DISPOS_DIR = os.path.join(DATAMINE_DIR, "dispos")
 
+# Unidades que el guion del capítulo mueve antes de dar el control al jugador
+# (UnitMovePos en el evento de apertura del .lua). {dispos_id: {pid: (X, Y)}} en
+# coordenadas del datamine (1-indexed, Y=1 fila inferior).
+RECOLOCACIONES_APERTURA = {
+    # M008: Amber aparece en (8,14) y el evento inicial lo lleva junto a Diamant
+    "M008": {"PID_アンバー": (8, 16)},
+}
+
+
+# Calendario de refuerzos por capítulo, extraído de EventEntryTurn(...) en el .lua del
+# mapa: {dispos_id: {turno: [grupos del dispos]}}. Aparecen al INICIO de la fase de
+# jugador de ese turno. Los grupos "_Normal" / "_Lunatic" ya vienen filtrados por el
+# Flag de dificultad de cada fila, así que se listan todos y el flag decide.
+CALENDARIO_REFUERZOS = {
+    "M008": {
+        2: ["Enemy_Reinforcement0", "Enemy_Reinforcement0_Normal"],
+        3: ["Enemy_Reinforcement1", "Enemy_Reinforcement1_Normal"],
+        4: ["Enemy_Reinforcement2", "Enemy_Reinforcement2_1", "Enemy_Reinforcement2_Normal"],
+        5: ["Enemy_Reinforcement3", "Enemy_Reinforcement3_Normal"],
+        7: ["Enemy_Reinforcement4", "Enemy_Reinforcement4_1",
+            "Enemy_Reinforcement６_Lunatic1", "Enemy_Reinforcement６_Lunatic1_1"],
+    },
+}
+
+
 class CargadorDisposEngage:
     def __init__(self, ruta_catalogo: Optional[str] = None):
         _cat_json = os.path.join(BASE_DIR, "json", "catalogo_engage.json")
@@ -131,10 +156,17 @@ class CargadorDisposEngage:
         clase_nom = clase_info.get("nombre", jid.replace("JID_", "")) if clase_info else jid.replace("JID_", "")
         return f"{clase_nom} ({x},{y})"
 
-    def cargar_capitulo(self, dispos_id: str = "M007", dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> List[dict]:
+    def cargar_capitulo(self, dispos_id: str = "M007", dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17,
+                        incluir_refuerzos: bool = False) -> List[dict]:
         """
         Lee el XML de dispos/{dispos_id}.xml y retorna la lista de diccionarios de unidades
         listas para ser enviadas a la UI o cargadas en EstadoTablero.
+
+        El XML está dividido en grupos (una fila con `Group="Player"|"Enemy"|"Ally"|
+        "Enemy_Reinforcement3"...` sin coordenadas abre el grupo; las filas siguientes
+        pertenecen a él). Por defecto solo se devuelven los grupos INICIALES; los
+        refuerzos (grupo que empieza por "Enemy_Reinforcement") se omiten salvo que
+        `incluir_refuerzos` sea True — cada unidad lleva `grupo` y `es_refuerzo`.
         """
         ruta_xml = os.path.join(DISPOS_DIR, f"{dispos_id}.xml")
         if not os.path.exists(ruta_xml):
@@ -155,6 +187,7 @@ class CargadorDisposEngage:
         else:
             mask = 1
 
+        grupo_actual = ""
         for param in root.findall(".//Data/Param"):
             pid = param.get("Pid", "")
             force = param.get("Force", "")
@@ -163,8 +196,17 @@ class CargadorDisposEngage:
             flag_str = param.get("Flag", "0")
             flag_val = int(flag_str) if flag_str.isdigit() else 0
 
+            # Fila cabecera de grupo (sin coordenadas): abre un nuevo grupo
+            if param.get("Group") and not x_str:
+                grupo_actual = param.get("Group")
+                continue
+
             # Ignorar casillas de terreno (PID_紋章氣) o filas vacías
             if not x_str or not y_str or "紋章氣" in pid:
+                continue
+
+            es_refuerzo = grupo_actual.startswith("Enemy_Reinforcement")
+            if es_refuerzo and not incluir_refuerzos:
                 continue
 
             # Filtrar por bitmask de dificultad si el flag está especificado
@@ -278,9 +320,12 @@ class CargadorDisposEngage:
             # En M007 el mapa entrega a Hortensia el emblema enemigo de Lucina
             # mediante un evento (no aparece en el atributo Gid de Dispos.xml).
             # El arma de ese emblema también forma parte de su inventario real.
+            emblema_id = ""
             if pid.endswith("オルテンシア") and dispos_id.upper() == "M007":
-                emblema_nombre = "Lucina"
-                emblema_bonos = {"hp": 10, "str": 5, "dex": 4, "spd": 3, "def": 3}
+                # Emblema Oscuro de Lucina (GID_M007_敵ルキナ): stats y sincronías del catálogo
+                emblema_id = "GID_M007_敵ルキナ"
+                emblema_nombre = self.catalogo.get("emblemas", {}).get(emblema_id, {}).get("nombre", "Lucina (Oscuro)")
+                emblema_bonos = None
                 rapier_id = "IID_ルキナ_ノーブルレイピア_M007"
                 if not any(item.get("id") == rapier_id or item.get("nombre") == "Noble Rapier (Evento)" for item in inventario):
                     for item in inventario:
@@ -294,11 +339,31 @@ class CargadorDisposEngage:
                     })
                     arma_principal = inventario[0]["nombre"]
             else:
-                emblema_nombre = "Marth" if pid == "PID_リュール" else ""
-                emblema_bonos = {}
+                # Emblema asignado en el propio dispos (atributo Gid, p.ej. Diamant con
+                # GID_ロイ en M008). Se resuelve contra el catálogo de emblemas.
+                # Los Emblemas Oscuros de jefe (GID_M008_敵リーフ...) están compilados con
+                # sus propias stats/sincronías; los bonos salen del catálogo, no de aquí.
+                gid = param.get("Gid", "") or ""
+                emblema_id = gid if gid in self.catalogo.get("emblemas", {}) else ""
+                emblema_nombre = self.catalogo.get("emblemas", {}).get(gid, {}).get("nombre", "") if gid else ""
+                if not emblema_nombre and pid == "PID_リュール":
+                    emblema_nombre = "Marth"
+                emblema_bonos = None
+
+            # Recolocaciones de guion (UnitMovePos en el .lua de apertura): la posición
+            # real al empezar a jugar no es la del dispos. Coordenadas del datamine (1-indexed).
+            recoloc = RECOLOCACIONES_APERTURA.get(dispos_id.upper(), {}).get(pid)
+            if recoloc:
+                x = max(0, min(mapa_ancho - 1, recoloc[0] - 1))
+                y = max(0, min(mapa_alto - 1, mapa_alto - recoloc[1]))
+
+            # Habilidad extra asignada en la propia fila del dispos (atributo Sid),
+            # p.ej. SID_虚無の呪い (Void Curse: no da experiencia) en refuerzos de Extremo.
+            habs_fila = [sd for sd in str(param.get("Sid", "") or "").split(";") if sd.strip()]
 
             unidades.append({
                 "nombre": nombre_unidad,
+                "habilidades": habs_fila,
                 "pid": pid,
                 "es_aliado": es_aliado,
                 "es_verde": es_verde,
@@ -314,6 +379,7 @@ class CargadorDisposEngage:
                 "hp_stock": hp_stock,
                 "ia_move": ai_move,
                 "ia_rate": ai_rate,
+                "emblema_id": emblema_id,
                 "emblema_nombre": emblema_nombre,
                 "emblema_bonos": emblema_bonos,
                 # Metadatos de dificultad para el resolver de stats
@@ -321,9 +387,29 @@ class CargadorDisposEngage:
                 "auto_grow_extra": auto_grow_extra,  # level-ups bonus para cálculo de crecimientos
                 "p_offset": p_offset,                # offsets de stats por dificultad desde Person.xml
                 "es_jefe": (hp_stock > 0 and not es_aliado) or "(Boss)" in nombre_unidad,
+                "grupo": grupo_actual,
+                "es_refuerzo": es_refuerzo,
             })
 
         return unidades
+
+    def calendario_refuerzos(self, dispos_id: str, dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> dict:
+        """{turno: [unidad, ...]} de refuerzos del capítulo para esa dificultad (ya filtrados por Flag)."""
+        grupos = self.cargar_refuerzos(dispos_id, dificultad, mapa_ancho, mapa_alto)
+        calendario = {}
+        for turno, nombres in CALENDARIO_REFUERZOS.get(dispos_id.upper(), {}).items():
+            unidades = [u for g in nombres for u in grupos.get(g, [])]
+            if unidades:
+                calendario[int(turno)] = unidades
+        return calendario
+
+    def cargar_refuerzos(self, dispos_id: str, dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> dict:
+        """Refuerzos del capítulo agrupados por nombre de grupo del dispos: {grupo: [unidad, ...]}."""
+        grupos = {}
+        for u in self.cargar_capitulo(dispos_id, dificultad, mapa_ancho, mapa_alto, incluir_refuerzos=True):
+            if u.get("es_refuerzo"):
+                grupos.setdefault(u["grupo"], []).append(u)
+        return grupos
 
 
 if __name__ == "__main__":

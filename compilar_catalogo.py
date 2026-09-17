@@ -447,6 +447,21 @@ def compilar():
         move_type_raw = j.get("MoveType", "1")
         tipo_movimiento = MOVE_TYPE_MAP.get(str(move_type_raw), "infantería")
 
+        # Maestrías de arma de la clase (Job.xml: WeaponBow="1", MaxWeaponLevelBow="B", ...).
+        # Determinan qué tipos de arma puede equipar la clase — p.ej. las ballestas de
+        # mapa solo las usan clases con maestría en Arco que lleven un arco en el inventario.
+        WEAPON_FLAG_MAP = [
+            ("Sword", "Espada"), ("Lance", "Lanza"), ("Axe", "Hacha"), ("Bow", "Arco"),
+            ("Dagger", "Daga"), ("Magic", "Tomo"), ("Rod", "Bastón"), ("Fist", "Artes"),
+            ("Special", "Especial"),
+        ]
+        armas_permitidas = []
+        rangos_arma_max = {}
+        for sufijo, tipo_es in WEAPON_FLAG_MAP:
+            if str(j.get(f"Weapon{sufijo}", "0")) == "1":
+                armas_permitidas.append(tipo_es)
+                rangos_arma_max[tipo_es] = str(j.get(f"MaxWeaponLevel{sufijo}", "N"))
+
         clases[jid] = {
             "id": jid,
             "nombre": nombre,
@@ -454,6 +469,14 @@ def compilar():
             "estilo_combate": style,
             "mov": mov,
             "tipo_movimiento": tipo_movimiento,
+            "armas_permitidas": armas_permitidas,
+            "rangos_arma_max": rangos_arma_max,
+            # Habilidades de clase (Job.xml): Skills = innatas (Dancer: 踊り/Dance),
+            # LearningSkill = la habilidad propia de la clase (Swordmaster: 切り抜け/Run Through,
+            # Martial Master: 気の拡散/Diffuse Healer, Dancer: 特別な踊り/Special Dance),
+            # LunaticSkill = extra que llevan los enemigos en Extremo.
+            "skills": [sk for sk in (str(j.get("Skills", "")).split(";") + [str(j.get("LearningSkill", ""))]) if sk.strip()],
+            "lunatic_skill": str(j.get("LunaticSkill", "") or ""),
             "base_stats": {
                 "hp": to_int(j.get("Base.Hp")),
                 "str": to_int(j.get("Base.Str")),
@@ -708,9 +731,16 @@ def compilar():
 
     emblemas = {}
 
+    # Nombre en inglés por AsciiName (para bautizar los Emblemas Oscuros a partir del base)
+    nombre_por_ascii = {}
+
     for g in god_sheet_0:
         gid = g.attrib.get("Gid")
-        if not gid or gid.startswith("GID_M0") or "相手" in gid or "敵" in gid:
+        if not gid or "相手" in gid:
+            continue
+        # Emblemas Oscuros de capítulo (GID_M008_敵リーフ...): se compilan en una 2ª pasada
+        es_oscuro = gid.startswith("GID_M0") or "敵" in gid
+        if es_oscuro:
             continue
 
         mid = g.attrib.get("Mid", "")
@@ -718,6 +748,8 @@ def compilar():
         nombre = trans.get(mid) or ascii_name or limpiar_nombre(gid, g.attrib.get("Name"), trans)
         if not nombre or nombre.startswith("GID_") or nombre == "???":
             continue
+        if ascii_name:
+            nombre_por_ascii[ascii_name] = nombre
 
         gt = g.attrib.get("GrowTable", "")
         raw_levels = levels_by_ggid.get(gt, {})
@@ -805,6 +837,57 @@ def compilar():
             "synchro_skills": [sk["sid"] for sk in fb10.get("synchro_skills", [])],
             "bond_levels": bond_levels
         }
+
+    # 2ª pasada: Emblemas Oscuros que portan los jefes (GID_M007_敵ルキナ, GID_M008_敵リーフ...).
+    # Sus stats (SynchroEnhance) y habilidades de sincronía (tabla GGID propia, nivel 1) son
+    # distintos del emblema normal; no pueden fusionarse (EngageCount 0).
+    n_oscuros = 0
+    for g in god_sheet_0:
+        gid = g.attrib.get("Gid", "")
+        if not gid or "相手" in gid or not (gid.startswith("GID_M0") or "敵" in gid):
+            continue
+        ascii_name = g.attrib.get("AsciiName", "")
+        base_nombre = nombre_por_ascii.get(ascii_name) or trans.get(g.attrib.get("Mid", "")) or ascii_name or gid
+        m_cap = re.match(r"GID_(M\d{3})_", gid)
+        capitulo = m_cap.group(1) if m_cap else ""
+
+        raw_levels = levels_by_ggid.get(g.attrib.get("GrowTable", ""), {})
+        lvl1 = raw_levels.get(1, {"synchro_skills": [], "inheritance_skills": [], "engage_skills": [], "engage_items": []})
+        sync_list = []
+        for sid in lvl1["synchro_skills"]:
+            sk_info = habilidades.get(sid)
+            s_nom = sk_info.get("nombre") if sk_info else (trans.get(f"MSID_{sid}") or trans.get(sid) or sid)
+            sync_list.append({"sid": sid, "nombre": s_nom})
+        items_list = [{"iid": iid, "nombre": armas.get(iid, {}).get("nombre") or trans.get(f"MIID_{iid}") or iid} for iid in lvl1["engage_items"]]
+        eng_list = [{"sid": sid, "nombre": habilidades.get(sid, {}).get("nombre") or sid} for sid in lvl1["engage_skills"]]
+
+        stat_map = {"Hp": "hp", "Str": "str", "Magic": "mag", "Tech": "dex", "Quick": "spd", "Def": "def", "Mdef": "res", "Luck": "lck", "Phys": "bld", "Move": "mov"}
+        boosts = {v: to_int(g.attrib.get(f"SynchroEnhance.{k}")) for k, v in stat_map.items()}
+        boosts = {k: v for k, v in boosts.items() if v}
+
+        nivel_1 = {
+            "level": 1, "stat_boosts": dict(boosts), "synchro_skills": sync_list,
+            "engage_items": items_list, "engage_skills": eng_list, "inheritance_skills": [],
+            "max_energia_emblema": 6,
+        }
+        emblemas[gid] = {
+            "id": gid,
+            "nombre": f"{base_nombre} (Oscuro)",
+            "ascii_name": ascii_name,
+            "link_name": "",
+            "es_oscuro": True,
+            "emblema_base": base_nombre,
+            "capitulo": capitulo,
+            "grow_table": g.attrib.get("GrowTable", ""),
+            "engage_attack": g.attrib.get("EngageAttack", ""),
+            "engrave": None,
+            "engage_items": [it["iid"] for it in items_list],
+            "engage_skills": [sk["sid"] for sk in eng_list],
+            "synchro_skills": [sk["sid"] for sk in sync_list],
+            "bond_levels": {str(l): nivel_1 for l in range(1, 21)},
+        }
+        n_oscuros += 1
+    print(f"Emblemas Oscuros procesados: {n_oscuros}")
 
     # Integrar Emblemas de DLC (Edelgard/3H, Tiki, Hector, Veronica, Soren, Camilla, Chrom/Robin)
     dlc_canon_path = os.path.join(BASE_DIR, "json", "dlc_emblems_canon.json")
