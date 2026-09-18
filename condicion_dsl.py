@@ -234,6 +234,7 @@ class ContextoCombate:
     habilidades_sids: list = field(default_factory=list)
     habs_lower: list = field(default_factory=list)
     ultimo_resultado: str = ""          # p.ej. "break" si este golpe acaba de romper al rival
+    distancia_movida: int = 0           # 移動距離: casillas recorridas antes de atacar (Momentum)
 
 
 def _tiene_habilidad(ctx: ContextoCombate, fragmento: str) -> bool:
@@ -285,6 +286,11 @@ VARIABLES = {
     "攻撃速度": lambda ctx: _velocidad_ataque(ctx.unidad, ctx.arma),
     "相手の攻撃速度": lambda ctx: _velocidad_ataque(ctx.rival, ctx.arma_rival),
     "相手の武器特効": lambda ctx: ctx.mult_efectividad_rival,
+    # 移動距離: casillas movidas este turno antes del combate. Se lee del contexto o,
+    # si no se fijó, del propio objeto de stats (motor_analisis/app la anotan ahí).
+    "移動距離": lambda ctx: int(ctx.distancia_movida or getattr(ctx.unidad, 'distancia_movida', 0) or 0),
+    # 総行動回数: acciones ya realizadas este turno por la unidad (0 al iniciar combate)
+    "総行動回数": lambda ctx: ctx.turno_total,
 }
 
 LITERALS = {
@@ -295,6 +301,8 @@ LITERALS = {
 }
 
 FUNCTIONS = {
+    "min": lambda ctx, *args: min(args),
+    "max": lambda ctx, *args: max(args),
     "スキル所持": lambda ctx, frag: _tiene_habilidad(ctx, str(frag)),
     "攻撃結果": lambda ctx, resultado: str(resultado) == ctx.ultimo_resultado,
     "相手の個人判定": lambda ctx, nombre_jp: _rival_es_personaje(ctx, str(nombre_jp)),
@@ -372,6 +380,7 @@ def evaluar_condicion(cond: str, ctx: ContextoCombate) -> bool:
 ACT_STAT_MAP = {
     "HP": "hp",
     "威力": "power",
+    "攻撃力": "power",       # Atk: a efectos del daño se suma igual que la potencia (Momentum)
     "命中値": "hit",
     "回避値": "avo",
     "必殺値": "crit",
@@ -382,9 +391,11 @@ ACT_STAT_MAP = {
 }
 
 
-def leer_acts(info_habilidad: dict):
+def leer_acts(info_habilidad: dict, ctx: ContextoCombate = None):
     """[(clave_acumulador, operacion, valor_float), ...] a partir de los
-    act_names/act_operations/act_values de una entrada del catálogo."""
+    act_names/act_operations/act_values de una entrada del catálogo.
+    Un act_value no numérico (p.ej. "min( 移動距離, 10 )" de Momentum) es una
+    expresión de la DSL: se evalúa con `ctx`; sin contexto se ignora."""
     nombres = info_habilidad.get("act_names", [])
     ops = info_habilidad.get("act_operations", [])
     vals = info_habilidad.get("act_values", [])
@@ -396,17 +407,22 @@ def leer_acts(info_habilidad: dict):
         try:
             valor = float(val)
         except (TypeError, ValueError):
-            continue
+            if ctx is None:
+                continue
+            try:
+                valor = float(_eval(_parsear(str(val)), ctx))
+            except Exception:
+                continue
         resultado.append((clave, op, valor))
     return resultado
 
 
-def aplicar_acts(info_habilidad: dict, acumulador: dict) -> dict:
+def aplicar_acts(info_habilidad: dict, acumulador: dict, ctx: ContextoCombate = None) -> dict:
     """Aplica los Act* de una habilidad sobre `acumulador` (dict mutable) y lo
     devuelve para encadenar. '=' sobreescribe, '+'/'-' suman/restan, '*'
     multiplica el valor ya presente (p.ej. "威力;*;1.2" en los bonos de estilo
-    de los Ataques de Emblema)."""
-    for clave, op, valor in leer_acts(info_habilidad):
+    de los Ataques de Emblema). `ctx` permite act_values con expresiones."""
+    for clave, op, valor in leer_acts(info_habilidad, ctx):
         actual = acumulador.get(clave, 0)
         if op == "+":
             acumulador[clave] = actual + valor

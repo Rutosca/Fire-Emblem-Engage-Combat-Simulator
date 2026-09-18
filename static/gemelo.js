@@ -20,7 +20,8 @@ const state = {
   mapaAncho: 24,
   mapaAlto: 17,
   modalModo: "crear", // "crear" | "editar" | "roster" (edita el roster del navegador, no el tablero)
-  nombrePrecargadoRoster: "", // último nombre volcado desde el roster al modal (evita recargas en blur)
+  nombrePrecargadoRoster: "", // último nombre volcado al modal (roster o catálogo): evita recargas repetidas
+  statsEditadosManualmente: false, // true si el usuario tocó stats/HP a mano: el catálogo ya no las pisa
   fusionActivandoseEnModal: false, // true entre marcar "Activar Fusión" y guardar/cerrar el modal
 };
 
@@ -324,6 +325,10 @@ function autoGuardarLocal() {
       turno_actual: state.turno || 1,
       fase: state.fase || "jugador",
       capitulo: state.capitulo || null,
+      dificultad: ($("select-dificultad") && $("select-dificultad").value) || state.dificultad || "Hard",
+      // Refuerzos aún por llegar (el servidor los pierde al reiniciarse; se reprograman al restaurar)
+      refuerzos_pendientes: state.refuerzosPendientes || null,
+      casillas_fuego: state.casillasFuego || [],
       guardadoEn: new Date().toISOString()
     };
     localStorage.setItem("engage_tracker_partida_local", JSON.stringify(estado));
@@ -343,6 +348,9 @@ async function restaurarDesdeLocalStorage() {
     if (res.ok && res.fichas) {
       state.turno = estado.turno_actual || 1;
       state.fase = estado.fase || "jugador";
+      if (estado.dificultad && $("select-dificultad")) $("select-dificultad").value = estado.dificultad;
+      renderCasillasFuego(estado.casillas_fuego || []);
+      await refrescarRefuerzosPendientes();
       actualizarBadge();
       actualizarTokens(res.fichas);
       return true;
@@ -459,6 +467,11 @@ function onCeldaClick(e) {
   if (e.target.classList.contains("token")) return;
   const x = parseInt(e.currentTarget.dataset.x, 10);
   const y = parseInt(e.currentTarget.dataset.y, 10);
+  // Casilla de un destructible (valla, caja…): editar su vida en vez de crear una unidad
+  if (e.currentTarget.classList.contains("obj-destructible") && e.currentTarget.dataset.objetoId) {
+    abrirModalObjeto(e.currentTarget.dataset.objetoId);
+    return;
+  }
   abrirModalCreacion(x, y, true);
 }
 
@@ -1105,6 +1118,7 @@ async function recalcularCombatStats() {
 function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   state.modalModo = "crear";
   state.nombrePrecargadoRoster = "";
+  state.statsEditadosManualmente = false;
   $("row-pos-indicator").classList.remove("hidden");
   $("btn-modal-eliminar").textContent = "Eliminar Ficha";
   state.potenciadoresModal = [];
@@ -1156,6 +1170,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   renderizarArmasFusionModal(null);
 
   $("f-emblema").value = esAliado ? "Marth" : "";
+  if ($("f-boosts-fusion")) $("f-boosts-fusion").value = "";
   establecerLiderTresCasas("Dimitri");
   actualizarSelectorLiderTresCasas();
   actualizarVisibilidadChainGuard();
@@ -1181,6 +1196,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   }
 
   recalcularCombatStats();
+  actualizarAvisoFusion();
 
   $("btn-modal-eliminar").classList.add("hidden");
   $("modal-backdrop").classList.remove("hidden");
@@ -1189,7 +1205,21 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
 
 // Vuelca una ficha (del tablero o del roster) en todos los campos del modal.
 // No toca el modo, el título ni el nombre original: eso lo decide quien abre el modal.
+// "hp:5, str:3" ⇄ {hp:5, str:3}
+function parsearBoostsFusion(txt) {
+  const out = {};
+  String(txt || "").split(/[,;]+/).forEach(par => {
+    const m = par.trim().match(/^([a-z]{2,3})\s*[:=]\s*(-?\d+)$/i);
+    if (m && parseInt(m[2], 10) !== 0) out[m[1].toLowerCase()] = parseInt(m[2], 10);
+  });
+  return out;
+}
+function formatearBoostsFusion(obj) {
+  return Object.entries(obj || {}).filter(([, v]) => v).map(([k, v]) => `${k}:${v}`).join(", ");
+}
+
 function rellenarFormularioDesdeFicha(ficha) {
+  if ($("f-boosts-fusion")) $("f-boosts-fusion").value = formatearBoostsFusion(ficha.boosts_fusion);
   state.potenciadoresModal = Array.isArray(ficha.potenciadores_usados) ? [...ficha.potenciadores_usados] : [];
   state.armaEmblemaEquipadaTemporal = null;
   state.prevEmblemaModal = ficha.emblema_nombre || "";
@@ -1330,12 +1360,14 @@ function rellenarFormularioDesdeFicha(ficha) {
   actualizarTodosLosSlots();
   renderizarArmasFusionModal(ficha);
   recalcularCombatStats();
+  actualizarAvisoFusion();
 
 }
 
 function abrirModalEdicion(ficha) {
   state.modalModo = "editar";
   state.nombrePrecargadoRoster = ficha.nombre;
+  state.statsEditadosManualmente = false;
   $("modal-titulo").textContent = `Editar Unidad: ${ficha.nombre}`;
   $("f-edit-original-name").value = ficha.nombre;
   $("row-pos-indicator").classList.remove("hidden");
@@ -1461,12 +1493,45 @@ function actualizarEstadoEnergiaModal() {
   }
 }
 
+// Aviso de Rise Above (Roy): al fusionar la unidad sube 5 niveles y el juego decide
+// las stats con su acumulador de crecimientos, así que la herramienta solo puede
+// estimarlas. Se invita a anotar la diferencia real en "Bono de stats en Fusión".
+async function actualizarAvisoFusion() {
+  const box = $("aviso-fusion");
+  if (!box) return;
+  const emb = $("f-emblema") ? $("f-emblema").value.trim() : "";
+  const info = emb ? buscarEmblemaInfo(emb) : null;
+  const skillsEng = ((info && info.engage_skills) || []).map(x => (typeof x === "object" ? (x.nombre || x.sid || "") : String(x)).toLowerCase());
+  const tieneRiseAbove = emb.toLowerCase().includes("roy") || skillsEng.some(x => x.includes("rise above") || x.includes("超越"));
+  if (!tieneRiseAbove) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+  const nombre = $("f-nombre") ? $("f-nombre").value.trim() : "";
+  const clase = $("f-clase") ? $("f-clase").value.trim() : "";
+  let est = {};
+  try {
+    const r = await api(`/api/unidad/bono_fusion_estimado?nombre=${encodeURIComponent(nombre)}&clase=${encodeURIComponent(clase)}`);
+    if (r && r.ok) est = r.estimado || {};
+  } catch (e) { /* sin estimación */ }
+  const estTxt = formatearBoostsFusion(est) || "—";
+  const manual = $("f-boosts-fusion") ? $("f-boosts-fusion").value.trim() : "";
+  box.innerHTML = `<b>Rise Above (Roy):</b> al fusionar, la unidad sube 5 niveles y sus stats cambian según sus crecimientos. `
+    + `El valor exacto lo decide el juego; la herramienta lo <b>estima</b> (±1 por stat): <span id="txt-fusion-estimado">${estTxt}</span>`
+    + `<button type="button" id="btn-fusion-usar-estimado" class="btn-hp-tool btn-blue" title="Copiar la estimación al campo para poder ajustarla">Usar estimado</button>`
+    + `<br>Para calcular exacto, anota arriba la diferencia real que muestra el juego (fusionado − solo con el emblema equipado).`
+    + (manual ? ` <b>Ahora se usan tus valores.</b>` : ` <b>Ahora se usa la estimación.</b>`);
+  box.classList.remove("hidden");
+  const btn = $("btn-fusion-usar-estimado");
+  if (btn) btn.addEventListener("click", () => {
+    if ($("f-boosts-fusion")) { $("f-boosts-fusion").value = formatearBoostsFusion(est); actualizarAvisoFusion(); }
+  });
+}
+
 function sincronizarEmblemaModal() {
   const val = $("f-emblema") ? $("f-emblema").value.trim() : "";
   const nivelVal = $("f-nivel-vinculo") ? Math.max(1, Math.min(20, parseInt($("f-nivel-vinculo").value || 1, 10))) : 1;
   const tieneEmblema = val.length > 0;
 
   actualizarSelectorLiderTresCasas();
+  actualizarAvisoFusion();
   actualizarTooltipNivelVinculo(nivelVal);
   actualizarEstadoEnergiaModal();
 
@@ -1661,6 +1726,7 @@ function construirPayloadDesdeModal(fichaExistente) {
     nivel_vinculo: nivelVinculo,
     mov: mov,
     potenciadores_usados: state.potenciadoresModal || [],
+    boosts_fusion: $("f-boosts-fusion") ? parsearBoostsFusion($("f-boosts-fusion").value) : {},
     stats: {
       hp: isNaN(hpActual) ? hpMax : hpActual,
       hp_max: isNaN(hpMax) ? undefined : hpMax,
@@ -1951,18 +2017,31 @@ function initModalEvents() {
     }
   }
 
-  // Al escribir un nombre: si está en el roster del navegador se precarga entero;
-  // si no, se rellenan las stats base del catálogo como hasta ahora.
+  // Política de prioridad de los datos del modal (de mayor a menor):
+  //   1. Lo que el usuario ha escrito a mano en esta sesión del modal (statsEditadosManualmente).
+  //   2. El roster del navegador (al escribir el nombre de un aliado guardado).
+  //   3. El catálogo (stats base por personaje/clase/nivel): solo al CREAR una unidad
+  //      o cuando se cambia el nombre a otro personaje. Editar clase/nivel de una
+  //      unidad existente ya no toca sus stats. Nunca salta por un simple blur.
+  function catalogoPermitido() {
+    if (state.statsEditadosManualmente) return false;
+    return state.modalModo === "crear";
+  }
+
+  // Al cambiar el nombre: si está en el roster del navegador se precarga entero;
+  // si no, se rellenan las stats base del catálogo (solo si el catálogo tiene permiso).
   async function autoRellenarDesdeRosterOCatalogo() {
     const nombre = $("f-nombre")?.value.trim() || "";
     const esAliado = $("f-bando-aliado")?.checked ?? true;
-    if (esAliado && nombre && nombre !== state.nombrePrecargadoRoster) {
+    if (nombre === state.nombrePrecargadoRoster) return;   // no ha cambiado de personaje
+    if (esAliado && nombre) {
       const entrada = obtenerEntradaRoster(nombre);
       if (entrada) {
         const x = parseInt($("f-x").value, 10) || 0;
         const y = parseInt($("f-y").value, 10) || 0;
         rellenarFormularioDesdeFicha({ ...entrada, x, y, es_aliado: true });
         state.nombrePrecargadoRoster = entrada.nombre;
+        state.statsEditadosManualmente = true;   // datos del roster: el catálogo no los pisa
         mostrarToast(`Datos de ${entrada.nombre} cargados de tu roster`, "info");
         return;
       }
@@ -1976,23 +2055,35 @@ function initModalEvents() {
       }
       state.nombrePrecargadoRoster = "";
     }
-    await autoRellenarStatsDesdeCatalogo();
+    // Cambiar a otro personaje en modo edición/roster también es "nueva unidad": catálogo permitido
+    if (state.modalModo === "crear" || !state.statsEditadosManualmente) {
+      state.nombrePrecargadoRoster = nombre;
+      await autoRellenarStatsDesdeCatalogo();
+    }
   }
 
-  // Listeners de autorellenado al elegir/cambiar Nombre, Clase o Nivel
+  // Listeners de autorellenado: solo al CAMBIAR el nombre (nunca por blur), y
+  // clase/nivel solo mientras se crea una unidad nueva sin stats tocadas a mano.
   $("f-nombre").addEventListener("change", autoRellenarDesdeRosterOCatalogo);
-  $("f-nombre").addEventListener("blur", () => {
-    if ($("f-nombre").value.trim().length >= 3) autoRellenarDesdeRosterOCatalogo();
-  });
-  $("f-clase").addEventListener("change", autoRellenarStatsDesdeCatalogo);
-  $("f-clase").addEventListener("blur", () => {
-    if ($("f-clase").value.trim().length >= 3) autoRellenarStatsDesdeCatalogo();
-  });
-  $("f-nivel").addEventListener("change", autoRellenarStatsDesdeCatalogo);
+  const autoRellenarSiPermitido = () => { if (catalogoPermitido()) autoRellenarStatsDesdeCatalogo(); };
+  $("f-clase").addEventListener("change", autoRellenarSiPermitido);
+  $("f-nivel").addEventListener("change", autoRellenarSiPermitido);
   $("f-nivel").addEventListener("input", () => {
     clearTimeout(state.timerNivel);
-    state.timerNivel = setTimeout(autoRellenarStatsDesdeCatalogo, 350);
+    state.timerNivel = setTimeout(autoRellenarSiPermitido, 350);
   });
+
+  // Botón explícito: rellenar desde el catálogo cuando el usuario lo pida
+  if ($("f-boosts-fusion")) {
+    $("f-boosts-fusion").addEventListener("change", actualizarAvisoFusion);
+  }
+
+  if ($("btn-stats-catalogo")) {
+    $("btn-stats-catalogo").addEventListener("click", async () => {
+      await autoRellenarStatsDesdeCatalogo();
+      state.statsEditadosManualmente = false;
+    });
+  }
 
   // Toggle de radio buttons para mostrar/ocultar sección extra de aliado
   $("f-bando-aliado").addEventListener("change", () => {
@@ -2087,13 +2178,18 @@ function initModalEvents() {
     recalcularCombatStats();
   });
 
-  // Listeners para estadísticas de combate en vivo
+  // Listeners para estadísticas de combate en vivo. Tocar cualquier stat a mano
+  // bloquea el autorrellenado del catálogo hasta que se reabra el modal.
   ["f-stat-str", "f-stat-mag", "f-stat-dex", "f-stat-spd", "f-stat-def", "f-stat-res", "f-stat-lck", "f-stat-bld", "f-stat-mov"].forEach(id => {
     const el = $(id);
     if (el) {
-      el.addEventListener("input", recalcularCombatStats);
+      el.addEventListener("input", () => { state.statsEditadosManualmente = true; recalcularCombatStats(); });
       el.addEventListener("change", recalcularCombatStats);
     }
+  });
+  ["f-hp-actual", "f-hp-max"].forEach(id => {
+    const el = $(id);
+    if (el) el.addEventListener("input", () => { state.statsEditadosManualmente = true; });
   });
 
   // Listeners y autocompletados para las 5 ranuras de inventario
@@ -2173,6 +2269,8 @@ function initModalEvents() {
     const dificultad = selDif ? selDif.value : "Hard";
     const res = await api("/api/preset/actual", "POST", { dificultad });
     if (res.ok && res.fichas) {
+      state.dificultad = dificultad;
+      await refrescarRefuerzosPendientes();
       actualizarTokens(res.fichas);
       mostrarToast(`${res.mensaje || "Preset cargado con éxito"}`, "ok");
       setTimeout(lanzarAnalisis, 250);
@@ -2377,6 +2475,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
     avisarRefuerzosProximoTurno();
     notificarEstadosOtorgados(res);
     notificarRecargaEmblema(res);
+    notificarEfectosArea(res);
     refrescarObjetosMapa(res);
     setTimeout(lanzarAnalisis, 250);
   } else {
@@ -2393,6 +2492,8 @@ $("btn-turno-fin").addEventListener("click", async () => {
     $("btn-turno-fin").style.color = "";
     mostrarToast(`Turno ${state.turno} — Fase del jugador`, "ok");
     notificarRefuerzos(res);
+    notificarEfectosArea(res);
+    refrescarRefuerzosPendientes();
     setTimeout(lanzarAnalisis, 350);
   }
 });
@@ -2418,11 +2519,12 @@ async function ejecutarJugada(r) {
   const payload = {
     atacante: r.aliado,
     defensor: r.enemigo,
-    arma_nombre: r.arma_recomendada,
+    arma_nombre: r.objeto_id ? "" : r.arma_recomendada,
+    objeto_id: r.objeto_id || "",
     pos_destino: r.pos_sugerida,
     pos_canter: r.pos_canter || null,
     requiere_fusion: !!r.requiere_fusion,
-    es_engage_attack: !!(r.es_engage_attack || (r.arma_recomendada && (r.arma_recomendada.toLowerCase().includes("rush") || r.arma_recomendada.toLowerCase().includes("override") || r.arma_recomendada.toLowerCase().includes("ragnarok"))))
+    es_engage_attack: !!(r.es_engage_attack || (r.arma_recomendada && (r.arma_recomendada.toLowerCase().includes("rush") || r.arma_recomendada.toLowerCase().includes("override") || r.arma_recomendada.toLowerCase().includes("blazing") || r.arma_recomendada.toLowerCase().includes("ragnarok"))))
   };
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
@@ -2470,7 +2572,13 @@ async function ejecutarJugada(r) {
 
   mostrarToast(toastMsg, kill ? "ok" : "info");
   notificarRecargaEmblema(res);
+  notificarEfectosArea(res);
   if (res.objetos) refrescarObjetosMapa(res);
+  // Un ataque de área puede haber cambiado a varias unidades y al atacante: refrescar todo
+  if (res.objetivos_extra && res.objetivos_extra.length || res.pos_final_area) {
+    const est = await api("/api/estado", "GET");
+    if (est && est.fichas) actualizarTokens(est.fichas);
+  }
 
   // Re-evaluar automáticamente tras el combate para continuar ofreciendo jugadas con los aliados restantes
   setTimeout(lanzarAnalisis, 400);
@@ -2536,7 +2644,8 @@ async function ejecutarCuracion(r) {
 async function ejecutarPocion(r) {
   const ali = state.fichas[r.aliado];
   if (ali) {
-    const cur = (r.item && r.item.toLowerCase().includes("elixir")) ? 15 : 10;
+    // Curación del datamine (Poción 15, Elixir 30…) calculada por el análisis
+    const cur = (r.curacion_estimada !== undefined && r.curacion_estimada !== null) ? r.curacion_estimada : 15;
     const nuevoHp = Math.min(ali.hp_max, (ali.hp_actual || ali.stats?.hp || 0) + cur);
     const res = await api("/api/unidad/ajustar_hp", "POST", { nombre: r.aliado, hp_actual: nuevoHp });
     if (res.fichas) actualizarTokens(res.fichas);
@@ -2577,6 +2686,14 @@ function renderResultado(container, r) {
     headerText = `⚔️ ${r.aliado} → ${r.enemigo} (Preparar Baja)`;
   } else if (r.tipo_analisis === "vanguardia_segura") {
     headerText = `🛡️ Avance Seguro`;
+  } else if (r.tipo_analisis === "objetivo_victoria") {
+    headerText = `🏁 ${r.aliado} → Casilla de victoria`;
+  } else if (r.plan_jefe) {
+    headerText = `👑 ${r.aliado} vs ${r.enemigo} (Asalto al jefe ${r.plan_jefe.orden}/${r.plan_jefe.total})`;
+  } else if (r.plan_baja) {
+    headerText = `⚔️ ${r.aliado} vs ${r.enemigo} (Baja conjunta ${r.plan_baja.orden}/${r.plan_baja.total})`;
+  } else if (r.defensa_objetivo) {
+    headerText = `🛡️ ${r.aliado} vs ${r.enemigo} (Defensa)`;
   }
 
   header.innerHTML = `
@@ -2773,6 +2890,22 @@ function renderResultado(container, r) {
     btnPot.addEventListener("click", () => ejecutarPocion(r));
     actionBar.appendChild(btnPot);
     card.appendChild(actionBar);
+  } else if (r.tipo_analisis === "objetivo_victoria") {
+    const actionBar = document.createElement("div");
+    actionBar.className = "card-action-bar";
+    const btnMover = document.createElement("button");
+    btnMover.type = "button";
+    btnMover.className = "btn-ejecutar-jugada";
+    btnMover.innerHTML = `🏁 <b>Mover a (${r.pos_sugerida[0]},${r.pos_sugerida[1]})</b>`;
+    btnMover.title = `Mueve a ${r.aliado} a la casilla de victoria`;
+    btnMover.addEventListener("click", async () => {
+      const res = await api("/api/mover", "POST", { nombre: r.aliado, x: r.pos_sugerida[0], y: r.pos_sugerida[1] });
+      if (res.error) { mostrarToast(res.error, "error"); return; }
+      if (res.fichas) actualizarTokens(res.fichas);
+      mostrarToast(`${r.aliado} en la casilla de victoria: ¡mapa completado!`, "ok");
+    });
+    actionBar.appendChild(btnMover);
+    card.appendChild(actionBar);
   } else if (r.tipo_analisis === "amenaza_enemiga") {
     // El botón de aplicar ataque enemigo SOLO se muestra durante la Fase Enemiga
     if (state.fase === "enemigo") {
@@ -2830,6 +2963,7 @@ async function init() {
 
   aplicarMapaCargado(estado);
   initModalEvents();
+  initModalObjeto();
   initNavCapitulo();
   await migrarEscuadronLegado();
 
@@ -2907,6 +3041,7 @@ function normalizarEntradaRoster(f) {
     es_volador: f.es_volador,
     mov: f.mov !== undefined ? f.mov : 4,
     potenciadores_usados: Array.isArray(f.potenciadores_usados) ? [...f.potenciadores_usados] : [],
+    boosts_fusion: { ...(f.boosts_fusion || {}) },
     stats: {
       hp: hpMax,
       hp_max: hpMax,
@@ -3040,6 +3175,7 @@ function abrirModalRoster(entrada) {
   if (entrada) {
     state.modalModo = "roster";
     state.nombrePrecargadoRoster = entrada.nombre;
+    state.statsEditadosManualmente = false;
     $("modal-titulo").textContent = `Aliado del roster: ${entrada.nombre}`;
     $("f-edit-original-name").value = entrada.nombre;
     rellenarFormularioDesdeFicha({ ...entrada, x: 0, y: 0, es_aliado: true });
@@ -3105,10 +3241,13 @@ function aplicarMapaCargado(estado) {
   state.capitulo = mapa.capitulo || state.capitulo || null;
   state.turno = estado.turno || 1;
   state.fase  = estado.fase  || "jugador";
+  if (estado.refuerzos_pendientes) state.refuerzosPendientes = estado.refuerzos_pendientes;
+  if (estado.dificultad) state.dificultad = estado.dificultad;
   actualizarBadge();
   buildGrid(mapa.ancho || 24, mapa.alto || 17);
   renderObjetosMapa(mapa.objetos || []);
   renderCasillasObjetivo(mapa.casillas_objetivo || []);
+  renderCasillasFuego(estado.casillas_fuego || []);
   actualizarNavCapitulo(mapa);
 }
 
@@ -3149,6 +3288,7 @@ function initNavCapitulo() {
 const ETIQUETA_OBJETO = { recarga_emblema: "Pozo de Emblema (recarga 100% al terminar la acción aquí)", arma_usable: "Arma usable", destructible: "Destructible" };
 
 function renderObjetosMapa(objetos) {
+  state.objetosMapa = Array.isArray(objetos) ? objetos : [];
   // Limpiar marcas previas
   document.querySelectorAll(".celda .obj-marca, .celda .obj-usos").forEach(el => el.remove());
   document.querySelectorAll(".celda").forEach(c => {
@@ -3187,6 +3327,86 @@ function renderObjetosMapa(objetos) {
   }
 }
 
+// ─── Destructibles: edición manual de vida (ataques enemigos / aliados) ──────
+// Un destructible es un único objeto aunque ocupe varias casillas: todas comparten `vida`.
+
+state.objetosMapa = state.objetosMapa || [];
+
+async function abrirModalObjeto(idObjeto) {
+  let obj = (state.objetosMapa || []).find(o => String(o.id) === String(idObjeto));
+  if (!obj) {
+    const r = await api("/api/mapa/objetos");
+    if (r && r.ok) {
+      state.objetosMapa = r.objetos;
+      obj = r.objetos.find(o => String(o.id) === String(idObjeto));
+    }
+  }
+  if (!obj || !obj.activo) return;
+  const vidaMax = obj.vida_max !== null && obj.vida_max !== undefined ? obj.vida_max : null;
+  $("objeto-id").value = obj.id;
+  $("objeto-titulo").textContent = `${obj.nombre || "Destructible"} (${(obj.casillas || []).map(c => `${c[0]},${c[1]}`).join(" · ")})`;
+  $("objeto-hint").textContent = (obj.casillas || []).length > 1
+    ? "Ocupa varias casillas: comparten una única vida. Al llegar a 0 desaparece y sus casillas quedan libres."
+    : "Al llegar a 0 desaparece y su casilla queda libre.";
+  $("objeto-vida").value = obj.vida !== null && obj.vida !== undefined ? obj.vida : 1;
+  $("objeto-vida").max = vidaMax !== null ? vidaMax : 999;
+  $("objeto-vida-max").textContent = vidaMax !== null ? vidaMax : "—";
+  $("objeto-backdrop").classList.remove("hidden");
+  $("objeto-vida").focus();
+}
+
+function cerrarModalObjeto() {
+  $("objeto-backdrop").classList.add("hidden");
+}
+
+async function aplicarVidaObjeto(vida) {
+  const id = $("objeto-id").value;
+  if (!id) return;
+  const res = await api("/api/mapa/objeto/danar", "POST", { id, vida: Math.max(0, parseInt(vida, 10) || 0) });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo actualizar el objeto", "error");
+    return;
+  }
+  const obj = res.objeto || {};
+  renderObjetosMapa(res.objetos);
+  cerrarModalObjeto();
+  if (obj.activo === false) {
+    mostrarToast(`${obj.nombre || "Destructible"} destruido: sus casillas quedan libres`, "ok");
+    // El terreno base vuelve a verse: refrescar las casillas que ocupaba
+    const ent = (state.objetosMapa || []).find(o => String(o.id) === String(id));
+    (ent && ent.casillas || []).forEach(([x, y]) => refrescarTerrenoCasilla(x, y));
+  } else {
+    mostrarToast(`${obj.nombre || "Destructible"}: ${obj.vida}/${obj.vida_max} HP`, "info");
+  }
+  state.objetosMapa = res.objetos;
+}
+
+async function refrescarTerrenoCasilla(x, y) {
+  const t = await api(`/api/terreno/${x}/${y}`);
+  const celda = $(`c-${x}-${y}`);
+  if (!celda || !t || t.error) return;
+  celda.className = "celda " + claseTerreno(t.nombre);
+  celda.title = `${t.nombre} | AVO +${t.avo} DEF +${t.dfn}`;
+  celda.dataset.tip = `${x},${y} [${t.nombre}] AVO +${t.avo}`;
+}
+
+function initModalObjeto() {
+  $("btn-objeto-close").addEventListener("click", cerrarModalObjeto);
+  $("btn-objeto-cancelar").addEventListener("click", cerrarModalObjeto);
+  $("objeto-backdrop").addEventListener("click", (e) => { if (e.target.id === "objeto-backdrop") cerrarModalObjeto(); });
+  const ajustar = (d) => {
+    const max = parseInt($("objeto-vida").max, 10) || 999;
+    const cur = parseInt($("objeto-vida").value, 10) || 0;
+    $("objeto-vida").value = Math.max(0, Math.min(max, cur + d));
+  };
+  $("btn-objeto-menos5").addEventListener("click", () => ajustar(-5));
+  $("btn-objeto-menos10").addEventListener("click", () => ajustar(-10));
+  $("btn-objeto-full").addEventListener("click", () => { $("objeto-vida").value = $("objeto-vida").max; });
+  $("btn-objeto-guardar").addEventListener("click", () => aplicarVidaObjeto($("objeto-vida").value));
+  $("btn-objeto-destruir").addEventListener("click", () => aplicarVidaObjeto(0));
+  $("objeto-vida").addEventListener("keydown", (e) => { if (e.key === "Enter") aplicarVidaObjeto($("objeto-vida").value); });
+}
+
 function renderCasillasObjetivo(casillas) {
   document.querySelectorAll(".celda").forEach(c => c.classList.remove("objetivo-derrota", "objetivo-victoria"));
   for (const c of casillas || []) {
@@ -3199,6 +3419,45 @@ function renderCasillasObjetivo(casillas) {
   }
 }
 
+// ─── Fuego (Blazing Lion) ──────────────────────────────────────────────────
+
+function renderCasillasFuego(casillas) {
+  document.querySelectorAll(".celda.fuego").forEach(c => {
+    c.classList.remove("fuego");
+    const m = c.querySelector(".fuego-marca");
+    if (m) m.remove();
+  });
+  for (const c of casillas || []) {
+    const celda = $(`c-${c.x}-${c.y}`);
+    if (!celda) continue;
+    celda.classList.add("fuego");
+    const marca = document.createElement("div");
+    marca.className = "fuego-marca";
+    marca.title = `En llamas hasta el turno ${c.expira_turno}: 10 dmg a quien empiece su fase aquí, movimiento +1`;
+    celda.appendChild(marca);
+  }
+  state.casillasFuego = casillas || [];
+}
+
+// Tras un combate o cambio de fase: fuego actualizado, objetivos extra y quemaduras
+function notificarEfectosArea(res) {
+  if (!res) return;
+  if (Array.isArray(res.casillas_fuego)) renderCasillasFuego(res.casillas_fuego);
+  if (Array.isArray(res.objetivos_extra) && res.objetivos_extra.length) {
+    const txt = res.objetivos_extra.map(e => `${e.nombre} (${e.daño} dmg${e.muere ? ", derrotado" : ""})`).join(", ");
+    mostrarToast(`Ataque de área: también alcanza a ${txt}`, "ok");
+  }
+  if (res.pos_final_area) {
+    mostrarToast(`Override: atraviesa la línea y acaba en (${res.pos_final_area[0]},${res.pos_final_area[1]})`, "info");
+  }
+  if (Array.isArray(res.quemados) && res.quemados.length) {
+    mostrarToast(`🔥 Fuego: ${res.quemados.map(q => `${q.unidad} −${q.daño} HP`).join(", ")}`, "error");
+  }
+  if (Array.isArray(res.curados_terreno) && res.curados_terreno.length) {
+    mostrarToast(`💚 Terreno curativo: ${res.curados_terreno.map(q => `${q.unidad} +${q.curacion} HP`).join(", ")}`, "ok");
+  }
+}
+
 // ─── Refuerzos enemigos ────────────────────────────────────────────────────
 
 function notificarRefuerzos(res) {
@@ -3208,9 +3467,23 @@ function notificarRefuerzos(res) {
   mostrarToast(`⚠ Refuerzos enemigos (turno ${res.turno}): ${txt}`, "error");
 }
 
+// Sincroniza en el cliente los refuerzos pendientes (para que la partida local los conserve)
+async function refrescarRefuerzosPendientes() {
+  const r = await api("/api/refuerzos");
+  if (!r || !r.ok) return null;
+  const porTurno = {};
+  (r.refuerzos || []).forEach(u => {
+    const { turno, ...datos } = u;
+    (porTurno[String(turno)] = porTurno[String(turno)] || []).push(datos);
+  });
+  state.refuerzosPendientes = porTurno;
+  autoGuardarLocal();
+  return r;
+}
+
 // Al cerrar la fase de jugador, avisar de lo que aparecerá al empezar el turno siguiente
 async function avisarRefuerzosProximoTurno() {
-  const r = await api("/api/refuerzos");
+  const r = await refrescarRefuerzosPendientes();
   if (!r || !r.ok) return;
   const proximo = (r.refuerzos || []).filter(u => u.turno === (r.turno_actual + 1));
   if (!proximo.length) return;

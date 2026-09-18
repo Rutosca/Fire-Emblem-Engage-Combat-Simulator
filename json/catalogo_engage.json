@@ -9732,9 +9732,17 @@
       "estilo_combate": "",
       "mov": 1,
       "tipo_movimiento": "infantería",
+      "attrs": 0,
+      "debilidades": [],
       "armas_permitidas": [],
       "rangos_arma_max": {},
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 1,
@@ -9812,6 +9820,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 17,
+      "debilidades": [
+        "dragón"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -9819,6 +9831,12 @@
         "Espada": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -9896,6 +9914,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 17,
+      "debilidades": [
+        "dragón"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -9903,6 +9925,12 @@
         "Espada": "A"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -9980,6 +10008,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 17,
+      "debilidades": [
+        "dragón"
+      ],
       "armas_permitidas": [
         "Espada",
         "Artes"
@@ -9991,6 +10023,12 @@
       "skills": [
         "SID_神竜気"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_神竜気",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -10068,6 +10106,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 33,
+      "debilidades": [
+        "dragón caído"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -10077,6 +10119,12 @@
       "skills": [
         "SID_邪竜気・闇"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_邪竜気・闇",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -10154,6 +10202,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 17,
+      "debilidades": [
+        "dragón"
+      ],
       "armas_permitidas": [
         "Espada",
         "Artes"
@@ -10165,6 +10217,12 @@
       "skills": [
         "SID_神竜気"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_神竜気",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -10242,6 +10300,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 33,
+      "debilidades": [
+        "dragón caído"
+      ],
       "armas_permitidas": [
         "Daga",
         "Tomo"
@@ -10253,6 +10315,12 @@
       "skills": [
         "SID_邪竜気"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_邪竜気",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 20,
@@ -10330,6 +10398,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 33,
+      "debilidades": [
+        "dragón caído"
+      ],
       "armas_permitidas": [
         "Daga",
         "Tomo"
@@ -10341,6 +10413,12 @@
       "skills": [
         "SID_邪竜気・闇"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_邪竜気・闇",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 20,
@@ -10418,6 +10496,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 33,
+      "debilidades": [
+        "dragón caído"
+      ],
       "armas_permitidas": [
         "Daga",
         "Tomo"
@@ -10429,6 +10511,12 @@
       "skills": [
         "SID_邪竜気・闇"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_邪竜気・闇",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -10506,6 +10594,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 2,
       "tipo_movimiento": "infantería",
+      "attrs": 33,
+      "debilidades": [
+        "dragón caído"
+      ],
       "armas_permitidas": [
         "Daga",
         "Tomo"
@@ -10515,6 +10607,12 @@
         "Tomo": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -10592,6 +10690,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 0,
       "tipo_movimiento": "acorazado",
+      "attrs": 32,
+      "debilidades": [
+        "dragón caído"
+      ],
       "armas_permitidas": [
         "Especial"
       ],
@@ -10601,6 +10703,12 @@
       "skills": [
         "SID_邪竜気・闇"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_邪竜気・闇",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 30,
@@ -10678,6 +10786,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 5,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -10685,6 +10797,12 @@
         "Lanza": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -10762,6 +10880,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Espada",
         "Lanza"
@@ -10773,6 +10895,12 @@
       "skills": [
         "SID_金蓮"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_金蓮",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -10850,6 +10978,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Tomo"
@@ -10859,6 +10989,12 @@
         "Tomo": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 20,
@@ -10936,6 +11072,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Tomo",
@@ -10949,6 +11087,12 @@
       "skills": [
         "SID_華炎"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_華炎",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -11026,6 +11170,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -11033,6 +11179,12 @@
         "Espada": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -11110,6 +11262,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Hacha"
@@ -11121,6 +11275,12 @@
       "skills": [
         "SID_太陽"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_太陽",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -11198,6 +11358,8 @@
       "estilo_combate": "隠密スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Arco"
       ],
@@ -11205,6 +11367,12 @@
         "Arco": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -11282,6 +11450,8 @@
       "estilo_combate": "隠密スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Arco"
       ],
@@ -11291,6 +11461,12 @@
       "skills": [
         "SID_月光"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_月光",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -11368,6 +11544,11 @@
       "estilo_combate": "飛行スタイル",
       "mov": 5,
       "tipo_movimiento": "volador",
+      "attrs": 24,
+      "debilidades": [
+        "volador",
+        "dragón"
+      ],
       "armas_permitidas": [
         "Tomo",
         "Bastón"
@@ -11377,6 +11558,12 @@
         "Bastón": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 20,
@@ -11454,6 +11641,11 @@
       "estilo_combate": "飛行スタイル",
       "mov": 6,
       "tipo_movimiento": "volador",
+      "attrs": 24,
+      "debilidades": [
+        "volador",
+        "dragón"
+      ],
       "armas_permitidas": [
         "Tomo",
         "Bastón"
@@ -11465,6 +11657,12 @@
       "skills": [
         "SID_虚空"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_虚空",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -11542,6 +11740,10 @@
       "estilo_combate": "飛行スタイル",
       "mov": 5,
       "tipo_movimiento": "volador",
+      "attrs": 8,
+      "debilidades": [
+        "volador"
+      ],
       "armas_permitidas": [
         "Tomo",
         "Bastón"
@@ -11551,6 +11753,12 @@
         "Bastón": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 18,
@@ -11628,6 +11836,10 @@
       "estilo_combate": "飛行スタイル",
       "mov": 6,
       "tipo_movimiento": "volador",
+      "attrs": 8,
+      "debilidades": [
+        "volador"
+      ],
       "armas_permitidas": [
         "Tomo",
         "Bastón"
@@ -11639,6 +11851,12 @@
       "skills": [
         "SID_大樹"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_大樹",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 18,
@@ -11716,6 +11934,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -11723,6 +11943,12 @@
         "Lanza": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -11800,6 +12026,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -11809,6 +12037,12 @@
       "skills": [
         "SID_砂陣"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_砂陣",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -11886,6 +12120,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 5,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Arco"
       ],
@@ -11893,6 +12131,12 @@
         "Arco": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -11970,6 +12214,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Espada",
         "Arco"
@@ -11981,6 +12229,12 @@
       "skills": [
         "SID_水鏡"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_水鏡",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -12058,6 +12312,11 @@
       "estilo_combate": "飛行スタイル",
       "mov": 6,
       "tipo_movimiento": "volador",
+      "attrs": 24,
+      "debilidades": [
+        "volador",
+        "dragón"
+      ],
       "armas_permitidas": [
         "Espada",
         "Tomo"
@@ -12069,6 +12328,12 @@
       "skills": [
         "SID_魔法剣"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_魔法剣",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -12146,6 +12411,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -12153,6 +12420,12 @@
         "Espada": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 20,
@@ -12230,6 +12503,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -12239,6 +12514,12 @@
       "skills": [
         "SID_切り抜け"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_切り抜け",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_鬼神の一撃",
       "base_stats": {
         "hp": 21,
@@ -12316,6 +12597,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -12325,6 +12608,12 @@
       "skills": [
         "SID_助太刀"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_助太刀",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_相性激化",
       "base_stats": {
         "hp": 23,
@@ -12402,6 +12691,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -12409,6 +12700,12 @@
         "Lanza": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -12486,6 +12783,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -12495,6 +12794,12 @@
       "skills": [
         "SID_挟撃"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_挟撃",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_速さ封じ",
       "base_stats": {
         "hp": 24,
@@ -12572,6 +12877,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Lanza",
         "Bastón"
@@ -12583,6 +12892,12 @@
       "skills": [
         "SID_手助け"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_手助け",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_飛燕の構え",
       "base_stats": {
         "hp": 23,
@@ -12660,6 +12975,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Hacha"
       ],
@@ -12667,6 +12984,12 @@
         "Hacha": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 26,
@@ -12744,6 +13067,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Hacha"
       ],
@@ -12753,6 +13078,12 @@
       "skills": [
         "SID_スマッシュ＋"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_スマッシュ＋",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_噛描",
       "base_stats": {
         "hp": 29,
@@ -12830,6 +13161,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Hacha",
         "Arco"
@@ -12841,6 +13174,12 @@
       "skills": [
         "SID_無慈悲"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_無慈悲",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_鬼神の構え",
       "base_stats": {
         "hp": 27,
@@ -12918,6 +13257,8 @@
       "estilo_combate": "隠密スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Arco"
       ],
@@ -12925,6 +13266,12 @@
         "Arco": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 19,
@@ -13002,6 +13349,8 @@
       "estilo_combate": "隠密スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Arco"
       ],
@@ -13011,6 +13360,12 @@
       "skills": [
         "SID_集中"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_集中",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_守備封じ",
       "base_stats": {
         "hp": 22,
@@ -13088,6 +13443,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Arco"
       ],
@@ -13097,6 +13456,12 @@
       "skills": [
         "SID_狙撃"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_狙撃",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_力封じ",
       "base_stats": {
         "hp": 22,
@@ -13174,6 +13539,10 @@
       "estilo_combate": "重装スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 4,
+      "debilidades": [
+        "acorazado"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -13181,6 +13550,12 @@
         "Espada": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -13258,6 +13633,10 @@
       "estilo_combate": "重装スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 4,
+      "debilidades": [
+        "acorazado"
+      ],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -13265,6 +13644,12 @@
         "Lanza": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -13342,6 +13727,10 @@
       "estilo_combate": "重装スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 4,
+      "debilidades": [
+        "acorazado"
+      ],
       "armas_permitidas": [
         "Hacha"
       ],
@@ -13349,6 +13738,12 @@
         "Hacha": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -13426,11 +13821,21 @@
       "estilo_combate": "重装スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 4,
+      "debilidades": [
+        "acorazado"
+      ],
       "armas_permitidas": [],
       "rangos_arma_max": {},
       "skills": [
         "SID_入れ替え"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_入れ替え",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_金剛の構え",
       "base_stats": {
         "hp": 28,
@@ -13508,11 +13913,22 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 6,
+      "debilidades": [
+        "caballería",
+        "acorazado"
+      ],
       "armas_permitidas": [],
       "rangos_arma_max": {},
       "skills": [
         "SID_護衛"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_護衛",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_明鏡の構え",
       "base_stats": {
         "hp": 26,
@@ -13590,6 +14006,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 5,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -13597,6 +14017,12 @@
         "Espada": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -13674,6 +14100,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 5,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -13681,6 +14111,12 @@
         "Lanza": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -13758,6 +14194,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 5,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Hacha"
       ],
@@ -13765,6 +14205,12 @@
         "Hacha": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -13842,11 +14288,21 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [],
       "rangos_arma_max": {},
       "skills": [
         "SID_回り込み"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_回り込み",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_剣殺し",
       "base_stats": {
         "hp": 25,
@@ -13924,6 +14380,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Daga"
       ],
@@ -13933,6 +14393,12 @@
       "skills": [
         "SID_足狙い"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_足狙い",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_蛇毒",
       "base_stats": {
         "hp": 23,
@@ -14010,6 +14476,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Tomo"
       ],
@@ -14017,6 +14485,12 @@
         "Tomo": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 18,
@@ -14094,6 +14568,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Tomo",
         "Bastón"
@@ -14105,6 +14581,12 @@
       "skills": [
         "SID_魔力増幅"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_魔力増幅",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_魔防封じ",
       "base_stats": {
         "hp": 20,
@@ -14182,6 +14664,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Tomo"
       ],
@@ -14191,6 +14677,12 @@
       "skills": [
         "SID_背理の法"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_背理の法",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_魔力封じ",
       "base_stats": {
         "hp": 21,
@@ -14268,6 +14760,8 @@
       "estilo_combate": "気功スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Bastón",
         "Artes"
@@ -14277,6 +14771,12 @@
         "Artes": "C"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 18,
@@ -14354,6 +14854,8 @@
       "estilo_combate": "気功スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Bastón",
         "Artes"
@@ -14365,6 +14867,12 @@
       "skills": [
         "SID_気の拡散"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_気の拡散",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_自壊",
       "base_stats": {
         "hp": 22,
@@ -14442,6 +14950,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Tomo",
         "Bastón",
@@ -14455,6 +14965,12 @@
       "skills": [
         "SID_自己回復"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_自己回復",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_明鏡の一撃",
       "base_stats": {
         "hp": 20,
@@ -14532,6 +15048,10 @@
       "estilo_combate": "飛行スタイル",
       "mov": 5,
       "tipo_movimiento": "volador",
+      "attrs": 8,
+      "debilidades": [
+        "volador"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -14539,6 +15059,12 @@
         "Espada": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -14616,6 +15142,10 @@
       "estilo_combate": "飛行スタイル",
       "mov": 5,
       "tipo_movimiento": "volador",
+      "attrs": 8,
+      "debilidades": [
+        "volador"
+      ],
       "armas_permitidas": [
         "Lanza"
       ],
@@ -14623,6 +15153,12 @@
         "Lanza": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -14700,6 +15236,10 @@
       "estilo_combate": "飛行スタイル",
       "mov": 5,
       "tipo_movimiento": "volador",
+      "attrs": 8,
+      "debilidades": [
+        "volador"
+      ],
       "armas_permitidas": [
         "Hacha"
       ],
@@ -14707,6 +15247,12 @@
         "Hacha": "B"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -14784,6 +15330,10 @@
       "estilo_combate": "飛行スタイル",
       "mov": 6,
       "tipo_movimiento": "volador",
+      "attrs": 8,
+      "debilidades": [
+        "volador"
+      ],
       "armas_permitidas": [
         "Bastón"
       ],
@@ -14793,6 +15343,12 @@
       "skills": [
         "SID_移動補助"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_移動補助",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_飛燕の一撃",
       "base_stats": {
         "hp": 22,
@@ -14870,11 +15426,22 @@
       "estilo_combate": "飛行スタイル",
       "mov": 6,
       "tipo_movimiento": "volador",
+      "attrs": 24,
+      "debilidades": [
+        "volador",
+        "dragón"
+      ],
       "armas_permitidas": [],
       "rangos_arma_max": {},
       "skills": [
         "SID_急襲"
       ],
+      "skills_innatas": [],
+      "learning_skill": "SID_急襲",
+      "rank": 1,
+      "max_level": 20,
+      "es_especial": false,
+      "nivel_habilidad_clase": 5,
       "lunatic_skill": "SID_凶鳥の一撃",
       "base_stats": {
         "hp": 25,
@@ -14952,6 +15519,8 @@
       "estilo_combate": "隠密スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Daga"
       ],
@@ -14962,6 +15531,14 @@
         "SID_鍵開け",
         "SID_すり抜け"
       ],
+      "skills_innatas": [
+        "SID_鍵開け"
+      ],
+      "learning_skill": "SID_すり抜け",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "SID_死の吐息",
       "base_stats": {
         "hp": 22,
@@ -15039,6 +15616,8 @@
       "estilo_combate": "気功スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Artes"
       ],
@@ -15049,6 +15628,14 @@
         "SID_踊り",
         "SID_特別な踊り"
       ],
+      "skills_innatas": [
+        "SID_踊り"
+      ],
+      "learning_skill": "SID_特別な踊り",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -15126,6 +15713,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Hacha"
       ],
@@ -15133,6 +15722,12 @@
         "Hacha": "A"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "SID_死線",
       "base_stats": {
         "hp": 26,
@@ -15210,6 +15805,11 @@
       "estilo_combate": "竜族スタイル",
       "mov": 2,
       "tipo_movimiento": "acorazado",
+      "attrs": 96,
+      "debilidades": [
+        "dragón caído",
+        "abominación"
+      ],
       "armas_permitidas": [
         "Especial"
       ],
@@ -15217,6 +15817,12 @@
         "Especial": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "SID_狂乱の一撃",
       "base_stats": {
         "hp": 30,
@@ -15294,6 +15900,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 2,
       "tipo_movimiento": "acorazado",
+      "attrs": 16,
+      "debilidades": [
+        "dragón"
+      ],
       "armas_permitidas": [
         "Especial"
       ],
@@ -15301,6 +15911,12 @@
         "Especial": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "SID_狂乱の一撃",
       "base_stats": {
         "hp": 30,
@@ -15378,9 +15994,17 @@
       "estilo_combate": "スタイル無し",
       "mov": 4,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [],
       "rangos_arma_max": {},
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 18,
@@ -15458,6 +16082,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -15465,6 +16091,12 @@
         "Espada": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -15542,6 +16174,10 @@
       "estilo_combate": "騎馬スタイル",
       "mov": 6,
       "tipo_movimiento": "caballería",
+      "attrs": 2,
+      "debilidades": [
+        "caballería"
+      ],
       "armas_permitidas": [
         "Espada",
         "Lanza"
@@ -15551,6 +16187,12 @@
         "Lanza": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 25,
@@ -15628,6 +16270,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Tomo",
@@ -15639,6 +16283,12 @@
         "Bastón": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -15716,6 +16366,8 @@
       "estilo_combate": "魔法スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Tomo",
         "Bastón"
@@ -15725,6 +16377,12 @@
         "Bastón": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 21,
@@ -15802,6 +16460,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -15809,6 +16469,12 @@
         "Espada": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -15886,6 +16552,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Lanza",
@@ -15899,6 +16567,12 @@
         "Arco": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 24,
@@ -15976,6 +16650,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Arco"
@@ -15985,6 +16661,12 @@
         "Arco": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -16062,6 +16744,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Arco"
@@ -16071,6 +16755,12 @@
         "Arco": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -16148,6 +16838,8 @@
       "estilo_combate": "重装スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Hacha"
@@ -16157,6 +16849,12 @@
         "Hacha": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 28,
@@ -16234,6 +16932,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada",
         "Artes"
@@ -16243,6 +16943,12 @@
         "Artes": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -16320,6 +17026,10 @@
       "estilo_combate": "竜族スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 17,
+      "debilidades": [
+        "dragón"
+      ],
       "armas_permitidas": [
         "Espada"
       ],
@@ -16327,6 +17037,12 @@
         "Espada": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 23,
@@ -16404,6 +17120,8 @@
       "estilo_combate": "連携スタイル",
       "mov": 5,
       "tipo_movimiento": "infantería",
+      "attrs": 1,
+      "debilidades": [],
       "armas_permitidas": [
         "Espada"
       ],
@@ -16411,6 +17129,12 @@
         "Espada": "S"
       },
       "skills": [],
+      "skills_innatas": [],
+      "learning_skill": "",
+      "rank": 0,
+      "max_level": 40,
+      "es_especial": true,
+      "nivel_habilidad_clase": 25,
       "lunatic_skill": "",
       "base_stats": {
         "hp": 22,
@@ -63348,6 +64072,7 @@
     "SID_無し": {
       "id": "SID_無し",
       "nombre": "???",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63387,6 +64112,7 @@
     "SID_不明": {
       "id": "SID_不明",
       "nombre": "???",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63426,6 +64152,7 @@
     "SID_個人ダミー": {
       "id": "SID_個人ダミー",
       "nombre": "Dummy",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63465,6 +64192,7 @@
     "SID_主人公": {
       "id": "SID_主人公",
       "nombre": "Divine One",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63504,6 +64232,7 @@
     "SID_王族": {
       "id": "SID_王族",
       "nombre": "Royalty",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63543,6 +64272,7 @@
     "SID_リーダー": {
       "id": "SID_リーダー",
       "nombre": "Leader",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63582,6 +64312,7 @@
     "SID_立往生": {
       "id": "SID_立往生",
       "nombre": "Immobilized",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63621,6 +64352,7 @@
     "SID_不死身": {
       "id": "SID_不死身",
       "nombre": "Immortal",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63660,6 +64392,7 @@
     "SID_死亡会話存在敵": {
       "id": "SID_死亡会話存在敵",
       "nombre": "Boss Unit",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63699,6 +64432,7 @@
     "SID_強制死亡": {
       "id": "SID_強制死亡",
       "nombre": "Trigger Death",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63738,6 +64472,7 @@
     "SID_リベラシオン装備可能": {
       "id": "SID_リベラシオン装備可能",
       "nombre": "Liberation Usable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63777,6 +64512,7 @@
     "SID_ヴィレグランツ装備可能": {
       "id": "SID_ヴィレグランツ装備可能",
       "nombre": "Wille Glanz Usable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63816,6 +64552,7 @@
     "SID_ミセリコルデ装備可能": {
       "id": "SID_ミセリコルデ装備可能",
       "nombre": "Misericorde Usable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63855,6 +64592,7 @@
     "SID_オヴスキュリテ装備可能": {
       "id": "SID_オヴスキュリテ装備可能",
       "nombre": "Obscurite Usable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63894,6 +64632,7 @@
     "SID_轟雷発動可能": {
       "id": "SID_轟雷発動可能",
       "nombre": "Dire Thunder Usable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63933,6 +64672,7 @@
     "SID_業火発動可能": {
       "id": "SID_業火発動可能",
       "nombre": "HellfireUsable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -63972,6 +64712,7 @@
     "SID_ダイムサンダ発動可能": {
       "id": "SID_ダイムサンダ発動可能",
       "nombre": "Dire ThunderUsable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64011,6 +64752,7 @@
     "SID_ギガスカリバー発動可能": {
       "id": "SID_ギガスカリバー発動可能",
       "nombre": "GigascaliburUsable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64050,6 +64792,7 @@
     "SID_旋風発動可能": {
       "id": "SID_旋風発動可能",
       "nombre": "WhirlwindUsable",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64089,6 +64832,7 @@
     "SID_鍵開け": {
       "id": "SID_鍵開け",
       "nombre": "KeyOpen",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64128,6 +64872,7 @@
     "SID_踊り": {
       "id": "SID_踊り",
       "nombre": "Dance",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64167,6 +64912,7 @@
     "SID_手加減": {
       "id": "SID_手加減",
       "nombre": "Mercy",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64212,6 +64958,7 @@
     "SID_気功": {
       "id": "SID_気功",
       "nombre": "Qi Adept",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64257,6 +65004,7 @@
     "SID_ブレス": {
       "id": "SID_ブレス",
       "nombre": "Dragon Breath",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64296,6 +65044,7 @@
     "SID_相手の防御力無視": {
       "id": "SID_相手の防御力無視",
       "nombre": "Ignore Def/Res",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64341,6 +65090,7 @@
     "SID_チェインアタック許可": {
       "id": "SID_チェインアタック許可",
       "nombre": "Chain Attack Allowed",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64380,6 +65130,7 @@
     "SID_チェインガード許可": {
       "id": "SID_チェインガード許可",
       "nombre": "Chain Guard Allowed",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64419,6 +65170,7 @@
     "SID_地形回避有利時２倍": {
       "id": "SID_地形回避有利時２倍",
       "nombre": "Avo２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64464,6 +65216,7 @@
     "SID_相手の地形回避有利時０": {
       "id": "SID_相手の地形回避有利時０",
       "nombre": "Avo０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64509,6 +65262,7 @@
     "SID_相性ブレイク無効": {
       "id": "SID_相性ブレイク無効",
       "nombre": "Break",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64548,6 +65302,7 @@
     "SID_聖水効果": {
       "id": "SID_聖水効果",
       "nombre": "(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64587,6 +65342,7 @@
     "SID_地形ダメージ無効": {
       "id": "SID_地形ダメージ無効",
       "nombre": "Damage",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64626,6 +65382,7 @@
     "SID_馬特効": {
       "id": "SID_馬特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64665,6 +65422,7 @@
     "SID_鎧特効": {
       "id": "SID_鎧特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64704,6 +65462,7 @@
     "SID_飛行特効": {
       "id": "SID_飛行特効",
       "nombre": "Effective: Flying",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64743,6 +65502,7 @@
     "SID_竜特効": {
       "id": "SID_竜特効",
       "nombre": "Effective: Dragon",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64782,6 +65542,7 @@
     "SID_邪竜特効": {
       "id": "SID_邪竜特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64821,6 +65582,7 @@
     "SID_異形特効": {
       "id": "SID_異形特効",
       "nombre": "Effective: Corrupted",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64860,6 +65622,7 @@
     "SID_メディウス特効": {
       "id": "SID_メディウス特効",
       "nombre": "MedeusSlayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64899,6 +65662,7 @@
     "SID_ドーマ特効": {
       "id": "SID_ドーマ特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64938,6 +65702,7 @@
     "SID_ロプトウス特効": {
       "id": "SID_ロプトウス特効",
       "nombre": "LoptrSlayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -64977,6 +65742,7 @@
     "SID_ベルド特効": {
       "id": "SID_ベルド特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65016,6 +65782,7 @@
     "SID_イドゥン特効": {
       "id": "SID_イドゥン特効",
       "nombre": "IdunnSlayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65055,6 +65822,7 @@
     "SID_ネルガル特効": {
       "id": "SID_ネルガル特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65094,6 +65862,7 @@
     "SID_フォデス特効": {
       "id": "SID_フォデス特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65133,6 +65902,7 @@
     "SID_アシュナード特効": {
       "id": "SID_アシュナード特効",
       "nombre": "AshnardSlayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65172,6 +65942,7 @@
     "SID_アスタルテ特効": {
       "id": "SID_アスタルテ特効",
       "nombre": "AsheraSlayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65211,6 +65982,7 @@
     "SID_ギムレー特効": {
       "id": "SID_ギムレー特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65250,6 +66022,7 @@
     "SID_ハイドラ特効": {
       "id": "SID_ハイドラ特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65289,6 +66062,7 @@
     "SID_ネメシス特効": {
       "id": "SID_ネメシス特効",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65328,6 +66102,7 @@
     "SID_異形兵": {
       "id": "SID_異形兵",
       "nombre": "Corrupted",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65367,6 +66142,7 @@
     "SID_弓砲台": {
       "id": "SID_弓砲台",
       "nombre": "Ballista",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65421,6 +66197,7 @@
     "SID_弓砲台_S010": {
       "id": "SID_弓砲台_S010",
       "nombre": "Ballista S010",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65478,6 +66255,7 @@
     "SID_魔砲台": {
       "id": "SID_魔砲台",
       "nombre": "Magic Cannon",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65532,6 +66310,7 @@
     "SID_火炎砲台": {
       "id": "SID_火炎砲台",
       "nombre": "Flame Cannon",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65591,6 +66370,7 @@
     "SID_火炎砲台_M019": {
       "id": "SID_火炎砲台_M019",
       "nombre": "Flame Cannon M019",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65650,6 +66430,7 @@
     "SID_火炎砲台_S013": {
       "id": "SID_火炎砲台_S013",
       "nombre": "Flame Cannon S013",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65709,6 +66490,7 @@
     "SID_毒": {
       "id": "SID_毒",
       "nombre": "Poison",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65754,6 +66536,7 @@
     "SID_猛毒": {
       "id": "SID_猛毒",
       "nombre": "Deadly Poison",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65799,6 +66582,7 @@
     "SID_劇毒": {
       "id": "SID_劇毒",
       "nombre": "Severe Poison",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65844,6 +66628,7 @@
     "SID_沈黙": {
       "id": "SID_沈黙",
       "nombre": "Silence",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65883,6 +66668,7 @@
     "SID_移動不可": {
       "id": "SID_移動不可",
       "nombre": "Move",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65922,6 +66708,7 @@
     "SID_弱体化": {
       "id": "SID_弱体化",
       "nombre": "Debuff",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -65961,6 +66748,7 @@
     "SID_気絶": {
       "id": "SID_気絶",
       "nombre": "Stun",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66000,6 +66788,7 @@
     "SID_強化": {
       "id": "SID_強化",
       "nombre": "Buff",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66039,6 +66828,7 @@
     "SID_移動禁止": {
       "id": "SID_移動禁止",
       "nombre": "Move",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66078,6 +66868,7 @@
     "SID_ＨＰ＋３": {
       "id": "SID_ＨＰ＋３",
       "nombre": "Hp 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 3,
@@ -66117,6 +66908,7 @@
     "SID_ＨＰ＋５": {
       "id": "SID_ＨＰ＋５",
       "nombre": "HP +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 5,
@@ -66156,6 +66948,7 @@
     "SID_ＨＰ＋７": {
       "id": "SID_ＨＰ＋７",
       "nombre": "HP +7",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 7,
@@ -66195,6 +66988,7 @@
     "SID_ＨＰ＋１０": {
       "id": "SID_ＨＰ＋１０",
       "nombre": "HP +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 10,
@@ -66234,6 +67028,7 @@
     "SID_ＨＰ＋１２": {
       "id": "SID_ＨＰ＋１２",
       "nombre": "HP +12",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 12,
@@ -66273,6 +67068,7 @@
     "SID_ＨＰ＋１５": {
       "id": "SID_ＨＰ＋１５",
       "nombre": "HP +15",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 15,
@@ -66312,6 +67108,7 @@
     "SID_力＋１": {
       "id": "SID_力＋１",
       "nombre": "Strength +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66351,6 +67148,7 @@
     "SID_力＋２": {
       "id": "SID_力＋２",
       "nombre": "Strength +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66390,6 +67188,7 @@
     "SID_力＋３": {
       "id": "SID_力＋３",
       "nombre": "Strength +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66429,6 +67228,7 @@
     "SID_力＋４": {
       "id": "SID_力＋４",
       "nombre": "Strength +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66468,6 +67268,7 @@
     "SID_力＋５": {
       "id": "SID_力＋５",
       "nombre": "Strength +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66507,6 +67308,7 @@
     "SID_力＋６": {
       "id": "SID_力＋６",
       "nombre": "Strength +6",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66546,6 +67348,7 @@
     "SID_技＋１": {
       "id": "SID_技＋１",
       "nombre": "Dexterity +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66585,6 +67388,7 @@
     "SID_技＋２": {
       "id": "SID_技＋２",
       "nombre": "Dexterity +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66624,6 +67428,7 @@
     "SID_技＋３": {
       "id": "SID_技＋３",
       "nombre": "Dexterity +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66663,6 +67468,7 @@
     "SID_技＋４": {
       "id": "SID_技＋４",
       "nombre": "Dexterity +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66702,6 +67508,7 @@
     "SID_技＋５": {
       "id": "SID_技＋５",
       "nombre": "Dexterity +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66741,6 +67548,7 @@
     "SID_速さ＋１": {
       "id": "SID_速さ＋１",
       "nombre": "Speed +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66780,6 +67588,7 @@
     "SID_速さ＋２": {
       "id": "SID_速さ＋２",
       "nombre": "Speed +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66819,6 +67628,7 @@
     "SID_速さ＋３": {
       "id": "SID_速さ＋３",
       "nombre": "Speed +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66858,6 +67668,7 @@
     "SID_速さ＋４": {
       "id": "SID_速さ＋４",
       "nombre": "Speed +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66897,6 +67708,7 @@
     "SID_速さ＋５": {
       "id": "SID_速さ＋５",
       "nombre": "Speed +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66936,6 +67748,7 @@
     "SID_幸運＋２": {
       "id": "SID_幸運＋２",
       "nombre": "Luck +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -66975,6 +67788,7 @@
     "SID_幸運＋４": {
       "id": "SID_幸運＋４",
       "nombre": "Luck +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67014,6 +67828,7 @@
     "SID_幸運＋６": {
       "id": "SID_幸運＋６",
       "nombre": "Luck +6",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67053,6 +67868,7 @@
     "SID_幸運＋８": {
       "id": "SID_幸運＋８",
       "nombre": "Luck +8",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67092,6 +67908,7 @@
     "SID_幸運＋１０": {
       "id": "SID_幸運＋１０",
       "nombre": "Luck +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67131,6 +67948,7 @@
     "SID_幸運＋１２": {
       "id": "SID_幸運＋１２",
       "nombre": "Luck +12",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67170,6 +67988,7 @@
     "SID_守備＋１": {
       "id": "SID_守備＋１",
       "nombre": "Defense +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67209,6 +68028,7 @@
     "SID_守備＋２": {
       "id": "SID_守備＋２",
       "nombre": "Defense +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67248,6 +68068,7 @@
     "SID_守備＋３": {
       "id": "SID_守備＋３",
       "nombre": "Defense +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67287,6 +68108,7 @@
     "SID_守備＋４": {
       "id": "SID_守備＋４",
       "nombre": "Defense +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67326,6 +68148,7 @@
     "SID_守備＋５": {
       "id": "SID_守備＋５",
       "nombre": "Defense +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67365,6 +68188,7 @@
     "SID_魔力＋１": {
       "id": "SID_魔力＋１",
       "nombre": "Mag 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67404,6 +68228,7 @@
     "SID_魔力＋２": {
       "id": "SID_魔力＋２",
       "nombre": "Magic +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67443,6 +68268,7 @@
     "SID_魔力＋３": {
       "id": "SID_魔力＋３",
       "nombre": "Magic +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67482,6 +68308,7 @@
     "SID_魔力＋４": {
       "id": "SID_魔力＋４",
       "nombre": "Magic +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67521,6 +68348,7 @@
     "SID_魔力＋５": {
       "id": "SID_魔力＋５",
       "nombre": "Magic +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67560,6 +68388,7 @@
     "SID_魔防＋１": {
       "id": "SID_魔防＋１",
       "nombre": "Res 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67599,6 +68428,7 @@
     "SID_魔防＋２": {
       "id": "SID_魔防＋２",
       "nombre": "Resistance +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67638,6 +68468,7 @@
     "SID_魔防＋３": {
       "id": "SID_魔防＋３",
       "nombre": "Resistance +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67677,6 +68508,7 @@
     "SID_魔防＋４": {
       "id": "SID_魔防＋４",
       "nombre": "Resistance +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67716,6 +68548,7 @@
     "SID_魔防＋５": {
       "id": "SID_魔防＋５",
       "nombre": "Resistance +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67755,6 +68588,7 @@
     "SID_体格＋１": {
       "id": "SID_体格＋１",
       "nombre": "Phy 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67794,6 +68628,7 @@
     "SID_体格＋２": {
       "id": "SID_体格＋２",
       "nombre": "Phy 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67833,6 +68668,7 @@
     "SID_体格＋３": {
       "id": "SID_体格＋３",
       "nombre": "Build +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67872,6 +68708,7 @@
     "SID_体格＋４": {
       "id": "SID_体格＋４",
       "nombre": "Build +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67911,6 +68748,7 @@
     "SID_体格＋５": {
       "id": "SID_体格＋５",
       "nombre": "Build +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67950,6 +68788,7 @@
     "SID_移動＋１": {
       "id": "SID_移動＋１",
       "nombre": "Movement +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -67989,6 +68828,7 @@
     "SID_ＨＰ＋３_継承用": {
       "id": "SID_ＨＰ＋３_継承用",
       "nombre": "Hp 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 3,
@@ -68028,6 +68868,7 @@
     "SID_ＨＰ＋５_継承用": {
       "id": "SID_ＨＰ＋５_継承用",
       "nombre": "HP +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 5,
@@ -68067,6 +68908,7 @@
     "SID_ＨＰ＋７_継承用": {
       "id": "SID_ＨＰ＋７_継承用",
       "nombre": "HP +7",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 7,
@@ -68106,6 +68948,7 @@
     "SID_ＨＰ＋１０_継承用": {
       "id": "SID_ＨＰ＋１０_継承用",
       "nombre": "HP +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 10,
@@ -68145,6 +68988,7 @@
     "SID_ＨＰ＋１２_継承用": {
       "id": "SID_ＨＰ＋１２_継承用",
       "nombre": "HP +12",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 12,
@@ -68184,6 +69028,7 @@
     "SID_ＨＰ＋１５_継承用": {
       "id": "SID_ＨＰ＋１５_継承用",
       "nombre": "HP +15",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 15,
@@ -68223,6 +69068,7 @@
     "SID_力＋１_継承用": {
       "id": "SID_力＋１_継承用",
       "nombre": "Strength +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68262,6 +69108,7 @@
     "SID_力＋２_継承用": {
       "id": "SID_力＋２_継承用",
       "nombre": "Strength +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68301,6 +69148,7 @@
     "SID_力＋３_継承用": {
       "id": "SID_力＋３_継承用",
       "nombre": "Strength +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68340,6 +69188,7 @@
     "SID_力＋４_継承用": {
       "id": "SID_力＋４_継承用",
       "nombre": "Strength +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68379,6 +69228,7 @@
     "SID_力＋５_継承用": {
       "id": "SID_力＋５_継承用",
       "nombre": "Strength +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68418,6 +69268,7 @@
     "SID_力＋６_継承用": {
       "id": "SID_力＋６_継承用",
       "nombre": "Strength +6",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68457,6 +69308,7 @@
     "SID_技＋１_継承用": {
       "id": "SID_技＋１_継承用",
       "nombre": "Dexterity +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68496,6 +69348,7 @@
     "SID_技＋２_継承用": {
       "id": "SID_技＋２_継承用",
       "nombre": "Dexterity +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68535,6 +69388,7 @@
     "SID_技＋３_継承用": {
       "id": "SID_技＋３_継承用",
       "nombre": "Dexterity +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68574,6 +69428,7 @@
     "SID_技＋４_継承用": {
       "id": "SID_技＋４_継承用",
       "nombre": "Dexterity +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68613,6 +69468,7 @@
     "SID_技＋５_継承用": {
       "id": "SID_技＋５_継承用",
       "nombre": "Dexterity +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68652,6 +69508,7 @@
     "SID_速さ＋１_継承用": {
       "id": "SID_速さ＋１_継承用",
       "nombre": "Speed +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68691,6 +69548,7 @@
     "SID_速さ＋２_継承用": {
       "id": "SID_速さ＋２_継承用",
       "nombre": "Speed +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68730,6 +69588,7 @@
     "SID_速さ＋３_継承用": {
       "id": "SID_速さ＋３_継承用",
       "nombre": "Speed +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68769,6 +69628,7 @@
     "SID_速さ＋４_継承用": {
       "id": "SID_速さ＋４_継承用",
       "nombre": "Speed +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68808,6 +69668,7 @@
     "SID_速さ＋５_継承用": {
       "id": "SID_速さ＋５_継承用",
       "nombre": "Speed +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68847,6 +69708,7 @@
     "SID_幸運＋２_継承用": {
       "id": "SID_幸運＋２_継承用",
       "nombre": "Luck +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68886,6 +69748,7 @@
     "SID_幸運＋４_継承用": {
       "id": "SID_幸運＋４_継承用",
       "nombre": "Luck +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68925,6 +69788,7 @@
     "SID_幸運＋６_継承用": {
       "id": "SID_幸運＋６_継承用",
       "nombre": "Luck +6",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -68964,6 +69828,7 @@
     "SID_幸運＋８_継承用": {
       "id": "SID_幸運＋８_継承用",
       "nombre": "Luck +8",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69003,6 +69868,7 @@
     "SID_幸運＋１０_継承用": {
       "id": "SID_幸運＋１０_継承用",
       "nombre": "Luck +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69042,6 +69908,7 @@
     "SID_幸運＋１２_継承用": {
       "id": "SID_幸運＋１２_継承用",
       "nombre": "Luck +12",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69081,6 +69948,7 @@
     "SID_守備＋１_継承用": {
       "id": "SID_守備＋１_継承用",
       "nombre": "Defense +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69120,6 +69988,7 @@
     "SID_守備＋２_継承用": {
       "id": "SID_守備＋２_継承用",
       "nombre": "Defense +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69159,6 +70028,7 @@
     "SID_守備＋３_継承用": {
       "id": "SID_守備＋３_継承用",
       "nombre": "Defense +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69198,6 +70068,7 @@
     "SID_守備＋４_継承用": {
       "id": "SID_守備＋４_継承用",
       "nombre": "Defense +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69237,6 +70108,7 @@
     "SID_守備＋５_継承用": {
       "id": "SID_守備＋５_継承用",
       "nombre": "Defense +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69276,6 +70148,7 @@
     "SID_魔力＋１_継承用": {
       "id": "SID_魔力＋１_継承用",
       "nombre": "Mag 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69315,6 +70188,7 @@
     "SID_魔力＋２_継承用": {
       "id": "SID_魔力＋２_継承用",
       "nombre": "Magic +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69354,6 +70228,7 @@
     "SID_魔力＋３_継承用": {
       "id": "SID_魔力＋３_継承用",
       "nombre": "Magic +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69393,6 +70268,7 @@
     "SID_魔力＋４_継承用": {
       "id": "SID_魔力＋４_継承用",
       "nombre": "Magic +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69432,6 +70308,7 @@
     "SID_魔力＋５_継承用": {
       "id": "SID_魔力＋５_継承用",
       "nombre": "Magic +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69471,6 +70348,7 @@
     "SID_魔防＋１_継承用": {
       "id": "SID_魔防＋１_継承用",
       "nombre": "Res 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69510,6 +70388,7 @@
     "SID_魔防＋２_継承用": {
       "id": "SID_魔防＋２_継承用",
       "nombre": "Resistance +2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69549,6 +70428,7 @@
     "SID_魔防＋３_継承用": {
       "id": "SID_魔防＋３_継承用",
       "nombre": "Resistance +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69588,6 +70468,7 @@
     "SID_魔防＋４_継承用": {
       "id": "SID_魔防＋４_継承用",
       "nombre": "Resistance +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69627,6 +70508,7 @@
     "SID_魔防＋５_継承用": {
       "id": "SID_魔防＋５_継承用",
       "nombre": "Resistance +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69666,6 +70548,7 @@
     "SID_体格＋１_継承用": {
       "id": "SID_体格＋１_継承用",
       "nombre": "Phy 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69705,6 +70588,7 @@
     "SID_体格＋２_継承用": {
       "id": "SID_体格＋２_継承用",
       "nombre": "Phy 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69744,6 +70628,7 @@
     "SID_体格＋３_継承用": {
       "id": "SID_体格＋３_継承用",
       "nombre": "Build +3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69783,6 +70668,7 @@
     "SID_体格＋４_継承用": {
       "id": "SID_体格＋４_継承用",
       "nombre": "Build +4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69822,6 +70708,7 @@
     "SID_体格＋５_継承用": {
       "id": "SID_体格＋５_継承用",
       "nombre": "Build +5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69861,6 +70748,7 @@
     "SID_移動＋１_継承用": {
       "id": "SID_移動＋１_継承用",
       "nombre": "Movement +1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69900,6 +70788,7 @@
     "SID_死亡回避": {
       "id": "SID_死亡回避",
       "nombre": "Avo",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69948,6 +70837,7 @@
     "SID_命中０": {
       "id": "SID_命中０",
       "nombre": "Hit０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -69993,6 +70883,7 @@
     "SID_命中０_砲撃中無効": {
       "id": "SID_命中０_砲撃中無効",
       "nombre": "Hit０ Cannon Immune",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70038,6 +70929,7 @@
     "SID_命中１００": {
       "id": "SID_命中１００",
       "nombre": "Hit１００",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70086,6 +70978,7 @@
     "SID_必殺０": {
       "id": "SID_必殺０",
       "nombre": "Crit０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70131,6 +71024,7 @@
     "SID_必殺値と必殺率０": {
       "id": "SID_必殺値と必殺率０",
       "nombre": "CritCrit０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70179,6 +71073,7 @@
     "SID_必殺０_オフェンス時": {
       "id": "SID_必殺０_オフェンス時",
       "nombre": "Crit０ Offense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70224,6 +71119,7 @@
     "SID_相手の命中０": {
       "id": "SID_相手の命中０",
       "nombre": "Hit０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70269,6 +71165,7 @@
     "SID_相手の命中１００": {
       "id": "SID_相手の命中１００",
       "nombre": "Hit１００",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70314,6 +71211,7 @@
     "SID_相手の必殺０": {
       "id": "SID_相手の必殺０",
       "nombre": "Crit０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70359,6 +71257,7 @@
     "SID_相手の取得経験値０": {
       "id": "SID_相手の取得経験値０",
       "nombre": "EXP０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70404,6 +71303,7 @@
     "SID_蛇毒": {
       "id": "SID_蛇毒",
       "nombre": "Poison Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70449,6 +71349,7 @@
     "SID_死の吐息": {
       "id": "SID_死の吐息",
       "nombre": "Savage Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70488,6 +71389,7 @@
     "SID_剣殺し": {
       "id": "SID_剣殺し",
       "nombre": "Swordbreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70536,6 +71438,7 @@
     "SID_槍殺し": {
       "id": "SID_槍殺し",
       "nombre": "Lancebreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70584,6 +71487,7 @@
     "SID_斧殺し": {
       "id": "SID_斧殺し",
       "nombre": "Axebreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70632,6 +71536,7 @@
     "SID_魔殺し": {
       "id": "SID_魔殺し",
       "nombre": "Tomebreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70680,6 +71585,7 @@
     "SID_弓殺し": {
       "id": "SID_弓殺し",
       "nombre": "Bowbreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70728,6 +71634,7 @@
     "SID_短刀殺し": {
       "id": "SID_短刀殺し",
       "nombre": "Knifebreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70776,6 +71683,7 @@
     "SID_気功殺し": {
       "id": "SID_気功殺し",
       "nombre": "Artbreaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70824,6 +71732,7 @@
     "SID_力封じ": {
       "id": "SID_力封じ",
       "nombre": "Seal Strength",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70865,6 +71774,7 @@
     "SID_力封じ_効果": {
       "id": "SID_力封じ_効果",
       "nombre": "Seal Strength (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70904,6 +71814,7 @@
     "SID_魔力封じ": {
       "id": "SID_魔力封じ",
       "nombre": "Seal Magic",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70945,6 +71856,7 @@
     "SID_魔力封じ_効果": {
       "id": "SID_魔力封じ_効果",
       "nombre": "Seal Magic (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -70984,6 +71896,7 @@
     "SID_守備封じ": {
       "id": "SID_守備封じ",
       "nombre": "Seal Defense",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71025,6 +71938,7 @@
     "SID_守備封じ_効果": {
       "id": "SID_守備封じ_効果",
       "nombre": "Seal Defense (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71064,6 +71978,7 @@
     "SID_速さ封じ": {
       "id": "SID_速さ封じ",
       "nombre": "Seal Speed",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71105,6 +72020,7 @@
     "SID_速さ封じ_効果": {
       "id": "SID_速さ封じ_効果",
       "nombre": "Seal Speed (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71144,6 +72060,7 @@
     "SID_魔防封じ": {
       "id": "SID_魔防封じ",
       "nombre": "Seal Resistance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71185,6 +72102,7 @@
     "SID_魔防封じ_効果": {
       "id": "SID_魔防封じ_効果",
       "nombre": "Seal Resistance (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71224,6 +72142,7 @@
     "SID_鬼神の構え": {
       "id": "SID_鬼神の構え",
       "nombre": "Fierce Stance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71269,6 +72188,7 @@
     "SID_金剛の構え": {
       "id": "SID_金剛の構え",
       "nombre": "Steady Stance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71314,6 +72234,7 @@
     "SID_飛燕の構え": {
       "id": "SID_飛燕の構え",
       "nombre": "Darting Stance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71359,6 +72280,7 @@
     "SID_明鏡の構え": {
       "id": "SID_明鏡の構え",
       "nombre": "Warding Stance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71404,6 +72326,7 @@
     "SID_死線": {
       "id": "SID_死線",
       "nombre": "Life and Death",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71452,6 +72375,7 @@
     "SID_相性激化": {
       "id": "SID_相性激化",
       "nombre": "Triangle Adept",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71500,6 +72424,7 @@
     "SID_噛描": {
       "id": "SID_噛描",
       "nombre": "Cornered Beast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71545,6 +72470,7 @@
     "SID_自壊": {
       "id": "SID_自壊",
       "nombre": "Self-Destruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71590,6 +72516,7 @@
     "SID_清流の一撃": {
       "id": "SID_清流の一撃",
       "nombre": "Duelist's Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71635,6 +72562,7 @@
     "SID_飛燕の一撃": {
       "id": "SID_飛燕の一撃",
       "nombre": "Darting Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71680,6 +72608,7 @@
     "SID_鬼神の一撃": {
       "id": "SID_鬼神の一撃",
       "nombre": "Death Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71725,6 +72654,7 @@
     "SID_凶鳥の一撃": {
       "id": "SID_凶鳥の一撃",
       "nombre": "Certain Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71770,6 +72700,7 @@
     "SID_金剛の一撃": {
       "id": "SID_金剛の一撃",
       "nombre": "Armored Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71815,6 +72746,7 @@
     "SID_明鏡の一撃": {
       "id": "SID_明鏡の一撃",
       "nombre": "Warding Blow",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71860,6 +72792,7 @@
     "SID_狂乱の一撃": {
       "id": "SID_狂乱の一撃",
       "nombre": "Spirit Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71905,6 +72838,7 @@
     "SID_ブレイク無効": {
       "id": "SID_ブレイク無効",
       "nombre": "Unbreakable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71946,6 +72880,7 @@
     "SID_特効耐性": {
       "id": "SID_特効耐性",
       "nombre": "Stalwart",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -71987,6 +72922,7 @@
     "SID_特効無効": {
       "id": "SID_特効無効",
       "nombre": "Unwavering",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72028,6 +72964,7 @@
     "SID_不動": {
       "id": "SID_不動",
       "nombre": "Anchor",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72069,6 +73006,7 @@
     "SID_熟練者": {
       "id": "SID_熟練者",
       "nombre": "Veteran",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72111,6 +73049,7 @@
     "SID_熟練者＋": {
       "id": "SID_熟練者＋",
       "nombre": "Veteran+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72153,6 +73092,7 @@
     "SID_ブレイク無効_効果": {
       "id": "SID_ブレイク無効_効果",
       "nombre": "Unbreakable (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72192,6 +73132,7 @@
     "SID_特効耐性_効果": {
       "id": "SID_特効耐性_効果",
       "nombre": "Stalwart (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72237,6 +73178,7 @@
     "SID_特効無効_効果": {
       "id": "SID_特効無効_効果",
       "nombre": "Unwavering (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72276,6 +73218,7 @@
     "SID_不動_効果": {
       "id": "SID_不動_効果",
       "nombre": "Laguz Friend (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72315,6 +73258,7 @@
     "SID_不動_隠蔽": {
       "id": "SID_不動_隠蔽",
       "nombre": "Laguz Friend Stealth",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72354,6 +73298,7 @@
     "SID_虚無の呪い": {
       "id": "SID_虚無の呪い",
       "nombre": "Void Curse",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72399,6 +73344,7 @@
     "SID_ダメージ無効化": {
       "id": "SID_ダメージ無効化",
       "nombre": "DamageNullify",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72441,6 +73387,7 @@
     "SID_ダメージ無効化_防御時": {
       "id": "SID_ダメージ無効化_防御時",
       "nombre": "DamageNullify On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72486,6 +73433,7 @@
     "SID_ダメージ無効化_攻撃時": {
       "id": "SID_ダメージ無効化_攻撃時",
       "nombre": "DamageNullify On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72531,6 +73479,7 @@
     "SID_バリア１": {
       "id": "SID_バリア１",
       "nombre": "Fell Barrier",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72573,6 +73522,7 @@
     "SID_バリア２": {
       "id": "SID_バリア２",
       "nombre": "Fell Barrier+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72615,6 +73565,7 @@
     "SID_バリア３": {
       "id": "SID_バリア３",
       "nombre": "Fell Barrier++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72657,6 +73608,7 @@
     "SID_バリア４": {
       "id": "SID_バリア４",
       "nombre": "Fell Barrier+++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72699,6 +73651,7 @@
     "SID_ダメージ軽減１_防御時": {
       "id": "SID_ダメージ軽減１_防御時",
       "nombre": "DamageReduction１ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72744,6 +73697,7 @@
     "SID_ダメージ軽減２_防御時": {
       "id": "SID_ダメージ軽減２_防御時",
       "nombre": "DamageReduction２ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72789,6 +73743,7 @@
     "SID_ダメージ軽減３_防御時": {
       "id": "SID_ダメージ軽減３_防御時",
       "nombre": "DamageReduction３ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72834,6 +73789,7 @@
     "SID_ダメージ軽減４_防御時": {
       "id": "SID_ダメージ軽減４_防御時",
       "nombre": "DamageReduction４ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72879,6 +73835,7 @@
     "SID_ダメージ軽減１_攻撃時": {
       "id": "SID_ダメージ軽減１_攻撃時",
       "nombre": "DamageReduction１ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72924,6 +73881,7 @@
     "SID_ダメージ軽減２_攻撃時": {
       "id": "SID_ダメージ軽減２_攻撃時",
       "nombre": "DamageReduction２ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -72969,6 +73927,7 @@
     "SID_ダメージ軽減３_攻撃時": {
       "id": "SID_ダメージ軽減３_攻撃時",
       "nombre": "DamageReduction３ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73014,6 +73973,7 @@
     "SID_ダメージ軽減４_攻撃時": {
       "id": "SID_ダメージ軽減４_攻撃時",
       "nombre": "DamageReduction４ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73059,6 +74019,7 @@
     "SID_バリア１_ノーマル用": {
       "id": "SID_バリア１_ノーマル用",
       "nombre": "Dark Barrier",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73101,6 +74062,7 @@
     "SID_バリア２_ノーマル用": {
       "id": "SID_バリア２_ノーマル用",
       "nombre": "Dark Barrier+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73143,6 +74105,7 @@
     "SID_バリア３_ノーマル用": {
       "id": "SID_バリア３_ノーマル用",
       "nombre": "Dark Barrier++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73185,6 +74148,7 @@
     "SID_バリア４_ノーマル用": {
       "id": "SID_バリア４_ノーマル用",
       "nombre": "Dark Barrier+++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73227,6 +74191,7 @@
     "SID_ダメージ軽減１_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減１_防御時_ノーマル用",
       "nombre": "DamageReduction１ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73272,6 +74237,7 @@
     "SID_ダメージ軽減２_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減２_防御時_ノーマル用",
       "nombre": "DamageReduction２ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73317,6 +74283,7 @@
     "SID_ダメージ軽減３_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減３_防御時_ノーマル用",
       "nombre": "DamageReduction３ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73362,6 +74329,7 @@
     "SID_ダメージ軽減４_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減４_防御時_ノーマル用",
       "nombre": "DamageReduction４ On Defense",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73407,6 +74375,7 @@
     "SID_ダメージ軽減１_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減１_攻撃時_ノーマル用",
       "nombre": "DamageReduction１ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73452,6 +74421,7 @@
     "SID_ダメージ軽減２_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減２_攻撃時_ノーマル用",
       "nombre": "DamageReduction２ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73497,6 +74467,7 @@
     "SID_ダメージ軽減３_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減３_攻撃時_ノーマル用",
       "nombre": "DamageReduction３ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73542,6 +74513,7 @@
     "SID_ダメージ軽減４_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減４_攻撃時_ノーマル用",
       "nombre": "DamageReduction４ On Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73587,6 +74559,7 @@
     "SID_チェインアタック威力軽減": {
       "id": "SID_チェインアタック威力軽減",
       "nombre": "Bond Breaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73634,6 +74607,7 @@
     "SID_移動－１": {
       "id": "SID_移動－１",
       "nombre": "Move－１",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73673,6 +74647,7 @@
     "SID_移動－２": {
       "id": "SID_移動－２",
       "nombre": "Move－２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73712,6 +74687,7 @@
     "SID_命中回避－１０": {
       "id": "SID_命中回避－１０",
       "nombre": "HitAvo－１０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73760,6 +74736,7 @@
     "SID_命中回避－２０": {
       "id": "SID_命中回避－２０",
       "nombre": "HitAvo－２０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73808,6 +74785,7 @@
     "SID_撃破経験加算５０": {
       "id": "SID_撃破経験加算５０",
       "nombre": "Defeat EXPBonus５０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73853,6 +74831,7 @@
     "SID_回避＋１０": {
       "id": "SID_回避＋１０",
       "nombre": "Avoid +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73898,6 +74877,7 @@
     "SID_回避＋１５": {
       "id": "SID_回避＋１５",
       "nombre": "Avoid +15",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73943,6 +74923,7 @@
     "SID_回避＋２０": {
       "id": "SID_回避＋２０",
       "nombre": "Avoid +20",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -73988,6 +74969,7 @@
     "SID_回避＋２５": {
       "id": "SID_回避＋２５",
       "nombre": "Avoid +25",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74033,6 +75015,7 @@
     "SID_回避＋３０": {
       "id": "SID_回避＋３０",
       "nombre": "Avoid +30",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74078,6 +75061,7 @@
     "SID_命中＋１０": {
       "id": "SID_命中＋１０",
       "nombre": "Hit +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74123,6 +75107,7 @@
     "SID_命中＋１５": {
       "id": "SID_命中＋１５",
       "nombre": "Hit +15",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74168,6 +75153,7 @@
     "SID_命中＋２０": {
       "id": "SID_命中＋２０",
       "nombre": "Hit +20",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74213,6 +75199,7 @@
     "SID_命中＋２５": {
       "id": "SID_命中＋２５",
       "nombre": "Hit +25",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74258,6 +75245,7 @@
     "SID_命中＋３０": {
       "id": "SID_命中＋３０",
       "nombre": "Hit +30",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74303,6 +75291,7 @@
     "SID_必殺回避＋１０": {
       "id": "SID_必殺回避＋１０",
       "nombre": "Dodge +10",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74348,6 +75337,7 @@
     "SID_必殺回避＋１５": {
       "id": "SID_必殺回避＋１５",
       "nombre": "Dodge +15",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74393,6 +75383,7 @@
     "SID_必殺回避＋２０": {
       "id": "SID_必殺回避＋２０",
       "nombre": "Dodge +20",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74438,6 +75429,7 @@
     "SID_必殺回避＋２５": {
       "id": "SID_必殺回避＋２５",
       "nombre": "Dodge +25",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74483,6 +75475,7 @@
     "SID_必殺回避＋３０": {
       "id": "SID_必殺回避＋３０",
       "nombre": "Dodge +30",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74528,6 +75521,7 @@
     "SID_剣術・柔１": {
       "id": "SID_剣術・柔１",
       "nombre": "Sword Agility 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74575,6 +75569,7 @@
     "SID_剣術・柔２": {
       "id": "SID_剣術・柔２",
       "nombre": "Sword Agility 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74622,6 +75617,7 @@
     "SID_剣術・柔３": {
       "id": "SID_剣術・柔３",
       "nombre": "Sword Agility 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74669,6 +75665,7 @@
     "SID_剣術・柔４": {
       "id": "SID_剣術・柔４",
       "nombre": "Sword Agility 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74716,6 +75713,7 @@
     "SID_剣術・柔５": {
       "id": "SID_剣術・柔５",
       "nombre": "Sword Agility 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74763,6 +75761,7 @@
     "SID_剣術・剛１": {
       "id": "SID_剣術・剛１",
       "nombre": "Sword Power 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74810,6 +75809,7 @@
     "SID_剣術・剛２": {
       "id": "SID_剣術・剛２",
       "nombre": "Sword Power 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74857,6 +75857,7 @@
     "SID_剣術・剛３": {
       "id": "SID_剣術・剛３",
       "nombre": "Sword Power 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74904,6 +75905,7 @@
     "SID_剣術・剛４": {
       "id": "SID_剣術・剛４",
       "nombre": "Sword Power 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74951,6 +75953,7 @@
     "SID_剣術・剛５": {
       "id": "SID_剣術・剛５",
       "nombre": "Sword Power 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -74998,6 +76001,7 @@
     "SID_剣術・心１": {
       "id": "SID_剣術・心１",
       "nombre": "Sword Focus 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75045,6 +76049,7 @@
     "SID_剣術・心２": {
       "id": "SID_剣術・心２",
       "nombre": "Sword Focus 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75092,6 +76097,7 @@
     "SID_剣術・心３": {
       "id": "SID_剣術・心３",
       "nombre": "Sword Focus 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75139,6 +76145,7 @@
     "SID_剣術・心４": {
       "id": "SID_剣術・心４",
       "nombre": "Sword Focus 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75186,6 +76193,7 @@
     "SID_剣術・心５": {
       "id": "SID_剣術・心５",
       "nombre": "Sword Focus 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75233,6 +76241,7 @@
     "SID_槍術・柔１": {
       "id": "SID_槍術・柔１",
       "nombre": "Lance Agility 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75280,6 +76289,7 @@
     "SID_槍術・柔２": {
       "id": "SID_槍術・柔２",
       "nombre": "Lance Agility 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75327,6 +76337,7 @@
     "SID_槍術・柔３": {
       "id": "SID_槍術・柔３",
       "nombre": "Lance Agility 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75374,6 +76385,7 @@
     "SID_槍術・柔４": {
       "id": "SID_槍術・柔４",
       "nombre": "Lance Agility 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75421,6 +76433,7 @@
     "SID_槍術・柔５": {
       "id": "SID_槍術・柔５",
       "nombre": "Lance Agility 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75468,6 +76481,7 @@
     "SID_槍術・剛１": {
       "id": "SID_槍術・剛１",
       "nombre": "Lance Power 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75515,6 +76529,7 @@
     "SID_槍術・剛２": {
       "id": "SID_槍術・剛２",
       "nombre": "Lance Power 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75562,6 +76577,7 @@
     "SID_槍術・剛３": {
       "id": "SID_槍術・剛３",
       "nombre": "Lance Power 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75609,6 +76625,7 @@
     "SID_槍術・剛４": {
       "id": "SID_槍術・剛４",
       "nombre": "Lance Power 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75656,6 +76673,7 @@
     "SID_槍術・剛５": {
       "id": "SID_槍術・剛５",
       "nombre": "Lance Power 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75703,6 +76721,7 @@
     "SID_斧術・剛１": {
       "id": "SID_斧術・剛１",
       "nombre": "Axe Power 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75750,6 +76769,7 @@
     "SID_斧術・剛２": {
       "id": "SID_斧術・剛２",
       "nombre": "Axe Power 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75797,6 +76817,7 @@
     "SID_斧術・剛３": {
       "id": "SID_斧術・剛３",
       "nombre": "Axe Power 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75844,6 +76865,7 @@
     "SID_斧術・剛４": {
       "id": "SID_斧術・剛４",
       "nombre": "Axe Power 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75891,6 +76913,7 @@
     "SID_斧術・剛５": {
       "id": "SID_斧術・剛５",
       "nombre": "Axe Power 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75938,6 +76961,7 @@
     "SID_弓術・柔１": {
       "id": "SID_弓術・柔１",
       "nombre": "Bow Agility 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -75985,6 +77009,7 @@
     "SID_弓術・柔２": {
       "id": "SID_弓術・柔２",
       "nombre": "Bow Agility 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76032,6 +77057,7 @@
     "SID_弓術・柔３": {
       "id": "SID_弓術・柔３",
       "nombre": "Bow Agility 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76079,6 +77105,7 @@
     "SID_弓術・柔４": {
       "id": "SID_弓術・柔４",
       "nombre": "Bow Agility 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76126,6 +77153,7 @@
     "SID_弓術・柔５": {
       "id": "SID_弓術・柔５",
       "nombre": "Bow Agility 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76173,6 +77201,7 @@
     "SID_弓術・心１": {
       "id": "SID_弓術・心１",
       "nombre": "Bow Focus 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76220,6 +77249,7 @@
     "SID_弓術・心２": {
       "id": "SID_弓術・心２",
       "nombre": "Bow Focus 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76267,6 +77297,7 @@
     "SID_弓術・心３": {
       "id": "SID_弓術・心３",
       "nombre": "Bow Focus 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76314,6 +77345,7 @@
     "SID_弓術・心４": {
       "id": "SID_弓術・心４",
       "nombre": "Bow Focus 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76361,6 +77393,7 @@
     "SID_弓術・心５": {
       "id": "SID_弓術・心５",
       "nombre": "Bow Focus 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76408,6 +77441,7 @@
     "SID_体術・心１": {
       "id": "SID_体術・心１",
       "nombre": "Art Focus 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76455,6 +77489,7 @@
     "SID_体術・心２": {
       "id": "SID_体術・心２",
       "nombre": "Art Focus 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76502,6 +77537,7 @@
     "SID_体術・心３": {
       "id": "SID_体術・心３",
       "nombre": "Art Focus 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76549,6 +77585,7 @@
     "SID_体術・心４": {
       "id": "SID_体術・心４",
       "nombre": "Art Focus 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76596,6 +77633,7 @@
     "SID_体術・心５": {
       "id": "SID_体術・心５",
       "nombre": "Art Focus 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76643,6 +77681,7 @@
     "SID_短剣術１": {
       "id": "SID_短剣術１",
       "nombre": "Knife Precision 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76691,6 +77730,7 @@
     "SID_短剣術２": {
       "id": "SID_短剣術２",
       "nombre": "Knife Precision 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76739,6 +77779,7 @@
     "SID_短剣術３": {
       "id": "SID_短剣術３",
       "nombre": "Knife Precision 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76787,6 +77828,7 @@
     "SID_短剣術４": {
       "id": "SID_短剣術４",
       "nombre": "Knife Precision 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76835,6 +77877,7 @@
     "SID_短剣術５": {
       "id": "SID_短剣術５",
       "nombre": "Knife Precision 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76883,6 +77926,7 @@
     "SID_魔道１": {
       "id": "SID_魔道１",
       "nombre": "Tome Precision 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76931,6 +77975,7 @@
     "SID_魔道２": {
       "id": "SID_魔道２",
       "nombre": "Tome Precision 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -76979,6 +78024,7 @@
     "SID_魔道３": {
       "id": "SID_魔道３",
       "nombre": "Tome Precision 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77027,6 +78073,7 @@
     "SID_魔道４": {
       "id": "SID_魔道４",
       "nombre": "Tome Precision 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77075,6 +78122,7 @@
     "SID_魔道５": {
       "id": "SID_魔道５",
       "nombre": "Tome Precision 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77123,6 +78171,7 @@
     "SID_信仰１": {
       "id": "SID_信仰１",
       "nombre": "Staff Mastery 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77170,6 +78219,7 @@
     "SID_信仰２": {
       "id": "SID_信仰２",
       "nombre": "Staff Mastery 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77217,6 +78267,7 @@
     "SID_信仰３": {
       "id": "SID_信仰３",
       "nombre": "Staff Mastery 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77264,6 +78315,7 @@
     "SID_信仰４": {
       "id": "SID_信仰４",
       "nombre": "Staff Mastery 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77311,6 +78363,7 @@
     "SID_信仰５": {
       "id": "SID_信仰５",
       "nombre": "Staff Mastery 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77358,6 +78411,7 @@
     "SID_妨害杖命中＋１０": {
       "id": "SID_妨害杖命中＋１０",
       "nombre": "Staff Mastery 1",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77403,6 +78457,7 @@
     "SID_妨害杖命中＋１５": {
       "id": "SID_妨害杖命中＋１５",
       "nombre": "Staff Mastery 2",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77448,6 +78503,7 @@
     "SID_妨害杖命中＋２０": {
       "id": "SID_妨害杖命中＋２０",
       "nombre": "Staff Mastery 3",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77493,6 +78549,7 @@
     "SID_妨害杖命中＋２５": {
       "id": "SID_妨害杖命中＋２５",
       "nombre": "Staff Mastery 4",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77538,6 +78595,7 @@
     "SID_妨害杖命中＋３０": {
       "id": "SID_妨害杖命中＋３０",
       "nombre": "Staff Mastery 5",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77583,6 +78641,7 @@
     "SID_回避－１０_隠蔽": {
       "id": "SID_回避－１０_隠蔽",
       "nombre": "Avo－１０ Stealth",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77628,6 +78687,7 @@
     "SID_必殺－１０_隠蔽": {
       "id": "SID_必殺－１０_隠蔽",
       "nombre": "Crit－１０ Stealth",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77673,6 +78733,7 @@
     "SID_必殺回避－１０_隠蔽": {
       "id": "SID_必殺回避－１０_隠蔽",
       "nombre": "CritAvo－１０ Stealth",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77718,6 +78779,7 @@
     "SID_エンゲージ技_汎用設定": {
       "id": "SID_エンゲージ技_汎用設定",
       "nombre": "Engage Attack General",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77778,6 +78840,7 @@
     "SID_敵エンゲージ技ダメージ軽減": {
       "id": "SID_敵エンゲージ技ダメージ軽減",
       "nombre": "Engage Attack Guard",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77823,6 +78886,7 @@
     "SID_見切り": {
       "id": "SID_見切り",
       "nombre": "Perceptive",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77868,6 +78932,7 @@
     "SID_見切り＋": {
       "id": "SID_見切り＋",
       "nombre": "Perceptive+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77913,6 +78978,7 @@
     "SID_ブレイク時追撃": {
       "id": "SID_ブレイク時追撃",
       "nombre": "Break Defenses",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -77954,6 +79020,7 @@
     "SID_ブレイク時追撃_ダメージ５０％": {
       "id": "SID_ブレイク時追撃_ダメージ５０％",
       "nombre": "BreakFollow-Up (50% Damage)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78001,6 +79068,7 @@
     "SID_ブレイク時追撃_ダメージ５０％_発動済み": {
       "id": "SID_ブレイク時追撃_ダメージ５０％_発動済み",
       "nombre": "BreakFollow-Up (50% Damage) (Triggered)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78040,6 +79108,7 @@
     "SID_不屈": {
       "id": "SID_不屈",
       "nombre": "Unyielding",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78085,6 +79154,7 @@
     "SID_不屈＋": {
       "id": "SID_不屈＋",
       "nombre": "Unyielding+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78130,6 +79200,7 @@
     "SID_不屈＋＋": {
       "id": "SID_不屈＋＋",
       "nombre": "Unyielding++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78175,6 +79246,7 @@
     "SID_カウンター": {
       "id": "SID_カウンター",
       "nombre": "Divine Speed",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78222,6 +79294,7 @@
     "SID_カウンター_隠密": {
       "id": "SID_カウンター_隠密",
       "nombre": "Divine Speed",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78271,6 +79344,7 @@
     "SID_カウンター_竜族": {
       "id": "SID_カウンター_竜族",
       "nombre": "Divine Speed",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78320,6 +79394,7 @@
     "SID_カウンター_ダメージ５０％": {
       "id": "SID_カウンター_ダメージ５０％",
       "nombre": "Counter (50% Damage)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78367,6 +79442,7 @@
     "SID_カウンター_隠密効果": {
       "id": "SID_カウンター_隠密効果",
       "nombre": "Counter (Covert Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78408,6 +79484,7 @@
     "SID_カウンター_隠密効果_発動チェック": {
       "id": "SID_カウンター_隠密効果_発動チェック",
       "nombre": "Counter (Covert Effect) (Check)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78449,6 +79526,7 @@
     "SID_カウンター_竜族効果": {
       "id": "SID_カウンター_竜族効果",
       "nombre": "Counter (Dragon Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78496,6 +79574,7 @@
     "SID_カウンター_竜族効果_発動終了チェック": {
       "id": "SID_カウンター_竜族効果_発動終了チェック",
       "nombre": "Counter (Dragon Effect) (End Check)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78537,6 +79616,7 @@
     "SID_カウンター_竜族効果_発動終了": {
       "id": "SID_カウンター_竜族効果_発動終了",
       "nombre": "Counter (Dragon Effect) (End)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78576,6 +79656,7 @@
     "SID_神速発動済み": {
       "id": "SID_神速発動済み",
       "nombre": "(Triggered)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78615,6 +79696,7 @@
     "SID_神速スタイル効果発動済み": {
       "id": "SID_神速スタイル効果発動済み",
       "nombre": "(Effect)(Triggered)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78654,6 +79736,7 @@
     "SID_マルスエンゲージ技": {
       "id": "SID_マルスエンゲージ技",
       "nombre": "Lodestar Rush",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78702,6 +79785,7 @@
     "SID_マルスエンゲージ技_竜族": {
       "id": "SID_マルスエンゲージ技_竜族",
       "nombre": "Lodestar Rush",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78750,6 +79834,7 @@
     "SID_マルスエンゲージ技_連携": {
       "id": "SID_マルスエンゲージ技_連携",
       "nombre": "Lodestar Rush",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78798,6 +79883,7 @@
     "SID_マルスエンゲージ技_魔法": {
       "id": "SID_マルスエンゲージ技_魔法",
       "nombre": "Lodestar Rush",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78849,6 +79935,7 @@
     "SID_ダメージ３０％": {
       "id": "SID_ダメージ３０％",
       "nombre": "Damage３０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78894,6 +79981,7 @@
     "SID_再移動": {
       "id": "SID_再移動",
       "nombre": "Canter",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78933,6 +80021,7 @@
     "SID_再移動＋": {
       "id": "SID_再移動＋",
       "nombre": "Canter+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -78972,6 +80061,7 @@
     "SID_助走": {
       "id": "SID_助走",
       "nombre": "Momentum",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79017,6 +80107,7 @@
     "SID_助走＋": {
       "id": "SID_助走＋",
       "nombre": "Momentum+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79062,6 +80153,7 @@
     "SID_猛進": {
       "id": "SID_猛進",
       "nombre": "Headlong Rush",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79101,6 +80193,7 @@
     "SID_迅走": {
       "id": "SID_迅走",
       "nombre": "Gallop",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79140,6 +80233,7 @@
     "SID_迅走_竜族": {
       "id": "SID_迅走_竜族",
       "nombre": "Gallop",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79179,6 +80273,7 @@
     "SID_迅走_騎馬": {
       "id": "SID_迅走_騎馬",
       "nombre": "Gallop",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79218,6 +80313,7 @@
     "SID_迅走_隠密": {
       "id": "SID_迅走_隠密",
       "nombre": "Gallop",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79257,6 +80353,7 @@
     "SID_迅走_闇": {
       "id": "SID_迅走_闇",
       "nombre": "Dark Gallop",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79296,6 +80393,7 @@
     "SID_シグルドエンゲージ技": {
       "id": "SID_シグルドエンゲージ技",
       "nombre": "Override",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79343,6 +80441,7 @@
     "SID_シグルドエンゲージ技_竜族": {
       "id": "SID_シグルドエンゲージ技_竜族",
       "nombre": "Override",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79390,6 +80489,7 @@
     "SID_シグルドエンゲージ技_重装": {
       "id": "SID_シグルドエンゲージ技_重装",
       "nombre": "Override",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79438,6 +80538,7 @@
     "SID_シグルドエンゲージ技_魔法": {
       "id": "SID_シグルドエンゲージ技_魔法",
       "nombre": "Override",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79486,6 +80587,7 @@
     "SID_シグルドエンゲージ技_気功": {
       "id": "SID_シグルドエンゲージ技_気功",
       "nombre": "Override",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79534,6 +80636,7 @@
     "SID_魔力ダメージ加算": {
       "id": "SID_魔力ダメージ加算",
       "nombre": "MagDamageBonus",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79579,6 +80682,7 @@
     "SID_異形リベンジ": {
       "id": "SID_異形リベンジ",
       "nombre": "Holy Stance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79624,6 +80728,7 @@
     "SID_異形リベンジ＋": {
       "id": "SID_異形リベンジ＋",
       "nombre": "Holy Stance+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79669,6 +80774,7 @@
     "SID_異形リベンジ＋＋": {
       "id": "SID_異形リベンジ＋＋",
       "nombre": "Holy Stance++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79714,6 +80820,7 @@
     "SID_異形リベンジ＋＋_闇": {
       "id": "SID_異形リベンジ＋＋_闇",
       "nombre": "Unholy Stance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79759,6 +80866,7 @@
     "SID_共鳴の黒魔法": {
       "id": "SID_共鳴の黒魔法",
       "nombre": "Resonance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79807,6 +80915,7 @@
     "SID_共鳴の黒魔法＋": {
       "id": "SID_共鳴の黒魔法＋",
       "nombre": "Resonance+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79855,6 +80964,7 @@
     "SID_大好物": {
       "id": "SID_大好物",
       "nombre": "Favorite Food",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79894,6 +81004,7 @@
     "SID_重唱": {
       "id": "SID_重唱",
       "nombre": "Echo",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79936,6 +81047,7 @@
     "SID_重唱_竜族": {
       "id": "SID_重唱_竜族",
       "nombre": "Echo",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -79979,6 +81091,7 @@
     "SID_重唱_魔法": {
       "id": "SID_重唱_魔法",
       "nombre": "Echo",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80021,6 +81134,7 @@
     "SID_重唱_発動演出": {
       "id": "SID_重唱_発動演出",
       "nombre": "Echo",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80060,6 +81174,7 @@
     "SID_魔法ダメージ５０％": {
       "id": "SID_魔法ダメージ５０％",
       "nombre": "Magic(50% Damage)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80105,6 +81220,7 @@
     "SID_魔法ダメージ６０％": {
       "id": "SID_魔法ダメージ６０％",
       "nombre": "MagicDamage６０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80150,6 +81266,7 @@
     "SID_セリカエンゲージ技": {
       "id": "SID_セリカエンゲージ技",
       "nombre": "Warp Ragnarok",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80197,6 +81314,7 @@
     "SID_セリカエンゲージ技_竜族": {
       "id": "SID_セリカエンゲージ技_竜族",
       "nombre": "Warp Ragnarok",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80245,6 +81363,7 @@
     "SID_セリカエンゲージ技_騎馬": {
       "id": "SID_セリカエンゲージ技_騎馬",
       "nombre": "Warp Ragnarok",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80292,6 +81411,7 @@
     "SID_セリカエンゲージ技_飛行": {
       "id": "SID_セリカエンゲージ技_飛行",
       "nombre": "Warp Ragnarok",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80339,6 +81459,7 @@
     "SID_セリカエンゲージ技_魔法": {
       "id": "SID_セリカエンゲージ技_魔法",
       "nombre": "Warp Ragnarok",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80386,6 +81507,7 @@
     "SID_セリカエンゲージ技_闇": {
       "id": "SID_セリカエンゲージ技_闇",
       "nombre": "Dark Warp",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80433,6 +81555,7 @@
     "SID_セリカエンゲージ技_闇_M020": {
       "id": "SID_セリカエンゲージ技_闇_M020",
       "nombre": "Ragnarok Warp",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80480,6 +81603,7 @@
     "SID_杖使い": {
       "id": "SID_杖使い",
       "nombre": "Cleric",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80519,6 +81643,7 @@
     "SID_杖使い＋": {
       "id": "SID_杖使い＋",
       "nombre": "Cleric+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80558,6 +81683,7 @@
     "SID_杖使い＋＋": {
       "id": "SID_杖使い＋＋",
       "nombre": "Cleric++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80597,6 +81723,7 @@
     "SID_サイレス無効": {
       "id": "SID_サイレス無効",
       "nombre": "Silence Ward",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80636,6 +81763,7 @@
     "SID_癒しの響き": {
       "id": "SID_癒しの響き",
       "nombre": "Healing Light",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80681,6 +81809,7 @@
     "SID_増幅": {
       "id": "SID_増幅",
       "nombre": "Augment",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80720,6 +81849,7 @@
     "SID_増幅_竜族": {
       "id": "SID_増幅_竜族",
       "nombre": "Augment",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80759,6 +81889,7 @@
     "SID_増幅_気功": {
       "id": "SID_増幅_気功",
       "nombre": "Augment",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80800,6 +81931,7 @@
     "SID_杖回復量＋２０％": {
       "id": "SID_杖回復量＋２０％",
       "nombre": "＋２０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80845,6 +81977,7 @@
     "SID_増幅_闇": {
       "id": "SID_増幅_闇",
       "nombre": "Dark Augment",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80884,6 +82017,7 @@
     "SID_ミカヤエンゲージ技": {
       "id": "SID_ミカヤエンゲージ技",
       "nombre": "Great Sacrifice",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80929,6 +82063,7 @@
     "SID_ミカヤエンゲージ技_竜族": {
       "id": "SID_ミカヤエンゲージ技_竜族",
       "nombre": "Great Sacrifice",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -80974,6 +82109,7 @@
     "SID_ミカヤエンゲージ技_重装": {
       "id": "SID_ミカヤエンゲージ技_重装",
       "nombre": "Great Sacrifice",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81019,6 +82155,7 @@
     "SID_ミカヤエンゲージ技_気功": {
       "id": "SID_ミカヤエンゲージ技_気功",
       "nombre": "Great Sacrifice",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81064,6 +82201,7 @@
     "SID_次戦闘守備＋１": {
       "id": "SID_次戦闘守備＋１",
       "nombre": "＋１",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81103,6 +82241,7 @@
     "SID_踏ん張り": {
       "id": "SID_踏ん張り",
       "nombre": "Hold Out",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81145,6 +82284,7 @@
     "SID_踏ん張り＋": {
       "id": "SID_踏ん張り＋",
       "nombre": "Hold Out+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81187,6 +82327,7 @@
     "SID_踏ん張り＋＋": {
       "id": "SID_踏ん張り＋＋",
       "nombre": "Hold Out++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81229,6 +82370,7 @@
     "SID_踏ん張り＋＋＋": {
       "id": "SID_踏ん張り＋＋＋",
       "nombre": "Hold Out+++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81271,6 +82413,7 @@
     "SID_踏ん張り_防御時効果": {
       "id": "SID_踏ん張り_防御時効果",
       "nombre": "Hold Out",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81316,6 +82459,7 @@
     "SID_踏ん張り＋_防御時効果": {
       "id": "SID_踏ん張り＋_防御時効果",
       "nombre": "Hold Out+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81361,6 +82505,7 @@
     "SID_踏ん張り＋＋_防御時効果": {
       "id": "SID_踏ん張り＋＋_防御時効果",
       "nombre": "Hold Out++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81406,6 +82551,7 @@
     "SID_踏ん張り＋＋＋_防御時効果": {
       "id": "SID_踏ん張り＋＋＋_防御時効果",
       "nombre": "Hold Out+++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81451,6 +82597,7 @@
     "SID_踏ん張り_攻撃時効果": {
       "id": "SID_踏ん張り_攻撃時効果",
       "nombre": "Hold Out",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81496,6 +82643,7 @@
     "SID_踏ん張り＋_攻撃時効果": {
       "id": "SID_踏ん張り＋_攻撃時効果",
       "nombre": "Hold Out+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81541,6 +82689,7 @@
     "SID_踏ん張り＋＋_攻撃時効果": {
       "id": "SID_踏ん張り＋＋_攻撃時効果",
       "nombre": "Hold Out++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81586,6 +82735,7 @@
     "SID_踏ん張り＋＋＋_攻撃時効果": {
       "id": "SID_踏ん張り＋＋＋_攻撃時効果",
       "nombre": "Hold Out+++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81631,6 +82781,7 @@
     "SID_踏み込み": {
       "id": "SID_踏み込み",
       "nombre": "Advance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81670,6 +82821,7 @@
     "SID_超越": {
       "id": "SID_超越",
       "nombre": "Rise Above",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81709,6 +82861,7 @@
     "SID_超越_竜族": {
       "id": "SID_超越_竜族",
       "nombre": "Rise Above",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81748,6 +82901,7 @@
     "SID_超越_騎馬": {
       "id": "SID_超越_騎馬",
       "nombre": "Rise Above",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81787,6 +82941,7 @@
     "SID_超越_重装": {
       "id": "SID_超越_重装",
       "nombre": "Rise Above",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 5,
@@ -81826,6 +82981,7 @@
     "SID_超越_闇": {
       "id": "SID_超越_闇",
       "nombre": "Sink Below",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81865,6 +83021,7 @@
     "SID_ロイエンゲージ技": {
       "id": "SID_ロイエンゲージ技",
       "nombre": "Blazing Lion",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81906,6 +83063,7 @@
     "SID_ロイエンゲージ技_竜族": {
       "id": "SID_ロイエンゲージ技_竜族",
       "nombre": "Blazing Lion",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81947,6 +83105,7 @@
     "SID_ロイエンゲージ技_魔法": {
       "id": "SID_ロイエンゲージ技_魔法",
       "nombre": "Blazing Lion",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -81988,6 +83147,7 @@
     "SID_武器相性激化": {
       "id": "SID_武器相性激化",
       "nombre": "Arms Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82033,6 +83193,7 @@
     "SID_武器相性激化＋": {
       "id": "SID_武器相性激化＋",
       "nombre": "Arms Shield+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82078,6 +83239,7 @@
     "SID_武器相性激化＋＋": {
       "id": "SID_武器相性激化＋＋",
       "nombre": "Arms Shield++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82123,6 +83285,7 @@
     "SID_待ち伏せ": {
       "id": "SID_待ち伏せ",
       "nombre": "Vantage",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82162,6 +83325,7 @@
     "SID_待ち伏せ＋": {
       "id": "SID_待ち伏せ＋",
       "nombre": "Vantage+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82201,6 +83365,7 @@
     "SID_待ち伏せ＋＋": {
       "id": "SID_待ち伏せ＋＋",
       "nombre": "Vantage++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82240,6 +83405,7 @@
     "SID_順応": {
       "id": "SID_順応",
       "nombre": "Adaptable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82279,6 +83445,7 @@
     "SID_順応_竜族": {
       "id": "SID_順応_竜族",
       "nombre": "Adaptable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82324,6 +83491,7 @@
     "SID_順応_連携": {
       "id": "SID_順応_連携",
       "nombre": "Adaptable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82369,6 +83537,7 @@
     "SID_順応_隠密": {
       "id": "SID_順応_隠密",
       "nombre": "Adaptable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82414,6 +83583,7 @@
     "SID_順応_重装": {
       "id": "SID_順応_重装",
       "nombre": "Adaptable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82459,6 +83629,7 @@
     "SID_順応_飛行": {
       "id": "SID_順応_飛行",
       "nombre": "Adaptable",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82504,6 +83675,7 @@
     "SID_リーフエンゲージ技": {
       "id": "SID_リーフエンゲージ技",
       "nombre": "Quadruple Hit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82551,6 +83723,7 @@
     "SID_リーフエンゲージ技_竜族": {
       "id": "SID_リーフエンゲージ技_竜族",
       "nombre": "Quadruple Hit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82599,6 +83772,7 @@
     "SID_リーフエンゲージ技_隠密": {
       "id": "SID_リーフエンゲージ技_隠密",
       "nombre": "Quadruple Hit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82647,6 +83821,7 @@
     "SID_リーフエンゲージ技_気功": {
       "id": "SID_リーフエンゲージ技_気功",
       "nombre": "Quadruple Hit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82695,6 +83870,7 @@
     "SID_ダメージ１２０％": {
       "id": "SID_ダメージ１２０％",
       "nombre": "Damage１２０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82740,6 +83916,7 @@
     "SID_リーフエンゲージ技_ブレイク": {
       "id": "SID_リーフエンゲージ技_ブレイク",
       "nombre": "LeifEngage Attack Break",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82781,6 +83958,7 @@
     "SID_お金入手_500G": {
       "id": "SID_お金入手_500G",
       "nombre": "Gold Acquisition 500G",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82826,6 +84004,7 @@
     "SID_お金入手_1000G": {
       "id": "SID_お金入手_1000G",
       "nombre": "Gold Acquisition 1000G",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82871,6 +84050,7 @@
     "SID_絆の力": {
       "id": "SID_絆の力",
       "nombre": "Dual Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82912,6 +84092,7 @@
     "SID_デュアルアシスト": {
       "id": "SID_デュアルアシスト",
       "nombre": "Dual Assist",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82951,6 +84132,7 @@
     "SID_デュアルアシスト＋": {
       "id": "SID_デュアルアシスト＋",
       "nombre": "Dual Assist+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -82990,6 +84172,7 @@
     "SID_デュアルサポート": {
       "id": "SID_デュアルサポート",
       "nombre": "Dual Support",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83035,6 +84218,7 @@
     "SID_絆盾": {
       "id": "SID_絆盾",
       "nombre": "Bonded Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83074,6 +84258,7 @@
     "SID_絆盾_竜族": {
       "id": "SID_絆盾_竜族",
       "nombre": "Bonded Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83113,6 +84298,7 @@
     "SID_絆盾_騎馬": {
       "id": "SID_絆盾_騎馬",
       "nombre": "Bonded Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83152,6 +84338,7 @@
     "SID_絆盾_重装": {
       "id": "SID_絆盾_重装",
       "nombre": "Bonded Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83191,6 +84378,7 @@
     "SID_絆盾_飛行": {
       "id": "SID_絆盾_飛行",
       "nombre": "Bonded Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83230,6 +84418,7 @@
     "SID_絆盾_気功": {
       "id": "SID_絆盾_気功",
       "nombre": "Bonded Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83269,6 +84458,7 @@
     "SID_ルキナエンゲージ技": {
       "id": "SID_ルキナエンゲージ技",
       "nombre": "All for One",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83311,6 +84501,7 @@
     "SID_ルキナエンゲージ技_竜族": {
       "id": "SID_ルキナエンゲージ技_竜族",
       "nombre": "All for One",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83355,6 +84546,7 @@
     "SID_ルキナエンゲージ技_連携": {
       "id": "SID_ルキナエンゲージ技_連携",
       "nombre": "All for One",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83397,6 +84589,7 @@
     "SID_強制チェインアタック２マス": {
       "id": "SID_強制チェインアタック２マス",
       "nombre": "２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83436,6 +84629,7 @@
     "SID_強制チェインアタック３マス": {
       "id": "SID_強制チェインアタック３マス",
       "nombre": "３",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83475,6 +84669,7 @@
     "SID_攻め立て": {
       "id": "SID_攻め立て",
       "nombre": "Alacrity",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83514,6 +84709,7 @@
     "SID_攻め立て＋": {
       "id": "SID_攻め立て＋",
       "nombre": "Alacrity+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83553,6 +84749,7 @@
     "SID_攻め立て＋＋": {
       "id": "SID_攻め立て＋＋",
       "nombre": "Alacrity++",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83592,6 +84789,7 @@
     "SID_速さの吸収": {
       "id": "SID_速さの吸収",
       "nombre": "Speedtaker",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83633,6 +84831,7 @@
     "SID_速さの増強＋２": {
       "id": "SID_速さの増強＋２",
       "nombre": "SpdBoost＋２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83672,6 +84871,7 @@
     "SID_速さの増強＋４": {
       "id": "SID_速さの増強＋４",
       "nombre": "SpdBoost＋４",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83711,6 +84911,7 @@
     "SID_速さの増強＋６": {
       "id": "SID_速さの増強＋６",
       "nombre": "SpdBoost＋６",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83750,6 +84951,7 @@
     "SID_速さの増強＋８": {
       "id": "SID_速さの増強＋８",
       "nombre": "SpdBoost＋８",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83789,6 +84991,7 @@
     "SID_速さの増強＋１０": {
       "id": "SID_速さの増強＋１０",
       "nombre": "SpdBoost＋１０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83828,6 +85031,7 @@
     "SID_残像": {
       "id": "SID_残像",
       "nombre": "Call Doubles",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83867,6 +85071,7 @@
     "SID_残像_竜族": {
       "id": "SID_残像_竜族",
       "nombre": "Call Doubles",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83906,6 +85111,7 @@
     "SID_残像_飛行": {
       "id": "SID_残像_飛行",
       "nombre": "Call Doubles",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83947,6 +85153,7 @@
     "SID_残像_飛行_効果": {
       "id": "SID_残像_飛行_効果",
       "nombre": "Illusions Flying (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -83992,6 +85199,7 @@
     "SID_リンエンゲージ技": {
       "id": "SID_リンエンゲージ技",
       "nombre": "Astra Storm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84040,6 +85248,7 @@
     "SID_リンエンゲージ技_竜族": {
       "id": "SID_リンエンゲージ技_竜族",
       "nombre": "Astra Storm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84088,6 +85297,7 @@
     "SID_リンエンゲージ技_隠密": {
       "id": "SID_リンエンゲージ技_隠密",
       "nombre": "Astra Storm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84136,6 +85346,7 @@
     "SID_リンエンゲージ技_気功": {
       "id": "SID_リンエンゲージ技_気功",
       "nombre": "Astra Storm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84185,6 +85396,7 @@
     "SID_リンエンゲージ技_威力減": {
       "id": "SID_リンエンゲージ技_威力減",
       "nombre": "Astra Storm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84233,6 +85445,7 @@
     "SID_リンエンゲージ技_闇_気功": {
       "id": "SID_リンエンゲージ技_闇_気功",
       "nombre": "Astra Storm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84282,6 +85495,7 @@
     "SID_リンエンゲージ技_ブレイク": {
       "id": "SID_リンエンゲージ技_ブレイク",
       "nombre": "LynEngage Attack Break",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84323,6 +85537,7 @@
     "SID_ダメージ２０％": {
       "id": "SID_ダメージ２０％",
       "nombre": "Damage２０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84368,6 +85583,7 @@
     "SID_破壊": {
       "id": "SID_破壊",
       "nombre": "Demolish",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84413,6 +85629,7 @@
     "SID_引き戻し": {
       "id": "SID_引き戻し",
       "nombre": "Reposition",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84452,6 +85669,7 @@
     "SID_怒り": {
       "id": "SID_怒り",
       "nombre": "Wrath",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84497,6 +85715,7 @@
     "SID_勇将": {
       "id": "SID_勇将",
       "nombre": "Resolve",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84538,6 +85757,7 @@
     "SID_勇将＋": {
       "id": "SID_勇将＋",
       "nombre": "Resolve+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84579,6 +85799,7 @@
     "SID_勇将_効果": {
       "id": "SID_勇将_効果",
       "nombre": "Resolve",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84618,6 +85839,7 @@
     "SID_勇将＋_効果": {
       "id": "SID_勇将＋_効果",
       "nombre": "Resolve+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84657,6 +85879,7 @@
     "SID_アイクエンゲージスキル": {
       "id": "SID_アイクエンゲージスキル",
       "nombre": "Laguz Friend",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84704,6 +85927,7 @@
     "SID_アイクエンゲージスキル_竜族": {
       "id": "SID_アイクエンゲージスキル_竜族",
       "nombre": "Laguz Friend",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84751,6 +85975,7 @@
     "SID_アイクエンゲージスキル_ダメージ50%減": {
       "id": "SID_アイクエンゲージスキル_ダメージ50%減",
       "nombre": "Laguz Friend (50% DR)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84796,6 +86021,7 @@
     "SID_アイクエンゲージスキル_ダメージ60%減": {
       "id": "SID_アイクエンゲージスキル_ダメージ60%減",
       "nombre": "Laguz Friend (60% DR)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84841,6 +86067,7 @@
     "SID_アイクエンゲージ技": {
       "id": "SID_アイクエンゲージ技",
       "nombre": "Great Aether",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84883,6 +86110,7 @@
     "SID_アイクエンゲージ技_竜族": {
       "id": "SID_アイクエンゲージ技_竜族",
       "nombre": "Great Aether",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84931,6 +86159,7 @@
     "SID_アイクエンゲージ技_重装": {
       "id": "SID_アイクエンゲージ技_重装",
       "nombre": "Great Aether",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -84973,6 +86202,7 @@
     "SID_アイクエンゲージ技_飛行": {
       "id": "SID_アイクエンゲージ技_飛行",
       "nombre": "Great Aether",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85015,6 +86245,7 @@
     "SID_アイクエンゲージ技_回復": {
       "id": "SID_アイクエンゲージ技_回復",
       "nombre": "IkeEngage Attack Renewal",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85060,6 +86291,7 @@
     "SID_天刻の拍動": {
       "id": "SID_天刻の拍動",
       "nombre": "Divine Pulse",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85105,6 +86337,7 @@
     "SID_天刻の拍動＋": {
       "id": "SID_天刻の拍動＋",
       "nombre": "Divine Pulse+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85150,6 +86383,7 @@
     "SID_師の導き": {
       "id": "SID_師の導き",
       "nombre": "Mentorship",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85191,6 +86425,7 @@
     "SID_師の導き効果": {
       "id": "SID_師の導き効果",
       "nombre": "(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85236,6 +86471,7 @@
     "SID_拾得": {
       "id": "SID_拾得",
       "nombre": "Lost &amp; Found",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85275,6 +86511,7 @@
     "SID_先生": {
       "id": "SID_先生",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85314,6 +86551,7 @@
     "SID_先生_竜族": {
       "id": "SID_先生_竜族",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85355,6 +86593,7 @@
     "SID_先生_連携": {
       "id": "SID_先生_連携",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85396,6 +86635,7 @@
     "SID_先生_騎馬": {
       "id": "SID_先生_騎馬",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85437,6 +86677,7 @@
     "SID_先生_隠密": {
       "id": "SID_先生_隠密",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85478,6 +86719,7 @@
     "SID_先生_重装": {
       "id": "SID_先生_重装",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85519,6 +86761,7 @@
     "SID_先生_飛行": {
       "id": "SID_先生_飛行",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85560,6 +86803,7 @@
     "SID_先生_魔法": {
       "id": "SID_先生_魔法",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85601,6 +86845,7 @@
     "SID_先生_気功": {
       "id": "SID_先生_気功",
       "nombre": "Instruct",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85642,6 +86887,7 @@
     "SID_ベレトエンゲージ技": {
       "id": "SID_ベレトエンゲージ技",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85681,6 +86927,7 @@
     "SID_ベレトエンゲージ技_竜族": {
       "id": "SID_ベレトエンゲージ技_竜族",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85722,6 +86969,7 @@
     "SID_ベレトエンゲージ技_連携": {
       "id": "SID_ベレトエンゲージ技_連携",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85763,6 +87011,7 @@
     "SID_ベレトエンゲージ技_騎馬": {
       "id": "SID_ベレトエンゲージ技_騎馬",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85804,6 +87053,7 @@
     "SID_ベレトエンゲージ技_隠密": {
       "id": "SID_ベレトエンゲージ技_隠密",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85845,6 +87095,7 @@
     "SID_ベレトエンゲージ技_重装": {
       "id": "SID_ベレトエンゲージ技_重装",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85886,6 +87137,7 @@
     "SID_ベレトエンゲージ技_飛行": {
       "id": "SID_ベレトエンゲージ技_飛行",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85927,6 +87179,7 @@
     "SID_ベレトエンゲージ技_魔法": {
       "id": "SID_ベレトエンゲージ技_魔法",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -85968,6 +87221,7 @@
     "SID_ベレトエンゲージ技_気功": {
       "id": "SID_ベレトエンゲージ技_気功",
       "nombre": "Goddess Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86009,6 +87263,7 @@
     "SID_ベレトエンゲージ技_闇": {
       "id": "SID_ベレトエンゲージ技_闇",
       "nombre": "Diabolical Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86050,6 +87305,7 @@
     "SID_ベレト増強_竜族": {
       "id": "SID_ベレト増強_竜族",
       "nombre": "BylethBoost Dragon",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86089,6 +87345,7 @@
     "SID_ベレト増強_連携": {
       "id": "SID_ベレト増強_連携",
       "nombre": "BylethBoost Backup",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86128,6 +87385,7 @@
     "SID_ベレト増強_騎馬": {
       "id": "SID_ベレト増強_騎馬",
       "nombre": "BylethBoost Cavalry",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86167,6 +87425,7 @@
     "SID_ベレト増強_隠密": {
       "id": "SID_ベレト増強_隠密",
       "nombre": "BylethBoost Covert",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86206,6 +87465,7 @@
     "SID_ベレト増強_重装": {
       "id": "SID_ベレト増強_重装",
       "nombre": "BylethBoost Armored",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86245,6 +87505,7 @@
     "SID_ベレト増強_飛行": {
       "id": "SID_ベレト増強_飛行",
       "nombre": "BylethBoost Flying",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86284,6 +87545,7 @@
     "SID_ベレト増強_魔法": {
       "id": "SID_ベレト増強_魔法",
       "nombre": "BylethBoost Magic",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86323,6 +87585,7 @@
     "SID_ベレト増強_気功": {
       "id": "SID_ベレト増強_気功",
       "nombre": "BylethBoost Qi Adept",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86362,6 +87625,7 @@
     "SID_竜脈": {
       "id": "SID_竜脈",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86401,6 +87665,7 @@
     "SID_竜脈_竜族": {
       "id": "SID_竜脈_竜族",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86448,6 +87713,7 @@
     "SID_竜脈_連携": {
       "id": "SID_竜脈_連携",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86487,6 +87753,7 @@
     "SID_竜脈_騎馬": {
       "id": "SID_竜脈_騎馬",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86526,6 +87793,7 @@
     "SID_竜脈_隠密": {
       "id": "SID_竜脈_隠密",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86565,6 +87833,7 @@
     "SID_竜脈_重装": {
       "id": "SID_竜脈_重装",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86604,6 +87873,7 @@
     "SID_竜脈_飛行": {
       "id": "SID_竜脈_飛行",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86643,6 +87913,7 @@
     "SID_竜脈_魔法": {
       "id": "SID_竜脈_魔法",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86682,6 +87953,7 @@
     "SID_竜脈_気功": {
       "id": "SID_竜脈_気功",
       "nombre": "Dragon Vein",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86721,6 +87993,7 @@
     "SID_竜呪": {
       "id": "SID_竜呪",
       "nombre": "Draconic Hex",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86762,6 +88035,7 @@
     "SID_竜呪効果": {
       "id": "SID_竜呪効果",
       "nombre": "(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86801,6 +88075,7 @@
     "SID_防陣": {
       "id": "SID_防陣",
       "nombre": "Pair Up",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86846,6 +88121,7 @@
     "SID_スキンシップ": {
       "id": "SID_スキンシップ",
       "nombre": "Quality Time",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86891,6 +88167,7 @@
     "SID_スキンシップ＋": {
       "id": "SID_スキンシップ＋",
       "nombre": "Quality Time+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86936,6 +88213,7 @@
     "SID_呪縛": {
       "id": "SID_呪縛",
       "nombre": "Dreadful Aura",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -86977,6 +88255,7 @@
     "SID_呪縛_隠密": {
       "id": "SID_呪縛_隠密",
       "nombre": "Dreadful Aura",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87019,6 +88298,7 @@
     "SID_呪縛_隠密_効果": {
       "id": "SID_呪縛_隠密_効果",
       "nombre": "Dreadful Aura Covert (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87064,6 +88344,7 @@
     "SID_カムイエンゲージ技": {
       "id": "SID_カムイエンゲージ技",
       "nombre": "Torrential Roar",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87111,6 +88392,7 @@
     "SID_カムイエンゲージ技_竜族": {
       "id": "SID_カムイエンゲージ技_竜族",
       "nombre": "Torrential Roar",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87158,6 +88440,7 @@
     "SID_月輪": {
       "id": "SID_月輪",
       "nombre": "Moon",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87199,6 +88482,7 @@
     "SID_日輪": {
       "id": "SID_日輪",
       "nombre": "Solar Brace",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87240,6 +88524,7 @@
     "SID_双聖": {
       "id": "SID_双聖",
       "nombre": "Sacred Twins",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87281,6 +88566,7 @@
     "SID_月輪効果": {
       "id": "SID_月輪効果",
       "nombre": "(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87320,6 +88606,7 @@
     "SID_日輪効果": {
       "id": "SID_日輪効果",
       "nombre": "Solar Brace(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87359,6 +88646,7 @@
     "SID_双聖効果": {
       "id": "SID_双聖効果",
       "nombre": "Sacred Twins(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87398,6 +88686,7 @@
     "SID_オルタネイト": {
       "id": "SID_オルタネイト",
       "nombre": "Night and Day",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87437,6 +88726,7 @@
     "SID_月の腕輪": {
       "id": "SID_月の腕輪",
       "nombre": "Lunar Brace",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87485,6 +88775,7 @@
     "SID_太陽の腕輪": {
       "id": "SID_太陽の腕輪",
       "nombre": "Solar Brace",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87532,6 +88823,7 @@
     "SID_日月の腕輪": {
       "id": "SID_日月の腕輪",
       "nombre": "Eclipse Brace",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87574,6 +88866,7 @@
     "SID_月の腕輪＋": {
       "id": "SID_月の腕輪＋",
       "nombre": "Lunar Brace+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87622,6 +88915,7 @@
     "SID_太陽の腕輪＋": {
       "id": "SID_太陽の腕輪＋",
       "nombre": "Solar Brace+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87669,6 +88963,7 @@
     "SID_日月の腕輪＋": {
       "id": "SID_日月の腕輪＋",
       "nombre": "Eclipse Brace+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87711,6 +89006,7 @@
     "SID_日月の腕輪_月の腕輪_効果": {
       "id": "SID_日月の腕輪_月の腕輪_効果",
       "nombre": "Eclipse Brace",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87756,6 +89052,7 @@
     "SID_日月の腕輪_月の腕輪＋_効果": {
       "id": "SID_日月の腕輪_月の腕輪＋_効果",
       "nombre": "Eclipse Brace+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87801,6 +89098,7 @@
     "SID_日月の腕輪_太陽の腕輪_効果": {
       "id": "SID_日月の腕輪_太陽の腕輪_効果",
       "nombre": "Eclipse Brace",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87846,6 +89144,7 @@
     "SID_日月の腕輪_太陽の腕輪＋_効果": {
       "id": "SID_日月の腕輪_太陽の腕輪＋_効果",
       "nombre": "Eclipse Brace+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87891,6 +89190,7 @@
     "SID_優風": {
       "id": "SID_優風",
       "nombre": "Gentility",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87939,6 +89239,7 @@
     "SID_勇空": {
       "id": "SID_勇空",
       "nombre": "Bravery",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -87986,6 +89287,7 @@
     "SID_蒼穹": {
       "id": "SID_蒼穹",
       "nombre": "Blue Skies",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88028,6 +89330,7 @@
     "SID_優風＋": {
       "id": "SID_優風＋",
       "nombre": "Gentility+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88076,6 +89379,7 @@
     "SID_勇空＋": {
       "id": "SID_勇空＋",
       "nombre": "Bravery+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88123,6 +89427,7 @@
     "SID_蒼穹＋": {
       "id": "SID_蒼穹＋",
       "nombre": "Blue Skies+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88165,6 +89470,7 @@
     "SID_蒼穹_優風": {
       "id": "SID_蒼穹_優風",
       "nombre": "Blue Skies",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88210,6 +89516,7 @@
     "SID_蒼穹_優風＋": {
       "id": "SID_蒼穹_優風＋",
       "nombre": "Blue Skies+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88255,6 +89562,7 @@
     "SID_蒼穹_勇空": {
       "id": "SID_蒼穹_勇空",
       "nombre": "Blue Skies Bravery",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88300,6 +89608,7 @@
     "SID_蒼穹_勇空＋": {
       "id": "SID_蒼穹_勇空＋",
       "nombre": "Blue Skies Bravery+",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88345,6 +89654,7 @@
     "SID_エイリークエンゲージ技": {
       "id": "SID_エイリークエンゲージ技",
       "nombre": "Twin Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88392,6 +89702,7 @@
     "SID_エイリークエンゲージ技_竜族": {
       "id": "SID_エイリークエンゲージ技_竜族",
       "nombre": "Twin Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88442,6 +89753,7 @@
     "SID_エイリークエンゲージ技_騎馬": {
       "id": "SID_エイリークエンゲージ技_騎馬",
       "nombre": "Twin Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88490,6 +89802,7 @@
     "SID_エフラム_ダメージ１５０％": {
       "id": "SID_エフラム_ダメージ１５０％",
       "nombre": "Ephraim Damage１５０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88535,6 +89848,7 @@
     "SID_リュール邪竜特効": {
       "id": "SID_リュール邪竜特効",
       "nombre": "Holy Aura",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88576,6 +89890,7 @@
     "SID_邪竜特効変化": {
       "id": "SID_邪竜特効変化",
       "nombre": "Slayer",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88617,6 +89932,7 @@
     "SID_神竜の加護": {
       "id": "SID_神竜の加護",
       "nombre": "Holy Shield",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88656,6 +89972,7 @@
     "SID_絆を繋薙くもの": {
       "id": "SID_絆を繋薙くもの",
       "nombre": "Bond Forger",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88699,6 +90016,7 @@
     "SID_絆を繋薙くもの＋": {
       "id": "SID_絆を繋薙くもの＋",
       "nombre": "Bond Forger+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88742,6 +90060,7 @@
     "SID_絆を繋薙くもの効果": {
       "id": "SID_絆を繋薙くもの効果",
       "nombre": "Bond Forger",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88790,6 +90109,7 @@
     "SID_絆を繋薙くもの効果＋": {
       "id": "SID_絆を繋薙くもの効果＋",
       "nombre": "Bond Forger+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88838,6 +90158,7 @@
     "SID_エレオスの祝福": {
       "id": "SID_エレオスの祝福",
       "nombre": "Boon of Elyos",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88886,6 +90207,7 @@
     "SID_以心": {
       "id": "SID_以心",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88925,6 +90247,7 @@
     "SID_以心_竜族": {
       "id": "SID_以心_竜族",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -88966,6 +90289,7 @@
     "SID_以心_連携": {
       "id": "SID_以心_連携",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89007,6 +90331,7 @@
     "SID_以心_騎馬": {
       "id": "SID_以心_騎馬",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89048,6 +90373,7 @@
     "SID_以心_隠密": {
       "id": "SID_以心_隠密",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89089,6 +90415,7 @@
     "SID_以心_重装": {
       "id": "SID_以心_重装",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89130,6 +90457,7 @@
     "SID_以心_飛行": {
       "id": "SID_以心_飛行",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89171,6 +90499,7 @@
     "SID_以心_魔法": {
       "id": "SID_以心_魔法",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89212,6 +90541,7 @@
     "SID_以心_気功": {
       "id": "SID_以心_気功",
       "nombre": "Attuned",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89253,6 +90583,7 @@
     "SID_以心効果_竜族": {
       "id": "SID_以心効果_竜族",
       "nombre": "Unity(Effect) Dragon",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89292,6 +90623,7 @@
     "SID_以心効果_連携": {
       "id": "SID_以心効果_連携",
       "nombre": "Unity(Effect) Backup",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89331,6 +90663,7 @@
     "SID_以心効果_騎馬": {
       "id": "SID_以心効果_騎馬",
       "nombre": "Unity(Effect) Cavalry",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89370,6 +90703,7 @@
     "SID_以心効果_隠密": {
       "id": "SID_以心効果_隠密",
       "nombre": "Unity(Effect) Covert",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89409,6 +90743,7 @@
     "SID_以心効果_重装": {
       "id": "SID_以心効果_重装",
       "nombre": "Unity(Effect) Armored",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89448,6 +90783,7 @@
     "SID_以心効果_飛行": {
       "id": "SID_以心効果_飛行",
       "nombre": "Unity(Effect) Flying",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89487,6 +90823,7 @@
     "SID_以心効果_魔法": {
       "id": "SID_以心効果_魔法",
       "nombre": "Unity(Effect) Magic",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89526,6 +90863,7 @@
     "SID_以心効果_気功": {
       "id": "SID_以心効果_気功",
       "nombre": "Unity(Effect) Qi Adept",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89565,6 +90903,7 @@
     "SID_リュールエンゲージ技": {
       "id": "SID_リュールエンゲージ技",
       "nombre": "Dragon Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89612,6 +90951,7 @@
     "SID_リュールエンゲージ技_竜族": {
       "id": "SID_リュールエンゲージ技_竜族",
       "nombre": "Dragon Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89660,6 +91000,7 @@
     "SID_リュールエンゲージ技_連携": {
       "id": "SID_リュールエンゲージ技_連携",
       "nombre": "Dragon Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89708,6 +91049,7 @@
     "SID_リュールエンゲージ技_魔法": {
       "id": "SID_リュールエンゲージ技_魔法",
       "nombre": "Dragon Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89756,6 +91098,7 @@
     "SID_リュールエンゲージ技_気功": {
       "id": "SID_リュールエンゲージ技_気功",
       "nombre": "Dragon Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89804,6 +91147,7 @@
     "SID_リュールエンゲージ技共同": {
       "id": "SID_リュールエンゲージ技共同",
       "nombre": "Bond Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89849,6 +91193,7 @@
     "SID_リュールエンゲージ技共同_汎用": {
       "id": "SID_リュールエンゲージ技共同_汎用",
       "nombre": "Bond Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89900,6 +91245,7 @@
     "SID_リュールエンゲージ技共同_竜族": {
       "id": "SID_リュールエンゲージ技共同_竜族",
       "nombre": "Bond Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -89952,6 +91298,7 @@
     "SID_リュールエンゲージ技共同_連携": {
       "id": "SID_リュールエンゲージ技共同_連携",
       "nombre": "Bond Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90004,6 +91351,7 @@
     "SID_リュールエンゲージ技共同_魔法": {
       "id": "SID_リュールエンゲージ技共同_魔法",
       "nombre": "Bond Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90056,6 +91404,7 @@
     "SID_リュールエンゲージ技共同_気功": {
       "id": "SID_リュールエンゲージ技共同_気功",
       "nombre": "Bond Blast",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90108,6 +91457,7 @@
     "SID_リュールエンゲージ技共同_１撃目": {
       "id": "SID_リュールエンゲージ技共同_１撃目",
       "nombre": "AlearEngage AttackCo-op １Hit",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90147,6 +91497,7 @@
     "SID_リュールエンゲージ技共同_１撃目_ブレイク判定": {
       "id": "SID_リュールエンゲージ技共同_１撃目_ブレイク判定",
       "nombre": "AlearEngage AttackCo-op １Hit BreakCheck",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90188,6 +91539,7 @@
     "SID_リュールエンゲージ技共同_２撃目": {
       "id": "SID_リュールエンゲージ技共同_２撃目",
       "nombre": "AlearEngage AttackCo-op ２Hit",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90227,6 +91579,7 @@
     "SID_リュールエンゲージ技共同_３撃目": {
       "id": "SID_リュールエンゲージ技共同_３撃目",
       "nombre": "AlearEngage AttackCo-op ３Hit",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90272,6 +91625,7 @@
     "SID_リュールエンゲージ技_竜族効果": {
       "id": "SID_リュールエンゲージ技_竜族効果",
       "nombre": "AlearEngage Attack (Dragon Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90317,6 +91671,7 @@
     "SID_リュールエンゲージ技_連携効果": {
       "id": "SID_リュールエンゲージ技_連携効果",
       "nombre": "AlearEngage Attack Backup(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90362,6 +91717,7 @@
     "SID_リュールエンゲージ技_魔法効果": {
       "id": "SID_リュールエンゲージ技_魔法効果",
       "nombre": "AlearEngage Attack Magic(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90407,6 +91763,7 @@
     "SID_リュールエンゲージ技_気功効果_２撃目": {
       "id": "SID_リュールエンゲージ技_気功効果_２撃目",
       "nombre": "AlearEngage Attack Qi Adept(Effect) ２Hit",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90448,6 +91805,7 @@
     "SID_リュールエンゲージ技_気功効果_３撃目": {
       "id": "SID_リュールエンゲージ技_気功効果_３撃目",
       "nombre": "AlearEngage Attack Qi Adept(Effect) ３Hit",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90489,6 +91847,7 @@
     "SID_リュールエンゲージ技_設定": {
       "id": "SID_リュールエンゲージ技_設定",
       "nombre": "AlearEngage Attack",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90546,6 +91905,7 @@
     "SID_神竜の結束": {
       "id": "SID_神竜の結束",
       "nombre": "Divinely Inspiring",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90588,6 +91948,7 @@
     "SID_神竜の結束_被ダメ軽減": {
       "id": "SID_神竜の結束_被ダメ軽減",
       "nombre": "Divinely Inspiring",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90633,6 +91994,7 @@
     "SID_神竜の結束_与ダメ上昇": {
       "id": "SID_神竜の結束_与ダメ上昇",
       "nombre": "Divinely Inspiring (Damage Boost)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90678,6 +92040,7 @@
     "SID_白の忠誠": {
       "id": "SID_白の忠誠",
       "nombre": "Alabaster Duty",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90719,6 +92082,7 @@
     "SID_白の忠誠_効果": {
       "id": "SID_白の忠誠_効果",
       "nombre": "Alabaster Duty",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90764,6 +92128,7 @@
     "SID_碧の信仰": {
       "id": "SID_碧の信仰",
       "nombre": "Verdant Faith",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90805,6 +92170,7 @@
     "SID_碧の信仰_効果": {
       "id": "SID_碧の信仰_効果",
       "nombre": "Verdant Faith",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90850,6 +92216,7 @@
     "SID_緋い声援": {
       "id": "SID_緋い声援",
       "nombre": "Crimson Cheer",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90891,6 +92258,7 @@
     "SID_緋い声援_効果": {
       "id": "SID_緋い声援_効果",
       "nombre": "Crimson Cheer",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90936,6 +92304,7 @@
     "SID_自己研鑽": {
       "id": "SID_自己研鑽",
       "nombre": "Self-Improver",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -90977,6 +92346,7 @@
     "SID_筋肉増強剤": {
       "id": "SID_筋肉増強剤",
       "nombre": "Energized",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91018,6 +92388,7 @@
     "SID_力＋２_１ターン": {
       "id": "SID_力＋２_１ターン",
       "nombre": "＋２ １",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91057,6 +92428,7 @@
     "SID_涙腺崩壊": {
       "id": "SID_涙腺崩壊",
       "nombre": "Moved to Tears",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91104,6 +92476,7 @@
     "SID_涙腺崩壊_演出用": {
       "id": "SID_涙腺崩壊_演出用",
       "nombre": "Moved to Tears",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91145,6 +92518,7 @@
     "SID_涙腺崩壊_発動済み": {
       "id": "SID_涙腺崩壊_発動済み",
       "nombre": "Moved to Tears (Triggered)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91184,6 +92558,7 @@
     "SID_平和の花": {
       "id": "SID_平和の花",
       "nombre": "Gentle Flower",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91225,6 +92600,7 @@
     "SID_平和の花効果": {
       "id": "SID_平和の花効果",
       "nombre": "Gentle Flower",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91264,6 +92640,7 @@
     "SID_絵になる二人": {
       "id": "SID_絵になる二人",
       "nombre": "Fairy-Tale Folk",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91309,6 +92686,7 @@
     "SID_花園の門番": {
       "id": "SID_花園の門番",
       "nombre": "Admiration",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91354,6 +92732,7 @@
     "SID_真っ向勝負": {
       "id": "SID_真っ向勝負",
       "nombre": "Fair Fight",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91402,6 +92781,7 @@
     "SID_名乗り上げ": {
       "id": "SID_名乗り上げ",
       "nombre": "Aspiring Hero",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91450,6 +92830,7 @@
     "SID_瞑想": {
       "id": "SID_瞑想",
       "nombre": "Meditation",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91491,6 +92872,7 @@
     "SID_瞑想効果": {
       "id": "SID_瞑想効果",
       "nombre": "(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91530,6 +92912,7 @@
     "SID_僕が守ります！": {
       "id": "SID_僕が守ります！",
       "nombre": "Get Behind Me!",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91571,6 +92954,7 @@
     "SID_僕が守ります！効果": {
       "id": "SID_僕が守ります！効果",
       "nombre": "！(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91610,6 +92994,7 @@
     "SID_戦果委譲": {
       "id": "SID_戦果委譲",
       "nombre": "Share Spoils",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91661,6 +93046,7 @@
     "SID_大盤振る舞い": {
       "id": "SID_大盤振る舞い",
       "nombre": "Generosity",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91700,6 +93086,7 @@
     "SID_執着": {
       "id": "SID_執着",
       "nombre": "Single-Minded",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91745,6 +93132,7 @@
     "SID_『次』はない": {
       "id": "SID_『次』はない",
       "nombre": "Not *Quite*",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91790,6 +93178,7 @@
     "SID_光彩奪目！": {
       "id": "SID_光彩奪目！",
       "nombre": "Blinding Flash",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91835,6 +93224,7 @@
     "SID_煌めく理力": {
       "id": "SID_煌めく理力",
       "nombre": "Big Personality",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91874,6 +93264,7 @@
     "SID_微笑み": {
       "id": "SID_微笑み",
       "nombre": "Stunning Smile",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91919,6 +93310,7 @@
     "SID_溜め息": {
       "id": "SID_溜め息",
       "nombre": "Disarming Sigh",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -91964,6 +93356,7 @@
     "SID_ソルムの騒音": {
       "id": "SID_ソルムの騒音",
       "nombre": "Racket of Solm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92005,6 +93398,7 @@
     "SID_ソルムの騒音_効果": {
       "id": "SID_ソルムの騒音_効果",
       "nombre": "Racket of Solm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92050,6 +93444,7 @@
     "SID_エスコート": {
       "id": "SID_エスコート",
       "nombre": "Knightly Escort",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92091,6 +93486,7 @@
     "SID_エスコート効果": {
       "id": "SID_エスコート効果",
       "nombre": "Knightly Escort",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92139,6 +93535,7 @@
     "SID_戦の血": {
       "id": "SID_戦の血",
       "nombre": "Blood Fury",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92184,6 +93581,7 @@
     "SID_人たらし": {
       "id": "SID_人たらし",
       "nombre": "Charmer",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92229,6 +93627,7 @@
     "SID_大集会": {
       "id": "SID_大集会",
       "nombre": "Party Animal",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92277,6 +93676,7 @@
     "SID_料理再現": {
       "id": "SID_料理再現",
       "nombre": "Seconds?",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92316,6 +93716,7 @@
     "SID_一攫千金": {
       "id": "SID_一攫千金",
       "nombre": "Make a Killing",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92357,6 +93758,7 @@
     "SID_努力の才": {
       "id": "SID_努力の才",
       "nombre": "Expertise",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92396,6 +93798,7 @@
     "SID_殺しの技術": {
       "id": "SID_殺しの技術",
       "nombre": "Trained to Kill",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92441,6 +93844,7 @@
     "SID_神秘の踊り": {
       "id": "SID_神秘の踊り",
       "nombre": "Curious Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92480,6 +93884,7 @@
     "SID_歴戦の勘": {
       "id": "SID_歴戦の勘",
       "nombre": "Weapon Insight",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92525,6 +93930,7 @@
     "SID_勝利への意思": {
       "id": "SID_勝利への意思",
       "nombre": "Will to Win",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92573,6 +93979,7 @@
     "SID_邪竜の救済": {
       "id": "SID_邪竜の救済",
       "nombre": "Fell Protection",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92615,6 +94022,7 @@
     "SID_邪竜の救済_被ダメ軽減": {
       "id": "SID_邪竜の救済_被ダメ軽減",
       "nombre": "Fell Protection",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92660,6 +94068,7 @@
     "SID_邪竜の救済_与ダメ上昇": {
       "id": "SID_邪竜の救済_与ダメ上昇",
       "nombre": "Fell Protection (Damage Boost)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92705,6 +94114,7 @@
     "SID_次への備え": {
       "id": "SID_次への備え",
       "nombre": "Contemplative",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92746,6 +94156,7 @@
     "SID_次への備え効果": {
       "id": "SID_次への備え効果",
       "nombre": "(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92785,6 +94196,7 @@
     "SID_切り抜け": {
       "id": "SID_切り抜け",
       "nombre": "Run Through",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92824,6 +94236,7 @@
     "SID_助太刀": {
       "id": "SID_助太刀",
       "nombre": "Brave Assist",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92869,6 +94282,7 @@
     "SID_挟撃": {
       "id": "SID_挟撃",
       "nombre": "Pincer Attack",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92914,6 +94328,7 @@
     "SID_手助け": {
       "id": "SID_手助け",
       "nombre": "Reforge",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92953,6 +94368,7 @@
     "SID_スマッシュ＋": {
       "id": "SID_スマッシュ＋",
       "nombre": "Smash+",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -92998,6 +94414,7 @@
     "SID_無慈悲": {
       "id": "SID_無慈悲",
       "nombre": "Merciless",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93043,6 +94460,7 @@
     "SID_集中": {
       "id": "SID_集中",
       "nombre": "No Distractions",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93088,6 +94506,7 @@
     "SID_狙撃": {
       "id": "SID_狙撃",
       "nombre": "Careful Aim",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93133,6 +94552,7 @@
     "SID_入れ替え": {
       "id": "SID_入れ替え",
       "nombre": "Swap",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93172,6 +94592,7 @@
     "SID_護衛": {
       "id": "SID_護衛",
       "nombre": "Allied Defense",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93217,6 +94638,7 @@
     "SID_回り込み": {
       "id": "SID_回り込み",
       "nombre": "Pivot",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93256,6 +94678,7 @@
     "SID_足狙い": {
       "id": "SID_足狙い",
       "nombre": "Hobble",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93299,6 +94722,7 @@
     "SID_足狙い発動チェック": {
       "id": "SID_足狙い発動チェック",
       "nombre": "Leg Strike(Check)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93340,6 +94764,7 @@
     "SID_足狙い発動済み": {
       "id": "SID_足狙い発動済み",
       "nombre": "Leg Strike(Triggered)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93379,6 +94804,7 @@
     "SID_足狙い効果": {
       "id": "SID_足狙い効果",
       "nombre": "Leg Strike(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93418,6 +94844,7 @@
     "SID_移動補助": {
       "id": "SID_移動補助",
       "nombre": "Clear the Way",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93457,6 +94884,7 @@
     "SID_急襲": {
       "id": "SID_急襲",
       "nombre": "Air Raid",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93502,6 +94930,7 @@
     "SID_すり抜け": {
       "id": "SID_すり抜け",
       "nombre": "Pass",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93541,6 +94970,7 @@
     "SID_魔力増幅": {
       "id": "SID_魔力増幅",
       "nombre": "Spell Harmony",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93586,6 +95016,7 @@
     "SID_背理の法": {
       "id": "SID_背理の法",
       "nombre": "Chaos Style",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93631,6 +95062,7 @@
     "SID_気の拡散": {
       "id": "SID_気の拡散",
       "nombre": "Diffuse Healer",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93678,6 +95110,7 @@
     "SID_気の拡散効果": {
       "id": "SID_気の拡散効果",
       "nombre": "Diffuse Healer",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93717,6 +95150,7 @@
     "SID_自己回復": {
       "id": "SID_自己回復",
       "nombre": "Self-Healing",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93756,6 +95190,7 @@
     "SID_神竜気": {
       "id": "SID_神竜気",
       "nombre": "Divine Spirit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93795,6 +95230,7 @@
     "SID_邪竜気": {
       "id": "SID_邪竜気",
       "nombre": "Fell Spirit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93840,6 +95276,7 @@
     "SID_邪竜気・闇": {
       "id": "SID_邪竜気・闇",
       "nombre": "Dark Spirit",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93879,6 +95316,7 @@
     "SID_金蓮": {
       "id": "SID_金蓮",
       "nombre": "Golden Lotus",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93924,6 +95362,7 @@
     "SID_華炎": {
       "id": "SID_華炎",
       "nombre": "Ignis",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -93969,6 +95408,7 @@
     "SID_太陽": {
       "id": "SID_太陽",
       "nombre": "Sol",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94014,6 +95454,7 @@
     "SID_月光": {
       "id": "SID_月光",
       "nombre": "Luna",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94059,6 +95500,7 @@
     "SID_虚空": {
       "id": "SID_虚空",
       "nombre": "Grasping Void",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94104,6 +95546,7 @@
     "SID_大樹": {
       "id": "SID_大樹",
       "nombre": "World Tree",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94149,6 +95592,7 @@
     "SID_砂陣": {
       "id": "SID_砂陣",
       "nombre": "Sandstorm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94194,6 +95638,7 @@
     "SID_水鏡": {
       "id": "SID_水鏡",
       "nombre": "Back at You",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94241,6 +95686,7 @@
     "SID_水鏡効果": {
       "id": "SID_水鏡効果",
       "nombre": "Back at You",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94289,6 +95735,7 @@
     "SID_魔法剣": {
       "id": "SID_魔法剣",
       "nombre": "Soulblade",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94334,6 +95781,7 @@
     "SID_特別な踊り": {
       "id": "SID_特別な踊り",
       "nombre": "Special Dance",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94375,6 +95823,7 @@
     "SID_踊り効果": {
       "id": "SID_踊り効果",
       "nombre": "Dance(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94414,6 +95863,7 @@
     "SID_伝道師": {
       "id": "SID_伝道師",
       "nombre": "Sympathetic",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94459,6 +95909,7 @@
     "SID_必殺剣": {
       "id": "SID_必殺剣",
       "nombre": "Deadly Blade",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94504,6 +95955,7 @@
     "SID_百戦練磨": {
       "id": "SID_百戦練磨",
       "nombre": "Battlewise",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94545,6 +95997,7 @@
     "SID_必殺の増強＋1": {
       "id": "SID_必殺の増強＋1",
       "nombre": "CritBoost＋1",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94590,6 +96043,7 @@
     "SID_必殺の増強＋2": {
       "id": "SID_必殺の増強＋2",
       "nombre": "CritBoost＋2",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94635,6 +96089,7 @@
     "SID_必殺の増強＋3": {
       "id": "SID_必殺の増強＋3",
       "nombre": "CritBoost＋3",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94680,6 +96135,7 @@
     "SID_必殺の増強＋4": {
       "id": "SID_必殺の増強＋4",
       "nombre": "CritBoost＋4",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94725,6 +96181,7 @@
     "SID_必殺の増強＋5": {
       "id": "SID_必殺の増強＋5",
       "nombre": "CritBoost＋5",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94770,6 +96227,7 @@
     "SID_必殺の増強＋6": {
       "id": "SID_必殺の増強＋6",
       "nombre": "CritBoost＋6",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94815,6 +96273,7 @@
     "SID_必殺の増強＋7": {
       "id": "SID_必殺の増強＋7",
       "nombre": "CritBoost＋7",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94860,6 +96319,7 @@
     "SID_必殺の増強＋8": {
       "id": "SID_必殺の増強＋8",
       "nombre": "CritBoost＋8",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94905,6 +96365,7 @@
     "SID_必殺の増強＋9": {
       "id": "SID_必殺の増強＋9",
       "nombre": "CritBoost＋9",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94950,6 +96411,7 @@
     "SID_必殺の増強＋10": {
       "id": "SID_必殺の増強＋10",
       "nombre": "CritBoost＋10",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -94995,6 +96457,7 @@
     "SID_回復": {
       "id": "SID_回復",
       "nombre": "Renewal",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95040,6 +96503,7 @@
     "SID_風薙ぎ": {
       "id": "SID_風薙ぎ",
       "nombre": "Windsweep",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95085,6 +96549,7 @@
     "SID_轟雷": {
       "id": "SID_轟雷",
       "nombre": "Great Thunder",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95130,6 +96595,7 @@
     "SID_瞬殺": {
       "id": "SID_瞬殺",
       "nombre": "Bane",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95175,6 +96641,7 @@
     "SID_慈悲": {
       "id": "SID_慈悲",
       "nombre": "Mercy",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95220,6 +96687,7 @@
     "SID_業火": {
       "id": "SID_業火",
       "nombre": "Raging Fire",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95265,6 +96733,7 @@
     "SID_剛腕": {
       "id": "SID_剛腕",
       "nombre": "Strong Arm",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95310,6 +96779,7 @@
     "SID_祈り": {
       "id": "SID_祈り",
       "nombre": "Miracle",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95358,6 +96828,7 @@
     "SID_ダイムサンダ": {
       "id": "SID_ダイムサンダ",
       "nombre": "Dire Thunder",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95403,6 +96874,7 @@
     "SID_王の器": {
       "id": "SID_王の器",
       "nombre": "Rightful Ruler",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95448,6 +96920,7 @@
     "SID_いやしの心": {
       "id": "SID_いやしの心",
       "nombre": "Healtouch",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95493,6 +96966,7 @@
     "SID_引き寄せ": {
       "id": "SID_引き寄せ",
       "nombre": "Draw Back",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95532,6 +97006,7 @@
     "SID_ギガスカリバー": {
       "id": "SID_ギガスカリバー",
       "nombre": "Giga Excalibur",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95577,6 +97052,7 @@
     "SID_旋風": {
       "id": "SID_旋風",
       "nombre": "Wind Adept",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95622,6 +97098,7 @@
     "SID_体当たり": {
       "id": "SID_体当たり",
       "nombre": "Shove",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95661,6 +97138,7 @@
     "SID_閃花": {
       "id": "SID_閃花",
       "nombre": "Flickering Flower",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95702,6 +97180,7 @@
     "SID_幻月": {
       "id": "SID_幻月",
       "nombre": "Paraselene",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95741,6 +97220,7 @@
     "SID_風神": {
       "id": "SID_風神",
       "nombre": "Wind God",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95780,6 +97260,7 @@
     "SID_騎士道": {
       "id": "SID_騎士道",
       "nombre": "Chivalry",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95822,6 +97303,7 @@
     "SID_騎士道_被ダメ軽減": {
       "id": "SID_騎士道_被ダメ軽減",
       "nombre": "Chivalry (Damage Reduction)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95867,6 +97349,7 @@
     "SID_騎士道_与ダメ上昇": {
       "id": "SID_騎士道_与ダメ上昇",
       "nombre": "Chivalry (Damage Boost)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95912,6 +97395,7 @@
     "SID_武士道": {
       "id": "SID_武士道",
       "nombre": "Bushido",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -95960,6 +97444,7 @@
     "SID_武士道_被ダメ軽減": {
       "id": "SID_武士道_被ダメ軽減",
       "nombre": "Bushido (Damage Reduction)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96005,6 +97490,7 @@
     "SID_武士道_与ダメ上昇": {
       "id": "SID_武士道_与ダメ上昇",
       "nombre": "Bushido (Damage Boost)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96050,6 +97536,7 @@
     "SID_滅殺": {
       "id": "SID_滅殺",
       "nombre": "Lethality",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96095,6 +97582,7 @@
     "SID_必的": {
       "id": "SID_必的",
       "nombre": "Sure Strike",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96140,6 +97628,7 @@
     "SID_絆の指輪_アルフォンス": {
       "id": "SID_絆の指輪_アルフォンス",
       "nombre": "Spur Attack",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96181,6 +97670,7 @@
     "SID_絆の指輪_アルフォンス_効果": {
       "id": "SID_絆の指輪_アルフォンス_効果",
       "nombre": "Spur Attack",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96226,6 +97716,7 @@
     "SID_絆の指輪_シャロン": {
       "id": "SID_絆の指輪_シャロン",
       "nombre": "Fortify Def",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96268,6 +97759,7 @@
     "SID_絆の指輪_シャロン_効果": {
       "id": "SID_絆の指輪_シャロン_効果",
       "nombre": "Bond Ring Sharena (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96307,6 +97799,7 @@
     "SID_絆の指輪_シャロン_発動": {
       "id": "SID_絆の指輪_シャロン_発動",
       "nombre": "Fortify Def",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96346,6 +97839,7 @@
     "SID_絆の指輪_アンナ": {
       "id": "SID_絆の指輪_アンナ",
       "nombre": "Spur Res",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96388,6 +97882,7 @@
     "SID_絆の指輪_アンナ_効果": {
       "id": "SID_絆の指輪_アンナ_効果",
       "nombre": "Bond Ring Anna (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96427,6 +97922,7 @@
     "SID_絆の指輪_アンナ_発動": {
       "id": "SID_絆の指輪_アンナ_発動",
       "nombre": "Spur Res",
+      "oculta": false,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96466,6 +97962,7 @@
     "SID_２回行動": {
       "id": "SID_２回行動",
       "nombre": "２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96511,6 +98008,7 @@
     "SID_追撃不可": {
       "id": "SID_追撃不可",
       "nombre": "Follow-Up",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96556,6 +98054,7 @@
     "SID_攻撃速度＋５": {
       "id": "SID_攻撃速度＋５",
       "nombre": "Attack Speed＋５",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96601,6 +98100,7 @@
     "SID_被ダメージ＋５": {
       "id": "SID_被ダメージ＋５",
       "nombre": "Damage＋５",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96646,6 +98146,7 @@
     "SID_スマッシュ": {
       "id": "SID_スマッシュ",
       "nombre": "Smash",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96696,6 +98197,7 @@
     "SID_撃破時エンゲージカウント＋１": {
       "id": "SID_撃破時エンゲージカウント＋１",
       "nombre": "Engage＋１",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96741,6 +98243,7 @@
     "SID_撃破時周囲エンゲージカウント＋１": {
       "id": "SID_撃破時周囲エンゲージカウント＋１",
       "nombre": "AdjacentEngage＋１",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96780,6 +98283,7 @@
     "SID_経験値２倍": {
       "id": "SID_経験値２倍",
       "nombre": "EXP２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96825,6 +98329,7 @@
     "SID_攻撃属性弱点変化": {
       "id": "SID_攻撃属性弱点変化",
       "nombre": "Atk AttributeWeakness Shift",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96870,6 +98375,7 @@
     "SID_オフェンス時武器攻撃力上昇": {
       "id": "SID_オフェンス時武器攻撃力上昇",
       "nombre": "Offense WeaponAtk Boost",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96915,6 +98421,7 @@
     "SID_オフェンス回避＋２０": {
       "id": "SID_オフェンス回避＋２０",
       "nombre": "OffenseAvo＋２０",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -96960,6 +98467,7 @@
     "SID_威力上昇魔力": {
       "id": "SID_威力上昇魔力",
       "nombre": "Mag",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97005,6 +98513,7 @@
     "SID_威力上昇速さ": {
       "id": "SID_威力上昇速さ",
       "nombre": "Spd",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97050,6 +98559,7 @@
     "SID_確率被ダメ半減": {
       "id": "SID_確率被ダメ半減",
       "nombre": "Halve Damage (Chance)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97095,6 +98605,7 @@
     "SID_アイギスの盾効果": {
       "id": "SID_アイギスの盾効果",
       "nombre": "Aegis Shield(Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97134,6 +98645,7 @@
     "SID_魔法射程＋１": {
       "id": "SID_魔法射程＋１",
       "nombre": "MagicRange＋１",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97173,6 +98685,7 @@
     "SID_魔法射程＋２": {
       "id": "SID_魔法射程＋２",
       "nombre": "MagicRange＋２",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97212,6 +98725,7 @@
     "SID_リザイア": {
       "id": "SID_リザイア",
       "nombre": "Nosferatu",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97257,6 +98771,7 @@
     "SID_ブレイク１０％": {
       "id": "SID_ブレイク１０％",
       "nombre": "Break１０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97298,6 +98813,7 @@
     "SID_ブレイク２０％": {
       "id": "SID_ブレイク２０％",
       "nombre": "Break２０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97339,6 +98855,7 @@
     "SID_必中": {
       "id": "SID_必中",
       "nombre": "Sure Strike",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97386,6 +98903,7 @@
     "SID_必中_命中率１００": {
       "id": "SID_必中_命中率１００",
       "nombre": "Sure Strike Hit１００",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97431,6 +98949,7 @@
     "SID_フォルクヴァング武器スキル": {
       "id": "SID_フォルクヴァング武器スキル",
       "nombre": "FolkvangrWeaponSkill",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97472,6 +98991,7 @@
     "SID_フォルクヴァング武器スキル_効果": {
       "id": "SID_フォルクヴァング武器スキル_効果",
       "nombre": "FolkvangrWeaponSkill (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97517,6 +99037,7 @@
     "SID_フェンサリル武器スキル": {
       "id": "SID_フェンサリル武器スキル",
       "nombre": "WeaponSkill",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97558,6 +99079,7 @@
     "SID_フェンサリル武器スキル_効果": {
       "id": "SID_フェンサリル武器スキル_効果",
       "nombre": "WeaponSkill (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97603,6 +99125,7 @@
     "SID_ノーアトゥーン武器スキル": {
       "id": "SID_ノーアトゥーン武器スキル",
       "nombre": "WeaponSkill",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97644,6 +99167,7 @@
     "SID_ノーアトゥーン武器スキル_効果": {
       "id": "SID_ノーアトゥーン武器スキル_効果",
       "nombre": "WeaponSkill (Effect)",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97683,6 +99207,7 @@
     "SID_追加エンゲージ武器１_巻き込み無効化": {
       "id": "SID_追加エンゲージ武器１_巻き込み無効化",
       "nombre": "EngageWeapon１ Friendly Fire Immune",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97722,6 +99247,7 @@
     "SID_チェインアタック命中率１００％": {
       "id": "SID_チェインアタック命中率１００％",
       "nombre": "Hit１００％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97767,6 +99293,7 @@
     "SID_チェインアタック命中率３０％": {
       "id": "SID_チェインアタック命中率３０％",
       "nombre": "Hit３０％",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,
@@ -97812,6 +99339,7 @@
     "SID_神将スキル確率補正１００": {
       "id": "SID_神将スキル確率補正１００",
       "nombre": "Divine GeneralSkillRate Mod１００",
+      "oculta": true,
       "icono": "",
       "stat_boosts": {
         "hp": 0,

@@ -312,6 +312,27 @@ ALIAS_ARMAS_ESPANOL = {
     "cuchillo de plata": "Silver Dagger",
 }
 
+_RANGOS_CATALOGO_CACHE = {}
+
+
+def _rango_canonico_catalogo(nom_low: str):
+    """Rango del catálogo para el nombre base del arma (sin forja ni paréntesis),
+    por coincidencia exacta del nombre normalizado. None si no está o no es válido."""
+    base = re.sub(r'\([^)]*\)', '', nom_low or '')
+    base = re.sub(r'\+\d+', '', base).strip()
+    if not base:
+        return None
+    clave = normalizar_texto(base)
+    if not _RANGOS_CATALOGO_CACHE or _RANGOS_CATALOGO_CACHE.get('_n') != len(_catalogo.get("armas", {})):
+        _RANGOS_CATALOGO_CACHE.clear()
+        for v in _catalogo.get("armas", {}).values():
+            r = v.get("rango")
+            if isinstance(r, list) and r and all(isinstance(x, int) and x > 0 for x in r):
+                _RANGOS_CATALOGO_CACHE.setdefault(normalizar_texto(v.get("nombre", "")), tuple(sorted(set(r))))
+        _RANGOS_CATALOGO_CACHE['_n'] = len(_catalogo.get("armas", {}))
+    return _RANGOS_CATALOGO_CACHE.get(clave)
+
+
 def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
     """
     Garantiza el rango canónico estricto de las armas en Fire Emblem Engage:
@@ -324,6 +345,12 @@ def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
     """
     nom_low = (nombre or "").lower()
     tipo_low = (tipo or "").lower()
+
+    # Rango canónico del datamine si el arma existe en el catálogo (Failnaught 2-3,
+    # Master Bow 1-2, Kard 1, Meteor 3-7…): la heurística solo cubre lo que falta.
+    rango_cat = _rango_canonico_catalogo(nom_low)
+    if rango_cat:
+        return list(rango_cat)
 
     # Arcos
     if tipo_low in ("arco", "bow") or any(b in nom_low for b in ("arco", "bow")):
@@ -442,6 +469,74 @@ def puede_usar_ballesta(ficha) -> bool:
     return puede_usar_tipo_arma(ficha, "Arco") and tiene_arma_de_tipo(ficha, "Arco")
 
 
+def info_curacion_item(nombre_item: str, sanador=None) -> Optional[dict]:
+    """
+    Curación de un bastón u objeto según el datamine (Item.xml → catálogo `armas`):
+      • Bastón de curación (Heal 10, Mend 20, Physic 8, Recover 40, Fortify 7…):
+        HP = Mt del bastón + Mag del sanador // 2  (fórmula de Engage), rango del catálogo.
+      • Objeto consumible (Poción 15, Elixir 30…): HP = Mt del objeto, sin rango.
+    Devuelve {"nombre", "tipo", "mt", "curacion", "rango"} o None si no cura.
+    """
+    if not nombre_item:
+        return None
+    # Nombres ingleses de los consumibles (el catálogo los guarda en español)
+    _ALIAS_CONSUMIBLES = {"vulnerary": "Poción", "medicine": "Elixir", "antidote": "Antídoto"}
+    clave = _ALIAS_CONSUMIBLES.get(normalizar_texto(str(nombre_item)), str(nombre_item))
+    _aid, ainfo = _buscar_en_catalogo("armas", clave)
+    if not ainfo:
+        return None
+    tipo = str(ainfo.get("tipo", "") or "")
+    mt = int(ainfo.get("mt", 0) or 0)
+    nombre = ainfo.get("nombre", str(nombre_item))
+    n_low = normalizar_texto(nombre)
+    if tipo in ("Bastón", "Baston", "Staff"):
+        # Bastones de estado (Freeze, Silence, Rescue, Warp…) tienen Mt 0; Sacrifice (255) es especial
+        if mt <= 0 or mt >= 200 or "sacrifice" in n_low:
+            return None
+        mag = int(getattr(getattr(sanador, 'stats', sanador), 'magia', 0) or 0) if sanador is not None else 0
+        return {"nombre": nombre, "tipo": "Bastón", "mt": mt, "curacion": mt + mag // 2,
+                "rango": list(ainfo.get("rango") or [1])}
+    if tipo in ("Objeto", "Item", "Consumible"):
+        # Solo curan los consumibles de HP (Poción, Elixir); antídoto, libros, bentos… no
+        if mt <= 0 or not any(k in n_low for k in ("pocion", "vulnerary", "elixir", "medicine", "brebaje")):
+            return None
+        return {"nombre": nombre, "tipo": "Objeto", "mt": mt, "curacion": mt, "rango": [0]}
+    return None
+
+
+def growths_totales(nombre_personaje: str, clase_nombre: str) -> dict:
+    """
+    Crecimientos personaje + clase (%) por stat, como los usa el juego para subir
+    de nivel. Claves: hp, str, mag, dex, spd, def, res, lck, bld. Vacío si no
+    hay datos del personaje ni de la clase.
+    """
+    total = {}
+    _pid, p_info = _buscar_en_catalogo("personajes", nombre_personaje or "")
+    _jid, j_info = _buscar_en_catalogo("clases", clase_nombre or "")
+    for fuente in ((p_info or {}).get("growths") or {}, (j_info or {}).get("growths") or {}):
+        for k, v in fuente.items():
+            total[k] = total.get(k, 0) + int(v or 0)
+    return total
+
+
+def boosts_rise_above(nombre_personaje: str, clase_nombre: str, niveles: int = 5) -> dict:
+    """
+    Rise Above (Roy, SID_超越, EnhanceLevel=5): Nv +5 durante la Fusión. El juego
+    resuelve esas 5 subidas con su acumulador de crecimientos (no reproducible),
+    así que esto es una ESTIMACIÓN: ceil(crecimiento personaje+clase × 5 / 100)
+    por stat (contrastado con Diamant/Lord: acierta 7 de 9 stats; falla Sue y Com).
+    Si la ficha trae `boosts_fusion` (valores vistos en el juego) se usan esos.
+    """
+    import math
+    g = growths_totales(nombre_personaje, clase_nombre)
+    out = {}
+    for k, v in g.items():
+        b = int(math.ceil(int(v) * niveles / 100.0))
+        if b > 0:
+            out[k] = b
+    return out
+
+
 def arco_de_ficha(ficha):
     """El arco equipado o, si no, el primer arco del inventario (objeto Arma) — None si no hay."""
     if getattr(ficha, 'arma', None) and normalizar_tipo_arma(getattr(ficha.arma, 'tipo', '')) == "Arco":
@@ -455,10 +550,12 @@ def arco_de_ficha(ficha):
 
 def arma_ballesta_desde(ficha, props_objeto: dict):
     """
-    Arma efectiva al disparar una ballesta de mapa con el arco de la unidad
-    (verificado en el juego, Cap. 8): usa el Mt/efectividad del arco propio,
-    Hit +20, alcance `distancia_min`..`distancia_max` (3–7), UN solo golpe y
-    sin contraataque. Ataque = Fue + Mt (x3 contra voladores) − Def del rival.
+    Arma efectiva al disparar una ballesta de mapa con el arco de la unidad:
+    usa el Mt del arco propio, Hit +20, alcance `distancia_min`..`distancia_max`
+    (3–7), UN solo golpe y sin contraataque (Skill.xml SID_弓砲台: 命中値+20,
+    手番回数=1, 相手の手番回数=0, RangeI=3 RangeO=7). Conserva la efectividad
+    del arco (x3 contra pegasos/grifos; NO contra jinetes de wyvern como Ivy:
+    ver `debilidades` de la clase). Ataque = Fue + Mt − Def del rival.
     """
     import copy
     arco = arco_de_ficha(ficha)
@@ -475,14 +572,37 @@ def arma_ballesta_desde(ficha, props_objeto: dict):
     return arma
 
 
-def parsear_arma_string(raw_str):
+_NOMBRES_ARMAS_EMBLEMA_CACHE = {}
+
+
+def _es_nombre_arma_emblema(raw: str) -> bool:
+    """True si `raw` (sin sufijo "(Emblema)") es exactamente un engage_item del catálogo
+    de emblemas, p.ej. "Failnaught (Claude)" o "Levin Sword (Robin)"."""
+    n_emb = len(_catalogo.get("emblemas", {}))
+    if _NOMBRES_ARMAS_EMBLEMA_CACHE.get('_n') != n_emb:
+        _NOMBRES_ARMAS_EMBLEMA_CACHE.clear()
+        for e in _catalogo.get("emblemas", {}).values():
+            for b in (e.get("bond_levels") or {}).values():
+                for it in b.get("engage_items") or []:
+                    nom = (it.get("nombre") or it.get("iid")) if isinstance(it, dict) else str(it)
+                    if nom:
+                        _NOMBRES_ARMAS_EMBLEMA_CACHE[normalizar_texto(nom)] = True
+        _NOMBRES_ARMAS_EMBLEMA_CACHE['_n'] = n_emb
+    limpio = re.sub(r'\(\s*emblema\s*\)', '', str(raw or ''), flags=re.IGNORECASE).strip()
+    return bool(_NOMBRES_ARMAS_EMBLEMA_CACHE.get(normalizar_texto(limpio)))
+
+
+def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
     """
     Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
     Acepta string o diccionario con campos 'nombre', 'refine_lvl', 'grabado'.
+    `es_arma_emblema` (o el sufijo "(Emblema)" / el campo es_engage del dict) marca
+    un arma de Emblema: no se le aplica grabado.
     """
     if not raw_str:
         return None
     if isinstance(raw_str, dict):
+        es_arma_emblema = es_arma_emblema or bool(raw_str.get("es_engage"))
         base = raw_str.get("nombre_base") or raw_str.get("nombre") or raw_str.get("arma") or ""
         ref = raw_str.get("refine_lvl", 0)
         grab = raw_str.get("grabado", "")
@@ -492,18 +612,22 @@ def parsear_arma_string(raw_str):
         if grab and f"({grab})" not in raw_str:
             raw_str += f" ({grab})"
     raw_str = str(raw_str).strip()
+    es_arma_emblema = bool(es_arma_emblema) or "(emblema)" in raw_str.lower() or _es_nombre_arma_emblema(raw_str)
 
     # 1. Detectar grabado de emblema entre paréntesis: (Marth), (Sigurd), etc.
+    # Las armas de Emblema (Failnaught (Claude), Levin Sword (Robin), Aymr…) no
+    # admiten grabado: su paréntesis nombra al emblema dueño y se descarta.
     grabado_info = None
     m_grab = re.search(r'\(([^)]+)\)', raw_str)
     limpio = raw_str
     if m_grab:
-        grab_nom = m_grab.group(1).lower().strip()
-        grab_nom = grab_nom.replace("grabado de", "").replace("marca de", "").replace("engrave", "").strip()
-        for k, v in GRABADOS_EMBLEMA.items():
-            if k in grab_nom or grab_nom in k or v["emblema"].lower() in grab_nom:
-                grabado_info = v
-                break
+        if not es_arma_emblema:
+            grab_nom = m_grab.group(1).lower().strip()
+            grab_nom = grab_nom.replace("grabado de", "").replace("marca de", "").replace("engrave", "").strip()
+            for k, v in GRABADOS_EMBLEMA.items():
+                if k in grab_nom or grab_nom in k or v["emblema"].lower() in grab_nom:
+                    grabado_info = v
+                    break
         limpio = re.sub(r'\([^)]+\)', '', limpio).strip()
 
     # 2. Detectar nivel de refinamiento (+1..+5)
@@ -647,7 +771,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     y = int(data.get("y", 0))
     nivel = max(1, int(data.get("nivel", 1)))
     # Dificultad: viene del preset via cargador_dispos, o por defecto Extremo
-    dificultad = normalizar_texto(data.get("dificultad", "Extremo")).replace("?", "i")
+    # Las pasivas extra por dificultad (HardSids/LunaticSids, LunaticSkill de clase)
+    # son solo de enemigos: un aliado nunca las recibe.
+    dificultad = normalizar_texto(data.get("dificultad", "Extremo")).replace("?", "i") if not es_aliado else "normal"
     # Level-ups extras para crecimientos (AutoGrowOffset del Person.xml por dificultad)
     auto_grow_extra = int(data.get("auto_grow_extra", 0))
     # Offsets de stats por dificultad (OffsetL/H/N del Person.xml)
@@ -942,6 +1068,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 habs_lista.append(sig_hab)
 
     # Enriquecer habilidades personales y de clase desde el catálogo compilado
+    sids_solo_motor = []   # SIDs que el motor necesita pero que el juego no muestra como pasivas
     if _catalogo:
         p_canon = _catalogo.get("personajes", {}).get(pid) or _catalogo.get("personajes", {}).get(normalizar_texto(nombre))
         if p_canon:
@@ -970,10 +1097,28 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         if c_canon:
             if not estilo_combate or estilo_combate in ("Infantería", "infantería", "None", ""):
                 estilo_combate = c_canon.get("estilo_combate", estilo_combate)
-            for sid in c_canon.get("skills", []):
-                if sid not in habs_lista:
-                    habs_lista.append(sid)
-            if dificultad in ("extremo", "lunatic", "maddening") and c_canon.get("lunatic_skill"):
+            # Innatas de la clase (Job.xml Skills) siempre; la habilidad de clase
+            # (LearningSkill, p.ej. Run Through / Pass) y la extra de Extremo
+            # (LunaticSkill) solo a partir del nivel en que la clase la aprende:
+            # Nv 5 en clases base/avanzadas (MaxLevel 20) y Nv 25 en las especiales
+            # (MaxLevel 40: Thief, Dancer, Fell Child…). Kagetsu Nv 1 no tiene Run
+            # Through; Zelkov Thief Nv 11 no tiene Pass.
+            if "skills_innatas" in c_canon:
+                innatas = list(c_canon.get("skills_innatas") or [])
+                aprendida = c_canon.get("learning_skill") or ""
+            else:  # catálogo antiguo sin desglose
+                innatas = list(c_canon.get("skills") or [])
+                aprendida = ""
+            nivel_hab_clase = int(c_canon.get("nivel_habilidad_clase", 5) or 5)
+            # Las innatas de clase (Job.xml Skills: 鍵開け Lockpick, 踊り Dance) son
+            # comandos, no pasivas: el juego no las lista en la unidad. Se guardan
+            # solo como SID para el motor (habilidades_sids), no en la lista visible.
+            for sid in innatas:
+                if sid not in sids_solo_motor:
+                    sids_solo_motor.append(sid)
+            if aprendida and nivel >= nivel_hab_clase and aprendida not in habs_lista:
+                habs_lista.append(aprendida)
+            if dificultad in ("extremo", "lunatic", "maddening") and c_canon.get("lunatic_skill") and nivel >= nivel_hab_clase:
                 ls = c_canon.get("lunatic_skill")
                 if ls not in habs_lista:
                     habs_lista.append(ls)
@@ -984,13 +1129,19 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     # Se guarda una copia de los Sids crudos ANTES de traducir/filtrar: el
     # motor de combate (intérprete de Condition/Act*) necesita identificadores
     # deterministas, no los nombres mostrados en la UI.
-    habs_sids_crudos = [str(h) for h in habs_lista if str(h).startswith("SID_")]
+    habs_sids_crudos = [str(h) for h in habs_lista if str(h).startswith("SID_")] + [s_ for s_ in sids_solo_motor if s_ not in habs_lista]
     habilidades_limpias = []
+    nombres_ocultos = {str(i.get("nombre")) for i in _catalogo.get("habilidades", {}).values() if i.get("oculta") and i.get("nombre")}
     for habilidad in habs_lista:
         valor = str(habilidad)
+        if valor in nombres_ocultos:
+            continue
         era_sid = valor.startswith("SID_")
         if valor.startswith("SID_"):
             info = _catalogo.get("habilidades", {}).get(valor)
+            # Flags internos del datamine (sin nombre en Skill.xml): no son pasivas visibles
+            if info and info.get("oculta"):
+                continue
             traducida = info.get("nombre") if info else None
             valor = traducida or valor
         # Algunos registros canónicos no tienen traducción inglesa y dejan
@@ -1027,8 +1178,15 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
-    genero_val = int(data.get("genero", 0) or (p_info.get("gender", 0) if p_info else 0))
+    genero_val = int(data.get("genero", 0) or (p_info.get("genero", p_info.get("gender", 0)) if p_info else 0) or 0)
     setattr(stats_obj, 'genero', genero_val)
+    if not getattr(stats_obj, 'clase_nombre', ''):
+        setattr(stats_obj, 'clase_nombre', clase_info.get("nombre", "") if clase_info else (data.get("clase_nombre") or ""))
+    # Debilidades canónicas de la clase (Job.xml Attrs); si la clase no está en el
+    # catálogo se deja sin marcar y calcular_efectividad usa la heurística por movimiento.
+    if clase_info and "debilidades" in clase_info:
+        setattr(stats_obj, 'debilidades', list(clase_info.get("debilidades") or []))
+        setattr(stats_obj, 'debilidades_canonicas', True)
     setattr(stats_obj, 'pid', pid or (p_info.get("id", "") if p_info else ""))
     val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
     es_jefe_val = (
@@ -1075,17 +1233,49 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         else:
             skills_engage_a_anadir = emblema_info.get("engage_skills", [])
 
+        # Colapsar armas de Emblema repetidas ya presentes (p.ej. partidas guardadas con
+        # "Failnaught (Claude) (Emblema)" y "Failnaught (Emblema)" a la vez)
+        vistas_eng = set()
+        inventario_dedup = []
+        for it in inventario_raw:
+            es_eng_it = (isinstance(it, dict) and it.get("es_engage")) or (isinstance(it, str) and "(emblema)" in it.lower())
+            if es_eng_it:
+                nom_it = (it.get("nombre_base") or it.get("nombre") or it.get("arma") or "") if isinstance(it, dict) else str(it)
+                p_it = parsear_arma_string({"nombre": nom_it, "es_engage": True})
+                clave_it = normalizar_texto(p_it["nombre_base"]) if p_it else normalizar_texto(nom_it)
+                if clave_it in vistas_eng:
+                    continue
+                vistas_eng.add(clave_it)
+            inventario_dedup.append(it)
+        inventario_raw[:] = inventario_dedup
+
         # Añadir armas de Engage al inventario temporal distinguidas con (Emblema)
         for it_raw in armas_engage_a_anadir:
             iid = str(it_raw)
             w_info = (_catalogo.get("armas", {}) or {}).get(iid, {})
             nombre_base = w_info.get("nombre", iid)
             nombre_eng = nombre_base if nombre_base.endswith("(Emblema)") else f"{nombre_base} (Emblema)"
+            # Deduplicar por arma base resuelta: el mismo Failnaught puede venir del
+            # navegador como "Failnaught (Claude) (Emblema)", "Failnaught (Emblema)"…
+            p_eng = parsear_arma_string({"nombre": nombre_base, "es_engage": True})
+            base_eng_norm = normalizar_texto(p_eng["nombre_base"]) if p_eng else normalizar_texto(nombre_base)
+
+            def _misma_arma_emblema(it):
+                if isinstance(it, dict):
+                    if it.get("id") == iid:
+                        return True
+                    nom_it = it.get("nombre_base") or it.get("nombre") or it.get("arma") or ""
+                else:
+                    nom_it = str(it)
+                if nom_it in (iid, nombre_eng, nombre_base):
+                    return True
+                p_it = parsear_arma_string({"nombre": nom_it, "es_engage": True})
+                return bool(p_it) and normalizar_texto(p_it["nombre_base"]) == base_eng_norm
+
             ya_esta = any(
-                (isinstance(it, dict) and (it.get("id") == iid or it.get("arma") == nombre_eng or it.get("nombre") == nombre_eng or it.get("arma") == nombre_base))
-                or (isinstance(it, str) and (it == iid or it == nombre_eng or it == nombre_base))
+                _misma_arma_emblema(it)
                 for it in inventario_raw
-                if (isinstance(it, dict) and it.get("es_engage"))
+                if (isinstance(it, dict) and it.get("es_engage")) or (isinstance(it, str) and "(emblema)" in it.lower())
             )
             if not ya_esta:
                 inventario_raw.append({"arma": nombre_eng, "id": iid, "nombre": nombre_eng, "equipada": False, "es_engage": True})
@@ -1331,6 +1521,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         habilidades_sids=habs_sids_crudos,
         inventario=inventario_resuelto,
         potenciadores_usados=list(data.get("potenciadores_usados", [])),
+        boosts_fusion={k: int(v) for k, v in (data.get("boosts_fusion") or {}).items() if str(v).lstrip("-").isdigit() and int(v) != 0},
         nivel_veneno=val_veneno,
         lider_tres_casas=val_lider_3h,
         estilo_combate=estilo_combate,

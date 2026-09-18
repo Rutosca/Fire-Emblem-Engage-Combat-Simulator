@@ -18,6 +18,7 @@ import unicodedata
 from collections import deque
 from cargador_dispos import CargadorDisposEngage
 
+from ataques_area import resolver_ataque_area, tipo_ataque_area
 from catalogo_loader import (
     normalizar_texto, round_half_up, cargar_catalogo,
     _catalogo, GRABADOS_EMBLEMA, REFINES_GENERICOS,
@@ -217,13 +218,21 @@ def consumir_objeto_mapa():
 @app.route("/api/mapa/objeto/dañar", methods=["POST"])
 @app.route("/api/mapa/objeto/danar", methods=["POST"])
 def dañar_objeto_mapa():
-    """Resta `daño` HP a un destructible con vida; al llegar a 0 se destruye entero."""
+    """
+    Resta `daño` HP a un destructible con vida, o fija su vida con `vida` (edición manual);
+    al llegar a 0 se destruye entero.
+    """
     data = request.get_json(force=True) or {}
     id_obj = str(data.get("id", ""))
     if not id_obj:
         return jsonify({"error": "Falta campo id"}), 400
+    vida = data.get("vida")
     tablero.guardar_snapshot()
-    est = tablero.dañar_objeto_mapa(id_obj, int(data.get("daño", data.get("dano", 0)) or 0))
+    est = tablero.dañar_objeto_mapa(
+        id_obj,
+        int(data.get("daño", data.get("dano", 0)) or 0),
+        vida=int(vida) if vida is not None else None,
+    )
     if est is None:
         tablero.historial.pop()
         return jsonify({"error": f"Objeto '{id_obj}' no existe o ya estaba destruido"}), 400
@@ -374,6 +383,9 @@ def guardar_unidad():
     if not data or "nombre" not in data:
         return jsonify({"error": "Falta campo 'nombre'"}), 400
 
+    # Dificultad del capítulo desplegado: decide las pasivas extra de los enemigos
+    # (HardSids / LunaticSids del datamine) al resolver una ficha creada a mano.
+    data.setdefault("dificultad", tablero.dificultad)
     # Nombre original (edición con renombrado) para detectar bajadas de HP respecto a la ficha previa
     prev = tablero.obtener_ficha(data.get("nombre_original") or data.get("nombre"))
     hp_previo = prev.hp_actual if prev else None
@@ -441,6 +453,10 @@ def exportar_partida():
     estado = {
         "turno_actual": tablero.turno_actual,
         "fase": tablero.fase,
+        "capitulo": _capitulo_actual,
+        "dificultad": tablero.dificultad,
+        "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(tablero.refuerzos_pendientes.items())},
+        "casillas_fuego": tablero.casillas_fuego_lista(),
         "fichas": fichas_vivas
     }
     return jsonify({"ok": True, "partida": estado})
@@ -458,6 +474,8 @@ def importar_partida():
     tablero.limpiar()
     tablero.turno_actual = int(partida.get("turno_actual", 1))
     tablero.fase = partida.get("fase", "jugador")
+    if partida.get("dificultad"):
+        tablero.dificultad = str(partida["dificultad"])
 
     # Una partida guardada es una fotografía del estado actual del mapa.
     # Se filtran y colocan exclusivamente las unidades vivas (viva: true y hp_actual > 0).
@@ -467,15 +485,34 @@ def importar_partida():
     ]
 
     for f_data in fichas_vivas_raw:
+        f_data.setdefault("dificultad", tablero.dificultad)
         f_res = resolver_unidad_con_catalogo(f_data)
         if f_res.viva and f_res.hp_actual > 0:
             tablero.registrar_unidad(f_res)
+
+    # Refuerzos: los pendientes guardados o, si la partida no los trae (guardados
+    # antiguos), los del calendario del capítulo aún no llegados (turno > actual).
+    tablero.casillas_fuego = {(int(c["x"]), int(c["y"])): int(c.get("expira_turno", tablero.turno_actual + 1))
+                              for c in (partida.get("casillas_fuego") or []) if "x" in c and "y" in c}
+    tablero.sincronizar_fuego_mapa()
+    ref_guardados = partida.get("refuerzos_pendientes")
+    if isinstance(ref_guardados, dict) and ref_guardados:
+        tablero.programar_refuerzos({int(t): us for t, us in ref_guardados.items() if str(t).isdigit()})
+    else:
+        try:
+            cal = _cargador_dispos.calendario_refuerzos(
+                f"M{_capitulo_actual:03d}", tablero.dificultad,
+                mapa_ancho=getattr(_mapa, "ancho", 24), mapa_alto=getattr(_mapa, "alto", 17))
+            tablero.programar_refuerzos({t: us for t, us in cal.items() if t > tablero.turno_actual})
+        except Exception:
+            tablero.programar_refuerzos({})
 
     fichas_retorno = [f.como_dict() for f in tablero.fichas.values() if f.viva and f.hp_actual > 0]
     return jsonify({
         "ok": True,
         "mensaje": f"Partida importada con éxito ({len(fichas_retorno)} unidades vivas)",
-        "fichas": fichas_retorno
+        "fichas": fichas_retorno,
+        "refuerzos_previstos": tablero.refuerzos_previstos(),
     })
 
 @app.route("/api/unidad/eliminar", methods=["POST"])
@@ -500,6 +537,7 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
     tablero.fichas.clear()
     tablero.turno_actual = 1
     tablero.fase = "jugador"
+    tablero.dificultad = dificultad
     tablero.inicializar_objetos_mapa()   # pozos, ballestas y destructibles vuelven al estado inicial
 
     ancho_m = getattr(_mapa, "ancho", 24)
@@ -819,6 +857,26 @@ def alternar_chain_guard():
 # API — Combate Interactivo y Ajustes en Tiempo Real
 # =============================================================================
 
+def _casillas_movidas_en_mapa(ficha, destino):
+    """Pasos del camino más corto de la ficha a `destino` sobre el mapa actual (Momentum)."""
+    try:
+        from motor_de_movimiento_y_amenaza import AnalizadorAmenaza
+        from motor_analisis import _casillas_movidas
+
+        class _T:
+            def __init__(self, t):
+                self.caminable = t.caminable
+                self.volable = t.volable
+                self.coste = t.coste_mov
+
+        grid = [[_T(_mapa.grid[x][y]) for y in range(_mapa.alto)] for x in range(_mapa.ancho)]
+        analizador = AnalizadorAmenaza(grid, _mapa.ancho, _mapa.alto)
+        bloqueo = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != ficha.es_aliado}
+        return _casillas_movidas(ficha, destino, analizador, bloqueo)
+    except Exception:
+        return abs(ficha.x - destino[0]) + abs(ficha.y - destino[1])
+
+
 @app.route("/api/combate/ejecutar", methods=["POST"])
 def ejecutar_combate():
     """
@@ -865,13 +923,18 @@ def ejecutar_combate():
     tablero.guardar_snapshot()
 
     # 1. Posición de ataque: si viene pos_destino válida, mover al atacante tras validar ocupación
+    distancia_movida = 0
     if pos_destino and isinstance(pos_destino, (list, tuple)) and len(pos_destino) == 2:
         nx, ny = int(pos_destino[0]), int(pos_destino[1])
         if (nx, ny) != (f_atk.x, f_atk.y):
             otra = [f for f in tablero.fichas.values() if f.viva and f.nombre != f_atk.nombre and f.x == nx and f.y == ny]
             if otra:
                 return jsonify({"error": f"La casilla ({nx}, {ny}) está ocupada por {otra[0].nombre}. No se puede atacar desde ahí."}), 400
+            distancia_movida = _casillas_movidas_en_mapa(f_atk, (nx, ny))
             tablero.mover_unidad(nombre_atk, nx, ny)
+    # Momentum (Sigurd): casillas recorridas antes de atacar (0 si ataca desde donde está)
+    if f_atk.stats is not None:
+        setattr(f_atk.stats, 'distancia_movida', int(data.get("distancia_movida", distancia_movida) or 0))
 
     # 2. Equipar arma
     if nombre_arma:
@@ -955,6 +1018,15 @@ def ejecutar_combate():
 
     es_engage_attack = bool(data.get("es_engage_attack", False) or es_engage_attack)
     engage_attack_nombre = str(data.get("engage_attack_nombre", "") or engage_attack_nombre)
+
+    # 2c. Ataques de Emblema de área (Override / Blazing Lion): resolver la geometría
+    # ANTES del combate, con todos los objetivos aún vivos. Se aplica después.
+    area_engage = None
+    if es_engage_attack and engage_attack_nombre and tipo_ataque_area(engage_attack_nombre):
+        area_engage = resolver_ataque_area(engage_attack_nombre, (f_atk.x, f_atk.y), f_def, f_atk, tablero, _mapa)
+        if not area_engage.get("valido"):
+            return jsonify({"error": f"{engage_attack_nombre} no puede usarse desde ({f_atk.x}, {f_atk.y}): {area_engage.get('motivo')}"}), 400
+
     es_arma_emblema = bool(getattr(f_atk.arma, 'es_engage', False) or "(emblema)" in getattr(f_atk.arma, 'nombre', '').lower())
     requiere_fusion = bool(data.get("requiere_fusion", False) or es_engage_attack or es_arma_emblema)
 
@@ -1065,6 +1137,38 @@ def ejecutar_combate():
     for u_atacada in (f_def, f_atk):
         estados_otorgados += pasivas_temporales.al_danar_aliado(tablero, u_atacada)
 
+    # Ataques de Emblema de área (Override / Blazing Lion): objetivos extra, casilla de
+    # llegada del atacante y fuego. La geometría la decide ataques_area con las
+    # posiciones reales tras el movimiento de ataque.
+    objetivos_extra_res = []
+    fuego_encendido = []
+    pos_final_area = None
+    if area_engage is not None and hp_atk_final > 0:
+        area = area_engage
+        if area.get("valido"):
+            for e_extra in (area.get("objetivos") or [])[1:]:
+                if not e_extra.viva or not e_extra.stats:
+                    continue
+                t_ex = _mapa.grid[e_extra.x][e_extra.y]
+                r_ex = CalculadoraEngage.simular_combate(
+                    f_atk.stats, e_extra.stats, f_atk.arma, e_extra.arma,
+                    Terreno(avo=t_ex.avo, dfn=t_ex.dfn), Terreno(0, 0), distancia=1,
+                    es_engage_attack=True, engage_attack_nombre=engage_attack_nombre,
+                )
+                dmg_ex = int(r_ex["atacante"].get("daño_total_ronda", 0) or 0)
+                nuevo_hp = max(0, e_extra.hp_actual - dmg_ex)
+                tablero.modificar_hp(e_extra.nombre, nuevo_hp)
+                if nuevo_hp > 0 and getattr(e_extra, 'cargas_ruptura', 0) > 0:
+                    e_extra.cargas_ruptura = 0
+                objetivos_extra_res.append({"nombre": e_extra.nombre, "daño": dmg_ex, "hp_tras": nuevo_hp, "muere": nuevo_hp <= 0})
+            if area.get("tipo") == "override" and area.get("pos_final"):
+                lx, ly = area["pos_final"]
+                if not any(f.viva and f.nombre != f_atk.nombre and (f.x, f.y) == (lx, ly) for f in tablero.fichas.values()):
+                    tablero.mover_unidad(nombre_atk, lx, ly)
+                    pos_final_area = [lx, ly]
+            elif area.get("tipo") == "blazing_lion" and area.get("casillas_fuego"):
+                fuego_encendido = [list(c) for c in tablero.encender_fuego(area["casillas_fuego"])]
+
     # Repliegue táctico de Canter (Movimiento ágil tras combate si atacante sobrevive)
     pos_canter = data.get("pos_canter")
     if pos_canter and isinstance(pos_canter, (list, tuple)) and len(pos_canter) == 2 and hp_atk_final > 0:
@@ -1139,6 +1243,9 @@ def ejecutar_combate():
         "defensor": f_def.como_dict(),
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
         "recarga_emblema": recarga,
+        "objetivos_extra": objetivos_extra_res,
+        "pos_final_area": pos_final_area,
+        "casillas_fuego": tablero.casillas_fuego_lista(),
         "objetos": tablero.objetos_como_lista() if (objeto_ballesta or recarga) else None,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
@@ -1226,6 +1333,19 @@ def ajustar_nivel():
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
+@app.route("/api/unidad/bono_fusion_estimado", methods=["GET"])
+def bono_fusion_estimado():
+    """
+    Estimación del bono de stats de Rise Above (Roy, Nv+5 en Fusión) por
+    crecimientos personaje+clase. El valor real lo decide el juego: el jugador
+    puede anotar la diferencia observada en la ficha (boosts_fusion).
+    """
+    from catalogo_loader import boosts_rise_above
+    nombre = request.args.get("nombre", "")
+    clase = request.args.get("clase", "")
+    return jsonify({"ok": True, "estimado": boosts_rise_above(nombre, clase)})
+
+
 @app.route("/api/unidad/resolver_preview", methods=["POST"])
 def resolver_unidad_preview():
     """
@@ -1299,6 +1419,9 @@ def iniciar_fase_enemigo():
     tablero.iniciar_fase_enemigo()
     return jsonify({
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
+        "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
+        "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
+        "casillas_fuego": tablero.casillas_fuego_lista(),
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
         "recargas_emblema": recargas,
         "objetos": tablero.objetos_como_lista(),
@@ -1314,6 +1437,9 @@ def fin_turno():
     tablero.avanzar_turno()
     return jsonify({
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
+        "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
+        "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
+        "casillas_fuego": tablero.casillas_fuego_lista(),
         "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,
         "refuerzos_previstos": tablero.refuerzos_previstos(),
         "fichas": [f.como_dict() for f in tablero.fichas.values()],

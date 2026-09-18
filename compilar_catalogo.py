@@ -447,6 +447,26 @@ def compilar():
         move_type_raw = j.get("MoveType", "1")
         tipo_movimiento = MOVE_TYPE_MAP.get(str(move_type_raw), "infantería")
 
+        # Debilidades a efectividad (Job.xml Attrs, máscara de bits que casa con
+        # Skill.xml Efficacy: 2 騎馬, 4 重装, 8 飛行, 16 竜, 32 邪竜, 64 異形).
+        # Lectura literal del datamine: Lindwurm/Wyvern Knight (8+16) son débiles a
+        # arcos Y a anti-dragón. Que Ivy no reciba x3 en el Cap. 8 se debe a sus
+        # pasivas (Stalwart en HardSids y Veteran+ = inmunidad a efectividad), no a la clase.
+        attrs = to_int(j.get("Attrs"), 0)
+        debilidades = []
+        if attrs & 2:
+            debilidades.append("caballería")
+        if attrs & 4:
+            debilidades.append("acorazado")
+        if attrs & 8:
+            debilidades.append("volador")
+        if attrs & 16:
+            debilidades.append("dragón")
+        if attrs & 32:
+            debilidades.append("dragón caído")
+        if attrs & 64:
+            debilidades.append("abominación")
+
         # Maestrías de arma de la clase (Job.xml: WeaponBow="1", MaxWeaponLevelBow="B", ...).
         # Determinan qué tipos de arma puede equipar la clase — p.ej. las ballestas de
         # mapa solo las usan clases con maestría en Arco que lleven un arco en el inventario.
@@ -469,6 +489,8 @@ def compilar():
             "estilo_combate": style,
             "mov": mov,
             "tipo_movimiento": tipo_movimiento,
+            "attrs": attrs,
+            "debilidades": debilidades,
             "armas_permitidas": armas_permitidas,
             "rangos_arma_max": rangos_arma_max,
             # Habilidades de clase (Job.xml): Skills = innatas (Dancer: 踊り/Dance),
@@ -476,6 +498,17 @@ def compilar():
             # Martial Master: 気の拡散/Diffuse Healer, Dancer: 特別な踊り/Special Dance),
             # LunaticSkill = extra que llevan los enemigos en Extremo.
             "skills": [sk for sk in (str(j.get("Skills", "")).split(";") + [str(j.get("LearningSkill", ""))]) if sk.strip()],
+            # Desglose: Skills = innatas desde Nv 1; LearningSkill (習得スキル) se aprende al
+            # Nv 5 de la clase; LunaticSkill (ルナティックLv5追加スキル) también exige Nv 5.
+            "skills_innatas": [sk for sk in str(j.get("Skills", "")).split(";") if sk.strip()],
+            "learning_skill": str(j.get("LearningSkill", "") or ""),
+            # Rango y tope de nivel (Job.xml): Rank 0/1 = base/avanzada (MaxLevel 20);
+            # las clases especiales (Thief, Dancer, Fell Child, Melusine…) tienen
+            # MaxLevel 40 y aprenden su habilidad de clase al Nv 25, no al 5.
+            "rank": to_int(j.get("Rank"), 0),
+            "max_level": to_int(j.get("MaxLevel"), 20),
+            "es_especial": to_int(j.get("MaxLevel"), 20) >= 40,
+            "nivel_habilidad_clase": 25 if to_int(j.get("MaxLevel"), 20) >= 40 else 5,
             "lunatic_skill": str(j.get("LunaticSkill", "") or ""),
             "base_stats": {
                 "hp": to_int(j.get("Base.Hp")),
@@ -652,6 +685,10 @@ def compilar():
         habilidades[sid] = {
             "id": sid,
             "nombre": nombre,
+            # Sin Name (MSID_) en Skill.xml = flag interno del juego (SID_立往生 "no se
+            # mueve", SID_死亡会話存在敵 "tiene diálogo de muerte", SID_王族…): existe
+            # para el motor/IA pero el juego no lo muestra como pasiva de la unidad.
+            "oculta": not bool(name_tag),
             "icono": s.get("IconName", ""),
             "stat_boosts": {
                 "hp": to_int(s.get("EnhanceValue.Hp") or s.get("Enhance.Hp")),

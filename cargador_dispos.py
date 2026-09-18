@@ -19,6 +19,27 @@ DISPOS_DIR = os.path.join(DATAMINE_DIR, "dispos")
 # Unidades que el guion del capítulo mueve antes de dar el control al jugador
 # (UnitMovePos en el evento de apertura del .lua). {dispos_id: {pid: (X, Y)}} en
 # coordenadas del datamine (1-indexed, Y=1 fila inferior).
+# Pasivas observadas en el juego que el datamine NO asigne para esa dificultad.
+# {dispos_id: {dificultad_norm: {pid: [SIDs]}}}. Se suman a las del datamine
+# (CommonSids + {Normal,Hard,Lunatic}Sids de Person.xml + Sid de la fila del dispos).
+# Vacío a día de hoy: lo observado en Extremo (Veteran+ en Kagetsu/Zelkov/Ivy,
+# Ivy sin Stalwart) coincide exactamente con Person.xml (LunaticSids / HardSids).
+PASIVAS_OBSERVADAS = {}
+
+# Pasivas que el datamine asigne para esa dificultad pero que en el juego NO
+# aparezcan (observado): se retiran tras aplicar todo lo demás. Misma estructura.
+PASIVAS_AUSENTES = {}
+
+
+def _dificultad_norm(dificultad: str) -> str:
+    d = (dificultad or "").lower()
+    if d in ("extremo", "lunatic", "maddening"):
+        return "lunatic"
+    if d in ("dificil", "difícil", "hard"):
+        return "hard"
+    return "normal"
+
+
 RECOLOCACIONES_APERTURA = {
     # M008: Amber aparece en (8,14) y el evento inicial lo lleva junto a Diamant
     "M008": {"PID_アンバー": (8, 16)},
@@ -105,6 +126,8 @@ class CargadorDisposEngage:
                             "bld": int(p.get("OffsetN.Phys", 0)) if p.get("OffsetN.Phys", "").lstrip("-").isdigit() else 0,
                         },
                         "sids_lunatic": p.get("LunaticSids", ""),
+                        "sids_hard": p.get("HardSids", ""),
+                        "sids_normal": p.get("NormalSids", ""),
                         "sids_common": p.get("CommonSids", ""),
                     }
         except Exception as e:
@@ -360,6 +383,18 @@ class CargadorDisposEngage:
             # Habilidad extra asignada en la propia fila del dispos (atributo Sid),
             # p.ej. SID_虚無の呪い (Void Curse: no da experiencia) en refuerzos de Extremo.
             habs_fila = [sd for sd in str(param.get("Sid", "") or "").split(";") if sd.strip()]
+            # Pasivas por dificultad de Person.xml (NormalSids / HardSids / LunaticSids)
+            # + pasivas observadas en el juego que el datamine no lista (PASIVAS_OBSERVADAS).
+            dif_norm = _dificultad_norm(dificultad)
+            sids_dif = str(p_info.get(f"sids_{dif_norm}", "") or "")
+            for sd in sids_dif.split(";"):
+                if sd.strip() and sd.strip() not in habs_fila:
+                    habs_fila.append(sd.strip())
+            for sd in PASIVAS_OBSERVADAS.get(dispos_id.upper(), {}).get(dif_norm, {}).get(pid, []):
+                if sd not in habs_fila:
+                    habs_fila.append(sd)
+            ausentes = PASIVAS_AUSENTES.get(dispos_id.upper(), {}).get(dif_norm, {}).get(pid, [])
+            habs_fila = [sd for sd in habs_fila if sd not in ausentes]
 
             unidades.append({
                 "nombre": nombre_unidad,

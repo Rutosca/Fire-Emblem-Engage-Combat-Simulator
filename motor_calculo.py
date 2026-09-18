@@ -146,6 +146,16 @@ def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
     nom_low = (nombre or "").lower()
     tipo_low = (tipo or "").lower()
 
+    # Rango canónico del datamine si el arma está en el catálogo (Failnaught 2-3,
+    # Master Bow 1-2, Kard 1…). Import perezoso: catalogo_loader importa este módulo.
+    try:
+        from catalogo_loader import _rango_canonico_catalogo
+        rango_cat = _rango_canonico_catalogo(nom_low)
+        if rango_cat:
+            return list(rango_cat)
+    except Exception:
+        pass
+
     # Arcos
     if tipo_low in ("arco", "bow") or any(b in nom_low for b in ("arco", "bow")):
         if "longbow" in nom_low or "largo" in nom_low:
@@ -324,8 +334,8 @@ def obtener_genero_unidad(u) -> int:
         try:
             from catalogo_loader import _catalogo
             p_cat = _catalogo.get("personajes", {}).get(pid)
-            if p_cat and p_cat.get("gender") in (1, 2):
-                return p_cat["gender"]
+            if p_cat and p_cat.get("genero") in (1, 2):
+                return p_cat["genero"]
         except Exception:
             pass
 
@@ -526,6 +536,28 @@ class CalculadoraEngage:
         estilo_canon = resolver_estilo_combate(getattr(defensor, 'estilo_combate', ''))
         es_dragon = getattr(defensor, 'es_dragon', False)
 
+        # Debilidades canónicas de la clase (Job.xml Attrs → catálogo `debilidades`):
+        # si están disponibles mandan sobre la heurística por tipo de movimiento.
+        # P.ej. Lindwurm/Wyvern Knight (Attrs 8+16) es volador pero NO débil a arcos
+        # (verificado en el juego con Ivy), solo a armas anti-dragón.
+        debilidades = getattr(defensor, 'debilidades', None)
+        if debilidades is not None and isinstance(debilidades, (list, tuple, set)) and getattr(defensor, 'debilidades_canonicas', False):
+            deb = {str(d).lower() for d in debilidades}
+            _ALIAS = {
+                "volador": ("volador", "flier", "flying"),
+                "acorazado": ("acorazado", "armored", "armor"),
+                "caballería": ("caballería", "caballeria", "cavalry", "horse"),
+                "dragón": ("dragón", "dragon"),
+                "dragón caído": ("dragón caído", "dragon caido", "fell dragon", "邪竜"),
+                "abominación": ("abominación", "abominacion", "corrupto", "monstruo", "corrupted", "異形"),
+            }
+            for eff in arma_atk.efectividades:
+                eff_l = str(eff).lower()
+                for canon, alias in _ALIAS.items():
+                    if eff_l in alias and canon in deb:
+                        return 3, f"Efectividad anti-{canon} (Mt ×3)"
+            return 1, None
+
         for eff in arma_atk.efectividades:
             eff_l = str(eff).lower()
             if eff_l in ("volador", "flier", "flying"):
@@ -561,14 +593,43 @@ class CalculadoraEngage:
         `_desc_estados_temporales` para documentarlos en pasivas_activas.
         Si no tiene estados activos devuelve la misma instancia sin tocar.
         """
-        estados = getattr(unidad, 'estados_temporales', None) or []
+        estados = list(getattr(unidad, 'estados_temporales', None) or [])
+        # Rise Above (Roy, SID_超越): mientras la unidad está fusionada con Roy sube
+        # 5 niveles → stats según sus crecimientos (personaje + clase). No se guarda
+        # en la ficha: es un bono de fusión, como los estados de 1 turno.
+        habs_u = [str(h).lower() for h in getattr(unidad, 'habilidades', []) or []]
+        en_fusion_u = bool(getattr(unidad, 'en_fusion', False)) or int(getattr(unidad, 'turnos_fusion_restantes', 0) or 0) > 0
+        emb_u = str(getattr(unidad, 'emblema_nombre', '') or '').lower()
+        tiene_rise_above = any(x in h for h in habs_u for x in ('rise above', 'superación', 'superacion', '超越')) or (emb_u.startswith('roy') or 'ロイ' in emb_u)
+        manuales = dict(getattr(unidad, 'boosts_fusion', None) or {})
+        if en_fusion_u and not getattr(unidad, '_rise_above_aplicado', False):
+            if manuales:
+                # Bono de fusión anotado por el usuario (valores reales vistos en el juego)
+                estados.append({"nombre": "Bono de Fusión (observado)", "stat_boosts": manuales, "_rise_above": True})
+            elif tiene_rise_above:
+                try:
+                    from catalogo_loader import boosts_rise_above
+                    b = boosts_rise_above(getattr(unidad, 'nombre', ''), getattr(unidad, 'clase_nombre', ''))
+                except Exception:
+                    b = {}
+                if b:
+                    estados.append({"nombre": "Superación (Roy, Nv+5, estimado)", "stat_boosts": b, "_rise_above": True})
         if not estados:
             return unidad
         u = copy.copy(unidad)
+        u._rise_above_aplicado = True
         descs = []
         for est in estados:
             partes = []
             for k, v in (est.get("stat_boosts") or {}).items():
+                if k == "hp" and est.get("_rise_above"):
+                    # Rise Above también sube el HP máximo (y el actual en la misma cuantía)
+                    u.hp_max = int(getattr(u, 'hp_max', 0) or 0) + int(v)
+                    u.hp = int(getattr(u, 'hp', 0) or 0) + int(v)
+                    if getattr(u, 'hp_actual', None) is not None:
+                        u.hp_actual = int(u.hp_actual) + int(v)
+                    partes.append(f"+{int(v)} HP")
+                    continue
                 campo = cls._CAMPOS_STAT_BOOST.get(k)
                 if not campo or not v:
                     continue
@@ -604,6 +665,13 @@ class CalculadoraEngage:
         emblema_atk = str(getattr(atacante, 'emblema_nombre', '') or '').lower()
         estilo_atk_canon = resolver_estilo_combate(getattr(atacante, 'estilo_combate', ''))
         nombre_atk = str(getattr(atacante, 'nombre', '') or '').lower()
+
+        # Ballesta / cañón de mapa (verificado en el juego): las pasivas EXTERNAS de otras
+        # unidades (Guía Divina de Alear, Gente de Cuento, apoyos, Solidaridad…) no se
+        # aplican al disparo. Los bonos propios ya sumados a los stats (¡Ponte detrás
+        # de mí!, potenciadores) sí cuentan. Se vacía la lista de aliados cercanos.
+        if getattr(arma, 'es_ballesta', False):
+            aliados_cercanos_atk = []
 
         habs_def = [str(h).lower() for h in getattr(defensor, 'habilidades', [])]
         emblema_def = str(getattr(defensor, 'emblema_nombre', '') or '').lower()
@@ -706,7 +774,7 @@ class CalculadoraEngage:
             if info_resonance and condicion_dsl.evaluar_condicion(info_resonance.get('condition', ''), ctx_atk):
                 acumulador_res = {}
                 condicion_dsl.aplicar_acts(info_resonance, acumulador_res)
-                bonus_res = acumulador_res.get('power', 0)
+                bonus_res = int(acumulador_res.get('power', 0))
                 atk_base += bonus_res
                 recoil_hp = -int(acumulador_res.get('hp', 0))  # Act "HP;-;1" = coste de 1 HP, no un delta negativo a sumar
                 pasivas_activas.append(f"Resonancia (+{int(bonus_res)} ATK, {recoil_hp} recoil)")
@@ -746,6 +814,37 @@ class CalculadoraEngage:
                 atk_base += bonus_ws
                 pasivas_activas.append(f"Sincronía Armamentística (+{bonus_ws} ATK)")
 
+        # Pasiva del DEFENSOR: Arms Shield / Escudo de Armas (Leif) — SID_武器相性激化(＋/＋＋):
+        # si el defensor tiene ventaja de triángulo contra el arma del atacante, el
+        # atacante pierde 3/5/7 de Atk (Act "相手の威力;-;N", Condition 武器相性 == 有利).
+        if arma_def is not None:
+            info_arms = condicion_dsl.buscar_habilidad_activa(
+                ['SID_武器相性激化＋＋', 'SID_武器相性激化＋', 'SID_武器相性激化'],
+                ctx_def.habilidades_sids, habs_def
+            )
+            if info_arms and cls.ventaja_triangulo(getattr(arma_def, 'tipo', ''), getattr(arma, 'tipo', '')):
+                acumulador_arms = {}
+                condicion_dsl.aplicar_acts(info_arms, acumulador_arms)
+                red_arms = int(abs(acumulador_arms.get('rival_power', 0)))
+                if red_arms > 0:
+                    atk_base -= red_arms
+                    pasivas_activas.append(f"Escudo de Armas del rival (-{red_arms} ATK)")
+
+        # Pasiva: Momentum / Impulso (Sigurd) — SID_助走 (+1 Atk por casilla movida, máx. +10;
+        # Momentum+ sin tope). Solo al iniciar combate; la distancia la anota quien
+        # simula (motor_analisis / app) en `atacante.distancia_movida`.
+        if es_iniciador:
+            info_momentum = condicion_dsl.buscar_habilidad_activa(
+                ['SID_助走＋', 'SID_助走'], ctx_atk.habilidades_sids, habs_atk
+            )
+            if info_momentum and condicion_dsl.evaluar_condicion(info_momentum.get('condition', ''), ctx_atk):
+                acumulador_mom = {}
+                condicion_dsl.aplicar_acts(info_momentum, acumulador_mom, ctx_atk)
+                bonus_mom = int(acumulador_mom.get('power', 0))
+                if bonus_mom > 0:
+                    atk_base += bonus_mom
+                    pasivas_activas.append(f"Impulso (+{bonus_mom} ATK por {int(condicion_dsl.VARIABLES['移動距離'](ctx_atk))} casillas movidas)")
+
         # ── Pasivas de proximidad en el atacante ─────────────────────────────
         # 1. Aura de Alear (Guía Divina / Divinely Inspiring — SID_神竜の結束):
         # Si un aliado adyacente (distancia == 1) es Alear o posee Guía Divina, otorga +3 ATK al aliado atacante
@@ -767,7 +866,7 @@ class CalculadoraEngage:
             if info_fairy_tale and condicion_dsl.evaluar_condicion(info_fairy_tale.get('condition', ''), ctx_atk):
                 acumulador_ft = {}
                 condicion_dsl.aplicar_acts(info_fairy_tale, acumulador_ft)
-                bonus_ft = acumulador_ft.get('power', 0)
+                bonus_ft = int(acumulador_ft.get('power', 0))
                 atk_base += bonus_ft
                 pasivas_activas.append(f"Gente de Cuento (+{int(bonus_ft)} Daño)")
 
@@ -1240,8 +1339,30 @@ class CalculadoraEngage:
             golpear_defensor(atacante.nombre, "ataque (Muy Sensible)", 2)
             chain_dmg_total += 2
 
+        # 1b. Vantage / Emboscada (Leif) — SID_待ち伏せ(＋/＋＋): si el DEFENSOR tiene
+        # HP <= 25% / 50% / 75% de su máximo y puede contraatacar, su contraataque
+        # ocurre ANTES del ataque del rival (una sola vez; sus follow-ups siguen igual).
+        contra_ya_hecha = False
+        if puede_contra and stats_def and not barra_resucitada and hp_def > 0:
+            habs_def_v = [str(h).lower() for h in getattr(defensor, 'habilidades', [])]
+            umbral_v = 0
+            if any('vantage++' in h or '待ち伏せ＋＋' in h or 'emboscada++' in h for h in habs_def_v):
+                umbral_v = 75
+            elif any('vantage+' in h or '待ち伏せ＋' in h or 'emboscada+' in h for h in habs_def_v):
+                umbral_v = 50
+            elif any('vantage' in h or '待ち伏せ' in h or 'emboscada' in h for h in habs_def_v):
+                umbral_v = 25
+            if umbral_v and hp_def * 100 <= hp_def_max * umbral_v:
+                hp_atk -= stats_def["daño"]
+                registrar(defensor.nombre, f"contraataque (Vantage, HP <= {umbral_v}%)", stats_def["daño"], hp_atk)
+                contra_ya_hecha = True
+                pasivas_def_extra = stats_def.setdefault("pasivas_activas", [])
+                pasivas_def_extra.append(f"Emboscada (Vantage, HP <= {umbral_v}%: golpea primero)")
+        if hp_atk <= 0:
+            pass  # el atacante cae antes de golpear: la ronda termina aquí
+
         # 2. Secuencia según propiedad Smash:
-        if es_smash_atk and puede_contra and not es_smash_def and not barra_resucitada:
+        elif es_smash_atk and puede_contra and not es_smash_def and not barra_resucitada and not contra_ya_hecha:
             # ── Defensor contraataca PRIMERO (prioridad por arma Smash del rival) ──
             if hp_def > 0 and stats_def:
                 hp_atk -= stats_def["daño"]
@@ -1296,8 +1417,8 @@ class CalculadoraEngage:
             if activa_alacrity and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
                 golpear_defensor(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"])
 
-            # 2c. Contraataque del defensor (si vivo, en rango y no roto)
-            if puede_contra and hp_def > 0 and not barra_resucitada and not defensor_roto and stats_def:
+            # 2c. Contraataque del defensor (si vivo, en rango y no roto; no si ya golpeó por Vantage)
+            if puede_contra and not contra_ya_hecha and hp_def > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 tipo_contra_str = "contraataque (smash)" if es_smash_def else "contraataque"
                 hp_atk -= stats_def["daño"]
                 # Un contraataque NUNCA inflige Ruptura

@@ -44,6 +44,7 @@ class Terreno:
     curacion_turno: int = 0       # HP recuperados por turno (ej. +10 en casillas de curación)
     es_antirruptura: bool = False  # Inmunidad a Ruptura (Break) al defender en esta casilla
     es_recarga_emblema: bool = False # Recarga inmediata de energía de Emblema (Fusión al 100%)
+    es_fuego: bool = False         # Terreno en llamas (Blazing Lion): daño al empezar la fase y coste de movimiento +1
     # Objetivo de mapa asociado a la casilla (independiente del terreno físico):
     #   "derrota"  → si un ENEMIGO termina su movimiento aquí, se pierde el mapa (Cap. 8: "toman tu posición")
     #   "victoria" → si un ALIADO termina aquí, se gana el mapa (mapas de "llega a X")
@@ -378,6 +379,34 @@ class MapaTactico:
             if (x, y) in ent.casillas and (tipo is None or str(ent.tipo).lower() == tipo.lower()):
                 return ent
         return None
+
+    def aplicar_fuego(self, casillas) -> None:
+        """
+        Prende (o refresca) el fuego temporal de Blazing Lion en `casillas`: guarda el
+        terreno base y marca la casilla como en llamas (coste de movimiento +1).
+        `limpiar_fuego` restaura el terreno original.
+        """
+        import copy as _copy
+        from ataques_area import FUEGO_COSTE_EXTRA
+        if not hasattr(self, '_terreno_base_fuego'):
+            self._terreno_base_fuego = {}
+        for (x, y) in casillas:
+            if not (0 <= x < self.ancho and 0 <= y < self.alto):
+                continue
+            if (x, y) not in self._terreno_base_fuego:
+                self._terreno_base_fuego[(x, y)] = _copy.copy(self.grid[x][y])
+            t = self.grid[x][y]
+            t.es_fuego = True
+            t.nombre = "Fuego"
+            t.coste_mov = int(self._terreno_base_fuego[(x, y)].coste_mov) + FUEGO_COSTE_EXTRA
+
+    def limpiar_fuego(self, casillas=None) -> None:
+        """Apaga el fuego de `casillas` (todas si None) devolviendo el terreno base."""
+        import copy as _copy
+        base = getattr(self, '_terreno_base_fuego', {})
+        claves = list(base.keys()) if casillas is None else [tuple(c) for c in casillas if tuple(c) in base]
+        for (x, y) in claves:
+            self.grid[x][y] = _copy.copy(base.pop((x, y)))
 
     def aplicar_objetos(self, estados: dict) -> None:
         """

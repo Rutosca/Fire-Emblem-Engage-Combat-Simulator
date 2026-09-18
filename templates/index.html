@@ -231,7 +231,8 @@
       <!-- Estadísticas de Atributos Básicos Directas -->
       <div class="stats-direct-section">
         <div class="stats-header-row">
-          <label>Atributos Básicos de la Unidad (Auto-calculados o editables):</label>
+          <label>Atributos Básicos de la Unidad (editables; tus valores tienen prioridad):</label>
+          <button type="button" id="btn-stats-catalogo" class="btn-hp-tool btn-blue" title="Sobrescribir las stats con las base del catálogo para este personaje, clase y nivel">Rellenar del catálogo</button>
         </div>
         <div class="stats-inputs-grid">
           <div class="stat-input-item">
@@ -553,6 +554,13 @@
           </div>
         </div>
 
+        <!-- Bono de stats durante la Fusión (Rise Above de Roy y similares): valores observados en el juego -->
+        <div class="form-row" id="row-boosts-fusion">
+          <label for="f-boosts-fusion" title="Diferencia de stats entre 'fusionado' y 'solo con el emblema equipado', tal como la muestra el juego. Si se deja vacío, con Roy se estima por crecimientos (Nv+5).">Bono de stats en Fusión (observado):</label>
+          <input type="text" id="f-boosts-fusion" placeholder="hp:5, str:3, mag:1, dex:2, spd:3, def:3, res:2, lck:1" autocomplete="off">
+          <div id="aviso-fusion" class="aviso-fusion hidden"></div>
+        </div>
+
         <!-- Armas de Emblema Dinámicas en Fusión -->
         <div id="seccion-armas-emblema-fusion" class="seccion-armas-emblema-fusion hidden">
           <div class="armas-fusion-header">
@@ -610,6 +618,37 @@
       </div>
       <div class="footer-right">
         <button type="button" id="btn-roster-nuevo" class="btn-primary">+ Nuevo aliado</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal de objeto destructible (vida de vallas, cajas…) ──────────────── -->
+<div id="objeto-backdrop" class="modal-backdrop hidden">
+  <div class="modal-dialog objeto-dialog">
+    <div class="modal-header">
+      <h2 id="objeto-titulo">Destructible</h2>
+      <button id="btn-objeto-close" class="modal-close-btn">&times;</button>
+    </div>
+    <div class="roster-body">
+      <p class="roster-hint" id="objeto-hint">Ocupa varias casillas: comparten una única vida. Al llegar a 0 desaparece y sus casillas quedan libres.</p>
+      <input type="hidden" id="objeto-id" value="">
+      <div class="form-row">
+        <label for="objeto-vida">Vida actual:</label>
+        <div class="hp-row">
+          <input type="number" id="objeto-vida" min="0" value="0">
+          <span class="objeto-vida-max">/ <b id="objeto-vida-max">0</b></span>
+          <button type="button" id="btn-objeto-menos5" class="btn-hp-tool btn-red">-5</button>
+          <button type="button" id="btn-objeto-menos10" class="btn-hp-tool btn-red">-10</button>
+          <button type="button" id="btn-objeto-full" class="btn-hp-tool btn-blue">Max</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="btn-objeto-destruir" class="btn-danger">Destruir</button>
+      <div class="footer-right">
+        <button type="button" id="btn-objeto-cancelar" class="btn-secondary">Cancelar</button>
+        <button type="button" id="btn-objeto-guardar" class="btn-primary">Aplicar</button>
       </div>
     </div>
   </div>

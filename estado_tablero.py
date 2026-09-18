@@ -47,6 +47,7 @@ class FichaUnidad:
     habilidades_sids: list = field(default_factory=list)  # Sids crudos (SID_...) para lookups deterministas por Condition/Act*
     inventario: list = field(default_factory=list)
     potenciadores_usados: list = field(default_factory=list) # e.g. ["Botas (+1 MOV)", "Túnica Angelical (+5 HP)"]
+    boosts_fusion: dict = field(default_factory=dict)  # Bono de stats en Fusión observado en el juego (Rise Above de Roy): {"hp":5,"str":3,...}
     es_verde: bool = False             # True para aliados que se unen en turno 1 (Alcryst, Citrinne, Lapis)
     es_fijo: bool = False              # True si su posición no puede cambiarse en preparación (Alear, verdes)
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
@@ -71,6 +72,25 @@ class FichaUnidad:
     def arma_equipada(self):
         """Alias para el arma activa equipada de combate."""
         return self.arma
+
+    def __setattr__(self, name, value):
+        # La posición vive en la ficha, pero las pasivas de proximidad que evalúa el
+        # motor (Gente de Cuento: pareja hombre-mujer adyacente) solo ven `stats`.
+        # Mantener x/y reflejados en stats sin depender de cada sitio que mueve fichas.
+        object.__setattr__(self, name, value)
+        if name in ("x", "y"):
+            st = self.__dict__.get("stats")
+            if st is not None:
+                try:
+                    setattr(st, name, value)
+                except Exception:
+                    pass
+        elif name == "stats" and value is not None:
+            try:
+                setattr(value, "x", self.__dict__.get("x", 0))
+                setattr(value, "y", self.__dict__.get("y", 0))
+            except Exception:
+                pass
 
     def __post_init__(self):
         # Canónico FE Engage: 3 turnos de fusión base; nivel de vínculo >= 11 otorga +1 turno (4 turnos).
@@ -110,6 +130,7 @@ class FichaUnidad:
             setattr(self.stats, 'max_energia_emblema', self.max_energia_emblema)
             setattr(self.stats, 'hp_stock', self.hp_stock)
             setattr(self.stats, 'estados_temporales', self.estados_temporales)
+            setattr(self.stats, 'boosts_fusion', dict(self.boosts_fusion or {}))
         elif self.hp_max <= 0:
             self.hp_max = 30
             self.hp_actual = 30
@@ -233,6 +254,7 @@ class FichaUnidad:
             "habilidades": self.habilidades,
             "inventario": self.inventario,
             "potenciadores_usados": self.potenciadores_usados,
+            "boosts_fusion": dict(self.boosts_fusion or {}),
             "tiene_stats": self.stats is not None,
             "tiene_arma": self.arma is not None,
             "stats": {
@@ -284,9 +306,94 @@ class EstadoTablero:
         # Se despliegan al entrar en la fase de jugador de ese turno (avanzar_turno).
         self.refuerzos_pendientes: Dict[int, list] = {}
         self.refuerzos_desplegados_ultimo: list = []
+        self.dificultad: str = "Hard"   # dificultad con la que se desplegó el capítulo (refuerzos)
+        # Fuego de Blazing Lion: {(x, y): turno_en_que_se_apaga}. Prende en el turno T del
+        # jugador, quema a quien empiece su fase encima y se apaga al empezar el turno T+1.
+        self.casillas_fuego: Dict[tuple, int] = {}
+        self.quemados_ultimo: list = []   # [(nombre, daño)] del último inicio de fase
+        self.curados_ultimo: list = []    # [(nombre, HP recuperados)] por terreno curativo en el último inicio de fase
 
         if auto_cargar_spawns and self.mapa:
             self.cargar_spawns_desde_mapa()
+
+    # ── Fuego temporal (Blazing Lion) ─────────────────────────────────────
+
+    def encender_fuego(self, casillas, turnos: int = 1) -> list:
+        """Prende `casillas` hasta el turno actual + `turnos`. Devuelve las casillas encendidas."""
+        encendidas = []
+        for c in casillas:
+            c = (int(c[0]), int(c[1]))
+            self.casillas_fuego[c] = self.turno_actual + int(turnos)
+            encendidas.append(c)
+        self.sincronizar_fuego_mapa()
+        return encendidas
+
+    def sincronizar_fuego_mapa(self) -> None:
+        """Proyecta el estado del fuego sobre el grid del mapa."""
+        if not self.mapa or not hasattr(self.mapa, 'aplicar_fuego'):
+            return
+        self.mapa.limpiar_fuego()
+        if self.casillas_fuego:
+            self.mapa.aplicar_fuego(list(self.casillas_fuego.keys()))
+
+    def apagar_fuego_caducado(self) -> list:
+        """Apaga el fuego cuyo turno de caducidad ya llegó. Devuelve las casillas apagadas."""
+        apagadas = [c for c, t in self.casillas_fuego.items() if self.turno_actual >= t]
+        for c in apagadas:
+            self.casillas_fuego.pop(c, None)
+        if apagadas:
+            self.sincronizar_fuego_mapa()
+        return apagadas
+
+    def quemar_unidades_en_fuego(self, es_aliado: bool) -> list:
+        """
+        Daño del fuego a las unidades del bando indicado que empiezan su fase sobre una
+        casilla en llamas (10 HP, nunca por debajo de 1: el fuego no mata en el juego).
+        Los voladores no se queman (verificado en el juego).
+        Devuelve [(nombre, daño), ...].
+        """
+        from ataques_area import FUEGO_DANO_POR_FASE
+        quemados = []
+        if not self.casillas_fuego:
+            return quemados
+        for f in self.fichas.values():
+            if getattr(f, 'es_volador', False):
+                continue
+            if f.viva and bool(f.es_aliado) == bool(es_aliado) and (f.x, f.y) in self.casillas_fuego:
+                nuevo = max(1, f.hp_actual - FUEGO_DANO_POR_FASE)
+                dano = f.hp_actual - nuevo
+                if dano > 0:
+                    f.sincronizar_hp(nuevo)
+                    quemados.append((f.nombre, dano))
+        return quemados
+
+    def curar_unidades_en_terreno(self, es_aliado: bool) -> list:
+        """
+        Curación de terreno (Terrain.xml `Heal`: fuertes, tronos, casillas de recuperación…):
+        las unidades del bando indicado que empiezan su fase sobre una casilla con
+        `curacion_turno` > 0 recuperan esos HP (tope: HP máximo). Viene del mapa (Tiled →
+        tipo de terreno → catálogo de terrenos), no de ningún capítulo concreto.
+        Devuelve [(nombre, curado), ...].
+        """
+        curados = []
+        if not self.mapa or not hasattr(self.mapa, 'obtener_terreno'):
+            return curados
+        for f in self.fichas.values():
+            if not f.viva or bool(f.es_aliado) != bool(es_aliado):
+                continue
+            t = self.mapa.obtener_terreno(f.x, f.y)
+            cura = int(getattr(t, 'curacion_turno', 0) or 0) if t else 0
+            if cura <= 0 or f.hp_actual >= f.hp_max:
+                continue
+            nuevo = min(f.hp_max, f.hp_actual + cura)
+            ganado = nuevo - f.hp_actual
+            if ganado > 0:
+                f.sincronizar_hp(nuevo)
+                curados.append((f.nombre, ganado))
+        return curados
+
+    def casillas_fuego_lista(self) -> list:
+        return [{"x": x, "y": y, "expira_turno": t} for (x, y), t in sorted(self.casillas_fuego.items())]
 
     # ── Objetos de mapa (capa de objetos de Tiled) ───────────────────────
 
@@ -337,10 +444,11 @@ class EstadoTablero:
         self.sincronizar_objetos_mapa()
         return True
 
-    def dañar_objeto_mapa(self, id_objeto: str, daño: int) -> Optional[dict]:
+    def dañar_objeto_mapa(self, id_objeto: str, daño: int = 0, vida: Optional[int] = None) -> Optional[dict]:
         """
-        Resta HP a un destructible con `vida`; al llegar a 0 se destruye entero
-        (todas sus casillas quedan libres). Si no tiene `vida`, se destruye directamente.
+        Resta HP a un destructible con `vida` (o la fija en `vida` si se indica);
+        al llegar a 0 se destruye entero (todas sus casillas quedan libres).
+        Si no tiene `vida`, se destruye directamente.
         """
         est = self.objetos.get(str(id_objeto))
         if not est or not est.get("activo"):
@@ -348,7 +456,12 @@ class EstadoTablero:
         if est.get("vida") is None:
             self.consumir_objeto_mapa(id_objeto)
             return est
-        est["vida"] = max(0, int(est["vida"]) - max(0, int(daño)))
+        if vida is not None:
+            nueva = int(vida)
+        else:
+            nueva = int(est["vida"]) - max(0, int(daño))
+        tope = int(est["vida_max"]) if est.get("vida_max") is not None else nueva
+        est["vida"] = max(0, min(tope, nueva))
         if est["vida"] <= 0:
             est["activo"] = False
             self.sincronizar_objetos_mapa()
@@ -434,8 +547,11 @@ class EstadoTablero:
     # ── Registro y Limpieza ─────────────────────────────────────────────
 
     def limpiar(self) -> None:
-        """Elimina todas las fichas del tablero."""
+        """Elimina todas las fichas del tablero (y apaga el fuego temporal)."""
         self.fichas.clear()
+        if self.casillas_fuego:
+            self.casillas_fuego = {}
+            self.sincronizar_fuego_mapa()
 
     def registrar_unidad(self, ficha: FichaUnidad, resolver_colision: bool = True) -> None:
         """
@@ -633,6 +749,7 @@ class EstadoTablero:
             "fichas": copy.deepcopy(self.fichas),
             "objetos": copy.deepcopy(self.objetos),
             "refuerzos_pendientes": copy.deepcopy(self.refuerzos_pendientes),
+            "casillas_fuego": dict(self.casillas_fuego),
         }
         self.historial.append(snap)
         if len(self.historial) > 50:
@@ -648,7 +765,9 @@ class EstadoTablero:
         self.fichas = snap["fichas"]
         self.objetos = snap.get("objetos", self.objetos)
         self.refuerzos_pendientes = snap.get("refuerzos_pendientes", self.refuerzos_pendientes)
+        self.casillas_fuego = dict(snap.get("casillas_fuego", {}))
         self.sincronizar_objetos_mapa()
+        self.sincronizar_fuego_mapa()
         return True
 
     # ── Gestión de Acciones de Turno ─────────────────────────────────────
@@ -770,6 +889,12 @@ class EstadoTablero:
         for f in self.fichas.values():
             f.purgar_estados_temporales("jugador", self.turno_actual)
 
+        # Fuego (Blazing Lion): quema a los aliados que empiezan el turno encima y se apaga
+        self.quemados_ultimo = self.quemar_unidades_en_fuego(es_aliado=True)
+        self.apagar_fuego_caducado()
+        # Curación de terreno (fuertes, tronos, casillas de recuperación) para los aliados
+        self.curados_ultimo = self.curar_unidades_en_terreno(es_aliado=True)
+
         # Refuerzos enemigos programados para este turno (aparecen al inicio de la fase de jugador)
         self.desplegar_refuerzos(self.turno_actual)
 
@@ -777,6 +902,10 @@ class EstadoTablero:
         """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""
         self.guardar_snapshot()
         self.fase = "enemigo"
+        # Fuego (Blazing Lion): quema a los enemigos que empiezan su fase encima
+        self.quemados_ultimo = self.quemar_unidades_en_fuego(es_aliado=False)
+        # Curación de terreno para los enemigos que empiezan su fase sobre ella
+        self.curados_ultimo = self.curar_unidades_en_terreno(es_aliado=False)
         for f in self.fichas.values():
             f.chain_guard_usado = False
             if not f.es_aliado:
@@ -795,6 +924,9 @@ class EstadoTablero:
             "turno": self.turno_actual,
             "turno_actual": self.turno_actual,
             "fase": self.fase,
+            "dificultad": self.dificultad,
+            "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(self.refuerzos_pendientes.items())},
+            "casillas_fuego": self.casillas_fuego_lista(),
             "aliados": [f.como_dict() for f in self.obtener_aliados()],
             "enemigos": [f.como_dict() for f in self.obtener_enemigos()],
             "fichas": [f.como_dict() for f in self.fichas.values() if f.viva and f.hp_actual > 0]

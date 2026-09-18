@@ -1218,12 +1218,15 @@ class TestFixesTactical(unittest.TestCase):
         tablero.registrar_unidad(axe_cav)
 
         res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
-        combos = [r for r in res["resultados"] if r.get("tipo_analisis") == "combo_ataque" and r.get("enemigo") == "Axe Cavalier"]
-        self.assertTrue(len(combos) > 0, "Debe generarse un ataque coordinado contra el Axe Cavalier")
-        combo = combos[0]
-        self.assertEqual(combo["aliado"], "Alfred", "Debe recomendarse el ataque preparatorio de Alfred")
-        self.assertEqual(combo["aliado_rematador"], "Louis", "Louis debe ser el aliado que remata")
-        self.assertIn("PREPARAR BAJA", combo["recomendacion"])
+        # Los combos "desgastar + rematar" se sustituyeron por bajas conjuntas planificadas
+        # (ataques normales numerados) y solo se emiten cuando NADIE mata solo. Aquí
+        # Louis mata al Axe Cavalier de un golpe con Ridersbane (x3), así que la
+        # recomendación es su kill directo; el desgaste de Alfred queda detrás.
+        ops_cav = [r for r in res["resultados"] if r.get("tipo_analisis") == "oportunidad_jugador" and r.get("enemigo") == "Axe Cavalier"]
+        self.assertTrue(ops_cav, "Debe haber ataques contra el Axe Cavalier")
+        self.assertEqual(ops_cav[0]["aliado"], "Louis", "El kill directo de Louis va primero")
+        self.assertTrue(ops_cav[0]["veredicto"].get("kill_seguro") or ops_cav[0]["veredicto"].get("kill_probable"))
+        self.assertFalse(any(r.get("plan_baja") for r in ops_cav), "Sin baja conjunta cuando un aliado mata solo")
 
     def test_30_boss_hortensia_attack_viable_in_danger_zone(self):
         """
@@ -1346,7 +1349,7 @@ class TestFixesTactical(unittest.TestCase):
         resultados = res["resultados"]
 
         # 1. No debe haber ningún combo contra Fragile Thief (porque Boucheron lo mata 1:1)
-        combos_fragil = [r for r in resultados if r.get("tipo_analisis") == "combo_ataque" and r.get("enemigo") == "Fragile Thief"]
+        combos_fragil = [r for r in resultados if r.get("plan_baja") and r.get("enemigo") == "Fragile Thief"]
         self.assertEqual(len(combos_fragil), 0, "No deben generarse combos para un enemigo que muere 1:1")
 
         # 2. Debe haber kill directa de Boucheron sobre Fragile Thief
@@ -1354,8 +1357,9 @@ class TestFixesTactical(unittest.TestCase):
         self.assertTrue(len(solo_kill) > 0, "Boucheron debe tener kill unitaria contra Fragile Thief")
 
         # 3. Debe haber combo coordinado contra Axe Cavalier (ya que nadie lo mata 1:1)
-        combos_cav = [r for r in resultados if r.get("tipo_analisis") == "combo_ataque" and r.get("enemigo") == "Axe Cavalier"]
-        self.assertTrue(len(combos_cav) > 0, "Debe haber combo coordinado contra Axe Cavalier")
+        # (baja conjunta planificada si nadie lo mata solo; si alguien lo mata, su kill directo)
+        combos_cav = [r for r in resultados if r.get("enemigo") == "Axe Cavalier" and (r.get("plan_baja") or (r.get("veredicto") or {}).get("kill_seguro") or (r.get("veredicto") or {}).get("kill_probable"))]
+        self.assertTrue(len(combos_cav) > 0, "Debe haber una jugada letal (conjunta o directa) contra Axe Cavalier")
 
         # 4. En la lista final, la kill 1:1 debe aparecer ANTES del combo coordinado
         idx_solo = resultados.index(solo_kill[0])
