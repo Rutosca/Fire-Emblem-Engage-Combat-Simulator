@@ -1725,28 +1725,32 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
     for aliado in aliados_activos:
         hp_max_ali = getattr(aliado.stats, 'hp_max', aliado.stats.hp)
         if aliado.stats.hp <= hp_max_ali * 0.60:
-            pocion, cur_pocion = None, 0
+            pocion, cur_pocion, info_pocion = None, 0, None
             for it in (aliado.inventario or []):
                 usos_p = it.get("usos")
                 if usos_p is not None and usos_p <= 0:
                     continue
                 info_p = info_curacion_item(it.get("nombre_base") or it.get("nombre") or it.get("arma"), aliado)
                 if info_p and info_p["tipo"] == "Objeto":
-                    # Con varias, la que más cura (Elixir 30 > Poción 15)
-                    if info_p["curacion"] > cur_pocion:
-                        pocion, cur_pocion = it, int(info_p["curacion"])
+                    # Con varias, la que más cura (Elixir 30 > Poción 15); si la unidad está
+                    # envenenada, el Antídoto (cura 15 y quita el veneno) va por delante.
+                    valor = int(info_p["curacion"]) + (1000 if (info_p.get("cura_veneno") and int(getattr(aliado, 'nivel_veneno', 0) or 0) > 0) else 0)
+                    if valor > cur_pocion:
+                        pocion, cur_pocion, info_pocion = it, valor, info_p
             if pocion:
+                cur_pocion = int(info_pocion["curacion"])
                 urgente = aliado.stats.hp <= hp_max_ali * 0.35
                 acciones_soporte.append({
                     "tipo_analisis": "uso_pocion",
                     "aliado": aliado.nombre,
                     "item": pocion.get("nombre"),
                     "curacion_estimada": min(cur_pocion, hp_max_ali - aliado.stats.hp),
+                    "cura_veneno": bool(info_pocion.get("cura_veneno")),
                     "pos_sugerida": [aliado.x, aliado.y],
                     "prioridad": 400 if urgente else 160,
                     "recomendacion": (
                         f"SUPERVIVENCIA ({'CRÍTICO' if urgente else 'AVISO'}): {aliado.nombre} debe usar {pocion.get('nombre')} "
-                        f"(+{cur_pocion} HP) para evitar caer ante contragolpe o fase enemiga."
+                        f"(+{cur_pocion} HP{' y quita el veneno' if info_pocion.get('cura_veneno') else ''}) para evitar caer ante contragolpe o fase enemiga."
                     )
                 })
 

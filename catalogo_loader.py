@@ -474,8 +474,9 @@ def info_curacion_item(nombre_item: str, sanador=None) -> Optional[dict]:
     Curación de un bastón u objeto según el datamine (Item.xml → catálogo `armas`):
       • Bastón de curación (Heal 10, Mend 20, Physic 8, Recover 40, Fortify 7…):
         HP = Mt del bastón + Mag del sanador // 2  (fórmula de Engage), rango del catálogo.
-      • Objeto consumible (Poción 15, Elixir 30…): HP = Mt del objeto, sin rango.
-    Devuelve {"nombre", "tipo", "mt", "curacion", "rango"} o None si no cura.
+      • Objeto consumible (Poción 15, Elixir 30, Antídoto 15): HP = Mt del objeto, sin
+        rango. El Antídoto (Item.xml AddType=18) además quita el veneno → `cura_veneno`.
+    Devuelve {"nombre", "tipo", "mt", "curacion", "rango", "cura_veneno"} o None si no cura.
     """
     if not nombre_item:
         return None
@@ -495,12 +496,14 @@ def info_curacion_item(nombre_item: str, sanador=None) -> Optional[dict]:
             return None
         mag = int(getattr(getattr(sanador, 'stats', sanador), 'magia', 0) or 0) if sanador is not None else 0
         return {"nombre": nombre, "tipo": "Bastón", "mt": mt, "curacion": mt + mag // 2,
-                "rango": list(ainfo.get("rango") or [1])}
+                "rango": list(ainfo.get("rango") or [1]), "cura_veneno": False}
     if tipo in ("Objeto", "Item", "Consumible"):
-        # Solo curan los consumibles de HP (Poción, Elixir); antídoto, libros, bentos… no
-        if mt <= 0 or not any(k in n_low for k in ("pocion", "vulnerary", "elixir", "medicine", "brebaje")):
+        # Consumibles de HP: Poción, Elixir y Antídoto (que además cura el veneno).
+        # Libros de habilidad y bentos también tienen Mt pero no curan HP.
+        es_antidoto = any(k in n_low for k in ("antidoto", "antidote"))
+        if mt <= 0 or not (es_antidoto or any(k in n_low for k in ("pocion", "vulnerary", "elixir", "medicine", "brebaje"))):
             return None
-        return {"nombre": nombre, "tipo": "Objeto", "mt": mt, "curacion": mt, "rango": [0]}
+        return {"nombre": nombre, "tipo": "Objeto", "mt": mt, "curacion": mt, "rango": [0], "cura_veneno": es_antidoto}
     return None
 
 

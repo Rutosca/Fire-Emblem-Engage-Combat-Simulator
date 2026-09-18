@@ -822,6 +822,12 @@ def usar_objeto():
                         it["usos"] = usos
                 break
 
+    # Antídoto: además de curar, elimina el veneno (Item.xml AddType=18)
+    if item_nombre and any(k in normalizar_texto(item_nombre) for k in ("antidoto", "antidote")):
+        f.nivel_veneno = 0
+        if f.stats:
+            setattr(f.stats, 'nivel_veneno', 0)
+
     f.ha_actuado = True
     # Usar objeto/bastón no es "Esperar": pasivas como Self-Improver no deben dispararse
     f.accion_turno = "baston" if any(k in normalizar_texto(item_nombre or "") for k in ("baston", "staff", "cura", "heal", "mend", "physic")) else "objeto"
