@@ -6,9 +6,10 @@ API REST Flask que conecta la UI del Gemelo con el motor de cálculo.
 from flask import Flask, jsonify, request, render_template, abort
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from estado_tablero import EstadoTablero, FichaUnidad
+import pasivas
 import pasivas_temporales
 from lector_de_mapas import MapaTactico
-from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock
+from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock, casillas_advance
 
 import os
 import re
@@ -677,18 +678,30 @@ def obtener_rango_movimiento():
         arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
     )
     casillas_mov = analizador.calcular_casillas_alcanzables(umock)
-    
+
     # Ocupantes: no se puede terminar el movimiento en una casilla ocupada por otra unidad viva
     ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != nombre}
     casillas_validas = [[x, y] for (x, y) in casillas_mov if (x, y) not in ocupadas or (x == ficha.x and y == ficha.y)]
+    advance = _casillas_advance_de(ficha, casillas_mov)
 
     return jsonify({
         "ok": True,
         "nombre": nombre,
         "mov": ficha.mov or 4,
         "es_volador": ficha.es_volador,
-        "casillas": casillas_validas
+        "casillas": casillas_validas,
+        # Advance (Roy): casillas a las que solo se llega avanzando 1 hacia un enemigo para atacarlo
+        "casillas_advance": [[x, y] for (x, y) in advance],
     })
+
+
+def _casillas_advance_de(ficha, alcanzables) -> dict:
+    """{Q: P} de Advance (SID_踏み込み) para `ficha`, o {} si no lo tiene."""
+    if not pasivas.tiene_advance(ficha):
+        return {}
+    rivales = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != ficha.es_aliado}
+    ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != ficha.nombre}
+    return casillas_advance(alcanzables, rivales, ocupadas, _mapa.grid, _mapa.ancho, _mapa.alto, ficha.es_volador)
 
 @app.route("/api/mover", methods=["POST"])
 def mover_unidad():
@@ -739,8 +752,11 @@ def mover_unidad():
         arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
     )
     alcanzables = analizador.calcular_casillas_alcanzables(umock)
+    via_advance = None
     if (x, y) not in alcanzables:
-        return jsonify({"error": f"{nombre} solo puede moverse {ficha.mov or 4} casillas. La casilla ({x},{y}) está fuera de su alcance o es intransitable."}), 400
+        via_advance = _casillas_advance_de(ficha, alcanzables).get((x, y))
+        if via_advance is None:
+            return jsonify({"error": f"{nombre} solo puede moverse {ficha.mov or 4} casillas. La casilla ({x},{y}) está fuera de su alcance o es intransitable."}), 400
 
     tablero.guardar_snapshot()
     ok = tablero.mover_unidad(nombre, x, y)
@@ -759,6 +775,7 @@ def mover_unidad():
         "x": x,
         "y": y,
         "turno": tablero.turno_actual,
+        "advance_desde": list(via_advance) if via_advance else None,
         "ficha": ficha.como_dict(),
         "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]

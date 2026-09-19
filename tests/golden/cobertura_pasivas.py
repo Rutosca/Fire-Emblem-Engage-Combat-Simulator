@@ -254,7 +254,7 @@ def generar_informe(escribir: bool = True) -> str:
     }
     for est in ("cubierta", "parcial", "no_cubierta", "evento_around", "sin_efecto_codificado", "dlc_sin_datamine", "no_en_catalogo"):
         L.append(f"| {est} | {por_estado.get(est, 0)} | {descr[est]} |")
-    L.append(f"\nImplementadas a mano en el motor (SID o nombre citado en {', '.join(FUENTES_MOTOR)}): **{len(a_mano)}** (lista al final).\n")
+    L.append(f"\nCitadas en el código del motor (SID o nombre en {', '.join(FUENTES_MOTOR)}, comentarios incluidos): **{len(a_mano)}** (lista al final).\n")
 
     L.append("## Vocabulario que falta, por habilidades que desbloquea\n")
     L.append("| tipo | término | habilidades | ejemplos |")
@@ -276,8 +276,10 @@ def generar_informe(escribir: bool = True) -> str:
         for a in filas:
             L.append(_fila(a))
 
-    L.append(f"\n## Implementadas a mano en el motor ({len(a_mano)})\n")
-    L.append("Candidatas a migrar al motor genérico (Fase 2). `estado` indica si la DSL ya podría sustituirlas.\n")
+    L.append(f"\n## Citadas en el código del motor ({len(a_mano)})\n")
+    L.append("Tras la Fase 2 el motor genérico (pasivas.recopilar_combate) aplica todas las de `estado` cubierta; las que "
+             "siguen nombradas en el código son las de secuencia/eventos (Fase 3), comandos (Canter, Advance), Ataques de "
+             "Emblema con geometría propia o simples menciones en comentarios.\n")
     L.append("| SID | nombre | estado DSL | Condition | Act* |")
     L.append("|---|---|---|---|---|")
     for a in sorted(a_mano, key=lambda a: (a["estado"], a["sid"])):

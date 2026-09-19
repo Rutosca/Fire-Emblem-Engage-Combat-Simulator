@@ -30,18 +30,9 @@ SID_MEDITATION = "SID_瞑想"
 # Timing de Skill.xml "al esperar" (la unidad termina su acción sin atacar ni usar objetos)
 TIMING_AL_ESPERAR = 25
 
-_ALIAS_TEXTO = {
-    SID_GET_BEHIND_ME: ("僕が守ります", "get behind", "al rescate", "ponte detrás", "ponte detras"),
-    SID_SELF_IMPROVER: ("自己研鑽", "self-improver", "self improver", "automejora", "superación personal", "superacion personal"),
-    SID_MEDITATION: ("瞑想", "meditation", "meditación", "meditacion"),
-}
-
 
 def _tiene_pasiva(ficha, sid: str) -> bool:
-    if sid in pasivas.sids_activos(ficha):
-        return True
-    habs = [str(h).lower() for h in getattr(ficha, 'habilidades', [])]
-    return any(alias in h for h in habs for alias in _ALIAS_TEXTO.get(sid, ()))
+    return sid in pasivas.sids_activos(ficha)
 
 
 def _efectos_de(sid_pasiva: str):
@@ -70,10 +61,6 @@ def _pasivas_al_esperar(ficha) -> list:
     for sid in pasivas.sids_activos(ficha):
         info = condicion_dsl.HABILIDADES_CATALOGO.get(sid) or {}
         if int(info.get("timing") or 0) == TIMING_AL_ESPERAR and _efectos_de(sid):
-            salida.append(sid)
-    # datos construidos a mano (nombres sin SID)
-    for sid in (SID_SELF_IMPROVER, SID_MEDITATION):
-        if sid not in salida and _tiene_pasiva(ficha, sid):
             salida.append(sid)
     return salida
 

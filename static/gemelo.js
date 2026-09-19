@@ -402,13 +402,20 @@ async function mostrarRangoMovimiento(nombre) {
       const cel = $(`c-${cx}-${cy}`);
       if (cel) cel.classList.add("rango-movimiento");
     });
+    // Advance (Roy): casillas junto a un enemigo a las que solo se llega con el comando
+    (res.casillas_advance || []).forEach(([cx, cy]) => {
+      const cel = $(`c-${cx}-${cy}`);
+      if (cel) { cel.classList.add("rango-movimiento", "rango-advance"); cel.title = "Advance: avanza 1 casilla hacia el enemigo y ataca"; }
+    });
   }
 }
 
 function limpiarRangoMovimiento() {
   document.querySelectorAll(".celda.rango-movimiento").forEach(c => {
     c.classList.remove("rango-movimiento");
+    c.classList.remove("rango-advance");
     c.classList.remove("drop-over");
+    if (c.title && c.title.startsWith("Advance:")) c.title = "";
   });
 }
 
@@ -463,6 +470,7 @@ async function onCeldaDrop(e) {
     return;
   }
   notificarRefuerzos(res);   // refuerzos por evento del guion (p.ej. Kagetsu llega a su fuerte)
+  if (res.advance_desde) mostrarToast(`${nombre} usa Advance desde (${res.advance_desde[0]},${res.advance_desde[1]}): debe atacar al enemigo adyacente`, "info");
 
   if (res.fichas) {
     actualizarTokens(res.fichas);

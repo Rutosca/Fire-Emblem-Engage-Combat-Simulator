@@ -48,6 +48,44 @@ class ContextoMapaEnemigo:
     pos_jugador: Tuple[int, int]
     ficha_jugador: object       # instancia de estado_tablero.FichaUnidad
 
+def casillas_advance(alcanzables, posiciones_enemigas, ocupadas, grid, ancho, alto, es_volador=False) -> dict:
+    """
+    Advance (SID_踏み込み, Roy): desde una casilla alcanzable P con un enemigo a
+    distancia 2, la unidad avanza 1 casilla hacia él y ataca cuerpo a cuerpo.
+    Devuelve {Q: P}: casilla final Q (adyacente a P y al enemigo, libre y
+    transitable) → casilla P desde la que se lanza el comando. Solo se incluyen
+    las Q que NO se alcanzan ya con el movimiento normal (ahí Advance no aporta).
+    `ocupadas`: casillas de cualquier unidad viva (no se puede terminar en ellas).
+    """
+    alcanzables = set(alcanzables or ())
+    enemigos = set(posiciones_enemigas or ())
+    ocupadas = set(ocupadas or ())
+    salida = {}
+
+    def transitable(x, y):
+        if not (0 <= x < ancho and 0 <= y < alto):
+            return False
+        t = grid[x][y]
+        return bool(getattr(t, 'volable', True)) if es_volador else bool(getattr(t, 'caminable', True))
+
+    for (px, py) in alcanzables:
+        if (px, py) in ocupadas and False:
+            continue
+        for (ex, ey) in enemigos:
+            if abs(px - ex) + abs(py - ey) != 2:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                qx, qy = px + dx, py + dy
+                if abs(qx - ex) + abs(qy - ey) != 1:
+                    continue
+                q = (qx, qy)
+                if q in alcanzables or q in ocupadas or q in enemigos or not transitable(qx, qy):
+                    continue
+                # de varias P posibles, la más cercana al origen no se conoce aquí: se guarda la primera
+                salida.setdefault(q, (px, py))
+    return salida
+
+
 class AnalizadorAmenaza:
     """
     Calcula las casillas a las que una unidad puede moverse y atacar.

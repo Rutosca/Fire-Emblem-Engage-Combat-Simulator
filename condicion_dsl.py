@@ -249,6 +249,7 @@ class ContextoCombate:
     turno_total: int = 0                # 総手番回数: rondas ya ejecutadas (0 antes del primer golpe)
     rondas_rival: int = 1               # 相手の手番回数: rondas del rival (0 = no puede contraatacar)
     rol: str = ""                       # 立場: "atacante" | "defensor" | "apoyo"
+    chain_attacks: int = 0              # チェインアタック回数: Chain Attacks de aliados de apoyo en este combate
     terreno_propio: object = None
     terreno_rival: object = None
     arma: object = None
@@ -460,6 +461,7 @@ VARIABLES = {
     "総手番回数": lambda ctx: ctx.turno_total,
     "相手の手番回数": lambda ctx: ctx.rondas_rival,
     "立場": lambda ctx: ctx.rol,
+    "チェインアタック回数": lambda ctx: ctx.chain_attacks,
     # Identidad, género y Emblema (auras: 相手 = quien recibiría el efecto)
     "識別子": lambda ctx: _identificador(ctx.unidad),
     "相手の識別子": lambda ctx: _identificador(ctx.rival),
@@ -468,6 +470,7 @@ VARIABLES = {
     "神将レベル": lambda ctx: _nivel_emblema(ctx.unidad),
     "相手の神将レベル": lambda ctx: _nivel_emblema(ctx.rival),
     "地形回避": lambda ctx: getattr(ctx.terreno_propio, 'avo', 0) if ctx.terreno_propio else 0,
+    "相手の地形回避": lambda ctx: getattr(ctx.terreno_rival, 'avo', 0) if ctx.terreno_rival else 0,
     "周囲の味方数": lambda ctx: sum(1 for _, d in (ctx.aliados_cercanos or []) if d <= 1),
     "攻撃速度": lambda ctx: _velocidad_ataque(ctx.unidad, ctx.arma),
     "相手の攻撃速度": lambda ctx: _velocidad_ataque(ctx.rival, ctx.arma_rival),
@@ -638,7 +641,7 @@ ACT_STAT_MAP = {
     "回復": "curacion",
     "相手の回復": "rival_curacion",
     "相手のHP": "rival_hp",
-    "力": "str", "技": "dex", "守備": "def", "魔防": "res",
+    "力": "str", "魔力": "mag", "技": "dex", "守備": "def", "魔防": "res",
     "相手の防御力": "rival_defensa_efectiva",   # Luna: -50 % de la DEF/RES que aplica a este golpe
     "相手のユニット防御力": "rival_defensa_efectiva",
     "一時変数": "tmp",

@@ -139,7 +139,7 @@ class TestFase1Auditoria(unittest.TestCase):
         )
         # ATK base: 10 STR + 5 Mt + 3 (Guía Divina) = 18 ATK. Daño = 18 - 5 DEF = 13.
         self.assertEqual(resultado["atacante"]["daño_por_golpe"], 13)
-        self.assertTrue(any("Guía Divina" in p for p in resultado["atacante"]["pasivas_activas"]))
+        self.assertTrue(any("Divinely Inspiring" in p for p in resultado["atacante"]["pasivas_activas"]))
 
 
 if __name__ == "__main__":

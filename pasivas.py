@@ -21,6 +21,7 @@ El juego aplica la variante del estilo de la unidad si existe; aquí se hace la
 misma sustitución en `sids_activos`.
 """
 
+import math
 from dataclasses import dataclass, field
 from typing import Iterable, Optional
 
@@ -40,6 +41,18 @@ SUFIJO_ESTILO = {
     "volador": "飛行",
 }
 _SUFIJO_HEREDADA = "_継承用"
+
+# Reglas de estilo de combate que Skill.xml codifica como habilidades sin fila en
+# Job.xml (el juego las asigna por estilo): Encubierto duplica el Avo del terreno
+# (SID_地形回避有利時２倍: solo 地形回避, no la Def), Místico anula el Avo del terreno del
+# rival al atacar con tomo (SID_相手の地形回避有利時０), Acorazado no sufre Ruptura
+# por triángulo (SID_相性ブレイク無効). Volador/Dragón/Apoyo/Qi Adept siguen siendo
+# reglas del motor (terreno, Chain Attack, Chain Guard).
+SIDS_ESTILO = {
+    "encubierto": ["SID_地形回避有利時２倍"],
+    "mistico": ["SID_相手の地形回避有利時０"],
+    "acorazado": ["SID_相性ブレイク無効"],
+}
 
 
 # ── Nombre visible → SID ─────────────────────────────────────────────────────
@@ -152,10 +165,46 @@ def sids_activos(unidad, incluir_variantes_estilo: bool = True) -> list:
         sid_est = estado.get("sid") if isinstance(estado, dict) else getattr(estado, "sid", None)
         if sid_est:
             sids.append(sid_est)
+    estilo = getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", "")
     if incluir_variantes_estilo:
-        estilo = getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", "")
         sids = [variante_por_estilo(s, estilo) for s in sids]
+    from motor_calculo import resolver_estilo_combate   # import diferido (ver variante_por_estilo)
+    sids += [s for s in SIDS_ESTILO.get(resolver_estilo_combate(estilo), []) if s in HABILIDADES]
     return _dedup(sids)
+
+
+# Advance (Roy, sincronía a vínculo 3): comando de ataque (Skill.xml Timing 21,
+# MoveSelf 1, RangeI/O 1). "Avanza 1 casilla hacia un enemigo a 2 casillas y ataca":
+# la geometría vive en motor_de_movimiento_y_amenaza.casillas_advance.
+SID_ADVANCE = "SID_踏み込み"
+
+
+def tiene_advance(unidad) -> bool:
+    return tiene_sid(unidad, SID_ADVANCE)
+
+
+def alcance_canter(unidad) -> int:
+    """Casillas de Canter (SID_再移動: Power 2; Canter+: 3) o 0 si la unidad no lo tiene."""
+    mejor = 0
+    for sid in sids_activos(unidad):
+        info = HABILIDADES.get(sid) or {}
+        if sid.startswith("SID_再移動"):
+            mejor = max(mejor, int((info.get("combat_mods") or {}).get("power") or 0))
+    return mejor
+
+
+def umbral_vantage(unidad) -> int:
+    """% de HP máximo por debajo del cual la unidad golpea primero al defender
+    (Vantage 25 / Vantage+ 50 / Vantage++ 75, leído de la Condition del SID); 0 si no lo tiene."""
+    import re
+    mejor = 0
+    for sid in sids_activos(unidad):
+        info = HABILIDADES.get(sid) or {}
+        if sid.startswith("SID_待ち伏せ"):
+            m = re.search(r"MaxHP\s*\*\s*(\d+)", str(info.get("condition") or ""))
+            if m:
+                mejor = max(mejor, int(m.group(1)))
+    return mejor
 
 
 def tiene_sid(unidad, *sids: str) -> bool:
@@ -193,6 +242,13 @@ CLAVES_COMBATE = (
     "curacion", "rival_curacion", "hp", "rival_hp",
 )
 
+# Timings (Skill.xml) cuyos Act* modifican el golpe de forma ESTÁTICA (se conocen
+# antes de la secuencia): 1 permanentes, 2 velocidad de ataque, 3 Hit/Avo/Crit/威力,
+# 4 inicio de combate, 5 orden/forecast, 7 daño, 8 procs de ataque, 10 modificador de daño.
+# Quedan fuera los de secuencia por golpe (6, 9, 11, 12, 13, 15) y los de fuera del
+# combate (0, 17-27): Fase 3.
+TIMINGS_GOLPE_ESTATICO = frozenset({1, 2, 3, 4, 5, 7, 8, 10})
+
 # Etiquetas para los textos de pasivas_activas (UI)
 _ETIQUETAS = {
     "power": "Atk", "atk": "Atk", "unit_atk": "Atk", "power_arma": "Mt", "rival_power": "Atk rival",
@@ -203,6 +259,12 @@ _ETIQUETAS = {
     "rival_effectividad": "efectividad rival", "rival_defensa_efectiva": "Def rival", "turno_extra": "rondas",
     "rival_turno_extra": "rondas rival", "acciones": "golpes/ronda", "golpes": "golpes",
 }
+
+
+# Asignaciones ("=") que merecen texto en la UI (las internas, como ユニット攻撃力 de
+# Qi Adept o las cuentas de rondas, no)
+_ASIGNACIONES_VISIBLES = frozenset({"hit_rate", "crit_rate", "rival_hit_rate", "rival_crit_rate",
+                                    "rival_defensa_efectiva", "rival_terreno_avo", "rival_effectividad"})
 
 
 def _fmt_valor(v) -> str:
@@ -243,6 +305,30 @@ class Modificadores:
     def asig(self, clave: str, defecto=None):
         return self.asignaciones.get(clave, defecto)
 
+    def _activas_en(self, timings):
+        return self.activas if timings is None else [a for a in self.activas if a["timing"] in timings]
+
+    def suma(self, clave: str, timings=None) -> float:
+        """Σ de los acts "+"/"-" sobre `clave`, opcionalmente solo de esos timings."""
+        return sum(a["valores"].get(clave, 0) for a in self._activas_en(timings))
+
+    def producto(self, clave: str, timings=None) -> float:
+        p = 1.0
+        for a in self._activas_en(timings):
+            p *= a["mult"].get(clave, 1.0)
+        return p
+
+    def asignado(self, clave: str, timings=None, defecto=None):
+        """Último act "=" sobre `clave` (None si ninguno)."""
+        v = defecto
+        for a in self._activas_en(timings):
+            if clave in a["asig"]:
+                v = a["asig"][clave]
+        return v
+
+    def activas_en(self, timings=None) -> list:
+        return list(self._activas_en(timings))
+
     def tiene(self, *sids: str) -> bool:
         """True si alguno de los SIDs se ha aplicado (Condition cumplida) en este combate."""
         aplicados = {a["sid"] for a in self.activas}
@@ -270,7 +356,8 @@ class Modificadores:
     def _partes(entrada: dict) -> list:
         partes = [f"{_fmt_valor(v)} {_ETIQUETAS.get(k, k)}" for k, v in entrada["valores"].items() if v]
         partes += [f"×{v:g} {_ETIQUETAS.get(k, k)}" for k, v in entrada.get("mult", {}).items() if v != 1]
-        partes += [f"{_ETIQUETAS.get(k, k)} = {v:g}" for k, v in entrada.get("asig", {}).items() if isinstance(v, (int, float))]
+        partes += [f"{_ETIQUETAS.get(k, k)} = {v:g}" for k, v in entrada.get("asig", {}).items()
+                   if isinstance(v, (int, float)) and k in _ASIGNACIONES_VISIBLES]
         return partes
 
     def resumen(self, solo_con_efecto: bool = True) -> list:
@@ -377,9 +464,11 @@ def _aplicar_sid(sid: str, ctx, mods: Modificadores, profundidad: int = 0, de: s
         if isinstance(valor, str):
             textos[clave] = valor
         elif op == "+":
-            sumas[clave] = sumas.get(clave, 0) + valor
+            # los valores de combate son enteros: "速さ * 0.25" (Perceptive), "相手の守備 * 0.2"
+            # (Lunar Brace) se truncan como hace el juego
+            sumas[clave] = sumas.get(clave, 0) + math.floor(valor)
         elif op == "-":
-            sumas[clave] = sumas.get(clave, 0) - valor
+            sumas[clave] = sumas.get(clave, 0) - math.floor(valor)
         elif op == "*":
             mult[clave] = mult.get(clave, 1.0) * valor
         elif op == "=":
@@ -402,13 +491,16 @@ def _aplicar_sid(sid: str, ctx, mods: Modificadores, profundidad: int = 0, de: s
     # con su propia Condition (Hold Out → _効果 con "HP <= ダメージ", Divine Speed →
     # ダメージ 50 %...). Auras (Timing 20) se resuelven en efectos_recibidos; el resto
     # de give_target (rival golpeado, alrededor tras combate) son eventos: Fase 3.
+    # No se encadenan los give_sids de comandos y eventos (Timing >= 17: Echo otorga
+    # su "×0.6" solo al usar el comando; Get Behind Me!, Savage Blow… son eventos).
     gt = int(info.get("give_target") or 0)
-    if profundidad < 4 and info.get("give_sids") and gt == 1:
+    es_evento = int(info.get("timing") or 0) >= 17
+    if profundidad < 4 and info.get("give_sids") and gt == 1 and not es_evento:
         for hijo in info["give_sids"]:
             if hijo != sid:
                 _aplicar_sid(hijo, ctx, mods, profundidad + 1, de)
-    elif info.get("give_sids") and gt != 1 and int(info.get("timing") or 0) != TIMING_AURA:
-        mods.ignoradas.append((sid, f"give_target={gt} (evento, Fase 3)"))
+    elif info.get("give_sids") and (gt != 1 or es_evento) and int(info.get("timing") or 0) != TIMING_AURA:
+        mods.ignoradas.append((sid, f"give_target={gt}, timing={info.get('timing')} (evento/comando, Fase 3)"))
 
 
 def _es_aura(info: dict) -> bool:

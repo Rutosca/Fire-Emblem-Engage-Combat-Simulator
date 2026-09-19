@@ -20,7 +20,7 @@ class TestGroundTruthCapitulo9(unittest.TestCase):
 
     def _houses_unite(self, aliados):
         chloe = Unidad("Chloé", hp=30, fuerza=15, destreza=10, velocidad=10, defensa=8, resistencia=5, suerte=5, complexion=5,
-                       habilidades=["Weapon Sync+"], emblema_nombre="Edelgard / Dimitri / Claude", en_fusion=True,
+                       habilidades=["Weapon Sync+", "Fairy-Tale Folk"], emblema_nombre="Edelgard / Dimitri / Claude", en_fusion=True,
                        estilo_combate="飛行スタイル")
         setattr(chloe, "genero", 2)
         setattr(chloe, "lider_tres_casas", "Dimitri")

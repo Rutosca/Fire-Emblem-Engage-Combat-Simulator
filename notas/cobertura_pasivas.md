@@ -3,22 +3,22 @@
 Generado por `tests/golden/cobertura_pasivas.py`. No editar a mano.
 
 - Habilidades en el catálogo: **804**
-- Alcanzables por unidades reales (personajes, clases, emblemas, dispos M000–M026 con refuerzos, cadenas give/sync): **573**
-- Vistas en los escenarios golden actuales: **56**
+- Alcanzables por unidades reales (personajes, clases, emblemas, dispos M000–M026 con refuerzos, cadenas give/sync): **574**
+- Vistas en los escenarios golden actuales: **57**
 
 ## Estado
 
 | estado | nº | significado |
 |---|---:|---|
-| cubierta | 347 | Condition y Act* íntegramente en el vocabulario actual de la DSL |
+| cubierta | 355 | Condition y Act* íntegramente en el vocabulario actual de la DSL |
 | parcial | 4 | stat_boosts/combat_mods o parte de los acts se leen; falta vocabulario para el resto |
-| no_cubierta | 38 | tiene Condition/Act* pero la DSL no los entiende |
+| no_cubierta | 30 | tiene Condition/Act* pero la DSL no los entiende |
 | evento_around | 7 | efecto post-combate en área (Around*): sin motor todavía |
 | sin_efecto_codificado | 61 | sin Condition/Act*/boosts/give: comando o flag que el motor debe tratar aparte (Canter, Vantage, Dance…) |
 | dlc_sin_datamine | 116 | habilidad de Emblema DLC identificada solo por nombre (no está en Skill.xml): overlay a mano |
-| no_en_catalogo | 0 | SID referenciado pero ausente del catálogo |
+| no_en_catalogo | 1 | SID referenciado pero ausente del catálogo |
 
-Implementadas a mano en el motor (SID o nombre citado en motor_calculo.py, motor_analisis.py, estado_tablero.py, pasivas_temporales.py, app.py, catalogo_loader.py): **54** (lista al final).
+Citadas en el código del motor (SID o nombre en motor_calculo.py, motor_analisis.py, estado_tablero.py, pasivas_temporales.py, app.py, catalogo_loader.py, comentarios incluidos): **54** (lista al final).
 
 ## Vocabulario que falta, por habilidades que desbloquea
 
@@ -30,19 +30,14 @@ Implementadas a mano en el motor (SID o nombre citado en motor_calculo.py, motor
 | variable | `杖の種類` | 5 | Staff Mastery 1, Staff Mastery 2, Staff Mastery 3, Staff Mastery 4 |
 | función | `相手のユニット属性()` | 3 | Holy Stance, Holy Stance+, Holy Stance++ |
 | variable | `異形属性` | 3 | Holy Stance, Holy Stance+, Holy Stance++ |
-| variable | `相手の性別` | 3 | Disarming Sigh, Knightly Escort, Stunning Smile |
-| variable | `相手の識別子` | 3 | Charmer, Knightly Escort, Single-Minded |
 | función | `神将スキル確率()` | 2 | Divine Pulse, Divine Pulse+ |
 | valor | `ヒット` | 2 | Divine Pulse, Divine Pulse+ |
-| variable | `チェインアタック回数` | 2 | Moved to Tears |
 | variable | `ミス` | 2 | Divine Pulse, Divine Pulse+ |
 | variable | `一時変数` | 2 | Back at You, Diffuse Healer |
 | variable | `攻撃結果` | 2 | Divine Pulse, Divine Pulse+ |
 | variable | `最終戦闘相手` | 2 | Charmer, Single-Minded |
-| variable | `相手の神将レベル` | 2 | Bond Forger, Bond Forger+ |
 | función | `周囲のユニット数()` | 1 | Party Animal |
 | función | `周囲の味方数()` | 1 | Spell Harmony |
-| función | `周囲の性別数()` | 1 | Knightly Escort |
 | función | `移動コスト()` | 1 | Air Raid |
 | valor | `アイテム()` | 1 | Gold Acquisition 500G |
 | valor | `ミス` | 1 | Avo |
@@ -65,27 +60,23 @@ Implementadas a mano en el motor (SID o nombre citado en motor_calculo.py, motor
 | variable | `相手の武器レベル` | 1 | Weapon Insight |
 | variable | `相手の移動タイプ` | 1 | Air Raid |
 | variable | `相手の隣接ユニット数` | 1 | Aspiring Hero |
-| variable | `立場` | 1 | Brave Assist |
 | variable | `総攻撃回数` | 1 | LynEngage Attack Break |
-| variable | `識別子` | 1 | Knightly Escort |
 | variable | `護衛中` | 1 | Allied Defense |
 | variable | `隣接ユニット数` | 1 | Aspiring Hero |
 
-## No cubiertas (38)
+## No cubiertas (30)
 
 | SID | nombre | origen | Condition | Act* | falta |
 |---|---|---|---|---|---|
-| `SID_エスコート` | Knightly Escort | dispos/personaje | `(相手の性別 == 女性 || 相手の識別子 == 識別子) && 周囲の性別数(2, 女性) >= 2` |  | 相手の性別, 相手の識別子, 識別子, 周囲の性別数() |
 | `SID_リンエンゲージ技_ブレイク` | LynEngage Attack Break | cadena | `総攻撃回数 == 4` |  | 総攻撃回数 |
-| `SID_人たらし` | Charmer | dispos/personaje | `最終戦闘相手 == 相手の識別子` | 相手の必殺値 - 10 | 最終戦闘相手, 相手の識別子 |
+| `SID_人たらし` | Charmer | dispos/personaje | `最終戦闘相手 == 相手の識別子` | 相手の必殺値 - 10 | 最終戦闘相手 |
 | `SID_信仰１` | Staff Mastery 1 | emblema | `武器の種類 == 杖 && 相手の回復 > 0` | 相手の回復 = min( 相手のMaxHP - 相手のHP, 相手の回復 + 3 ) | 相手の回復, val:相手の回復 |
 | `SID_信仰２` | Staff Mastery 2 | emblema | `武器の種類 == 杖 && 相手の回復 > 0` | 相手の回復 = min( 相手のMaxHP - 相手のHP, 相手の回復 + 5 ) | 相手の回復, val:相手の回復 |
 | `SID_信仰３` | Staff Mastery 3 | emblema | `武器の種類 == 杖 && 相手の回復 > 0` | 相手の回復 = min( 相手のMaxHP - 相手のHP, 相手の回復 + 7 ) | 相手の回復, val:相手の回復 |
 | `SID_信仰４` | Staff Mastery 4 | emblema | `武器の種類 == 杖 && 相手の回復 > 0` | 相手の回復 = min( 相手のMaxHP - 相手のHP, 相手の回復 + 10 ) | 相手の回復, val:相手の回復 |
 | `SID_信仰５` | Staff Mastery 5 | emblema | `武器の種類 == 杖 && 相手の回復 > 0` | 相手の回復 = min( 相手のMaxHP - 相手のHP, 相手の回復 + 15 ) | 相手の回復, val:相手の回復 |
-| `SID_助太刀` | Brave Assist | clase/dispos | `立場 == 援護 && HP == MaxHP` | 攻撃回数 = 2 | 立場 |
 | `SID_名乗り上げ` | Aspiring Hero | dispos/personaje/tablero | `隣接ユニット数 + 相手の隣接ユニット数 == 0` | 命中値 + 20; 回避値 - 10 | 相手の隣接ユニット数, 隣接ユニット数 |
-| `SID_執着` | Single-Minded | dispos/personaje/tablero | `最終戦闘相手 == 相手の識別子` | 命中値 + 20 | 最終戦闘相手, 相手の識別子 |
+| `SID_執着` | Single-Minded | dispos/personaje/tablero | `最終戦闘相手 == 相手の識別子` | 命中値 + 20 | 最終戦闘相手 |
 | `SID_大樹` | World Tree | clase | `武器の種類 == 杖 && 武器の消費 > 0 && スキル確率(技)` | 武器の消費 = 0 | 武器の消費 |
 | `SID_大集会` | Party Animal | dispos/personaje | `周囲のユニット数(2) > 0` | 命中値 + 周囲のユニット数(2) * 3; 回避値 + 周囲のユニット数(2) * 3 | 周囲のユニット数(), val:周囲のユニット数() |
 | `SID_天刻の拍動` | Divine Pulse | dispos/emblema | `攻撃結果 == ミス && 神将スキル確率( 30 + 幸運 )` | 攻撃結果 = ヒット | ミス, 攻撃結果, 神将スキル確率(), val:ヒット |
@@ -95,21 +86,15 @@ Implementadas a mano en el motor (SID o nombre citado en motor_calculo.py, motor
 | `SID_妨害杖命中＋２０` | Staff Mastery 3 | cadena | `武器の種類 == 杖 && 杖の種類 == 妨害杖` | 命中値 + 20 | 妨害杖, 杖の種類 |
 | `SID_妨害杖命中＋２５` | Staff Mastery 4 | cadena | `武器の種類 == 杖 && 杖の種類 == 妨害杖` | 命中値 + 25 | 妨害杖, 杖の種類 |
 | `SID_妨害杖命中＋３０` | Staff Mastery 5 | cadena | `武器の種類 == 杖 && 杖の種類 == 妨害杖` | 命中値 + 30 | 妨害杖, 杖の種類 |
-| `SID_微笑み` | Stunning Smile | dispos/personaje/tablero | `相手の性別 == 男性` | 相手の回避値 - 20 | 相手の性別 |
 | `SID_急襲` | Air Raid | clase/dispos | `移動コスト(相手の移動タイプ, X, Z) > 100` | 攻撃速度 + 5 | X, Z, 相手の移動タイプ, 移動コスト() |
 | `SID_挟撃` | Pincer Attack | clase/dispos | `挟撃中 && 手番回数 == 1 && スキル所持("追撃不可") == 0` | 手番回数 = 2 | 挟撃中 |
 | `SID_歴戦の勘` | Weapon Insight | dispos/personaje | `武器の種類 != 0 && 武器レベル < 相手の武器レベル` | 必殺値 + 20 | 武器レベル, 相手の武器レベル |
 | `SID_気の拡散` | Diffuse Healer | clase/dispos | `相手の武器の種類 == 杖 && 回復 > 0` | 一時変数 + 回復 | 回復, val:回復 |
 | `SID_水鏡効果` | Back at You | cadena | `一時変数 > 0 && スキル確率( 技 )` | 威力 + 一時変数/2; 一時変数 = 0 | 一時変数, val:一時変数 |
-| `SID_涙腺崩壊` | Moved to Tears | dispos/personaje | `チェインアタック回数 > 0` | 威力 + 2 | チェインアタック回数 |
-| `SID_涙腺崩壊_演出用` | Moved to Tears | cadena | `チェインアタック回数 > 0 && スキル所持("涙腺崩壊_発動済み") == 0` |  | チェインアタック回数 |
-| `SID_溜め息` | Disarming Sigh | dispos/personaje/tablero | `相手の性別 == 男性` | 相手の命中値 - 20 | 相手の性別 |
 | `SID_狂乱の一撃` | Spirit Strike | clase/dispos | `生存 && 相手の生存 && 相手のエンゲージカウント > 0` | 相手のエンゲージカウント = max(0, 相手のエンゲージカウント - 5) | 相手のエンゲージカウント, val:相手のエンゲージカウント |
 | `SID_異形リベンジ` | Holy Stance | emblema/tablero | `相手のユニット属性(異形属性) && HP > ダメージ && ダメージ >= 10 && ( 相手の攻撃属性 == 魔法属性 && ( スキル所持( "マジックシールド" ) || スキル所持( "EN_魔防の薬_効果" ) ) ) == 0 && ( 相手の攻撃属性 == 物理属性 && スキル所持( "EN_守備の薬_効果" ) ) == 0` | 相手のダメージ = ダメージ*0.1 | 異形属性, 相手のユニット属性() |
 | `SID_異形リベンジ＋` | Holy Stance+ | emblema | `相手のユニット属性(異形属性) && HP > ダメージ && ダメージ >= 4 && ( 相手の攻撃属性 == 魔法属性 && ( スキル所持( "マジックシールド" ) || スキル所持( "EN_魔防の薬_効果" ) ) ) == 0 && ( 相手の攻撃属性 == 物理属性 && スキル所持( "EN_守備の薬_効果" ) ) == 0` | 相手のダメージ = ダメージ*0.3 | 異形属性, 相手のユニット属性() |
 | `SID_異形リベンジ＋＋` | Holy Stance++ | emblema/personaje | `相手のユニット属性(異形属性) && HP > ダメージ && ダメージ >= 2 && ( 相手の攻撃属性 == 魔法属性 && ( スキル所持( "マジックシールド" ) || スキル所持( "EN_魔防の薬_効果" ) ) ) == 0 && ( 相手の攻撃属性 == 物理属性 && スキル所持( "EN_守備の薬_効果" ) ) == 0` | 相手のダメージ = ダメージ*0.5 | 異形属性, 相手のユニット属性() |
-| `SID_絆を繋薙くもの` | Bond Forger | emblema | `相手の神将レベル != 0` |  | 相手の神将レベル |
-| `SID_絆を繋薙くもの＋` | Bond Forger+ | emblema | `相手の神将レベル != 0` |  | 相手の神将レベル |
 | `SID_護衛` | Allied Defense | clase/dispos | `護衛中` | 相手の威力 - 3 | 護衛中 |
 | `SID_邪竜気` | Fell Spirit | clase/dispos | `エンゲージ中 == 0 && エンゲージカウント < エンゲージカウント限界` | エンゲージカウント + 1 | エンゲージカウント, エンゲージカウント限界, エンゲージ中 |
 | `SID_魔力増幅` | Spell Harmony | clase/dispos | `武器の種類 == 魔道書 && 周囲の味方数(1, 魔道書) > 0` | 攻撃力 + 周囲の味方数(1, 魔道書) | 周囲の味方数(), val:周囲の味方数() |
@@ -322,12 +307,13 @@ Implementadas a mano en el motor (SID o nombre citado en motor_calculo.py, motor
 | `Weapon Sync` |  | emblema | `` |  |  |
 | `Weapon Sync+` |  | emblema | `` |  |  |
 
-## Implementadas a mano en el motor (54)
+## Citadas en el código del motor (54)
 
-Candidatas a migrar al motor genérico (Fase 2). `estado` indica si la DSL ya podría sustituirlas.
+Tras la Fase 2 el motor genérico (pasivas.recopilar_combate) aplica todas las de `estado` cubierta; las que siguen nombradas en el código son las de secuencia/eventos (Fase 3), comandos (Canter, Advance), Ataques de Emblema con geometría propia o simples menciones en comentarios.
 
 | SID | nombre | estado DSL | Condition | Act* |
 |---|---|---|---|---|
+| `SID_アイクエンゲージスキル` | Laguz Friend | cubierta | `` | 回避値 * 0 |
 | `SID_アイクエンゲージ技` | Great Aether | cubierta | `` |  |
 | `SID_エイリークエンゲージ技` | Twin Strike | cubierta | `` | 攻撃回数 = 2 |
 | `SID_カウンター` | Divine Speed | cubierta | `手番回数 > 0 && スキル所持("追撃不可") == 0` | 手番回数 + 1 |
@@ -335,6 +321,7 @@ Candidatas a migrar al motor genérico (Fase 2). `estado` indica si la DSL ya po
 | `SID_シグルドエンゲージ技` | Override | cubierta | `` | 威力 * 1 |
 | `SID_セリカエンゲージ技` | Warp Ragnarok | cubierta | `` | 威力 * 1 |
 | `SID_ブレイク時追撃` | Break Defenses | cubierta | `攻撃結果(ブレイク) && スキル所持("追撃不可") == 0` |  |
+| `SID_ブレイク無効` | Unbreakable | cubierta | `` |  |
 | `SID_マルスエンゲージ技` | Lodestar Rush | cubierta | `` | 攻撃回数 = 7 |
 | `SID_ミカヤエンゲージ技` | Great Sacrifice | cubierta | `HP > 1` | HP = 1 |
 | `SID_リンエンゲージ技` | Astra Storm | cubierta | `` | 攻撃回数 = 5 |
@@ -348,41 +335,39 @@ Candidatas a migrar al motor genérico (Fase 2). `estado` indica si la DSL ya po
 | `SID_再移動＋` | Canter+ | cubierta | `` |  |
 | `SID_切り抜け` | Run Through | cubierta | `` |  |
 | `SID_助走` | Momentum | cubierta | `移動距離 > 0 && 総行動回数 == 0` | 攻撃力 + min( 移動距離, 10 ) |
-| `SID_助走＋` | Momentum+ | cubierta | `移動距離 > 0 && 総行動回数 == 0` | 攻撃力 + 移動距離 |
 | `SID_勇将` | Resolve | cubierta | `` |  |
 | `SID_勇将_効果` | Resolve | cubierta | `` |  |
 | `SID_命中＋２０` | Hit +20 | cubierta | `` | 命中値 + 20 |
+| `SID_命中１００` | Hit１００ | cubierta | `` | 命中率 = 100; 必殺率 = 0 |
 | `SID_待ち伏せ` | Vantage | cubierta | `HP*100 <= MaxHP * 25 && 手番回数 > 0` |  |
-| `SID_待ち伏せ＋` | Vantage+ | cubierta | `HP*100 <= MaxHP * 50 && 手番回数 > 0` |  |
-| `SID_待ち伏せ＋＋` | Vantage++ | cubierta | `HP*100 <= MaxHP * 75 && 手番回数 > 0` |  |
-| `SID_戦果委譲` | Share Spoils | cubierta | `周囲の味方数 > 0` | 命中値 + 10; 回避値 + 10; 必殺値 - 10 |
 | `SID_攻め立て` | Alacrity | cubierta | `スキル所持( "追撃不可" ) == 0 && 総手番回数 == 0 &&  (攻撃速度 - 相手の攻撃速度) >= 9` |  |
 | `SID_月の腕輪` | Lunar Brace | cubierta | `攻撃属性 == 物理属性` | 威力 + 相手の守備 * 0.2 |
 | `SID_月光` | Luna | cubierta | `スキル確率( 技 )` | 相手の防御力 - 相手の防御力 * 0.5 |
 | `SID_武器相性激化` | Arms Shield | cubierta | `武器相性 == 有利` | 相手の威力 - 3 |
 | `SID_殺しの技術` | Trained to Kill | cubierta | `地形回避 > 0` | 必殺値 + 15 |
+| `SID_涙腺崩壊` | Moved to Tears | cubierta | `チェインアタック回数 > 0` | 威力 + 2 |
+| `SID_涙腺崩壊_演出用` | Moved to Tears | cubierta | `チェインアタック回数 > 0 && スキル所持("涙腺崩壊_発動済み") == 0` |  |
+| `SID_無慈悲` | Merciless | cubierta | `相手のスキル所持("気絶")` | 威力 * 1.5 |
 | `SID_熟練者＋` | Veteran+ | cubierta | `` |  |
 | `SID_特効耐性` | Stalwart | cubierta | `` |  |
-| `SID_白の忠誠` | Alabaster Duty | cubierta | `相手の個人判定("リュール")` |  |
-| `SID_白の忠誠_効果` | Alabaster Duty | cubierta | `` | 必殺値 + 5 |
+| `SID_相手の命中１００` | Hit１００ | cubierta | `` | 相手の命中率 = 100 |
 | `SID_真っ向勝負` | Fair Fight | cubierta | `相手の手番回数 > 0` | 命中値 + 15; 相手の命中値 + 15 |
-| `SID_神竜の結束` | Divinely Inspiring | cubierta | `` |  |
-| `SID_神竜の結束_被ダメ軽減` | Divinely Inspiring | cubierta | `` | 相手の威力 - 1 |
+| `SID_瞑想` | Meditation | cubierta | `` |  |
 | `SID_移動不可` | Move | cubierta | `` |  |
 | `SID_絵になる二人` | Fairy-Tale Folk | cubierta | `周囲の隣接男女数(2, 男性, 女性) > 0` | 威力 + 2 |
-| `SID_緋い声援` | Crimson Cheer | cubierta | `相手の個人判定("リュール")` |  |
-| `SID_緋い声援_効果` | Crimson Cheer | cubierta | `` | 回避値 + 10 |
 | `SID_自己研鑽` | Self-Improver | cubierta | `` |  |
 | `SID_花園の門番` | Admiration | cubierta | `周囲の隣接男女数(2, 女性, 女性) > 0` | 相手の威力 - 2 |
 | `SID_踏ん張り` | Hold Out | cubierta | `HP*100 >= (MaxHP * 30)` |  |
 | `SID_踏ん張り_攻撃時効果` | Hold Out | cubierta | `HP <= ダメージ` | ダメージ = max(HP-1, 0) |
 | `SID_踏ん張り_防御時効果` | Hold Out | cubierta | `HP <= ダメージ` | ダメージ = max(HP-1, 0) |
 | `SID_魔力＋１` | Mag 1 | cubierta | `` |  |
+| `SID_魔法剣` | Soulblade | cubierta | `武器の種類 == 剣` | 相手のユニット防御力 = int( ( 相手の守備 + 相手の魔防 ) * 0.5 ) |
 | `SID_すり抜け` | Pass | sin_efecto_codificado | `` |  |
 | `SID_ベレトエンゲージ技` | Goddess Dance | sin_efecto_codificado | `` |  |
 | `SID_超越` | Rise Above | sin_efecto_codificado | `` |  |
 | `SID_踊り` | Dance | sin_efecto_codificado | `` |  |
+| `SID_踏み込み` | Advance | sin_efecto_codificado | `` |  |
 
 ## Cubiertas
 
-Not *Quite*, Laguz Friend, Laguz Friend (50% DR), Great Aether, IkeEngage Attack Renewal, Twin Strike, Knightly Escort, Engage Attack General, Divine Speed, Counter (50% Damage), Torrential Roar, Override, Quality Time, Quality Time+, Smash+, Warp Ragnarok, Dark Warp, Ragnarok Warp, Racket of Solm, Racket of Solm, DamageNullify, DamageNullify On Attack, DamageNullify On Defense, Damage２０％, Damage３０％, Hit３０％, Bond Breaker, Dual Assist, Dual Assist+, Break Defenses, BreakFollow-Up (50% Damage), Unbreakable, Diabolical Dance, BylethBoost Backup, BylethBoost Flying, Lodestar Rush, Great Sacrifice, Dragon Blast, AlearEngage Attack, Astra Storm, Astra Storm, Quadruple Hit, All for One, Blazing Lion, Make a Killing, Anchor, Unyielding, Unyielding+, Unyielding++, Build +3, Build +4, Build +5, Art Focus 1, Art Focus 2, Art Focus 3, Art Focus 4, Art Focus 5, ！(Effect), Gentility, Gentility+, Instruct, Blinding Flash, Swap, Resonance, Resonance+, Canter, Canter+, Certain Blow, Run Through, Swordbreaker, Sword Power 1, Sword Power 2, Sword Power 3, Sword Power 4, Sword Power 5, Sword Focus 1, Sword Focus 2, Sword Focus 3, Sword Focus 4, Sword Focus 5, Sword Agility 1, Sword Agility 2, Sword Agility 3, Sword Agility 4, Sword Agility 5, Seal Strength, Seal Strength (Effect), Strength +1, Strength +2, ＋２ １, Strength +3, Strength +4, Strength +5, Strength +6, Momentum, Momentum+, Resolve, Resolve, Resolve+, Resolve+, Bravery, Bravery+, Will to Win, Sacred Twins, Dreadful Aura, Hit +10, Hit +15, Hit +20, Hit +25, Hit +30, Hit１００, Cornered Beast, Pivot, Avoid +10, Avoid +15, Avoid +20, Avoid +25, Avoid +30, Avo－１０ Stealth, Sol, Solar Brace, Solar Brace+, Seal Defense, Seal Defense (Effect), Defense +1, Defense +2, Defense +3, Defense +3, Defense +4, Defense +5, Mentorship, (Effect), Gentle Flower, Luck +10, Luck +12, Luck +2, Luck +2, Luck +4, Luck +4, Luck +6, Luck +8, Bow Focus 1, Bow Focus 2, Bow Focus 3, Bow Focus 4, Bow Focus 5, Bow Agility 1, Bow Agility 2, Bow Agility 3, Bow Agility 4, Bow Agility 5, Reposition, Vantage, Vantage+, Vantage++, CritCrit０, Dodge +10, Dodge +15, Dodge +20, Dodge +25, Dodge +30, CritAvo－１０ Stealth, Crit－１０ Stealth, Crit０, Crit０ Offense, Wrath, Blood Fury, Share Spoils, Dexterity +1, Dexterity +2, Dexterity +3, Dexterity +4, Dexterity +5, Lost &amp; Found, Defeat EXPBonus５０, Alacrity, Alacrity+, Alacrity++, Engage Attack Guard, Seconds?, Axebreaker, Axe Power 1, Axe Power 2, Axe Power 3, Axe Power 4, Axe Power 5, Eclipse Brace, Eclipse Brace, Eclipse Brace+, Eclipse Brace, Eclipse Brace+, Eclipse Brace+, Warding Blow, Warding Stance, Lunar Brace, Lunar Brace+, Luna, Moon, Lancebreaker, Lance Power 1, Lance Power 2, Lance Power 3, Lance Power 4, Lance Power 5, Lance Agility 1, Lance Agility 2, Lance Agility 3, Lance Agility 4, Lance Agility 5, Contemplative, (Effect), Arms Shield, Arms Shield+, Arms Shield++, Life and Death, Trained to Kill, Back at You, Duelist's Blow, Merciless, Veteran+, Special Dance, Stalwart, Stalwart (Effect), Careful Aim, Alabaster Duty, Alabaster Duty, Triangle Adept, EXP０, Hit１００, Crit０, Fair Fight, Meditation, (Effect), Knife Precision 1, Knife Precision 2, Knife Precision 3, Knife Precision 4, Knife Precision 5, Sandstorm, Demolish, Verdant Faith, Verdant Faith, Divinely Inspiring, Divinely Inspiring (Damage Boost), Divinely Inspiring, Move, Movement +1, Move－１, Move－２, Draconic Hex, (Effect), Dragon Vein, Energized, Dual Strike, Spur Attack, Spur Attack, Spur Res, Bond Ring Anna (Effect), Bond Forger, Bond Forger+, Bonded Shield, Fairy-Tale Folk, Crimson Cheer, Crimson Cheer, Chaos Style, Self-Improver, Admiration, Ignis, Blue Skies, Blue Skies, Blue Skies+, Blue Skies Bravery, Blue Skies Bravery+, Blue Skies+, Void Curse, Grasping Void, Poison Strike, Perceptive, Perceptive+, Hobble, Leg Strike(Effect), Leg Strike(Check), Dance(Effect), Hold Out, Hold Out, Hold Out, Hold Out+, Hold Out+, Hold Out+, Hold Out++, Hold Out++, Hold Out++, Hold Out+++, Hold Out+++, Hold Out+++, Gallop, Dark Gallop, Gallop, Speedtaker, SpdBoost＋２, Seal Speed, Seal Speed (Effect), Speed +1, Speed +2, Speed +3, Speed +4, Speed +5, Fell Protection, Fell Protection (Damage Boost), Fell Protection, Echo, Echo, Steady Stance, Golden Lotus, Pair Up, No Distractions, Adaptable, Darting Blow, Darting Stance, Death Blow, Fierce Stance, Seal Magic, Seal Magic (Effect), Mag 1, Magic +2, Magic +3, Magic +4, Magic +5, Magic(50% Damage), MagicDamage６０％, Soulblade, Tome Precision 1, Tome Precision 2, Tome Precision 3, Tome Precision 4, Tome Precision 5, Seal Resistance, Seal Resistance (Effect), Resistance +2, Resistance +3, Resistance +4, Resistance +5, HP +10, HP +12, HP +15, HP +5, HP +7
+Not *Quite*, Laguz Friend, Laguz Friend (50% DR), Great Aether, IkeEngage Attack Renewal, Twin Strike, Knightly Escort, Knightly Escort, Engage Attack General, Divine Speed, Counter (50% Damage), Torrential Roar, Override, Quality Time, Quality Time+, Smash+, Warp Ragnarok, Dark Warp, Ragnarok Warp, Racket of Solm, Racket of Solm, DamageNullify, DamageNullify On Attack, DamageNullify On Defense, Damage２０％, Damage３０％, Hit３０％, Bond Breaker, Dual Assist, Dual Assist+, Break Defenses, BreakFollow-Up (50% Damage), Unbreakable, Diabolical Dance, BylethBoost Backup, BylethBoost Flying, Lodestar Rush, Great Sacrifice, Dragon Blast, AlearEngage Attack, Astra Storm, Astra Storm, Quadruple Hit, All for One, Blazing Lion, Make a Killing, Anchor, Unyielding, Unyielding+, Unyielding++, Build +3, Build +4, Build +5, Art Focus 1, Art Focus 2, Art Focus 3, Art Focus 4, Art Focus 5, ！(Effect), Gentility, Gentility+, Instruct, Blinding Flash, Swap, Resonance, Resonance+, Canter, Canter+, Certain Blow, Run Through, Swordbreaker, Sword Power 1, Sword Power 2, Sword Power 3, Sword Power 4, Sword Power 5, Sword Focus 1, Sword Focus 2, Sword Focus 3, Sword Focus 4, Sword Focus 5, Sword Agility 1, Sword Agility 2, Sword Agility 3, Sword Agility 4, Sword Agility 5, Seal Strength, Seal Strength (Effect), Strength +1, Strength +2, ＋２ １, Strength +3, Strength +4, Strength +5, Strength +6, Brave Assist, Momentum, Momentum+, Resolve, Resolve, Resolve+, Resolve+, Bravery, Bravery+, Will to Win, Sacred Twins, Dreadful Aura, Hit +10, Hit +15, Hit +20, Hit +25, Hit +30, Hit１００, Cornered Beast, Pivot, Avoid +10, Avoid +15, Avoid +20, Avoid +25, Avoid +30, Avo－１０ Stealth, Sol, Solar Brace, Solar Brace+, Seal Defense, Seal Defense (Effect), Defense +1, Defense +2, Defense +3, Defense +3, Defense +4, Defense +5, Mentorship, (Effect), Gentle Flower, Luck +10, Luck +12, Luck +2, Luck +2, Luck +4, Luck +4, Luck +6, Luck +8, Bow Focus 1, Bow Focus 2, Bow Focus 3, Bow Focus 4, Bow Focus 5, Bow Agility 1, Bow Agility 2, Bow Agility 3, Bow Agility 4, Bow Agility 5, Reposition, Vantage, Vantage+, Vantage++, Stunning Smile, CritCrit０, Dodge +10, Dodge +15, Dodge +20, Dodge +25, Dodge +30, CritAvo－１０ Stealth, Crit－１０ Stealth, Crit０, Crit０ Offense, Wrath, Blood Fury, Share Spoils, Dexterity +1, Dexterity +2, Dexterity +3, Dexterity +4, Dexterity +5, Lost &amp; Found, Defeat EXPBonus５０, Alacrity, Alacrity+, Alacrity++, Engage Attack Guard, Seconds?, Axebreaker, Axe Power 1, Axe Power 2, Axe Power 3, Axe Power 4, Axe Power 5, Eclipse Brace, Eclipse Brace, Eclipse Brace+, Eclipse Brace, Eclipse Brace+, Eclipse Brace+, Warding Blow, Warding Stance, Lunar Brace, Lunar Brace+, Luna, Moon, Lancebreaker, Lance Power 1, Lance Power 2, Lance Power 3, Lance Power 4, Lance Power 5, Lance Agility 1, Lance Agility 2, Lance Agility 3, Lance Agility 4, Lance Agility 5, Contemplative, (Effect), Arms Shield, Arms Shield+, Arms Shield++, Life and Death, Trained to Kill, Back at You, Moved to Tears, Moved to Tears, Duelist's Blow, Disarming Sigh, Merciless, Veteran+, Special Dance, Stalwart, Stalwart (Effect), Careful Aim, Alabaster Duty, Alabaster Duty, Triangle Adept, EXP０, Hit１００, Crit０, Fair Fight, Meditation, (Effect), Knife Precision 1, Knife Precision 2, Knife Precision 3, Knife Precision 4, Knife Precision 5, Sandstorm, Demolish, Verdant Faith, Verdant Faith, Divinely Inspiring, Divinely Inspiring (Damage Boost), Divinely Inspiring, Move, Movement +1, Move－１, Move－２, Draconic Hex, (Effect), Dragon Vein, Energized, Dual Strike, Spur Attack, Spur Attack, Spur Res, Bond Ring Anna (Effect), Bond Forger, Bond Forger, Bond Forger+, Bond Forger+, Bonded Shield, Fairy-Tale Folk, Crimson Cheer, Crimson Cheer, Chaos Style, Self-Improver, Admiration, Ignis, Blue Skies, Blue Skies, Blue Skies+, Blue Skies Bravery, Blue Skies Bravery+, Blue Skies+, Void Curse, Grasping Void, Poison Strike, Perceptive, Perceptive+, Hobble, Leg Strike(Effect), Leg Strike(Check), Dance(Effect), Hold Out, Hold Out, Hold Out, Hold Out+, Hold Out+, Hold Out+, Hold Out++, Hold Out++, Hold Out++, Hold Out+++, Hold Out+++, Hold Out+++, Gallop, Dark Gallop, Gallop, Speedtaker, SpdBoost＋２, Seal Speed, Seal Speed (Effect), Speed +1, Speed +2, Speed +3, Speed +4, Speed +5, Fell Protection, Fell Protection (Damage Boost), Fell Protection, Echo, Echo, Steady Stance, Golden Lotus, Pair Up, No Distractions, Adaptable, Darting Blow, Darting Stance, Death Blow, Fierce Stance, Seal Magic, Seal Magic (Effect), Mag 1, Magic +2, Magic +3, Magic +4, Magic +5, Magic(50% Damage), MagicDamage６０％, Soulblade, Tome Precision 1, Tome Precision 2, Tome Precision 3, Tome Precision 4, Tome Precision 5, Seal Resistance, Seal Resistance (Effect), Resistance +2, Resistance +3, Resistance +4, Resistance +5, HP +10, HP +12, HP +15, HP +5, HP +7

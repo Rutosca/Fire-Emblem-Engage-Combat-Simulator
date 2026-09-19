@@ -4,6 +4,7 @@ sombra. Los números del combate NO cambian en esta fase (lo fija el golden);
 aquí se prueba que el motor lee bien el datamine.
 """
 
+import math
 import os
 import sys
 import unittest
@@ -88,7 +89,7 @@ class TestRecopilar(unittest.TestCase):
     def test_stand_perceptive_solo_al_iniciar(self):
         alear = _u("Alear", velocidad=14, habilidades_sids=["SID_見切り"])
         ini = pasivas.recopilar(alear, _ctx(alear, _u(), es_iniciador=True))
-        self.assertEqual(ini.get("avo"), 15 + 14 * 0.25)
+        self.assertEqual(ini.get("avo"), 15 + math.floor(14 * 0.25))   # el juego trunca
         dfn = pasivas.recopilar(alear, _ctx(alear, _u(), es_iniciador=False))
         self.assertEqual(dfn.get("avo"), 0)
         self.assertEqual(dfn.activas, [])
@@ -134,23 +135,24 @@ class TestRecopilar(unittest.TestCase):
         self.assertEqual(m.ignoradas, [("SID_inventado", "no está en el catálogo")])
 
 
-class TestSombraEnCombate(unittest.TestCase):
+class TestMotorEnCombate(unittest.TestCase):
 
-    def test_simular_combate_lleva_sombra_sin_cambiar_numeros(self):
+    def test_simular_combate_aplica_el_motor_y_lo_documenta(self):
         lapis = _u("Lapis", habilidades_sids=["SID_戦果委譲"], habilidades=["Share Spoils"])
         rival = _u("Enemigo")
+        # Sin el SID no hay Solidaridad aunque la unidad se llame Lapis (nada por nombre)
         base = CalculadoraEngage.simular_combate(_u("Lapis"), rival, ESPADA, HACHA, Terreno(), Terreno(),
                                                  aliados_cercanos_atk=[(_u("Amiga"), 1)])
         con = CalculadoraEngage.simular_combate(lapis, rival, ESPADA, HACHA, Terreno(), Terreno(),
                                                 aliados_cercanos_atk=[(_u("Amiga"), 1)])
-        sombra = con["atacante"]["motor_pasivas"]
-        self.assertEqual(sombra["valores"].get("hit"), 10)
-        self.assertEqual([a["nombre"] for a in sombra["activas"]], ["Share Spoils"])
+        detalle = con["atacante"]["motor_pasivas"]
+        self.assertEqual(detalle["valores"].get("hit"), 10)
+        self.assertEqual([a["nombre"] for a in detalle["activas"]], ["Share Spoils"])
         self.assertIsNotNone(con["defensor"]["motor_pasivas"])
-        # El motor actual activa Share Spoils por el NOMBRE de la unidad ("lapis"),
-        # así que `base` ya la lleva: si la sombra sumara, la diferencia no sería 0.
-        self.assertEqual(con["atacante"]["precision"], base["atacante"]["precision"])
+        self.assertEqual(con["atacante"]["precision"], min(100, base["atacante"]["precision"] + 10))
         self.assertEqual(con["atacante"]["daño_por_golpe"], base["atacante"]["daño_por_golpe"])
+        self.assertIn("Share Spoils (+10 Hit, -10 Crit)", con["atacante"]["pasivas_activas"])   # el Avo cuenta al defender
+        self.assertEqual(base["atacante"]["pasivas_activas"], [])
 
 
 if __name__ == "__main__":

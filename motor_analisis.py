@@ -13,9 +13,10 @@ Contiene:
 import math
 from collections import deque
 from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept, resolver_estilo_combate
-from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock
+from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock, casillas_advance
 from catalogo_loader import _arma_desde_item, _catalogo, normalizar_texto, puede_usar_ballesta, arma_ballesta_desde, info_curacion_item
 from ataques_area import resolver_ataque_area, tipo_ataque_area, FUEGO_DANO_POR_FASE
+import pasivas
 
 BACKUP_CLASSES = {
     'sword fighter', 'lance fighter', 'axe fighter',
@@ -80,9 +81,12 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None):
             apoyos.append(c)
     return apoyos
 
-def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, analizador=None, casillas_alcanzables_precalc=None, zonas_amenaza_enemigos=None):
+def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, analizador=None, casillas_alcanzables_precalc=None, zonas_amenaza_enemigos=None, detalle=None):
     """
     Encuentra la mejor casilla (x, y) libre a la que puede moverse el aliado para atacar al enemigo con el arma dada.
+    Con Advance (SID_踏み込み) también se consideran las casillas adyacentes al enemigo a las
+    que solo se llega avanzando 1 desde una alcanzable; si se elige una, `detalle["advance_desde"]`
+    (si se pasa un dict) recibe la casilla P desde la que se lanza el comando.
     Reglas oficiales de Fire Emblem Engage:
     1. Si el aliado puede atacar sin sufrir contraataque (ej. a dist 2 con Jabalina/Tomo contra arma cuerpo a cuerpo, o a dist 1 contra arquero), prioriza esa casilla segura (+500 pts).
     2. Movimiento por BFS respetando costes de terreno y obstáculos:
@@ -121,8 +125,7 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
         enemigos_bloqueo = {(f.x, f.y) for f in tablero.obtener_enemigos() if f.viva and f.nombre != enemigo.nombre}
         enemigos_bloqueo.add((enemigo.x, enemigo.y))
 
-        habs_aliado = [str(h).lower() for h in (getattr(aliado, 'habilidades', []) or [])]
-        tiene_pass = any('pass' in h or 'traspasar' in h or 'すり抜け' in h for h in habs_aliado) or ('thief' in getattr(aliado, 'clase_nombre', '').lower())
+        tiene_pass = pasivas.tiene_sid(aliado, 'SID_すり抜け')   # Pass
 
         ancho = mapa.ancho
         alto = mapa.alto
@@ -163,8 +166,17 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
                         cola.append((nx, ny, nuevo_mov))
             casillas_alcanzables = set(visitados.keys())
 
+    # Advance: casillas extra (adyacentes al enemigo) que solo se alcanzan con el comando
+    advance = {}
+    if not is_tele and 1 in r_arma and not getattr(arma, 'es_engage_attack', False) and pasivas.tiene_advance(aliado):
+        rivales = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != aliado.es_aliado}
+        advance = {q: p for q, p in casillas_advance(casillas_alcanzables, {(enemigo.x, enemigo.y)}, todas_ocupadas | rivales,
+                                                    mapa.grid, mapa.ancho, mapa.alto, getattr(aliado, 'es_volador', False)).items()}
+    if isinstance(detalle, dict):
+        detalle["advance_desde"] = None
+
     mejores = []
-    for (nx, ny) in casillas_alcanzables:
+    for (nx, ny) in set(casillas_alcanzables) | set(advance):
         if (nx, ny) in todas_ocupadas:
             continue
         d_ene = abs(nx - enemigo.x) + abs(ny - enemigo.y)
@@ -184,32 +196,28 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
                 penalizacion_amenazas = amenazas_externas * 80
 
             score = bonus_seguridad + (t.dfn * 15) + t.avo - coste_pasos - penalizacion_amenazas
+            if (nx, ny) in advance:
+                score -= 1   # a igualdad, mejor una casilla normal que gastar el comando
             mejores.append((score, [nx, ny]))
 
     if mejores:
         mejores.sort(key=lambda x: x[0], reverse=True)
-        return mejores[0][1]
+        mejor = mejores[0][1]
+        if isinstance(detalle, dict) and tuple(mejor) in advance:
+            detalle["advance_desde"] = list(advance[tuple(mejor)])
+        return mejor
 
     return None
 
 
 def unidad_tiene_canter(ficha) -> bool:
-    """Canter puede proceder de Sigurd o de una habilidad heredada."""
-    habilidades = [str(h).lower() for h in (getattr(ficha, 'habilidades', []) or [])]
-    emblema = str(getattr(ficha, 'emblema_nombre', '') or '').lower()
-    return (
-        any('canter' in h or 'canto' in h or 'galopada' in h or '再移動' in h for h in habilidades)
-        or 'sigurd' in emblema or 'シグルド' in emblema
-    )
+    """Canter (SID_再移動 / ＋): sincronía de Sigurd por vínculo o habilidad heredada."""
+    return pasivas.alcance_canter(ficha) > 0
 
 
 def alcance_canter(ficha) -> int:
-    """Devuelve 2 para Canter y 3 para Canter+ (incluida herencia)."""
-    habilidades = [str(h).strip().lower().replace(" ", "")
-                   for h in (getattr(ficha, 'habilidades', []) or [])]
-    if any("canter+" in h or "canterplus" in h for h in habilidades):
-        return 3
-    return 2
+    """Casillas de Canter (2) o Canter+ (3), leídas del catálogo (Power del SID)."""
+    return pasivas.alcance_canter(ficha) or 2
 
 
 def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_enemigos,
@@ -238,8 +246,7 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
         if f.viva and f.nombre != aliado.nombre
     }
     mock_inicio = UnidadMock(inicio[0], inicio[1], aliado.mov, aliado.es_volador, ArmaMock([1]))
-    habilidades = [str(h).lower() for h in (getattr(aliado, 'habilidades', []) or [])]
-    setattr(mock_inicio, 'tiene_pass', any('pass' in h or 'traspasar' in h for h in habilidades))
+    setattr(mock_inicio, 'tiene_pass', pasivas.tiene_sid(aliado, 'SID_すり抜け'))
     restantes_inicio = analizador.calcular_movimiento_restante(mock_inicio, enemigos_bloqueo)
     restante = restantes_inicio.get(tuple(pos_ataque))
     if restante is None or restante <= 0:
@@ -763,25 +770,6 @@ def _ataques_engage_catalogo(nombre):
     return encontrados
 
 
-def _sombra_pasivas(combate: dict) -> dict:
-    """Resumen legible del modo sombra (pasivas.py) de un resultado de combate,
-    para que la UI lo muestre junto a las pasivas del motor actual (Fase 1)."""
-    def _lado(d):
-        m = (d or {}).get("motor_pasivas") or {}
-        out = []
-        for a in m.get("activas", []):
-            partes = [f"{'+' if v > 0 else ''}{v:g} {k}" for k, v in (a.get("valores") or {}).items() if v]
-            if partes:
-                out.append(f"{a.get('nombre') or a.get('sid')} ({', '.join(partes)})")
-        for p in m.get("procs", []):
-            partes = [f"{'+' if v > 0 else ''}{v:g} {k}" for k, v in (p.get("valores") or {}).items() if v]
-            out.append(f"{p.get('nombre') or p.get('sid')} [{p.get('prob', 0):g}%]" + (f" ({', '.join(partes)})" if partes else ""))
-        return out
-    if not combate:
-        return {}
-    return {"atk": _lado(combate.get("atacante")), "def": _lado(combate.get("defensor"))}
-
-
 def _es_jefe(ficha):
     if not ficha:
         return False
@@ -856,8 +844,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
 
     casillas_mov_aliados = {}
     for a in aliados_activos:
-        habs_aliado = [str(h).lower() for h in (getattr(a, 'habilidades', []) or [])]
-        tiene_pass = any('pass' in h or 'traspasar' in h or 'すり抜け' in h for h in habs_aliado) or ('thief' in getattr(a, 'clase_nombre', '').lower())
+        tiene_pass = pasivas.tiene_sid(a, 'SID_すり抜け')
         u_mock = UnidadMock(
             x=a.x,
             y=a.y,
@@ -1001,7 +988,6 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                             "distancia_combate": dist_combate,
                             "veredicto": verd,
                             "chain_attacks": chain_attacks_e,
-                            "sombra_pasivas": _sombra_pasivas(combate_e),
                             "recomendacion": rec_texto,
                         })
                 except Exception:
@@ -1019,12 +1005,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             mejor_nota = ""
             mejor_pos = None
             mejor_area = None
+            mejor_advance = None
             mejor_score = -10**9   # centinela: también se aceptan scores negativos (plan de jefe)
 
             for (arma_candidata, es_engage, nota_arma) in todas_armas:
                 rango_max = max(arma_candidata.rango) if arma_candidata.rango else 1
                 is_tele_candidata = "ragnarok" in (arma_candidata.nombre or "").lower() or getattr(arma_candidata, 'engage_attack_nombre', '').lower().startswith('warp')
                 pos_forzada = getattr(arma_candidata, 'pos_forzada', None)
+                advance_desde = None
                 if pos_forzada is not None:
                     # Ballesta: se dispara desde su propia casilla (si se puede llegar a ella)
                     if not _pos_forzada_alcanzable(aliado, pos_forzada, casillas_mov_aliados.get(aliado.nombre), tablero):
@@ -1035,12 +1023,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                     if dist > alcance:
                         continue
 
+                    detalle_pos = {}
                     pos_candidata = encontrar_pos_ataque_optima(
                         aliado, enemigo, arma_candidata,
                         mapa=mapa, tablero=tablero, analizador=analizador,
                         casillas_alcanzables_precalc=casillas_mov_aliados.get(aliado.nombre) if not is_tele_candidata else None,
-                        zonas_amenaza_enemigos=zonas_amenaza_enemigos
+                        zonas_amenaza_enemigos=zonas_amenaza_enemigos, detalle=detalle_pos,
                     )
+                    advance_desde = detalle_pos.get("advance_desde")
                 if pos_candidata is None:
                     continue
 
@@ -1249,6 +1239,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         mejor_nota = nota_arma
                         mejor_pos = pos_candidata
                         mejor_area = area_info
+                        mejor_advance = advance_desde
 
                 except Exception:
                     continue
@@ -1444,6 +1435,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 expo_txt = f" | Al alcance de {len(amenazas_en_destino)} enemigos ({nombres_e})"
 
             pos_txt = f"Mover a ({pos_sug[0]},{pos_sug[1]}) · " if (pos_sug[0] != aliado.x or pos_sug[1] != aliado.y) else "En rango directo · "
+            if mejor_advance:
+                pos_txt = f"Mover a ({mejor_advance[0]},{mejor_advance[1]}) y ADVANCE a ({pos_sug[0]},{pos_sug[1]}) · "
 
             req_fusion = bool(getattr(mejor_arma, 'requiere_fusion', False) or (getattr(mejor_arma, 'es_engage_attack', False) and not getattr(aliado, 'en_fusion', False)))
             prefijo_fusion = "⚡ [FUSIÓN] " if req_fusion else ""
@@ -1482,13 +1475,13 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 "requiere_fusion": req_fusion,
                 "es_engage": bool(getattr(mejor_arma, 'es_engage', False) or getattr(mejor_arma, 'es_engage_attack', False)),
                 "pos_sugerida": pos_sug,
+                "advance_desde": mejor_advance,
                 "pos_canter": pos_canter,
                 "veredicto": verd,
                 "chain_attacks": chain_attacks,
                 "dano_total": dtotal,
                 "pasivas_activas": pasivas_list,
                 "apoyos_activos": apoyos_list,
-                "sombra_pasivas": _sombra_pasivas(combate_final),
                 "score_tactico": mejor_score,
                 "daño_recibido": daño_recibido_final,
                 "amenazas_en_destino": amenazas_en_destino,
@@ -1903,8 +1896,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
     if plan_jefe:
         jefe, plan, acumulado, hp_total_j = plan_jefe
         n_plan = len(plan)
-        habs_jefe = [str(h).lower() for h in (getattr(jefe, "habilidades", []) or [])]
-        umbral_vantage = 75 if any("vantage++" in h for h in habs_jefe) else 50 if any("vantage+" in h for h in habs_jefe) else 25 if any("vantage" in h for h in habs_jefe) else 0
+        umbral_vantage = pasivas.umbral_vantage(jefe)
         hp_restante = hp_total_j
         for i, (dmg, op) in enumerate(plan):
             aviso = ""

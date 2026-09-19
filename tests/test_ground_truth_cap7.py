@@ -521,7 +521,7 @@ class TestGroundTruthCapitulo7(CasoCapitulo7):
 
         dano_por_golpe = res["atacante"]["daño_por_golpe"]
         self.assertEqual(dano_por_golpe, 18, f"El daño de Warp Ragnarök debe ser 18, pero fue {dano_por_golpe}")
-        self.assertIn("Resonancia (+2 ATK, 1 recoil)", res["resultado"]["pasivas_activas"])
+        self.assertIn("Resonance (-1 HP, +2 Atk)", res["resultado"]["pasivas_activas"])
         self.assertIn("Ragnarök Fusión (Ataque de Emblema Celica)", res["resultado"]["pasivas_activas"])
         self.assertIn("Estilo Místico (Warp Ragnarök ×1.2 daño)", res["resultado"]["pasivas_activas"])
 

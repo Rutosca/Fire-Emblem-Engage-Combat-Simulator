@@ -38,7 +38,8 @@ class TestResolverNombre(unittest.TestCase):
     def test_sid_directo_y_desconocidos(self):
         self.assertEqual(pasivas.resolver_nombre_a_sid("SID_見切り"), "SID_見切り")
         self.assertIsNone(pasivas.resolver_nombre_a_sid("SID_inventado"))
-        self.assertIsNone(pasivas.resolver_nombre_a_sid("Weapon Sync"))   # DLC sin datamine
+        self.assertEqual(pasivas.resolver_nombre_a_sid("Weapon Sync"), "SID_OVERLAY_WEAPON_SYNC")   # DLC: overlay a mano
+        self.assertIsNone(pasivas.resolver_nombre_a_sid("Gambit"))   # DLC sin overlay todavía
         self.assertIsNone(pasivas.resolver_nombre_a_sid(""))
 
     def test_variantes_de_estilo_no_se_eligen_por_nombre(self):
