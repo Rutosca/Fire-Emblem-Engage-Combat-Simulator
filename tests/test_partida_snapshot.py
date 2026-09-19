@@ -5,15 +5,18 @@ Verifica que las unidades muertas y restos de presets no resuciten ni se mezclen
 
 import json
 import os
+import sys
 import unittest
-from app import app, tablero, _mapa
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from helpers import ruta_fixture
+from app import app, tablero
 
 
 class TestPartidaSnapshot(unittest.TestCase):
 
     def setUp(self):
         self.client = app.test_client()
-        path_partida = os.path.join("scratch", "partida_usuario.json")
+        path_partida = ruta_fixture("partida_cap7_turno10.json")
         self.assertTrue(os.path.exists(path_partida), f"No se encontró {path_partida}")
         with open(path_partida, "r", encoding="utf-8") as f:
             self.data_raw = json.load(f)

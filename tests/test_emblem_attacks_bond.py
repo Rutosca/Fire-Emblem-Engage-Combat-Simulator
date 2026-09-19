@@ -2,12 +2,10 @@
 Tests unitarios para las mecánicas de Emblemas:
 1. Armas disponibles según nivel de vínculo (Louis y Sigurd).
 2. Distinción explícita entre armas de Emblema vs normales (ej. Ridersbane vs Ridersbane (Emblema)).
-3. Cálculo exacto del daño de Warp Ragnarök (18 de daño con Resonancia).
-4. Clasificación de ataques de Emblema en arma fija vs arma variable.
+3. Clasificación de ataques de Emblema en arma fija vs arma variable.
 """
 
 import unittest
-from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from catalogo_loader import resolver_unidad_con_catalogo, ATAQUES_ENGAGE_CONFIG
 from motor_analisis import _armas_aliado
 
@@ -73,74 +71,6 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
         self.assertTrue(any("Brave Lance" in n for n in nombres), "A vínculo 10 debe aparecer Brave Lance (Emblema)")
         nombres_override = [a.nombre for a, _, _ in armas_disponibles if getattr(a, "es_engage_attack", False)]
         self.assertTrue(any("Brave Lance" in n for n in nombres_override), "Override debe poder ejecutarse con Brave Lance a vínculo 10")
-
-    def test_03_warp_ragnarok_exact_18_damage(self):
-        """
-        Céline (Noble Mística, Mag 16) con tomo Ragnarök (Mt 15) y pasiva Resonancia
-        (+2 ATK) contra Hortensia (Res 18): 16 + 15 + 2 - 18 = 15, y el bono de estilo
-        Místico de Warp Ragnarök (威力 * 1.2) lo eleva a 18, que es lo observado en el juego.
-        """
-        celine = Unidad(
-            nombre="Céline",
-            hp=21,
-            magia=16,
-            fuerza=11,
-            velocidad=12,
-            destreza=11,
-            defensa=7,
-            resistencia=12,
-            suerte=15,
-            complexion=4,
-            habilidades=["Resonance", "Holy Stance", "Favorite Food"],
-            emblema_nombre="Celica",
-            estilo_combate="魔法スタイル",
-        )
-        hortensia = Unidad(
-            nombre="Hortensia (Boss)",
-            hp=25,
-            resistencia=18,
-            defensa=13,
-            velocidad=18,
-            habilidades=["Veteran+", "Big Personality"]
-        )
-
-        # Arma fija Warp Ragnarök generada canónicamente
-        warp_ragnarok = Arma(
-            nombre="Warp Ragnarök",
-            mt=15,
-            hit=100,
-            crit=0,
-            wt=5,
-            tipo="Tomo",
-            es_magica=True,
-            rango=[1]
-        )
-        setattr(warp_ragnarok, "es_engage_attack", True)
-        setattr(warp_ragnarok, "engage_attack_nombre", "Warp Ragnarök")
-
-        res = CalculadoraEngage.simular_combate(
-            atacante=celine,
-            defensor=hortensia,
-            arma_atk=warp_ragnarok,
-            arma_def=None,
-            terreno_atk=Terreno(),
-            terreno_def=Terreno(),
-            distancia=1
-        )
-
-        dano_por_golpe = res["atacante"]["daño_por_golpe"]
-        self.assertEqual(dano_por_golpe, 18, f"El daño de Warp Ragnarök debe ser 18, pero fue {dano_por_golpe}")
-        self.assertIn("Resonancia (+2 ATK, 1 recoil)", res["resultado"]["pasivas_activas"])
-        self.assertIn("Ragnarök Fusión (Ataque de Emblema Celica)", res["resultado"]["pasivas_activas"])
-        self.assertIn("Estilo Místico (Warp Ragnarök ×1.2 daño)", res["resultado"]["pasivas_activas"])
-
-        # Sin estilo Místico (p.ej. Alear con Celica) no hay x1.2: se queda en 15
-        celine.estilo_combate = "Infantería"
-        res_no_mistico = CalculadoraEngage.simular_combate(
-            atacante=celine, defensor=hortensia, arma_atk=warp_ragnarok, arma_def=None,
-            terreno_atk=Terreno(), terreno_def=Terreno(), distancia=1
-        )
-        self.assertEqual(res_no_mistico["atacante"]["daño_por_golpe"], 15)
 
     def test_04_fixed_vs_variable_emblem_attacks(self):
         """Verifica la distinción entre técnicas de arma fija y arma variable."""

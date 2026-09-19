@@ -33,6 +33,19 @@ from motor_analisis import (
 
 app = Flask(__name__)
 
+# Identificador del arranque del servidor. El tablero vive en memoria: si el proceso
+# se reinicia (p.ej. el autoreload de Flask al editar código) mientras el navegador
+# sigue abierto, el cliente lo detecta por esta cabecera y restaura su partida local
+# en vez de seguir enviando acciones a un tablero recién inicializado.
+import uuid as _uuid
+_BOOT_ID = _uuid.uuid4().hex
+
+
+@app.after_request
+def _marcar_arranque(resp):
+    resp.headers["X-Engage-Boot"] = _BOOT_ID
+    return resp
+
 # =============================================================================
 # Estado global del tablero (singleton por sesión Flask)
 # =============================================================================
@@ -137,6 +150,7 @@ def seleccionar_mapa():
     tablero.fase = "jugador"
     tablero.inicializar_objetos_mapa()
     tablero.programar_refuerzos({})
+    tablero.programar_refuerzos_por_evento([])
     snap = tablero.snapshot()
     snap["mapa"] = _mapa_como_dict()
     return jsonify({"ok": True, **_info_capitulo(objetivo), "estado": snap})
@@ -397,6 +411,9 @@ def guardar_unidad():
     estados_otorgados = []
     if hp_previo is not None and ficha.hp_actual < hp_previo:
         estados_otorgados = pasivas_temporales.al_danar_aliado(tablero, ficha)
+    # Marcar "ha actuado" desde el modal sin combate ni objeto == "Esperar" (Self-Improver, Meditación)
+    if ficha.ha_actuado and not ficha.accion_turno and not (prev and prev.ha_actuado):
+        estados_otorgados += pasivas_temporales.al_esperar(tablero, ficha)
     return jsonify({
         "ok": True,
         "ficha": ficha.como_dict(),
@@ -456,6 +473,7 @@ def exportar_partida():
         "capitulo": _capitulo_actual,
         "dificultad": tablero.dificultad,
         "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(tablero.refuerzos_pendientes.items())},
+        "refuerzos_por_evento": [dict(e, casilla=list(e["casilla"])) for e in tablero.refuerzos_por_evento],
         "casillas_fuego": tablero.casillas_fuego_lista(),
         "fichas": fichas_vivas
     }
@@ -506,6 +524,16 @@ def importar_partida():
             tablero.programar_refuerzos({t: us for t, us in cal.items() if t > tablero.turno_actual})
         except Exception:
             tablero.programar_refuerzos({})
+    ev_guardados = partida.get("refuerzos_por_evento")
+    if isinstance(ev_guardados, list):
+        tablero.programar_refuerzos_por_evento(ev_guardados)
+    else:
+        try:
+            tablero.programar_refuerzos_por_evento(_cargador_dispos.refuerzos_por_evento(
+                f"M{_capitulo_actual:03d}", tablero.dificultad,
+                mapa_ancho=getattr(_mapa, "ancho", 24), mapa_alto=getattr(_mapa, "alto", 17)))
+        except Exception:
+            tablero.programar_refuerzos_por_evento([])
 
     fichas_retorno = [f.como_dict() for f in tablero.fichas.values() if f.viva and f.hp_actual > 0]
     return jsonify({
@@ -513,6 +541,7 @@ def importar_partida():
         "mensaje": f"Partida importada con éxito ({len(fichas_retorno)} unidades vivas)",
         "fichas": fichas_retorno,
         "refuerzos_previstos": tablero.refuerzos_previstos(),
+        "refuerzos_por_evento": tablero.refuerzos_por_evento_previstos(),
     })
 
 @app.route("/api/unidad/eliminar", methods=["POST"])
@@ -560,12 +589,18 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
     tablero.programar_refuerzos(calendario)
     n_ref = sum(len(v) for v in calendario.values())
     txt_ref = f" · {n_ref} refuerzos programados (turnos {', '.join(str(t) for t in sorted(calendario))})" if n_ref else ""
+    # Refuerzos condicionales del guion (p.ej. M009: al llegar Kagetsu/Zelkov a su fuerte)
+    eventos = _cargador_dispos.refuerzos_por_evento(capitulo_id, dificultad, mapa_ancho=ancho_m, mapa_alto=alto_m)
+    tablero.programar_refuerzos_por_evento(eventos)
+    if eventos:
+        txt_ref += " · " + "; ".join(f"{len(e['unidades'])} refuerzos cuando {e['descripcion'] or e['grupo']} ({e['casilla'][0]},{e['casilla'][1]})" for e in eventos)
 
     return {
         "ok": True,
         "mensaje": f"Despliegue de {capitulo_id} ({len(unidades_dispos)} unidades) en {dificultad}{txt_ref}",
         "fichas": [f.como_dict() for f in tablero.fichas.values()],
         "refuerzos_previstos": tablero.refuerzos_previstos(),
+        "refuerzos_por_evento": tablero.refuerzos_por_evento_previstos(),
     }
 
 
@@ -685,7 +720,8 @@ def mover_unidad():
         return jsonify({"error": f"Unidad '{nombre}' no encontrada"}), 404
 
     # En fase de jugador, si el aliado ya actuó, no se le permite volver a mover
-    if tablero.fase == "jugador" and ficha.es_aliado and ficha.ha_actuado:
+    # (los verdes pendientes de unión los mueve la CPU: se recolocan libremente)
+    if tablero.fase == "jugador" and ficha.controlable and ficha.ha_actuado:
         return jsonify({"error": f"{nombre} ya ha actuado este turno. Usa la Cronogema (Deshacer) para cambiar la elección."}), 400
 
     # 1. Casilla ocupada por otra unidad viva?
@@ -712,7 +748,7 @@ def mover_unidad():
         return jsonify({"error": f"Unidad '{nombre}' no encontrada"}), 404
 
     # Si un aliado se mueve en la fase de jugador, consume su acción del turno
-    if tablero.fase == "jugador" and ficha.es_aliado:
+    if tablero.fase == "jugador" and ficha.controlable:
         ficha.ha_actuado = True
     elif tablero.fase == "enemigo" and not ficha.es_aliado:
         ficha.ha_actuado = True
@@ -722,7 +758,9 @@ def mover_unidad():
         "nombre": nombre,
         "x": x,
         "y": y,
+        "turno": tablero.turno_actual,
         "ficha": ficha.como_dict(),
+        "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
 
@@ -779,11 +817,14 @@ def alternar_actuado():
     tablero.guardar_snapshot()
     ok = tablero.alternar_actuado(nombre)
     f = tablero.obtener_ficha(nombre)
-    # Marcar como actuado = "Esperar" en esa casilla: aplica pozos de Emblema
+    # Marcar como actuado = "Esperar" en esa casilla: aplica pozos de Emblema y las
+    # pasivas "al esperar" (Self-Improver, Meditación)
     recarga = tablero.aplicar_recarga_emblema_en_casilla(nombre) if (f and f.ha_actuado) else None
+    estados_otorgados = pasivas_temporales.al_esperar(tablero, f) if (f and f.ha_actuado) else []
     return jsonify({
         "ok": ok,
         "ficha": f.como_dict() if f else None,
+        "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
         "recarga_emblema": recarga,
         "objetos": tablero.objetos_como_lista() if recarga else None,
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
@@ -840,6 +881,31 @@ def usar_objeto():
         "objetos": tablero.objetos_como_lista() if recarga else None,
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
+
+@app.route("/api/unidad/hablar", methods=["POST"])
+def hablar_con_unidad():
+    """
+    Recluta a un aliado verde pendiente de unión: `hablante` (adyacente, autorizado,
+    con acción disponible) gasta su acción y `objetivo` pasa a ser controlable.
+    Body: {"hablante": "Alear", "objetivo": "Jade"}
+    """
+    data = request.get_json(force=True) or {}
+    hablante = data.get("hablante") or data.get("aliado")
+    objetivo = data.get("objetivo")
+    if not hablante or not objetivo:
+        return jsonify({"error": "Faltan campos: hablante, objetivo"}), 400
+    tablero.guardar_snapshot()
+    ok, mensaje = tablero.hablar(hablante, objetivo)
+    if not ok:
+        tablero.historial.pop()
+        return jsonify({"error": mensaje}), 400
+    return jsonify({
+        "ok": True,
+        "mensaje": mensaje,
+        "objetivo": tablero.obtener_ficha(objetivo).como_dict(),
+        "fichas": [f.como_dict() for f in tablero.fichas.values()],
+    })
+
 
 @app.route("/api/unidad/alternar_chain_guard", methods=["POST"])
 def alternar_chain_guard():
@@ -1011,15 +1077,19 @@ def ejecutar_combate():
 
     casillas_ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre not in (f_atk.nombre, f_def.nombre)}
 
+    # Los verdes pendientes de unión no dan apoyos ni auras al ejército (ni al revés)
+    def _mismo_bando(f, ref):
+        return f.es_aliado == ref.es_aliado and f.union_pendiente == ref.union_pendiente
+
     aliados_cercanos_atk = [
         (f.stats, abs(f.x - f_atk.x) + abs(f.y - f_atk.y))
         for f in tablero.fichas.values()
-        if f.viva and f.es_aliado == f_atk.es_aliado and f.nombre != f_atk.nombre and f.stats
+        if f.viva and _mismo_bando(f, f_atk) and f.nombre != f_atk.nombre and f.stats
     ]
     aliados_cercanos_def = [
         (f.stats, abs(f.x - f_def.x) + abs(f.y - f_def.y))
         for f in tablero.fichas.values()
-        if f.viva and f.es_aliado == f_def.es_aliado and f.nombre != f_def.nombre and f.stats
+        if f.viva and _mismo_bando(f, f_def) and f.nombre != f_def.nombre and f.stats
     ]
 
     es_engage_attack = bool(data.get("es_engage_attack", False) or es_engage_attack)
@@ -1455,7 +1525,8 @@ def fin_turno():
 @app.route("/api/refuerzos", methods=["GET"])
 def listar_refuerzos():
     """Refuerzos pendientes del capítulo activo, con el turno en que aparecen."""
-    return jsonify({"ok": True, "turno_actual": tablero.turno_actual, "refuerzos": tablero.refuerzos_previstos()})
+    return jsonify({"ok": True, "turno_actual": tablero.turno_actual, "refuerzos": tablero.refuerzos_previstos(),
+                    "refuerzos_por_evento": tablero.refuerzos_por_evento_previstos()})
 
 
 # =============================================================================

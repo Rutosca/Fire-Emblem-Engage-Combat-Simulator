@@ -62,6 +62,37 @@ CALENDARIO_REFUERZOS = {
 }
 
 
+# Refuerzos disparados por un EVENTO del guion, no por turno: en el .lua, una función
+# `判定_<evento>` comprueba que la unidad `pid` está en la casilla (x, z) y entonces
+# `<evento>` hace Dispos(grupo). Coordenadas en el sistema del datamine (1-indexed,
+# Y=1 fila inferior), igual que las filas del dispos. El grupo se retira del
+# despliegue inicial y el tablero lo coloca cuando la unidad pisa la casilla.
+REFUERZOS_POR_EVENTO = {
+    "M009": [
+        # 砦到着_カゲツ: Kagetsu llega al fuerte norte → 2 Sword Fighters a ambos lados
+        {"grupo": "Enemy_Kagetsu_Fort", "pid": "PID_M009_カゲツ", "casilla_datamine": (15, 16),
+         "descripcion": "Kagetsu llega al fuerte del norte"},
+        # 砦到着_ゼルコバ: Zelkov llega al fuerte sur → 2 Thieves a ambos lados
+        {"grupo": "Enemy_Zelkova_Fort", "pid": "PID_M009_ゼルコバ", "casilla_datamine": (15, 2),
+         "descripcion": "Zelkov llega al fuerte del sur"},
+    ],
+}
+
+
+# Aliados verdes (Force=2) que NO se unen al empezar el mapa: hay que gastar la
+# acción de una unidad concreta (adyacente) para hablar con ellos. Hasta entonces
+# los mueve la CPU y no son controlables. Del .lua: `<pid>加入_<hablante>()` → UnitJoin.
+# {dispos_id: {pid del verde: [pids que pueden hablar con él]}}
+UNION_POR_CONVERSACION = {
+    # M009.lua: ジェーデ加入_リュール / ジェーデ加入_ディアマンド
+    "M009": {"PID_ジェーデ": ["PID_リュール", "PID_ディアマンド"]},
+}
+
+
+def _grupos_por_evento(dispos_id: str) -> set:
+    return {e["grupo"] for e in REFUERZOS_POR_EVENTO.get((dispos_id or "").upper(), [])}
+
+
 class CargadorDisposEngage:
     def __init__(self, ruta_catalogo: Optional[str] = None):
         _cat_json = os.path.join(BASE_DIR, "json", "catalogo_engage.json")
@@ -89,6 +120,9 @@ class CargadorDisposEngage:
                         "name_id": p.get("Name", ""),
                         "jid": p.get("Jid", ""),
                         "level": int(p.get("Level", 1)) if p.get("Level", "").isdigit() else 1,
+                        # Inventario por defecto del personaje: el juego lo usa cuando la fila
+                        # del dispos no lista objetos (Item1..6 vacíos), p.ej. Jade en M009.
+                        "items": [i for i in p.get("Items", "").split(";") if i],
                         "auto_grow_offset_l": int(p.get("AutoGrowOffsetL", 0)) if p.get("AutoGrowOffsetL", "").lstrip("-").isdigit() else 0,
                         "auto_grow_offset_h": int(p.get("AutoGrowOffsetH", 0)) if p.get("AutoGrowOffsetH", "").lstrip("-").isdigit() else 0,
                         "auto_grow_offset_n": int(p.get("AutoGrowOffsetN", 0)) if p.get("AutoGrowOffsetN", "").lstrip("-").isdigit() else 0,
@@ -192,6 +226,7 @@ class CargadorDisposEngage:
         `incluir_refuerzos` sea True — cada unidad lleva `grupo` y `es_refuerzo`.
         """
         ruta_xml = os.path.join(DISPOS_DIR, f"{dispos_id}.xml")
+        grupos_evento = _grupos_por_evento(dispos_id)
         if not os.path.exists(ruta_xml):
             print(f"Error: No existe {ruta_xml}")
             return []
@@ -228,7 +263,7 @@ class CargadorDisposEngage:
             if not x_str or not y_str or "紋章氣" in pid:
                 continue
 
-            es_refuerzo = grupo_actual.startswith("Enemy_Reinforcement")
+            es_refuerzo = grupo_actual.startswith("Enemy_Reinforcement") or grupo_actual in grupos_evento
             if es_refuerzo and not incluir_refuerzos:
                 continue
 
@@ -251,6 +286,8 @@ class CargadorDisposEngage:
             es_aliado = (force_int == 0 or force_int == 2)
             es_verde = (force_int == 2)
             es_fijo = (force_int == 2 or pid == "PID_リュール")
+            habla_con = list(UNION_POR_CONVERSACION.get((dispos_id or "").upper(), {}).get(pid, [])) if es_verde else []
+            union_pendiente = bool(habla_con)
 
             # Buscar datos de Person.xml
             p_info = self.persons.get(pid, {})
@@ -301,6 +338,15 @@ class CargadorDisposEngage:
                         "arma": nom_arma,
                         "equipada": (len(inventario) == 0),
                         "es_drop": drop
+                    })
+
+            # Sin objetos en el dispos: inventario por defecto de Person.xml (Items)
+            if not inventario and pid:
+                for iid in (self.persons.get(pid, {}).get("items") or []):
+                    nom_arma = self.resolver_nombre_item(iid)
+                    inventario.append({
+                        "id": iid, "nombre": nom_arma, "arma": nom_arma,
+                        "equipada": (len(inventario) == 0), "es_drop": False,
                     })
 
             # Alear despliega canónicamente con Libération y Poción si el slot de dispos no lista armas
@@ -403,6 +449,8 @@ class CargadorDisposEngage:
                 "es_aliado": es_aliado,
                 "es_verde": es_verde,
                 "es_fijo": es_fijo,
+                "union_pendiente": union_pendiente,   # verde que aún no se ha unido (hablar para reclutar)
+                "habla_con": habla_con,               # pids que pueden hablar con él
                 "x": x,
                 "y": y,
                 "clase_id": jid,
@@ -437,6 +485,23 @@ class CargadorDisposEngage:
             if unidades:
                 calendario[int(turno)] = unidades
         return calendario
+
+    def refuerzos_por_evento(self, dispos_id: str, dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> list:
+        """[{grupo, pid, casilla: (x, y) en coordenadas del mapa, descripcion, unidades}] de los
+        refuerzos condicionales del capítulo (REFUERZOS_POR_EVENTO), ya filtrados por dificultad."""
+        grupos = self.cargar_refuerzos(dispos_id, dificultad, mapa_ancho, mapa_alto)
+        salida = []
+        for ev in REFUERZOS_POR_EVENTO.get((dispos_id or "").upper(), []):
+            unidades = grupos.get(ev["grupo"], [])
+            if not unidades:
+                continue
+            dx, dy = ev["casilla_datamine"]
+            salida.append({
+                "grupo": ev["grupo"], "pid": ev["pid"], "descripcion": ev.get("descripcion", ""),
+                "casilla": (max(0, min(mapa_ancho - 1, int(dx) - 1)), max(0, min(mapa_alto - 1, mapa_alto - int(dy)))),
+                "unidades": unidades,
+            })
+        return salida
 
     def cargar_refuerzos(self, dispos_id: str, dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> dict:
         """Refuerzos del capítulo agrupados por nombre de grupo del dispos: {grupo: [unidad, ...]}."""

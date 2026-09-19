@@ -1,7 +1,7 @@
 import unittest
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from catalogo_loader import resolver_unidad_con_catalogo
-from estado_tablero import EstadoTablero, FichaUnidad
+from estado_tablero import EstadoTablero
 from motor_analisis import _armas_aliado
 
 

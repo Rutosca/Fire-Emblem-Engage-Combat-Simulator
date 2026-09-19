@@ -49,6 +49,8 @@ class FichaUnidad:
     potenciadores_usados: list = field(default_factory=list) # e.g. ["Botas (+1 MOV)", "Túnica Angelical (+5 HP)"]
     boosts_fusion: dict = field(default_factory=dict)  # Bono de stats en Fusión observado en el juego (Rise Above de Roy): {"hp":5,"str":3,...}
     es_verde: bool = False             # True para aliados que se unen en turno 1 (Alcryst, Citrinne, Lapis)
+    union_pendiente: bool = False      # Verde que aún no se ha unido: lo mueve la CPU, no es controlable (Jade en Cap. 9)
+    habla_con: list = field(default_factory=list)   # pids que pueden reclutarlo hablando desde una casilla adyacente
     es_fijo: bool = False              # True si su posición no puede cambiarse en preparación (Alear, verdes)
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
     cargas_ruptura: int = 0            # Cargas de Ruptura (Break): 1 = no puede contraatacar en el siguiente combate
@@ -67,6 +69,11 @@ class FichaUnidad:
     #   {"sid", "nombre", "stat_boosts": {str,mag,...}, "expira_fase", "expira_turno", "origen"}
     # Caduca al ENTRAR en (expira_fase, expira_turno). Ver otorgar_estado_temporal / purgar_estados_temporales.
     estados_temporales: list = field(default_factory=list)
+
+    @property
+    def controlable(self) -> bool:
+        """Aliado que el jugador controla (los verdes pendientes de unión no lo son)."""
+        return bool(self.es_aliado and not self.union_pendiente)
 
     @property
     def arma_equipada(self):
@@ -216,6 +223,10 @@ class FichaUnidad:
             "nombre": self.nombre,
             "es_aliado": self.es_aliado,
             "es_verde": self.es_verde,
+            "pid": getattr(self, "pid", "") or "",
+            "union_pendiente": self.union_pendiente,
+            "habla_con": list(self.habla_con or []),
+            "controlable": self.controlable,
             "es_fijo": self.es_fijo,
             "ha_actuado": self.ha_actuado,
             "accion_turno": self.accion_turno,
@@ -306,6 +317,9 @@ class EstadoTablero:
         # Se despliegan al entrar en la fase de jugador de ese turno (avanzar_turno).
         self.refuerzos_pendientes: Dict[int, list] = {}
         self.refuerzos_desplegados_ultimo: list = []
+        # Refuerzos por evento del guion (cargador_dispos.REFUERZOS_POR_EVENTO): se
+        # despliegan cuando la unidad `pid` pisa `casilla`. [{grupo, pid, casilla, descripcion, unidades, disparado}]
+        self.refuerzos_por_evento: list = []
         self.dificultad: str = "Hard"   # dificultad con la que se desplegó el capítulo (refuerzos)
         # Fuego de Blazing Lion: {(x, y): turno_en_que_se_apaga}. Prende en el turno T del
         # jugador, quema a quien empiece su fase encima y se apaga al empezar el turno T+1.
@@ -664,6 +678,8 @@ class EstadoTablero:
         ficha.y = nueva_y
         # La casilla de recarga de Emblema NO actúa al pisarla: se aplica cuando la
         # unidad termina su acción encima (ver aplicar_recarga_emblema_en_casilla).
+        # Los refuerzos por evento sí: el guion los lanza al llegar la unidad a la casilla.
+        self.refuerzos_desplegados_ultimo = self.comprobar_refuerzos_por_evento()
         return True
 
     def aplicar_recarga_emblema_en_casilla(self, nombre: str) -> Optional[dict]:
@@ -726,8 +742,41 @@ class EstadoTablero:
         return self.fichas.get(nombre)
 
     def obtener_aliados(self) -> List[FichaUnidad]:
-        """Devuelve aliados vivos."""
-        return [f for f in self.fichas.values() if f.es_aliado and f.viva]
+        """Aliados vivos CONTROLABLES por el jugador (excluye verdes pendientes de unión)."""
+        return [f for f in self.fichas.values() if f.controlable and f.viva]
+
+    def obtener_npcs_pendientes(self) -> List[FichaUnidad]:
+        """Aliados verdes vivos que aún no se han unido (hay que hablar con ellos)."""
+        return [f for f in self.fichas.values() if f.es_aliado and f.union_pendiente and f.viva]
+
+    def hablar(self, hablante: str, objetivo: str):
+        """
+        Recluta a un verde pendiente: `hablante` (controlable, adyacente, con acción
+        disponible y autorizado por `habla_con`) gasta su acción. Devuelve
+        (ok, mensaje). Coincidencia por pid o por nombre del hablante.
+        """
+        h = self.fichas.get(hablante)
+        o = self.fichas.get(objetivo)
+        if not h or not o:
+            return False, "Unidad no encontrada"
+        if not o.union_pendiente:
+            return False, f"{o.nombre} ya forma parte del ejército"
+        if not h.controlable or not h.viva:
+            return False, f"{h.nombre} no es una unidad controlable"
+        if self.fase != "jugador":
+            return False, "Solo se puede hablar en la fase de jugador"
+        if h.ha_actuado:
+            return False, f"{h.nombre} ya ha actuado este turno"
+        autorizados = list(o.habla_con or [])
+        if autorizados and getattr(h, "pid", "") not in autorizados and h.nombre not in autorizados:
+            return False, f"{o.nombre} solo habla con: {', '.join(autorizados)}"
+        if abs(h.x - o.x) + abs(h.y - o.y) != 1:
+            return False, f"{h.nombre} debe estar en una casilla adyacente a {o.nombre}"
+        o.union_pendiente = False
+        o.es_fijo = False
+        h.ha_actuado = True
+        h.accion_turno = "hablar"
+        return True, f"{o.nombre} se une al ejército"
 
     def obtener_enemigos(self) -> List[FichaUnidad]:
         """Devuelve enemigos vivos."""
@@ -749,6 +798,7 @@ class EstadoTablero:
             "fichas": copy.deepcopy(self.fichas),
             "objetos": copy.deepcopy(self.objetos),
             "refuerzos_pendientes": copy.deepcopy(self.refuerzos_pendientes),
+            "refuerzos_por_evento": copy.deepcopy(self.refuerzos_por_evento),
             "casillas_fuego": dict(self.casillas_fuego),
         }
         self.historial.append(snap)
@@ -765,6 +815,7 @@ class EstadoTablero:
         self.fichas = snap["fichas"]
         self.objetos = snap.get("objetos", self.objetos)
         self.refuerzos_pendientes = snap.get("refuerzos_pendientes", self.refuerzos_pendientes)
+        self.refuerzos_por_evento = snap.get("refuerzos_por_evento", self.refuerzos_por_evento)
         self.casillas_fuego = dict(snap.get("casillas_fuego", {}))
         self.sincronizar_objetos_mapa()
         self.sincronizar_fuego_mapa()
@@ -806,26 +857,47 @@ class EstadoTablero:
         self.refuerzos_pendientes = {int(t): list(us) for t, us in (calendario or {}).items() if us}
         self.refuerzos_desplegados_ultimo = []
 
-    def refuerzos_previstos(self, turno: Optional[int] = None) -> list:
-        """Refuerzos que aparecerán en `turno` (o todos los pendientes, ordenados) — para la UI / análisis."""
-        if turno is not None:
-            return list(self.refuerzos_pendientes.get(int(turno), []))
-        return [dict(u, turno=t) for t in sorted(self.refuerzos_pendientes) for u in self.refuerzos_pendientes[t]]
+    def programar_refuerzos_por_evento(self, eventos: list) -> None:
+        """Arma los refuerzos condicionales del capítulo (ver cargador_dispos.refuerzos_por_evento)."""
+        self.refuerzos_por_evento = [dict(e, casilla=tuple(e["casilla"]), disparado=bool(e.get("disparado", False))) for e in (eventos or [])]
 
-    def desplegar_refuerzos(self, turno: int) -> list:
+    def refuerzos_por_evento_previstos(self) -> list:
+        """Eventos aún no disparados, para la UI: [{grupo, descripcion, pid, casilla, unidades: [{nombre, x, y}]}]."""
+        return [
+            {"grupo": e["grupo"], "descripcion": e.get("descripcion", ""), "pid": e["pid"], "casilla": list(e["casilla"]),
+             "unidades": [{"nombre": u["nombre"], "x": u["x"], "y": u["y"]} for u in e["unidades"]]}
+            for e in self.refuerzos_por_evento if not e.get("disparado")
+        ]
+
+    def comprobar_refuerzos_por_evento(self) -> list:
         """
-        Coloca los refuerzos programados para `turno`. Si su casilla de aparición
-        está ocupada, en el juego el refuerzo no aparece ese turno: se pospone al
-        siguiente. Devuelve las fichas desplegadas (como_dict).
+        Dispara los refuerzos por evento cuya unidad `pid` está viva en su casilla.
+        Se llama tras cada movimiento y al cambiar de fase. Devuelve las fichas
+        desplegadas (como_dict). Las casillas ocupadas se posponen al turno siguiente.
         """
-        pendientes = self.refuerzos_pendientes.pop(int(turno), [])
-        if not pendientes:
-            self.refuerzos_desplegados_ultimo = []
-            return []
+        desplegados = []
+        for ev in self.refuerzos_por_evento:
+            if ev.get("disparado"):
+                continue
+            en_casilla = any(
+                f.viva and getattr(f, "pid", "") == ev["pid"] and (f.x, f.y) == tuple(ev["casilla"])
+                for f in self.fichas.values()
+            )
+            if not en_casilla:
+                continue
+            ev["disparado"] = True
+            nuevos, pospuestos = self._desplegar_unidades(ev["unidades"])
+            desplegados += nuevos
+            if pospuestos:
+                self.refuerzos_pendientes.setdefault(int(self.turno_actual) + 1, []).extend(pospuestos)
+        return desplegados
+
+    def _desplegar_unidades(self, unidades: list):
+        """Coloca `unidades` (dicts del cargador). Devuelve (desplegadas como_dict, pospuestas por casilla ocupada)."""
         from catalogo_loader import resolver_unidad_con_catalogo
         desplegados, pospuestos = [], []
         ocupadas = {(f.x, f.y) for f in self.fichas.values() if f.viva}
-        for u in pendientes:
+        for u in unidades:
             if (u["x"], u["y"]) in ocupadas:
                 pospuestos.append(u)
                 continue
@@ -841,8 +913,27 @@ class EstadoTablero:
             self.registrar_unidad(ficha, resolver_colision=False)
             ocupadas.add((ficha.x, ficha.y))
             desplegados.append(ficha.como_dict())
-        if pospuestos:
-            self.refuerzos_pendientes.setdefault(int(turno) + 1, []).extend(pospuestos)
+        return desplegados, pospuestos
+
+    def refuerzos_previstos(self, turno: Optional[int] = None) -> list:
+        """Refuerzos que aparecerán en `turno` (o todos los pendientes, ordenados) — para la UI / análisis."""
+        if turno is not None:
+            return list(self.refuerzos_pendientes.get(int(turno), []))
+        return [dict(u, turno=t) for t in sorted(self.refuerzos_pendientes) for u in self.refuerzos_pendientes[t]]
+
+    def desplegar_refuerzos(self, turno: int) -> list:
+        """
+        Coloca los refuerzos programados para `turno`. Si su casilla de aparición
+        está ocupada, en el juego el refuerzo no aparece ese turno: se pospone al
+        siguiente. Devuelve las fichas desplegadas (como_dict).
+        """
+        pendientes = self.refuerzos_pendientes.pop(int(turno), [])
+        desplegados = self.comprobar_refuerzos_por_evento()   # por si una unidad ya está en su casilla
+        if pendientes:
+            nuevos, pospuestos = self._desplegar_unidades(pendientes)
+            desplegados += nuevos
+            if pospuestos:
+                self.refuerzos_pendientes.setdefault(int(turno) + 1, []).extend(pospuestos)
         self.refuerzos_desplegados_ultimo = desplegados
         return desplegados
 
@@ -926,6 +1017,7 @@ class EstadoTablero:
             "fase": self.fase,
             "dificultad": self.dificultad,
             "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(self.refuerzos_pendientes.items())},
+            "refuerzos_por_evento": [dict(e, casilla=list(e["casilla"])) for e in self.refuerzos_por_evento],
             "casillas_fuego": self.casillas_fuego_lista(),
             "aliados": [f.como_dict() for f in self.obtener_aliados()],
             "enemigos": [f.como_dict() for f in self.obtener_enemigos()],

@@ -289,13 +289,19 @@ class MapaTactico:
                                 t_canon = v
                                 break
 
-                    # Defaults automáticos de Engage según el tipo si no están explícitos
+                    # Defaults automáticos de Engage según el tipo si no están explícitos.
+                    #   baluarte (curación/fortaleza/trono): +30 Avo, +10 HP/turno, antirruptura
+                    #   evasion: solo +30 Avo (sin curación ni antirruptura). Los voladores
+                    #   no reciben bonos de terreno: lo aplica motor_calculo, no el mapa.
                     es_baluarte = tipo_nombre in ('curacion', 'fortaleza', 'trono', 'baluarte', 'tiledefense')
-                    def_avo = t_canon.get('avoid', 30 if es_baluarte else 0) if t_canon else (30 if es_baluarte else props.get('avo', 0))
+                    es_evasion = tipo_nombre in ('evasion', 'evasión')
+                    def_avo = t_canon.get('avoid', 30 if (es_baluarte or es_evasion) else 0) if t_canon else (30 if (es_baluarte or es_evasion) else props.get('avo', 0))
                     def_dfn = t_canon.get('defense', 0) if t_canon else ((2 if tipo_nombre == 'trono' else 0) if es_baluarte else props.get('dfn', 0))
                     def_curacion = t_canon.get('heal_turno', 10 if es_baluarte else 0) if t_canon else (10 if es_baluarte else props.get('curacion_turno', 0))
                     def_antirruptura = t_canon.get('es_antirruptura', es_baluarte) if t_canon else (es_baluarte or props.get('es_antirruptura', False))
-                    def_coste = t_canon.get('coste_mov', 1) if t_canon else props.get('coste_mov', 1)
+                    # evasion: coste +1 (como el fuego). Los voladores no lo pagan: el
+                    # analizador de movimiento les cobra siempre 1.
+                    def_coste = t_canon.get('coste_mov', 1) if t_canon else props.get('coste_mov', 2 if es_evasion else 1)
                     def_recarga = tipo_nombre in ('recarga', 'emblema', 'pozo_energia') or props.get('es_recarga_emblema', False)
 
                     self.grid[x][y] = Terreno(

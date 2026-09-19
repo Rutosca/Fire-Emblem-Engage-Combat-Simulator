@@ -35,6 +35,19 @@ async function api(path, method = "GET", body = null) {
   }
   try {
     const r = await fetch(path, opts);
+    // El servidor guarda el tablero en memoria: si se ha reiniciado (cabecera de
+    // arranque distinta), su estado ya no es el de esta pantalla. Se avisa y se
+    // recarga la página, que restaura la partida guardada en el navegador.
+    const boot = r.headers.get("X-Engage-Boot");
+    if (boot) {
+      if (state.serverBoot && state.serverBoot !== boot) {
+        state.serverBoot = boot;
+        mostrarToast("El servidor se ha reiniciado: restaurando la partida guardada en el navegador…", "error");
+        setTimeout(() => location.reload(), 1200);
+        return { ok: false, error: "Servidor reiniciado; la partida se está restaurando." };
+      }
+      state.serverBoot = boot;
+    }
     const ct = r.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
       return await r.json();
@@ -61,6 +74,8 @@ const CLASES_TERRENO = {
   "Curacion":     "t-curacion",
   "Fortaleza":    "t-curacion",
   "Trono":        "t-curacion",
+  "Evasion":      "t-evasion",
+  "Evasión":      "t-evasion",
   "Recarga":      "t-recarga",
   "Emblema":      "t-recarga",
   "Pozo":         "t-recarga",
@@ -121,7 +136,7 @@ async function loadTerrenoAsync(ancho, alto) {
             celda.classList.remove("t-desconocido");
             celda.classList.add(claseTerreno(t.nombre));
 
-            const perks = [`${t.nombre} | AVO +${t.avo} DEF +${t.dfn}`];
+            const perks = [`${t.nombre} | AVO +${t.avo} DEF +${t.dfn} (voladores: sin bono)`];
             if (t.curacion_turno) perks.push(`Cura +${t.curacion_turno} HP/turno`);
             if (t.es_antirruptura) perks.push(`Inmune Ruptura`);
             if (t.es_recarga_emblema) perks.push(`Recarga Emblema 100%`);
@@ -133,7 +148,8 @@ async function loadTerrenoAsync(ancho, alto) {
               celda.title = perks.join(" · ");
             }
             let tagExtra = "";
-            if (t.curacion_turno) tagExtra += ` · +${t.curacion_turno}HP Antirruptura`;
+            if (t.curacion_turno) tagExtra += ` · +${t.curacion_turno}HP`;
+            if (t.es_antirruptura) tagExtra += ` · Antirruptura`;
             if (t.es_recarga_emblema) tagExtra += ` · Recarga Fusión`;
             celda.dataset.tip = `${x},${y} [${t.nombre}] AVO +${t.avo}${tagExtra}`;
           })
@@ -197,6 +213,7 @@ function crearToken(ficha) {
 
   const tok = document.createElement("div");
   let claseBando = ficha.es_aliado ? (ficha.es_verde ? "aliado verde" : "aliado") : "enemigo";
+  if (ficha.union_pendiente) claseBando += " npc-pendiente";
   if (ficha.es_fijo) claseBando += " fijo";
   if (ficha.en_fusion || ficha.turnos_fusion > 0) claseBando += " fusion";
   if (ficha.ha_actuado) claseBando += " actuado";
@@ -248,7 +265,7 @@ function crearToken(ficha) {
   const hpActual = ficha.hp_actual !== undefined ? ficha.hp_actual : hpMax;
   const pct = ficha.pct_hp !== undefined ? ficha.pct_hp : Math.round((hpActual / hpMax) * 100);
 
-  let desc = `${ficha.nombre} (${ficha.es_verde ? "Aliado Verde" : (ficha.es_aliado ? "Aliado" : "Enemigo")})\nHP: ${hpActual}/${hpMax} (${pct}%)\nClase: ${ficha.clase_nombre || "Desconocida"} | Nv: ${ficha.nivel || 1}`;
+  let desc = `${ficha.nombre} (${ficha.union_pendiente ? "Aliado Verde · NO controlable: habla con él para reclutarlo" : (ficha.es_verde ? "Aliado Verde" : (ficha.es_aliado ? "Aliado" : "Enemigo"))})\nHP: ${hpActual}/${hpMax} (${pct}%)\nClase: ${ficha.clase_nombre || "Desconocida"} | Nv: ${ficha.nivel || 1}`;
   if (ficha.arma_equipada) desc += `\nArma: ${ficha.arma_equipada.nombre} (Mt ${ficha.arma_equipada.mt}, Rango ${ficha.arma_equipada.rango.join('-')})`;
   if (ficha.emblema_nombre) desc += `\nEmblema: ${ficha.emblema_nombre}`;
   const es3H = (ficha.emblema_nombre && (ficha.emblema_nombre.toLowerCase().includes("edelgard") || ficha.emblema_nombre.toLowerCase().includes("tres casas") || ficha.emblema_nombre.toLowerCase().includes("three houses")));
@@ -445,6 +462,7 @@ async function onCeldaDrop(e) {
     mostrarToast(`${res.error}`, "error");
     return;
   }
+  notificarRefuerzos(res);   // refuerzos por evento del guion (p.ej. Kagetsu llega a su fuerte)
 
   if (res.fichas) {
     actualizarTokens(res.fichas);
@@ -1205,12 +1223,18 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
 
 // Vuelca una ficha (del tablero o del roster) en todos los campos del modal.
 // No toca el modo, el título ni el nombre original: eso lo decide quien abre el modal.
-// "hp:5, str:3" ⇄ {hp:5, str:3}
+// "hp:5, str:3" ⇄ {hp:5, str:3}. El orden da igual; se aceptan las claves en inglés
+// (hp, str, mag, dex, spd, def, res, lck, bld) o con las etiquetas de la herramienta
+// (PV, FUE, MAG, DES, VEL, DEF, RES, SUE, COM).
+const ALIAS_STAT_BOOST = { pv: "hp", vida: "hp", fue: "str", fuerza: "str", magia: "mag", des: "dex", destreza: "dex",
+  vel: "spd", velocidad: "spd", defensa: "def", resistencia: "res", sue: "lck", suerte: "lck", com: "bld", complexion: "bld", complexión: "bld" };
 function parsearBoostsFusion(txt) {
   const out = {};
-  String(txt || "").split(/[,;]+/).forEach(par => {
-    const m = par.trim().match(/^([a-z]{2,3})\s*[:=]\s*(-?\d+)$/i);
-    if (m && parseInt(m[2], 10) !== 0) out[m[1].toLowerCase()] = parseInt(m[2], 10);
+  String(txt || "").split(/[,;\n]+/).forEach(par => {
+    const m = par.trim().match(/^([a-záéíóú]{2,11})\s*[:=+]?\s*([+-]?\d+)$/i);
+    if (!m) return;
+    const clave = ALIAS_STAT_BOOST[m[1].toLowerCase()] || m[1].toLowerCase();
+    if (parseInt(m[2], 10) !== 0) out[clave] = parseInt(m[2], 10);
   });
   return out;
 }
@@ -1704,6 +1728,12 @@ function construirPayloadDesdeModal(fichaExistente) {
   const payload = {
     nombre,
     es_aliado: esAliado,
+    // Identidad que el modal no edita: se reenvía tal cual para no perderla al guardar
+    es_verde: fichaExistente ? !!fichaExistente.es_verde : undefined,
+    es_fijo: fichaExistente ? !!fichaExistente.es_fijo : undefined,
+    union_pendiente: fichaExistente ? !!fichaExistente.union_pendiente : undefined,
+    habla_con: fichaExistente ? (fichaExistente.habla_con || []) : undefined,
+    pid: fichaExistente ? (fichaExistente.pid || undefined) : undefined,
     x, y,
     nivel,
     ha_actuado: haActuado,
@@ -2613,6 +2643,20 @@ async function ejecutarAtaqueEnemigo(r) {
   setTimeout(lanzarAnalisis, 400);
 }
 
+async function ejecutarConversacion(r) {
+  const ali = state.fichas[r.aliado];
+  if (r.pos_sugerida && ali && (ali.x !== r.pos_sugerida[0] || ali.y !== r.pos_sugerida[1])) {
+    const movRes = await api("/api/mover", "POST", { nombre: r.aliado, x: r.pos_sugerida[0], y: r.pos_sugerida[1] });
+    if (movRes.error) { mostrarToast(`No se pudo acercar a ${r.aliado}: ${movRes.error}`, "error"); return; }
+    if (movRes.fichas) actualizarTokens(movRes.fichas);
+  }
+  const res = await api("/api/unidad/hablar", "POST", { hablante: r.aliado, objetivo: r.objetivo });
+  if (res.error) { mostrarToast(res.error, "error"); return; }
+  if (res.fichas) actualizarTokens(res.fichas);
+  mostrarToast(`💬 ${res.mensaje}`, "ok");
+  setTimeout(lanzarAnalisis, 350);
+}
+
 async function ejecutarCuracion(r) {
   if (r.pos_sugerida) {
     const movRes = await api("/api/mover", "POST", {
@@ -2678,7 +2722,9 @@ function renderResultado(container, r) {
   const header = document.createElement("header");
   let icon = "";
   let headerText = `${r.aliado} vs ${r.enemigo}`;
-  if (r.tipo_analisis === "apoyo_curacion") {
+  if (r.tipo_analisis === "conversacion") {
+    headerText = `💬 ${r.aliado} → ${r.objetivo} (Reclutar)`;
+  } else if (r.tipo_analisis === "apoyo_curacion") {
     headerText = `💚 ${r.aliado} → ${r.objetivo || 'Aliado'} (Curación)`;
   } else if (r.tipo_analisis === "uso_pocion") {
     headerText = `🧪 ${r.aliado} (Supervivencia)`;
@@ -2867,6 +2913,19 @@ function renderResultado(container, r) {
     }
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);
+    card.appendChild(actionBar);
+  } else if (r.tipo_analisis === "conversacion") {
+    const actionBar = document.createElement("div");
+    actionBar.className = "card-action-bar";
+    const btnTalk = document.createElement("button");
+    btnTalk.type = "button";
+    btnTalk.className = "btn-ejecutar-jugada";
+    btnTalk.style.background = "linear-gradient(135deg, #4b2c7a, #7d4fd1)";
+    const irA = (r.pos_sugerida && state.fichas[r.aliado] && (state.fichas[r.aliado].x !== r.pos_sugerida[0] || state.fichas[r.aliado].y !== r.pos_sugerida[1]))
+      ? ` (ir a ${r.pos_sugerida[0]},${r.pos_sugerida[1]})` : "";
+    btnTalk.innerHTML = `💬 <b>Hablar con ${r.objetivo}</b>${irA}`;
+    btnTalk.addEventListener("click", () => ejecutarConversacion(r));
+    actionBar.appendChild(btnTalk);
     card.appendChild(actionBar);
   } else if (r.tipo_analisis === "apoyo_curacion") {
     const actionBar = document.createElement("div");
@@ -3485,6 +3544,10 @@ async function refrescarRefuerzosPendientes() {
 async function avisarRefuerzosProximoTurno() {
   const r = await refrescarRefuerzosPendientes();
   if (!r || !r.ok) return;
+  (r.refuerzos_por_evento || []).forEach(ev => {
+    const txt = ev.unidades.map(u => `${u.nombre} en (${u.x},${u.y})`).join(", ");
+    mostrarToast(`Refuerzo condicional: ${ev.descripcion} (${ev.casilla[0]},${ev.casilla[1]}) → ${txt}`, "info");
+  });
   const proximo = (r.refuerzos || []).filter(u => u.turno === (r.turno_actual + 1));
   if (!proximo.length) return;
   const txt = proximo.map(u => `${u.nombre} en (${u.x},${u.y})`).join(", ");

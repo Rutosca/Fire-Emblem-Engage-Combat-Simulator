@@ -12,13 +12,16 @@ habilidades relevantes para el Capítulo 7 (ver tests/test_ground_truth_cap7.py
 y la tabla de migración del plan). Añadir soporte a un mapa o personaje futuro
 es extender VARIABLES/FUNCTIONS/LITERALS aquí — nunca la lógica de combate.
 
-Nota sobre 手番回数 vs 総手番回数 (sin telemetría oficial del motor original
-para verificarlo con certeza): se interpretan como "número de turno de la
-batalla" (手番回数, >=1 durante el combate real) y "acciones ya realizadas
-este turno por la unidad" (総手番回数, 0 al iniciar su turno) respectivamente
-— es la lectura que hace consistentes tanto la condición de Resonance
-(手番回数 > 0, prácticamente siempre cierto en combate real) como la de
-Alacrity (総手番回数 == 0, solo en la primera acción del turno).
+Semántica de las cuentas del combate (deducida de los Act* del propio
+Skill.xml: Dragon Blast "手番回数 = 2", Bond Blast "= 3", Follow-Up
+"手番回数 = min(手番回数, 1)", Counter (50 %) "総手番回数 == 手番回数 - 1",
+3er golpe de Bond Blast "総手番回数 == 2"):
+  - 手番回数       rondas de ataque que la unidad tiene en este combate (1, 2 con
+                   follow-up; 0 si no puede atacar/contraatacar).
+  - 総手番回数     rondas ya ejecutadas (índice de la ronda en curso, 0 antes de golpear).
+  - 相手の手番回数 rondas del rival (0 = no puede contraatacar).
+  - 行動回数 / 攻撃回数  golpes por ronda (Brave ×2) / golpes por ataque (Lodestar 7…).
+Antes del combate (cuando se evalúan las pasivas de Timing 3) valen 1 / 0 / 1-0.
 """
 
 import os
@@ -73,8 +76,8 @@ _TOKEN_RE = re.compile(r"""
         (?P<STRING>"[^"]*") |
         (?P<NUMBER>\d+(?:\.\d+)?) |
         (?P<OP2>&&|\|\||==|!=|>=|<=) |
-        (?P<OP1>[()><=+\-,]) |
-        (?P<IDENT>[^\s()><=+\-,"&|]+)
+        (?P<OP1>[()><=+\-,*/%!]) |
+        (?P<IDENT>[^\s()><=+\-,"&|*/%!]+)
     )
 """, re.VERBOSE)
 
@@ -131,11 +134,17 @@ class BinOp:
     der: object
 
 
+@dataclass
+class UnOp:
+    op: str          # "!" (negación lógica) o "-" (cambio de signo)
+    operando: object
+
+
 _CMP_OPS = {("OP2", "=="), ("OP2", "!="), ("OP2", ">="), ("OP2", "<="), ("OP1", ">"), ("OP1", "<")}
 
 
 class _Parser:
-    """Descenso recursivo. Precedencia: || < && < comparaciones < +/-."""
+    """Descenso recursivo. Precedencia: || < && < comparaciones < +/- < * / % < unarios (! -)."""
 
     def __init__(self, tokens):
         self.tokens = tokens
@@ -174,11 +183,24 @@ class _Parser:
         return izq
 
     def _add(self):
-        izq = self._primary()
+        izq = self._mul()
         while self._peek()[0] == "OP1" and self._peek()[1] in ("+", "-"):
             _, op = self._avanzar()
-            izq = BinOp(op, izq, self._primary())
+            izq = BinOp(op, izq, self._mul())
         return izq
+
+    def _mul(self):
+        izq = self._unary()
+        while self._peek()[0] == "OP1" and self._peek()[1] in ("*", "/", "%"):
+            _, op = self._avanzar()
+            izq = BinOp(op, izq, self._unary())
+        return izq
+
+    def _unary(self):
+        if self._peek()[0] == "OP1" and self._peek()[1] in ("!", "-"):
+            _, op = self._avanzar()
+            return UnOp(op, self._unary())
+        return self._primary()
 
     def _primary(self):
         kind, val = self._avanzar()
@@ -223,8 +245,10 @@ class ContextoCombate:
     unidad: object                      # atacante o defensor, según el lado evaluado
     rival: object
     es_iniciador: bool = True
-    turno_actual: int = 1               # 手番回数: nº de turno de la batalla (>=1 en combate real)
-    turno_total: int = 0                # 総手番回数: nº de acciones ya realizadas este turno por `unidad`
+    turno_actual: int = 1               # 手番回数: rondas de ataque de `unidad` en este combate (0 = no ataca)
+    turno_total: int = 0                # 総手番回数: rondas ya ejecutadas (0 antes del primer golpe)
+    rondas_rival: int = 1               # 相手の手番回数: rondas del rival (0 = no puede contraatacar)
+    rol: str = ""                       # 立場: "atacante" | "defensor" | "apoyo"
     terreno_propio: object = None
     terreno_rival: object = None
     arma: object = None
@@ -235,6 +259,13 @@ class ContextoCombate:
     habs_lower: list = field(default_factory=list)
     ultimo_resultado: str = ""          # p.ej. "break" si este golpe acaba de romper al rival
     distancia_movida: int = 0           # 移動距離: casillas recorridas antes de atacar (Momentum)
+    # Evaluación por golpe (Fase 3): daño del golpe en curso, antes de aplicar la pasiva
+    dano_actual: float = 0              # ダメージ: daño que `unidad` está a punto de recibir/infligir en este golpe
+    dano_rival: float = 0               # 相手のダメージ
+    rol_rival: str = ""                 # 相手の立場: "atacante" | "defensor" | "apoyo" (chain attack)
+    # Rellenado por スキル確率(): probabilidad (0-100) con la que la Condition en curso
+    # se cumple. pasivas.recopilar lo lee tras evaluar cada habilidad y la clasifica como proc.
+    proc_prob: Optional[float] = None
 
 
 def _tiene_habilidad(ctx: ContextoCombate, fragmento: str) -> bool:
@@ -266,23 +297,178 @@ def _contar_pares_adyacentes_genero(ctx: ContextoCombate, radio: int, g1: int, g
     return pares
 
 
-def _rival_es_personaje(ctx: ContextoCombate, nombre_jp: str) -> bool:
+def _identificador(u) -> str:
+    """識別子: identidad estable de una unidad (pid de Person.xml o, si no, su nombre)."""
+    if u is None:
+        return ""
+    stats = getattr(u, 'stats', None)
+    return str(getattr(u, 'pid', '') or getattr(stats, 'pid', '') or getattr(u, 'nombre', '') or '')
+
+
+def es_personaje(u, nombre_jp: str) -> bool:
+    """個人判定("リュール"): ¿`u` es ese personaje? Por pid (PID_リュール) o, para datos
+    a mano sin pid, por el nombre inglés equivalente (constants.JAPANESE_FALLBACK_TERMS)."""
+    if u is None:
+        return False
     from constants import JAPANESE_FALLBACK_TERMS
-    nombre_en = JAPANESE_FALLBACK_TERMS.get(nombre_jp, nombre_jp).lower()
-    cercanos = [u for u, d in (ctx.aliados_cercanos or []) if d <= 1]
-    return any(nombre_en in str(getattr(u, 'nombre', '')).lower() for u in cercanos)
+    ident = _identificador(u)
+    if ident.startswith("PID_"):
+        return ident == f"PID_{nombre_jp}" or ident.startswith(f"PID_{nombre_jp}_") or ident.startswith(f"PID_{nombre_jp}男") or ident.startswith(f"PID_{nombre_jp}女")
+    nombre_en = str(JAPANESE_FALLBACK_TERMS.get(nombre_jp, nombre_jp)).lower()
+    nombre = str(getattr(u, 'nombre', '') or '').lower()
+    return bool(nombre_en) and nombre_en in nombre
+
+
+def _rival_es_personaje(ctx: ContextoCombate, nombre_jp: str) -> bool:
+    # 相手 = la otra parte de la evaluación: en un aura (Timing 20) es el aliado que
+    # recibiría el efecto; en combate, el enemigo.
+    return es_personaje(ctx.rival, nombre_jp)
+
+
+def _contar_genero_alrededor(ctx: ContextoCombate, radio: int, genero: int) -> int:
+    from motor_calculo import obtener_genero_unidad
+    return sum(1 for u, d in (ctx.aliados_cercanos or []) if d <= radio and u is not ctx.unidad and obtener_genero_unidad(u) == genero)
+
+
+def _nivel_emblema(u) -> int:
+    """神将レベル: nivel de vínculo con el Emblema equipado (0 = sin Emblema)."""
+    if u is None:
+        return 0
+    stats = getattr(u, 'stats', None)
+    emb = getattr(u, 'emblema_nombre', '') or getattr(stats, 'emblema_nombre', '') or getattr(u, 'emblema', '')
+    if not emb:
+        return 0
+    return int(getattr(u, 'nivel_vinculo', 0) or getattr(stats, 'nivel_vinculo', 0) or 1)
+
+
+def _hp(u):
+    if u is None:
+        return 0
+    v = getattr(u, 'hp_actual', None)
+    return v if v is not None else getattr(u, 'hp', 0)
+
+
+def _hp_max(u):
+    if u is None:
+        return 0
+    return getattr(u, 'hp_max', 0) or getattr(u, 'hp', 0)
+
+
+def _stat(u, attr):
+    return (getattr(u, attr, 0) or 0) if u is not None else 0
+
+
+def _tipo_arma(arma):
+    tipo = getattr(arma, 'tipo', '') if arma is not None else ''
+    return 'Tomo' if tipo in ('Tomo', 'Tome') else tipo
+
+
+def _atributo_ataque(arma):
+    """物理属性 / 魔法属性 del arma: 'magico' si apunta a RES, 'fisico' si a DEF."""
+    if arma is None:
+        return 'fisico'
+    return 'magico' if (getattr(arma, 'es_magica', False) or _tipo_arma(arma) == 'Tomo') else 'fisico'
+
+
+def _relacion_triangulo(arma, arma_rival):
+    """武器相性 desde el punto de vista de `arma`: 'ventaja' / 'desventaja' / 'neutral'."""
+    from motor_calculo import TRIANGULO_ARMAS
+    t1, t2 = _tipo_arma(arma), _tipo_arma(arma_rival)
+    if t2 in TRIANGULO_ARMAS.get(t1, []):
+        return 'ventaja'
+    if t1 in TRIANGULO_ARMAS.get(t2, []):
+        return 'desventaja'
+    return 'neutral'
+
+
+def _estilo(u):
+    from motor_calculo import resolver_estilo_combate
+    return resolver_estilo_combate(getattr(u, 'estilo_combate', '') if u is not None else '')
+
+
+def _defensa_efectiva(u, arma_rival):
+    """防御力: DEF o RES de `u` según el atributo del arma que lo golpea."""
+    return _stat(u, 'resistencia') if _atributo_ataque(arma_rival) == 'magico' else _stat(u, 'defensa')
+
+
+def _rival_tiene_habilidad(ctx: ContextoCombate, fragmento: str) -> bool:
+    rival = ctx.rival
+    if rival is None:
+        return False
+    frag_l = fragmento.lower()
+    try:
+        import pasivas
+        sids = pasivas.sids_activos(rival)
+    except Exception:
+        sids = list(getattr(rival, 'habilidades_sids', []) or [])
+    if fragmento in sids or any(fragmento in s for s in sids):
+        return True
+    return any(frag_l in str(h).lower() for h in (getattr(rival, 'habilidades', []) or []))
+
+
+def _proc(ctx: ContextoCombate, prob) -> bool:
+    """スキル確率(x): la Condition se cumple con probabilidad x %. Se registra en el
+    contexto y se devuelve True para que la habilidad se evalúe como candidata;
+    pasivas.recopilar la clasifica como proc con esa probabilidad."""
+    try:
+        p = float(prob)
+    except (TypeError, ValueError):
+        p = 0.0
+    p = max(0.0, min(100.0, p))
+    ctx.proc_prob = p if ctx.proc_prob is None else min(100.0, ctx.proc_prob * p / 100.0)
+    return p > 0
 
 
 VARIABLES = {
-    "HP": lambda ctx: (getattr(ctx.unidad, 'hp_actual', None)
-                        if getattr(ctx.unidad, 'hp_actual', None) is not None
-                        else getattr(ctx.unidad, 'hp', 0)),
+    "HP": lambda ctx: _hp(ctx.unidad),
+    "MaxHP": lambda ctx: _hp_max(ctx.unidad),
+    "相手のHP": lambda ctx: _hp(ctx.rival),
+    "相手のMaxHP": lambda ctx: _hp_max(ctx.rival),
+    "生存": lambda ctx: 1 if _hp(ctx.unidad) > 0 else 0,
+    "相手の生存": lambda ctx: 1 if _hp(ctx.rival) > 0 else 0,
+    # Stats propios y del rival (Unidad de motor_calculo)
+    "力": lambda ctx: _stat(ctx.unidad, 'fuerza'),
+    "魔力": lambda ctx: _stat(ctx.unidad, 'magia'),
+    "技": lambda ctx: _stat(ctx.unidad, 'destreza'),
+    "速さ": lambda ctx: _stat(ctx.unidad, 'velocidad'),
+    "守備": lambda ctx: _stat(ctx.unidad, 'defensa'),
+    "魔防": lambda ctx: _stat(ctx.unidad, 'resistencia'),
+    "幸運": lambda ctx: _stat(ctx.unidad, 'suerte'),
+    "体格": lambda ctx: _stat(ctx.unidad, 'complexion'),
+    "相手の力": lambda ctx: _stat(ctx.rival, 'fuerza'),
+    "相手の魔力": lambda ctx: _stat(ctx.rival, 'magia'),
+    "相手の技": lambda ctx: _stat(ctx.rival, 'destreza'),
+    "相手の速さ": lambda ctx: _stat(ctx.rival, 'velocidad'),
+    "相手の守備": lambda ctx: _stat(ctx.rival, 'defensa'),
+    "相手の魔防": lambda ctx: _stat(ctx.rival, 'resistencia'),
+    "相手の幸運": lambda ctx: _stat(ctx.rival, 'suerte'),
+    "防御力": lambda ctx: _defensa_efectiva(ctx.unidad, ctx.arma_rival),
+    "相手の防御力": lambda ctx: _defensa_efectiva(ctx.rival, ctx.arma),
+    # Armas y atributos
+    "武器の種類": lambda ctx: _tipo_arma(ctx.arma),
+    "相手の武器の種類": lambda ctx: _tipo_arma(ctx.arma_rival),
+    "攻撃属性": lambda ctx: _atributo_ataque(ctx.arma),
+    "相手の攻撃属性": lambda ctx: _atributo_ataque(ctx.arma_rival),
+    "武器相性": lambda ctx: _relacion_triangulo(ctx.arma, ctx.arma_rival),
+    "戦闘スタイル": lambda ctx: _estilo(ctx.unidad),
+    "相手の戦闘スタイル": lambda ctx: _estilo(ctx.rival),
+    "相手の立場": lambda ctx: ctx.rol_rival,
+    # Golpe en curso (Fase 3)
+    "ダメージ": lambda ctx: ctx.dano_actual,
+    "相手のダメージ": lambda ctx: ctx.dano_rival,
     "手番回数": lambda ctx: ctx.turno_actual,
     "総手番回数": lambda ctx: ctx.turno_total,
-    "相手の手番回数": lambda ctx: ctx.turno_total,
+    "相手の手番回数": lambda ctx: ctx.rondas_rival,
+    "立場": lambda ctx: ctx.rol,
+    # Identidad, género y Emblema (auras: 相手 = quien recibiría el efecto)
+    "識別子": lambda ctx: _identificador(ctx.unidad),
+    "相手の識別子": lambda ctx: _identificador(ctx.rival),
+    "性別": lambda ctx: __import__('motor_calculo').obtener_genero_unidad(ctx.unidad),
+    "相手の性別": lambda ctx: __import__('motor_calculo').obtener_genero_unidad(ctx.rival),
+    "神将レベル": lambda ctx: _nivel_emblema(ctx.unidad),
+    "相手の神将レベル": lambda ctx: _nivel_emblema(ctx.rival),
     "地形回避": lambda ctx: getattr(ctx.terreno_propio, 'avo', 0) if ctx.terreno_propio else 0,
     "周囲の味方数": lambda ctx: sum(1 for _, d in (ctx.aliados_cercanos or []) if d <= 1),
-    "武器の種類": lambda ctx: 'Tomo' if getattr(ctx.arma, 'tipo', '') in ('Tomo', 'Tome') else getattr(ctx.arma, 'tipo', ''),
     "攻撃速度": lambda ctx: _velocidad_ataque(ctx.unidad, ctx.arma),
     "相手の攻撃速度": lambda ctx: _velocidad_ataque(ctx.rival, ctx.arma_rival),
     "相手の武器特効": lambda ctx: ctx.mult_efectividad_rival,
@@ -294,7 +480,35 @@ VARIABLES = {
 }
 
 LITERALS = {
+    # Tipos de arma (Arma.tipo de motor_calculo)
+    "剣": "Espada",
+    "槍": "Lanza",
+    "斧": "Hacha",
+    "弓": "Arco",
+    "短剣": "Daga",
+    "拳": "Artes",
     "魔道書": "Tomo",
+    "杖": "Bastón",
+    "特殊": "Especial",
+    # Atributo de ataque
+    "物理属性": "fisico",
+    "魔法属性": "magico",
+    # Relación del triángulo de armas
+    "有利": "ventaja",
+    "不利": "desventaja",
+    # Rol del rival en el combate (相手の立場)
+    "攻め": "atacante",
+    "受け": "defensor",
+    "援護": "apoyo",
+    # Estilos de combate (ids canónicos de constants.ESTILOS_COMBATE_ALIASES)
+    "魔法スタイル": "mistico",
+    "隠密スタイル": "encubierto",
+    "重装スタイル": "acorazado",
+    "連携スタイル": "apoyo",
+    "竜族スタイル": "dragon",
+    "騎馬スタイル": "caballeria",
+    "飛行スタイル": "volador",
+    "気功スタイル": "qi_adept",
     "ブレイク": "break",
     "男性": 1,
     "女性": 2,
@@ -303,10 +517,15 @@ LITERALS = {
 FUNCTIONS = {
     "min": lambda ctx, *args: min(args),
     "max": lambda ctx, *args: max(args),
+    "int": lambda ctx, v: int(float(v)),
+    "cond": lambda ctx, c, a, b: a if bool(c) else b,
+    "スキル確率": lambda ctx, prob: _proc(ctx, prob),
+    "相手のスキル所持": lambda ctx, frag: _rival_tiene_habilidad(ctx, str(frag)),
     "スキル所持": lambda ctx, frag: _tiene_habilidad(ctx, str(frag)),
     "攻撃結果": lambda ctx, resultado: str(resultado) == ctx.ultimo_resultado,
     "相手の個人判定": lambda ctx, nombre_jp: _rival_es_personaje(ctx, str(nombre_jp)),
     "周囲の隣接男女数": lambda ctx, n, g1, g2: _contar_pares_adyacentes_genero(ctx, int(n), int(g1), int(g2)),
+    "周囲の性別数": lambda ctx, n, g: _contar_genero_alrededor(ctx, int(n), int(g)),
 }
 
 
@@ -330,6 +549,9 @@ def _eval(nodo, ctx: ContextoCombate):
         if fn is None:
             return False
         return fn(ctx, *args)
+    if isinstance(nodo, UnOp):
+        v = _eval(nodo.operando, ctx)
+        return (not bool(v)) if nodo.op == "!" else -v
     if isinstance(nodo, BinOp):
         if nodo.op == "&&":
             return bool(_eval(nodo.izq, ctx)) and bool(_eval(nodo.der, ctx))
@@ -341,6 +563,12 @@ def _eval(nodo, ctx: ContextoCombate):
             return izq + der
         if nodo.op == "-":
             return izq - der
+        if nodo.op == "*":
+            return izq * der
+        if nodo.op == "/":
+            return izq / der if der else 0
+        if nodo.op == "%":
+            return izq % der if der else 0
         if nodo.op == "==":
             return izq == der
         if nodo.op == "!=":
@@ -378,9 +606,10 @@ def evaluar_condicion(cond: str, ctx: ContextoCombate) -> bool:
 # Nombre JP del stat -> clave del acumulador que consume motor_calculo.py.
 # Ampliar aquí para soportar un Act* nuevo, nunca en motor_calculo.py.
 ACT_STAT_MAP = {
+    # ── consumidos hoy por motor_calculo ──
     "HP": "hp",
-    "威力": "power",
-    "攻撃力": "power",       # Atk: a efectos del daño se suma igual que la potencia (Momentum)
+    "威力": "power",         # daño neto del golpe (Atk − Def): "×1.2" multiplica el daño, no el Atk
+    "攻撃力": "atk",         # Atk (stat ofensiva + Mt): en sumas equivale a 威力 (Momentum, Spur Attack)
     "命中値": "hit",
     "回避値": "avo",
     "必殺値": "crit",
@@ -388,7 +617,47 @@ ACT_STAT_MAP = {
     "相手の命中値": "rival_hit",
     "相手の武器特効": "rival_effectividad",
     "手番回数": "turno_extra",
+    # ── acumulados por pasivas.recopilar (Fase 1); los consume el motor en Fases 2-3 ──
+    "ユニット攻撃力": "unit_atk",        # stat ofensiva de la unidad (sin arma): "=" la sustituye (Qi Adept, Sandstorm)
+    "武器攻撃力": "power_arma",
+    "必殺回避": "ddg",
+    "命中率": "hit_rate",              # tasa final (= 100 en Ataques de Emblema), no el valor Hit
+    "必殺率": "crit_rate",
+    "相手の命中率": "rival_hit_rate",
+    "相手の必殺率": "rival_crit_rate",
+    "相手の回避値": "rival_avo",
+    "相手の必殺値": "rival_crit",
+    "地形回避": "terreno_avo",
+    "相手の地形回避": "rival_terreno_avo",
+    "攻撃速度": "as",
+    "ダメージ": "dano",                # daño del golpe en curso (evaluación por golpe)
+    "相手のダメージ": "rival_dano",
+    "攻撃回数": "golpes",              # nº de golpes por ataque (armas brave, Astra Storm…)
+    "相手の手番回数": "rival_turno_extra",
+    "行動回数": "acciones",
+    "回復": "curacion",
+    "相手の回復": "rival_curacion",
+    "相手のHP": "rival_hp",
+    "力": "str", "技": "dex", "守備": "def", "魔防": "res",
+    "相手の防御力": "rival_defensa_efectiva",   # Luna: -50 % de la DEF/RES que aplica a este golpe
+    "相手のユニット防御力": "rival_defensa_efectiva",
+    "一時変数": "tmp",
+    "攻撃結果": "resultado",           # valor de texto (p.ej. ブレイク)
+    "攻撃属性": "atributo",            # valor de texto (物理属性 / 魔法属性)
+    "エンゲージカウント": "engage_count",
+    "相手のエンゲージカウント": "rival_engage_count",
+    "吹き飛ばし距離": "empuje",
+    "吹き飛ばし率": "empuje_pct",
+    "武器の消費": "usos_arma",
+    "取得経験": "exp",
+    "相手の取得経験": "rival_exp",
+    "拾得アイテム": "item",
+    "スキル確率補正": "proc_bonus",
+    "神将スキル確率補正": "proc_bonus_emblema",
 }
+
+# Acts cuyo valor es un literal de texto (no una expresión numérica)
+ACTS_TEXTO = {"resultado", "atributo", "item"}
 
 
 def leer_acts(info_habilidad: dict, ctx: ContextoCombate = None):
@@ -403,6 +672,9 @@ def leer_acts(info_habilidad: dict, ctx: ContextoCombate = None):
     for nombre_jp, op, val in zip(nombres, ops, vals):
         clave = ACT_STAT_MAP.get(nombre_jp)
         if not clave:
+            continue
+        if clave in ACTS_TEXTO:
+            resultado.append((clave, op, LITERALS.get(str(val), str(val))))
             continue
         try:
             valor = float(val)
@@ -423,6 +695,9 @@ def aplicar_acts(info_habilidad: dict, acumulador: dict, ctx: ContextoCombate = 
     multiplica el valor ya presente (p.ej. "威力;*;1.2" en los bonos de estilo
     de los Ataques de Emblema). `ctx` permite act_values con expresiones."""
     for clave, op, valor in leer_acts(info_habilidad, ctx):
+        if isinstance(valor, str):
+            acumulador[clave] = valor
+            continue
         actual = acumulador.get(clave, 0)
         if op == "+":
             acumulador[clave] = actual + valor

@@ -45,3 +45,31 @@
     - AI_MoveName y AI_BattleRate: Extrae la IA interna que dicta si la unidad carga directamente hacia ti o si se queda inmóvil esperando que entres en su rango.
 - Empaquetado final (Líneas 230-252):
     - Devuelve una lista de diccionarios limpios con coordenadas cartesianas unificadas, inventarios legibles y modificadores de stats listos para que la UI los pinte o el motor de combate calcule los encuentros.
+## Refuerzos por evento del guion (2026-09-19)
+
+Además de `CALENDARIO_REFUERZOS` (grupos `Enemy_Reinforcement*` por turno, de
+`EventEntryTurn` en el .lua), `REFUERZOS_POR_EVENTO` recoge los grupos que el guion
+lanza con `Dispos(grupo)` dentro de una función condicionada por `判定_<evento>`
+(una unidad `pid` está en la casilla (x, z) del datamine). Esos grupos se retiran del
+despliegue inicial y `EstadoTablero.comprobar_refuerzos_por_evento` los coloca al
+mover la unidad a la casilla (o al avanzar turno si ya está allí). Se disparan una
+sola vez; la Cronogema y exportar/importar conservan su estado.
+
+- M009: `Enemy_Kagetsu_Fort` (2 Sword Fighters) cuando Kagetsu llega a (14,1) y
+  `Enemy_Zelkova_Fort` (2 Thieves) cuando Zelkov llega a (14,15): los fuertes de
+  curación norte y sur (`砦到着_カゲツ` / `砦到着_ゼルコバ`). No dependen del turno.
+
+## Inventario por defecto y unión por conversación (2026-09-19)
+
+- Si la fila del dispos no lista objetos (`Item1..6` vacíos), el juego usa `Items` de
+  Person.xml: el cargador hace lo mismo (`persons[pid]["items"]`). Antes caía en
+  "Espada de Hierro" (Jade en M009 lleva Steel Axe + Poción).
+- `UNION_POR_CONVERSACION`: verdes (Force=2) que no se unen al empezar, sino al hablar
+  con ellos una unidad autorizada desde una casilla adyacente (`<pid>加入_<hablante>()` →
+  `UnitJoin` en el .lua). Salen con `union_pendiente=True` y `habla_con=[pids]`.
+  Hasta reclutarlos: no son `controlable` (`obtener_aliados` los excluye, no reciben
+  recomendaciones ni dan apoyos/auras), se recolocan libremente sin gastar acción (los
+  mueve la CPU) y editar su ficha en el modal conserva el estado. Reclutar:
+  `EstadoTablero.hablar` / `POST /api/unidad/hablar` (gasta la acción del hablante);
+  el análisis lo recomienda como `tipo_analisis = "conversacion"` con prioridad máxima.
+- M009: Jade ↔ Alear o Diamant (`ジェーデ加入_リュール` / `ジェーデ加入_ディアマンド`).

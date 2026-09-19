@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Optional, TYPE_CHECKING
 from constants import ESTILOS_COMBATE_ALIASES, ESTILOS_COMBATE_REGLAS
 import condicion_dsl
+import pasivas
 
 def normalizar_texto(texto):
     """Elimina tildes y caracteres diacríticos para comparaciones robustas."""
@@ -74,6 +75,7 @@ class Unidad:
     hp_max: int = 0
     habilidades: list = field(default_factory=list)
     habilidades_sids: list = field(default_factory=list)  # Sids crudos (SID_...) para lookups deterministas por Condition/Act*
+    habilidades_sids_fusion: list = field(default_factory=list)  # Sids de Fusión del Emblema: activos solo con en_fusion (ver pasivas.sids_activos)
     emblema_nombre: str = ""
     emblema: str = ""
     estilo_combate: str = "Infantería"  # De apoyo (Backup), Acorazado (Armored), Espía (Covert), Místico (Mystical), etc.
@@ -215,6 +217,12 @@ class Arma:
     avo_bonus: int = 0  # Bonus de Evasión (ej. Grabados de Emblema)
     ddg_bonus: int = 0  # Bonus de Esquive de Crítico (Dodge)
     es_smash: bool = False  # True si es arma pesada (Smash): ataca de segundo, sin follow-up, empuja 1 casilla
+    sids: list = field(default_factory=list)  # SIDs que otorga el arma (Item.xml EquipSids): SID_２回行動 Brave, SID_追撃不可…
+
+    @property
+    def es_brave(self) -> bool:
+        """Arma Brave (SID_２回行動): cada ataque del INICIADOR son dos golpes (12x2 cuenta como un ataque)."""
+        return "SID_２回行動" in (self.sids or []) or "brave" in str(self.nombre).lower()
 
     def __post_init__(self):
         if self.efectivo_contra and not self.efectividades:
@@ -640,6 +648,14 @@ class CalculadoraEngage:
         u._desc_estados_temporales = descs
         return u
 
+    @staticmethod
+    def _es_volador(unidad) -> bool:
+        return bool(
+            getattr(unidad, 'es_volador', False)
+            or str(getattr(unidad, 'tipo_movimiento', '') or '').lower() in ('volador', 'flier', 'flying')
+            or resolver_estilo_combate(getattr(unidad, 'estilo_combate', '')) == 'volador'
+        )
+
     @classmethod
     def _stats_de_golpe(
         cls,
@@ -693,7 +709,7 @@ class CalculadoraEngage:
             arma=arma, arma_rival=arma_def,
             terreno_propio=terreno, terreno_rival=terreno,
             aliados_cercanos=aliados_cercanos_atk or [],
-            habilidades_sids=getattr(atacante, 'habilidades_sids', []) or [],
+            habilidades_sids=pasivas.sids_activos(atacante) + list(getattr(arma, 'sids', None) or []),
             habs_lower=habs_atk,
         )
         ctx_def = condicion_dsl.ContextoCombate(
@@ -701,7 +717,7 @@ class CalculadoraEngage:
             arma=arma_def, arma_rival=arma,
             terreno_propio=terreno, terreno_rival=terreno,
             aliados_cercanos=aliados_cercanos_def or [],
-            habilidades_sids=getattr(defensor, 'habilidades_sids', []) or [],
+            habilidades_sids=pasivas.sids_activos(defensor) + list(getattr(arma_def, 'sids', None) or []),
             habs_lower=habs_def,
         )
 
@@ -710,6 +726,11 @@ class CalculadoraEngage:
         # Modificadores de terreno según estilo de clase del defensor
         terreno_avo = terreno.avo
         terreno_dfn = terreno.dfn
+
+        # Estilo Volador (飛行): no recibe bonos de Avo/Def del terreno (evasión, curación, bosque…)
+        if cls._es_volador(defensor):
+            terreno_avo = 0
+            terreno_dfn = 0
 
         # Estilo Espía (Covert / 隠密): duplica bonos de terreno
         if estilo_def_canon == 'encubierto':
@@ -962,18 +983,27 @@ class CalculadoraEngage:
                 pasivas_activas.append("Geosfera Defensor (-3 Daño recibido)")
 
         # ── Ataques de Emblema: Unión Tres Casas (Houses Unite) y Lodestar Rush ───────────────
-        # Casas de Fuego / Three Houses (Houses Unite - SID_計略_連撃):
-        # Datamine God.xml / Skill.xml: Tri-ataque secuencial que escala con Fuerza atacante vs DEF defensor al 50%:
-        # Golpe 1 (Aymr): Mt 24 + 5 (Engage+) vs DEF, factor 0.50 (floor, mín 1)
-        # Golpe 2 (Areadbhar): Mt 19 + 5 + 2 (bono de clase) vs DEF, factor 0.50 (floor, mín 1)
-        # Golpe 3 (Failnaught): Mt 15 + 3 vs DEF, factor 0.50 (floor, mín 1)
+        # Houses Unite (Edelgard / Tres Casas): tri-ataque con las reliquias del datamine
+        # (Item.xml): Aymr Mt 24 (efectivo vs dragón), Areadbhar Mt 14 ×1.5 al atacar
+        # (SID_オフェンス時武器攻撃力上昇 → 21), Failnaught Mt 13 (efectivo vs volador y
+        # dragón). Cada golpe: (Fue + bonos de pasivas + Mt efectivo + 5 − DEF) × 0.5 (floor,
+        # mín 1). Verificado en el Cap. 9 contra un Axe Flier (Chloé, Weapon Sync+ +7):
+        # sin bonos 19/18/27, +2 Gente de Cuento 20/19/28, +3 Guía Divina 21/19/28, ambos 22/20/29.
         houses_unite_hits = None
         lodestar_hits = None
         if es_houses_unite:
             def_stat = defensor.defensa + terreno_dfn
-            d1 = max(1, math.floor(max(0, atacante.fuerza + 24 + 5 - def_stat) * 0.50))
-            d2 = max(1, math.floor(max(0, atacante.fuerza + 19 + 5 + 2 - def_stat) * 0.50))
-            d3 = max(1, math.floor(max(0, atacante.fuerza + 15 + 3 - def_stat) * 0.50))
+            bono_atk = atk_base - (stat_ofensiva + mt_efectivo)
+            reliquias = (
+                Arma("Aymr", mt=24, tipo="Hacha", rango=[1], efectividades=["dragón"]),
+                Arma("Areadbhar", mt=math.floor(14 * 1.5), tipo="Lanza", rango=[1]),
+                Arma("Failnaught", mt=13, tipo="Arco", rango=[1], efectividades=["volador", "dragón"]),
+            )
+            hits = []
+            for reliquia in reliquias:
+                mult_r, _desc_r = cls.calcular_efectividad(reliquia, defensor)
+                hits.append(max(1, math.floor(max(0, atacante.fuerza + bono_atk + reliquia.mt * mult_r + 5 - def_stat) * 0.50)))
+            d1, d2, d3 = hits
             daño = d1 + d2 + d3
             houses_unite_hits = [d1, d2, d3]
             pasivas_activas.append(f"Unión Tres Casas (Tri-ataque Aymr/Areadbhar/Failnaught: {d1}, {d2}, {d3} dmg = {daño} dmg)")
@@ -1158,7 +1188,23 @@ class CalculadoraEngage:
             "concede_accion_extra": es_houses_unite,
             "pasivas_activas": pasivas_activas,
             "apoyos_activos": det_apoyos_atk,
+            # Modo sombra (Fase 1): lo que el motor genérico de pasivas.py habría
+            # aportado. NO afecta a ningún número de arriba; sirve para comparar con
+            # los bloques a mano antes de sustituirlos (Fase 2).
+            "motor_pasivas": cls._sombra_pasivas(ctx_atk, ctx_def, atacante, defensor),
         }
+
+    @staticmethod
+    def _sombra_pasivas(ctx_atk, ctx_def, atacante, defensor) -> dict:
+        try:
+            ctx_atk.rol_rival = "defensor"
+            ctx_def.rol_rival = "atacante"
+            return {
+                "atk": pasivas.recopilar(atacante, ctx_atk, sids=list(ctx_atk.habilidades_sids)).como_dict(),
+                "def": pasivas.recopilar(defensor, ctx_def, sids=list(ctx_def.habilidades_sids)).como_dict(),
+            }
+        except Exception as e:   # la sombra nunca puede tumbar un combate
+            return {"error": f"{type(e).__name__}: {e}"}
 
     # ── Simulación completa ─────────────────────────────────────────────
 
@@ -1250,6 +1296,8 @@ class CalculadoraEngage:
 
         diff_as_atk = stats_atk["as_atk"] - stats_atk["as_def"]
         follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk) and (not es_engage_attack) and (not es_ballesta)
+        # Brave (SID_２回行動, Stand=1): solo cuando la unidad inicia el combate; el defensor con Brave contraataca normal
+        es_brave_atk = bool(getattr(arma_atk, 'es_brave', False)) and not es_engage_attack and not es_ballesta
         follow_up_def = puede_contra and ((stats_atk["as_def"] - stats_atk["as_atk"]) >= 5) and (not es_smash_def)
 
         # Alacrity (Lyn): si AS >= rival + 9 (o +4), follow-up va antes del contraataque
@@ -1276,7 +1324,8 @@ class CalculadoraEngage:
             hp_max_p = getattr(chain_guard_protector, 'hp_max', getattr(getattr(chain_guard_protector, 'stats', None), 'hp_max', 30))
             es_qi = es_unidad_qi_adept(chain_guard_protector)
             cg_enabled = getattr(chain_guard_protector, 'chain_guard_activo', True) and not getattr(chain_guard_protector, 'chain_guard_usado', False)
-            if es_qi and hp_p >= hp_max_p and cg_enabled:
+            # Solo ante ataques normales: una técnica de Fusión (Ataque de Emblema) no se puede parar
+            if es_qi and hp_p >= hp_max_p and cg_enabled and not es_engage_attack:
                 chain_guard_activo = True
 
         curacion_divine_speed = 0
@@ -1406,6 +1455,9 @@ class CalculadoraEngage:
                     barra_rota = golpear_defensor(atacante.nombre, tipo_atk_str, stats_atk["daño"])
                     if stats_atk["inflige_ruptura"]:
                         defensor_roto = True
+                    # Arma Brave (SID_２回行動): el iniciador golpea dos veces por ataque
+                    if es_brave_atk and hp_def > 0 and not barra_rota and not barra_resucitada:
+                        barra_rota = golpear_defensor(atacante.nombre, "ataque (Brave 2º golpe)", stats_atk["daño"])
 
                     # Golpe extra de Break Defenses (Marth - Rompedefensas): inmediatamente
                     # tras el golpe que rompe, al 50%, SIN curación (verificado en capturas
@@ -1416,6 +1468,8 @@ class CalculadoraEngage:
             # 2b. Follow-up anticipado por Alacrity
             if activa_alacrity and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
                 golpear_defensor(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"])
+                if es_brave_atk and hp_def > 0 and not barra_resucitada:
+                    golpear_defensor(atacante.nombre, "follow-up (alacrity, Brave 2º golpe)", stats_atk["daño"])
 
             # 2c. Contraataque del defensor (si vivo, en rango y no roto; no si ya golpeó por Vantage)
             if puede_contra and not contra_ya_hecha and hp_def > 0 and not barra_resucitada and not defensor_roto and stats_def:
@@ -1427,6 +1481,8 @@ class CalculadoraEngage:
             # 2d. Follow-up regular del atacante (si no se ejecutó por Alacrity)
             if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
                 golpear_defensor(atacante.nombre, "follow-up", stats_atk["daño"])
+                if es_brave_atk and hp_def > 0 and not barra_resucitada:
+                    golpear_defensor(atacante.nombre, "follow-up (Brave 2º golpe)", stats_atk["daño"])
 
             # 2e. Follow-up del defensor
             if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not defensor_roto and stats_def:
@@ -1543,6 +1599,7 @@ class CalculadoraEngage:
                 "golpes_en_ronda": golpes_atk,
                 "daño_total_ronda": daño_total_atk,
                 "tiene_follow_up": follow_up_atk,
+                "es_brave": es_brave_atk,
                 "recoil_hp": recoil,
                 "tiene_divine_speed": stats_atk.get("tiene_divine_speed", False),
                 "curacion_divine_speed": curacion_divine_speed,
@@ -1552,6 +1609,7 @@ class CalculadoraEngage:
                 "multiplicador_efectividad": stats_atk.get("multiplicador_efectividad"),
                 "pasivas_activas": stats_atk.get("pasivas_activas", []),
                 "apoyos_activos": stats_atk.get("apoyos_activos", []),
+                "motor_pasivas": (stats_atk.get("motor_pasivas") or {}).get("atk"),
                 "es_houses_unite": stats_atk.get("es_houses_unite", False),
                 "houses_unite_hits": stats_atk.get("houses_unite_hits", []),
                 "es_lodestar_rush": stats_atk.get("es_lodestar_rush", False),
@@ -1576,6 +1634,9 @@ class CalculadoraEngage:
                 "es_smash": es_smash_def,
                 "pasivas_activas": stats_def.get("pasivas_activas", []) if stats_def else [],
                 "apoyos_activos": stats_def.get("apoyos_activos", []) if stats_def else [],
+                # sombra del defensor: desde el punto de vista del golpe del atacante
+                # (stats_atk evalúa ctx_def con es_iniciador=False)
+                "motor_pasivas": (stats_atk.get("motor_pasivas") or {}).get("def"),
             },
             "resultado": {
                 "hp_atacante_final": hp_atk_final,

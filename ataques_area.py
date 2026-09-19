@@ -2,7 +2,7 @@
 ataques_area.py — Geometría de los Ataques de Emblema que afectan a más de una
 casilla:
 
-  • Override / Superación (Sigurd): con una lanza, ataca al objetivo adyacente y
+  • Override / Superación (Sigurd): con una lanza o una espada, ataca al objetivo adyacente y
     ATRAVIESA en línea recta a los enemigos consecutivos (hasta 3) en esa fila o
     columna, acabando en la casilla inmediatamente después del último.
     Un solo golpe a cada uno, Hit 100, sin contraataque. Después puede usar

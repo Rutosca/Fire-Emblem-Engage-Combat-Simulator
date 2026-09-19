@@ -15,6 +15,7 @@ import unicodedata
 import xml.etree.ElementTree as ET
 from motor_calculo import Unidad, Arma, inferir_rango_arma, resolver_estilo_combate
 from estado_tablero import FichaUnidad
+import pasivas
 
 # Rutas de catálogos oficiales
 _dir_actual = os.path.dirname(__file__)
@@ -693,6 +694,7 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
         "es_smash": bool(ainfo.get("es_smash", False)),
         "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
         "usos_max": ainfo.get("usos_max"),
+        "sids": list(ainfo.get("equip_sids", []) or []),
     }
 
 def _arma_desde_item(item_dict):
@@ -727,6 +729,7 @@ def _arma_desde_item(item_dict):
             avo_bonus=parsed["avo_bonus"],
             ddg_bonus=parsed["ddg_bonus"],
             es_smash=parsed.get("es_smash", False),
+            sids=parsed.get("sids", []),
         )
     else:
         tipo_raw = item_dict.get("tipo", "Espada")
@@ -753,6 +756,7 @@ def _arma_desde_item(item_dict):
             avo_bonus=int(item_dict.get("avo_bonus", 0)),
             ddg_bonus=int(item_dict.get("ddg_bonus", 0)),
             es_smash=es_smash,
+            sids=list(item_dict.get("sids", []) or []),
         )
 
     if arma_obj:
@@ -1044,36 +1048,48 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if isinstance(habs_lista, str):
         habs_lista = [habs_lista]
 
+    # SIDs del Emblema para el motor de pasivas (pasivas.sids_activos): sincronía
+    # según nivel de vínculo (siempre activa) y de Fusión (solo en Fusión).
+    sids_emblema_sync = []
+    sids_emblema_fusion = []
     if emblema_info:
         sync_passives = []
         if bond_data and "synchro_skills" in bond_data:
             for sk_item in bond_data["synchro_skills"]:
                 if isinstance(sk_item, dict):
                     s_nom = sk_item.get("nombre") or sk_item.get("sid")
+                    s_sid = sk_item.get("sid")
                 else:
                     s_nom = str(sk_item)
+                    s_sid = s_nom
                 if s_nom and s_nom not in sync_passives:
                     sync_passives.append(s_nom)
+                if s_sid and str(s_sid).startswith("SID_") and s_sid not in sids_emblema_sync:
+                    sids_emblema_sync.append(s_sid)
         else:
             for sid in emblema_info.get("synchro_skills", []):
                 sk_info = _catalogo.get("habilidades", {}).get(sid)
                 s_nom = sk_info.get("nombre", sid) if sk_info else sid
                 if s_nom and s_nom not in sync_passives:
                     sync_passives.append(s_nom)
+                if str(sid).startswith("SID_") and sid not in sids_emblema_sync:
+                    sids_emblema_sync.append(sid)
 
         for s_nom in sync_passives:
             if s_nom and s_nom not in habs_lista and not any(s_nom.startswith(pfx) for pfx in ["HP +", "Strength +", "Magic +", "Dexterity +", "Speed +", "Defense +", "Resistance +", "Res ", "Phy "]):
                 habs_lista.append(s_nom)
 
-    if es_sigurd:
-        for sig_hab in ["Canter", "Galopada", "Momentum", "助走", "再移動"]:
-            if sig_hab not in habs_lista and sig_hab in ["Canter", "Momentum"]:
-                habs_lista.append(sig_hab)
+        engage_items_bond = bond_data.get("engage_skills") if bond_data and "engage_skills" in bond_data else emblema_info.get("engage_skills", [])
+        for sk_item in engage_items_bond or []:
+            s_sid = sk_item.get("sid") if isinstance(sk_item, dict) else sk_item
+            if s_sid and str(s_sid).startswith("SID_") and s_sid not in sids_emblema_fusion:
+                sids_emblema_fusion.append(s_sid)
 
     # Enriquecer habilidades personales y de clase desde el catálogo compilado
     sids_solo_motor = []   # SIDs que el motor necesita pero que el juego no muestra como pasivas
     if _catalogo:
-        p_canon = _catalogo.get("personajes", {}).get(pid) or _catalogo.get("personajes", {}).get(normalizar_texto(nombre))
+        # p_info ya se resolvió arriba por pid o por nombre (las claves son PIDs, no nombres)
+        p_canon = _catalogo.get("personajes", {}).get(pid) or p_info
         if p_canon:
             for sid in p_canon.get("common_sids", []):
                 if sid not in habs_lista:
@@ -1133,6 +1149,21 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     # motor de combate (intérprete de Condition/Act*) necesita identificadores
     # deterministas, no los nombres mostrados en la UI.
     habs_sids_crudos = [str(h) for h in habs_lista if str(h).startswith("SID_")] + [s_ for s_ in sids_solo_motor if s_ not in habs_lista]
+    # Sincronías del Emblema y habilidades escritas por nombre (heredadas,
+    # roster, tests): también como SID, para que el motor de pasivas vea la
+    # misma lista que el juego. Los nombres sin SID (DLC sin datamine) se
+    # quedan solo en la lista visible.
+    for s_sid in sids_emblema_sync:
+        if s_sid not in habs_sids_crudos:
+            habs_sids_crudos.append(s_sid)
+    for habilidad in habs_lista:
+        if str(habilidad).startswith("SID_"):
+            continue
+        s_sid = pasivas.resolver_nombre_a_sid(str(habilidad))
+        # Las de Fusión del Emblema (p.ej. "Divine Speed" guardado en el roster
+        # durante una Fusión) solo se activan en Fusión: van en la lista aparte.
+        if s_sid and s_sid not in habs_sids_crudos and s_sid not in sids_emblema_fusion:
+            habs_sids_crudos.append(s_sid)
     habilidades_limpias = []
     nombres_ocultos = {str(i.get("nombre")) for i in _catalogo.get("habilidades", {}).values() if i.get("oculta") and i.get("nombre")}
     for habilidad in habs_lista:
@@ -1153,6 +1184,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             continue
         if valor and valor not in habilidades_limpias:
             habilidades_limpias.append(valor)
+    # Si la unidad tiene la versión + de una habilidad (p.ej. Weapon Sync+ a vínculo 18+),
+    # la base sobra (suele venir arrastrada de un roster guardado con menos vínculo).
+    con_plus = {v.rstrip("+＋") for v in habilidades_limpias if v.endswith(("+", "＋"))}
+    habilidades_limpias = [v for v in habilidades_limpias if not (v in con_plus)]
     habs_lista = habilidades_limpias
 
     stats_obj = Unidad(
@@ -1178,6 +1213,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         hp_max=calc_hp,
         habilidades=habs_lista,
         habilidades_sids=habs_sids_crudos,
+        habilidades_sids_fusion=sids_emblema_fusion,
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
@@ -1190,7 +1226,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if clase_info and "debilidades" in clase_info:
         setattr(stats_obj, 'debilidades', list(clase_info.get("debilidades") or []))
         setattr(stats_obj, 'debilidades_canonicas', True)
-    setattr(stats_obj, 'pid', pid or (p_info.get("id", "") if p_info else ""))
+    setattr(stats_obj, 'pid', pid or (getattr(unidad_previa, 'pid', '') if unidad_previa else '') or (p_info.get("id", "") if p_info else ""))
     val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
     es_jefe_val = (
         bool(data.get("es_jefe", False))
@@ -1426,6 +1462,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     "usos_max": usos_max,
                     "es_engage": es_eng,
                     "equipada": es_eq,
+                    "sids": list(ainfo.get("equip_sids", []) or []),
                 }
                 inventario_resuelto.append(item_dict)
 
@@ -1441,6 +1478,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                         rango=inferir_rango_arma(nombre_final, tipo_w, ainfo.get("rango")),
                         efectividades=ainfo.get("efectividades", []),
                         es_smash=es_smash_val,
+                        sids=list(ainfo.get("equip_sids", []) or []),
                     )
             else:
                 raw_tipo = item.get("tipo") if isinstance(item, dict) else None
@@ -1473,8 +1511,16 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if arma_equipada is None:
         arma_equipada = Arma("Espada de Hierro", mt=5, wt=5, hit=90, crit=0, es_magica=False, tipo="Espada", rango=[1], efectividades=[])
 
-    es_verde = data.get("es_verde", False)
-    es_fijo = data.get("es_fijo", False) or es_verde or ("alear" in nombre.lower())
+    # Identidad de la ficha (verde, fija, pendiente de unión): si el dato no viene
+    # explícito (el modal solo envía stats/equipo), se conserva de la ficha previa.
+    def _dato_o_previo(clave, defecto):
+        if clave in data:
+            return data[clave]
+        return getattr(unidad_previa, clave, defecto) if unidad_previa else defecto
+    es_verde = bool(_dato_o_previo("es_verde", False))
+    union_pendiente = bool(_dato_o_previo("union_pendiente", False)) and bool(data.get("es_aliado", True))
+    habla_con = list(_dato_o_previo("habla_con", []) or [])
+    es_fijo = bool(_dato_o_previo("es_fijo", False)) or (es_verde and union_pendiente) or ("alear" in nombre.lower())
 
     hp_m = int(data.get("hp_max", calc_hp))
     hp_a = int(data.get("hp_actual", hp_m))
@@ -1494,6 +1540,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         nombre=nombre,
         es_aliado=es_aliado,
         es_verde=es_verde,
+        union_pendiente=union_pendiente,
+        habla_con=habla_con,
         es_fijo=es_fijo,
         x=x,
         y=y,
@@ -1533,7 +1581,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     )
     setattr(ficha, 'genero', genero_val)
     setattr(ficha, 'emblema_oscuro', es_emblema_oscuro)
-    setattr(ficha, 'pid', pid or (p_info.get("id", "") if p_info else ""))
+    setattr(ficha, 'pid', getattr(stats_obj, 'pid', '') or pid)
+    if unidad_previa is not None and getattr(unidad_previa, 'es_refuerzo', False):
+        ficha.es_refuerzo = True
     setattr(ficha, 'es_jefe', es_jefe_val)
     setattr(ficha, '_lider_tres_casas_explicito', 'lider_tres_casas' in data)
     setattr(ficha, '_chain_guard_activo_explicito', 'chain_guard_activo' in data)

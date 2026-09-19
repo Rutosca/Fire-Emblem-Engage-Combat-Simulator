@@ -399,6 +399,9 @@ def compilar():
             "rango": rango,
             "es_magica": es_magica,
             "es_smash": es_smash,
+            # SIDs que el arma otorga al portador (Item.xml EquipSids): SID_２回行動 (Brave:
+            # dos golpes por ataque al iniciar), SID_追撃不可 (sin follow-up), SID_必中…
+            "equip_sids": [x.strip() for x in equip_sids_raw.split(";") if x.strip()],
             "precio": to_int(it.get("Price")),
             "usos_max": usos_max,
             "efectividades": efectividades,  # e.g. ["volador"], ["acorazado", "caballería"]
@@ -727,7 +730,42 @@ def compilar():
             "give_condition": s.get("GiveCondition", ""),
             "give_sids": [a for a in s.get("GiveSids", "").split(";") if a],
             "sync_sids": [a for a in s.get("SyncSids", "").split(";") if a],
+            "sync_conditions": [a for a in s.get("SyncConditions", "").split(";") if a],
             "removable": to_int(s.get("Removable")),
+            # Cuándo y sobre quién aplica (ver notas/notas_pasivas.md, "Campos de Skill.xml"):
+            #   timing: fase del combate/turno en que se evalúa (3 = Hit/Avo/Crit, 7 = daño,
+            #           12 = reducción de daño, 18 = post-combate, 20 = aura...).
+            #   stand:  0 = siempre, 1 = solo cuando la unidad ATACA (inicia), 2 = solo cuando DEFIENDE.
+            #   action: 0 = cualquier golpe, 1 = golpe propio, 2 = golpe recibido.
+            #   target: objetivo del efecto (0 = uno mismo / por defecto).
+            #   life / cycle: duración en turnos de los estados otorgados (0 = permanente).
+            "timing": to_int(s.get("Timing")),
+            "target": to_int(s.get("Target")),
+            "stand": to_int(s.get("Stand")),
+            "action": to_int(s.get("Action")),
+            "life": to_int(s.get("Life")),
+            "cycle": to_int(s.get("Cycle")),
+            "remove_sids": [a for a in s.get("RemoveSids", "").split(";") if a],
+            "change_sids": [a for a in s.get("ChangeSids", "").split(";") if a],
+            "engage_sid": s.get("EngageSid", ""),
+            "rebirth_sid": s.get("RebirthSid", ""),
+            # Variantes por estilo de combate declaradas en el propio Skill.xml
+            "variantes_estilo": {k: v for k, v in {
+                "apoyo": s.get("CooperationSkill", ""), "caballeria": s.get("HorseSkill", ""),
+                "encubierto": s.get("CovertSkill", ""), "acorazado": s.get("HeavySkill", ""),
+                "volador": s.get("FlySkill", ""), "mistico": s.get("MagicSkill", ""),
+                "qi_adept": s.get("PranaSkill", ""), "dragon": s.get("DragonSkill", ""),
+            }.items() if v},
+            "bad_state": to_int(s.get("BadState")),
+            "weapon_prohibit": to_int(s.get("WeaponProhibit")),
+            "efficacy": to_int(s.get("Efficacy")),
+            "attack_range": s.get("AttackRange", ""),
+            "overlap_range": s.get("OverlapRange", ""),
+            # Alcance del efecto (auras Timing 20 / Target 2: distancia mínima y máxima
+            # a la que un aliado recibe los give_sids; 0-0 = solo uno mismo, 99 = todo el mapa).
+            # Comandos (Advance, Timing 21): casillas a las que se desplaza / desde las que ataca.
+            "rango_efecto": [to_int(s.get("RangeI")), to_int(s.get("RangeO"))],
+            "move_self": to_int(s.get("MoveSelf")),
         }
 
     print(f"Habilidades procesadas: {len(habilidades)}")

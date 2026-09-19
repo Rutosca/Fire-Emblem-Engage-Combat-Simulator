@@ -1,5 +1,5 @@
 import unittest
-from catalogo_loader import resolver_unidad_con_catalogo, parsear_arma_string
+from catalogo_loader import resolver_unidad_con_catalogo
 
 class Test5SlotInventory(unittest.TestCase):
     def test_5slot_multiple_weapons_independent_forge_and_engraving(self):

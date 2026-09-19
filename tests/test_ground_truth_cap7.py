@@ -6,14 +6,15 @@ sin hardcodeos: todas las fórmulas provienen del motor de cálculo, pasivas, ap
 
 import os
 import sys
-import math
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
+from catalogo_loader import _arma_desde_item
+from helpers import CasoCapitulo7
 
 
-class TestGroundTruthCapitulo7(unittest.TestCase):
+class TestGroundTruthCapitulo7(CasoCapitulo7):
     """Verificación de combates extraídos del vídeo del Capítulo 7."""
 
     def test_01_alcryst_vs_sword_flier_combat_01(self):
@@ -403,6 +404,134 @@ class TestGroundTruthCapitulo7(unittest.TestCase):
 
         assert res["atacante"]["multiplicador_efectividad"] == 2
 
+
+    # ── Observaciones en partida (no del vídeo): Cap. 7, Extremo ──────────
+
+    def test_08_celine_levin_sword_22_resonancia_solo_con_tomos(self):
+        """Céline con Levin Sword debe hacer exactamente 22 de daño (no 24)."""
+        levin = _arma_desde_item([i for i in self.f_cel.inventario if 'levin' in i.get('nombre','').lower()][0])
+        comb = CalculadoraEngage.simular_combate(
+            self.f_cel.stats, self.f_lf.stats, levin, self.f_lf.arma,
+            Terreno(0,0), Terreno(0,0), distancia=1
+        )
+        dmg = comb['atacante']['daño_por_golpe']
+        self.assertEqual(dmg, 22, f"Céline con Levin Sword debería hacer 22, hizo {dmg}")
+        self.assertEqual(comb['resultado']['hp_defensor_final'], 10, "El Lance Fighter debería quedar en 10 HP")
+
+    def test_09_chloe_silver_lance_weapon_sync_dimitri_20_edelgard_15(self):
+        """Chloé con Silver Lance: 20 con Dimitri (+5), 15 con Edelgard (+0)."""
+        silver = _arma_desde_item([i for i in self.f_chl.inventario if 'silver' in i.get('nombre','').lower()][0])
+        
+        # Caso A: Dimitri activo -> +5 Atk (Weapon Sync Lanza)
+        self.f_chl.stats.lider_tres_casas = "Dimitri"
+        comb_dim = CalculadoraEngage.simular_combate(
+            self.f_chl.stats, self.f_lf.stats, silver, self.f_lf.arma,
+            Terreno(0,0), Terreno(0,0), distancia=1
+        )
+        # Caso B: Edelgard activa -> +0 Atk con Lanza (Weapon Sync solo Hachas)
+        self.f_chl.stats.lider_tres_casas = "Edelgard"
+        comb_ed = CalculadoraEngage.simular_combate(
+            self.f_chl.stats, self.f_lf.stats, silver, self.f_lf.arma,
+            Terreno(0,0), Terreno(0,0), distancia=1
+        )
+        self.assertEqual(comb_dim['atacante']['daño_por_golpe'] - comb_ed['atacante']['daño_por_golpe'], 5, "Dimitri debe otorgar exactamente +5 ATK sobre Edelgard con lanza")
+        self.assertEqual(comb_dim['atacante']['daño_por_golpe'], 21, "Chloé con Dimitri debe hacer 21 a vínculo 11")
+        self.assertEqual(comb_ed['atacante']['daño_por_golpe'], 16, "Chloé con Edelgard debe hacer 16 con lanza a vínculo 11")
+
+    def test_10_veneno_daga_aplica_y_citrinne_trueno_7_a_10(self):
+        """Dagas aplican veneno, y cada nivel suma +1 a todo el daño recibido."""
+        yunaka = Unidad(nombre='Yunaka', hp=24, fuerza=8, magia=5, destreza=14, velocidad=12, defensa=5, resistencia=7, suerte=8, complexion=5)
+        iron_dagger = Arma(nombre='Iron Dagger', mt=5, wt=4, hit=90, crit=0, es_magica=False, tipo='Daga', rango=[1, 2])
+        mage = Unidad(nombre='Mage', hp=20, fuerza=1, magia=7, destreza=8, velocidad=6, defensa=3, resistencia=8, suerte=2, complexion=4)
+        fire = Arma(nombre='Fire', mt=5, wt=5, hit=90, crit=0, es_magica=True, tipo='Tomo', rango=[1, 2])
+
+        comb_y = CalculadoraEngage.simular_combate(yunaka, mage, iron_dagger, fire, Terreno(0,0), Terreno(0,0), distancia=1)
+        self.assertTrue(comb_y['resultado']['aplica_veneno'], "Yunaka con daga debe aplicar veneno")
+        self.assertEqual(comb_y['resultado']['nivel_veneno_defensor_post'], 1)
+
+        # Citrinne con Trueno
+        citrinne = Unidad(nombre='Citrinne', hp=20, fuerza=1, magia=13, destreza=9, velocidad=6, defensa=2, resistencia=9, suerte=8, complexion=4)
+        thunder = Arma(nombre='Thunder', mt=2, wt=8, hit=80, crit=0, es_magica=True, tipo='Tomo', rango=[1, 2, 3])
+        setattr(mage, 'nivel_veneno', 0)
+        c0 = CalculadoraEngage.simular_combate(citrinne, mage, thunder, fire, Terreno(0,0), Terreno(0,0), distancia=2)
+        self.assertEqual(c0['atacante']['daño_por_golpe'], 7)
+        setattr(mage, 'nivel_veneno', 1)
+        c1 = CalculadoraEngage.simular_combate(citrinne, mage, thunder, fire, Terreno(0,0), Terreno(0,0), distancia=2)
+        self.assertEqual(c1['atacante']['daño_por_golpe'], 8)
+        setattr(mage, 'nivel_veneno', 2)
+        c2 = CalculadoraEngage.simular_combate(citrinne, mage, thunder, fire, Terreno(0,0), Terreno(0,0), distancia=2)
+        self.assertEqual(c2['atacante']['daño_por_golpe'], 9)
+        setattr(mage, 'nivel_veneno', 3)
+        c3 = CalculadoraEngage.simular_combate(citrinne, mage, thunder, fire, Terreno(0,0), Terreno(0,0), distancia=2)
+        self.assertEqual(c3['atacante']['daño_por_golpe'], 10)
+
+    def test_11_celine_warp_ragnarok_18_contra_hortensia(self):
+        """
+        Céline (Noble Mística, Mag 16) con tomo Ragnarök (Mt 15) y pasiva Resonancia
+        (+2 ATK) contra Hortensia (Res 18): 16 + 15 + 2 - 18 = 15, y el bono de estilo
+        Místico de Warp Ragnarök (威力 * 1.2) lo eleva a 18, que es lo observado en el juego.
+        """
+        celine = Unidad(
+            nombre="Céline",
+            hp=21,
+            magia=16,
+            fuerza=11,
+            velocidad=12,
+            destreza=11,
+            defensa=7,
+            resistencia=12,
+            suerte=15,
+            complexion=4,
+            habilidades=["Resonance", "Holy Stance", "Favorite Food"],
+            emblema_nombre="Celica",
+            estilo_combate="魔法スタイル",
+        )
+        hortensia = Unidad(
+            nombre="Hortensia (Boss)",
+            hp=25,
+            resistencia=18,
+            defensa=13,
+            velocidad=18,
+            habilidades=["Veteran+", "Big Personality"]
+        )
+
+        # Arma fija Warp Ragnarök generada canónicamente
+        warp_ragnarok = Arma(
+            nombre="Warp Ragnarök",
+            mt=15,
+            hit=100,
+            crit=0,
+            wt=5,
+            tipo="Tomo",
+            es_magica=True,
+            rango=[1]
+        )
+        setattr(warp_ragnarok, "es_engage_attack", True)
+        setattr(warp_ragnarok, "engage_attack_nombre", "Warp Ragnarök")
+
+        res = CalculadoraEngage.simular_combate(
+            atacante=celine,
+            defensor=hortensia,
+            arma_atk=warp_ragnarok,
+            arma_def=None,
+            terreno_atk=Terreno(),
+            terreno_def=Terreno(),
+            distancia=1
+        )
+
+        dano_por_golpe = res["atacante"]["daño_por_golpe"]
+        self.assertEqual(dano_por_golpe, 18, f"El daño de Warp Ragnarök debe ser 18, pero fue {dano_por_golpe}")
+        self.assertIn("Resonancia (+2 ATK, 1 recoil)", res["resultado"]["pasivas_activas"])
+        self.assertIn("Ragnarök Fusión (Ataque de Emblema Celica)", res["resultado"]["pasivas_activas"])
+        self.assertIn("Estilo Místico (Warp Ragnarök ×1.2 daño)", res["resultado"]["pasivas_activas"])
+
+        # Sin estilo Místico (p.ej. Alear con Celica) no hay x1.2: se queda en 15
+        celine.estilo_combate = "Infantería"
+        res_no_mistico = CalculadoraEngage.simular_combate(
+            atacante=celine, defensor=hortensia, arma_atk=warp_ragnarok, arma_def=None,
+            terreno_atk=Terreno(), terreno_def=Terreno(), distancia=1
+        )
+        self.assertEqual(res_no_mistico["atacante"]["daño_por_golpe"], 15)
 
 if __name__ == "__main__":
     unittest.main()
