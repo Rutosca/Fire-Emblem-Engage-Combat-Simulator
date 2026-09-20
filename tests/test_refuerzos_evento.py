@@ -82,6 +82,33 @@ class TestRefuerzosPorEvento(unittest.TestCase):
         self.assertEqual([e["grupo"] for e in tablero.refuerzos_por_evento_previstos()], ["Enemy_Zelkova_Fort"])
         self.assertIn("Sword Fighter (14,0)", tablero.fichas)
 
+    def test_extremo_arma_a_los_refuerzos_como_en_el_juego(self):
+        # Visto en juego (Extremo): Steel Sword + Armorslayer en los Sword Fighter, Kard + Stiletto en los Thief
+        armas = {u["nombre"]: u["inventario"][0]["nombre"] for e in tablero.refuerzos_por_evento for u in e["unidades"]}
+        self.assertEqual(armas, {"Sword Fighter (14,0)": "Steel Sword", "Sword Fighter (14,2)": "Armorslayer",
+                                 "Thief (14,14)": "Kard", "Thief (14,16)": "Stiletto"})
+
+    def test_importar_recupera_la_dificultad_y_regenera_eventos_obsoletos(self):
+        # la regeneración lee el capítulo activo del servidor: asegurar que es el 9
+        import app as _app
+        cap_previo = _app._capitulo_actual
+        self.client.post("/api/mapa/seleccionar", json={"capitulo": 9})
+        self.addCleanup(lambda: self.client.post("/api/mapa/seleccionar", json={"capitulo": cap_previo}))
+        _desplegar_capitulo("M009", "Extremo")
+        exp = self.client.get("/api/partida/exportar").get_json()["partida"]
+        self.assertEqual(exp["dificultad"], "Extremo")
+        self.assertTrue(all(f["dificultad"] == "Extremo" for f in exp["fichas"] if not f["es_aliado"]))
+        # Partida antigua: sin dificultad y con los eventos generados en Hard (servidor reiniciado)
+        exp.pop("dificultad")
+        exp["refuerzos_por_evento"] = _cargador_dispos.refuerzos_por_evento("M009", "Hard", mapa_ancho=24, mapa_alto=17)
+        tablero.dificultad = "Hard"
+        imp = self.client.post("/api/partida/importar", json={"partida": exp})
+        self.assertEqual(imp.status_code, 200, imp.get_json())
+        self.assertEqual(tablero.dificultad, "Extremo")   # inferida de las fichas
+        armas = {u["nombre"]: u["inventario"][0]["nombre"] for e in tablero.refuerzos_por_evento for u in e["unidades"]}
+        self.assertEqual(armas["Sword Fighter (14,2)"], "Armorslayer")
+        self.assertTrue(all(u["dificultad"] == "Extremo" for e in tablero.refuerzos_por_evento for u in e["unidades"]))
+
 
 if __name__ == "__main__":
     unittest.main()

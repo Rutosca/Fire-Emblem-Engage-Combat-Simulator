@@ -141,13 +141,14 @@ class TestFusionEmblema(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertGreaterEqual(f_alear.energia_emblema, 1, "Fuera de fusión, atacar da recarga")
 
-        # 4. Fuera de fusión: defender da 1 recarga
+        # 4. Fuera de fusión: defender da 1 recarga por ataque recibido y 1 por contraataque
         energia_previa = f_alear.energia_emblema
         res = client.post("/api/combate/ejecutar", json={
             "atacante": "EnemigoTest", "defensor": "Alear", "arma_nombre": "Iron Sword"
         })
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(f_alear.energia_emblema, energia_previa + 1, "Recibir un ataque da otra recarga (+1)")
+        golpes = len([x for x in res.get_json()["combate"]["resultado"]["secuencia"] if x["tipo"] != "piedra_resurrectora"])
+        self.assertEqual(f_alear.energia_emblema, min(f_alear.max_energia_emblema, energia_previa + golpes), "Recibir y contraatacar: +1 por ataque")
 
         # 5. Casilla de recarga de Emblema completa el medidor al 100% (6/6) cuando la
         # unidad TERMINA su acción encima (pisarla sin actuar no recarga)
@@ -390,6 +391,49 @@ class TestFusionEmblema(unittest.TestCase):
         self.assertTrue(any("Mercurius" in n for n in nombres_marth))
         self.assertTrue(any("Falchion" in n for n in nombres_marth))
 
+    def test_armas_de_emblema_solo_viven_en_el_inventario_durante_la_fusion(self):
+        """Partida guardada tras una Fusión: Failnaught (Emblema) equipada y sin energía.
+        Al cargar, las armas de Emblema desaparecen y se equipa un arma normal."""
+        from motor_analisis import _armas_aliado
+        chloe = resolver_unidad_con_catalogo({
+            "nombre": "Chloé", "x": 1, "y": 1, "es_aliado": True, "emblema_nombre": "Edelgard / Dimitri / Claude",
+            "nivel_vinculo": 20, "en_fusion": False, "energia_emblema": 0,
+            "inventario": [{"nombre": "Javelin", "equipada": False}, {"nombre": "Poción"},
+                           {"nombre": "Aymr (Emblema)", "es_engage": True}, {"nombre": "Failnaught (Emblema)", "es_engage": True, "equipada": True}],
+        })
+        self.assertEqual([i["nombre"] for i in chloe.inventario], ["Javelin", "Poción"])
+        self.assertEqual(chloe.arma.nombre, "Javelin")
+        # sin energía no hay armas de Emblema que recomendar; con el medidor lleno, marcadas "requiere Fusión"
+        self.assertFalse(any(es_eng for _, es_eng, _ in _armas_aliado(chloe)))
+        chloe.energia_emblema = chloe.max_energia_emblema
+        con_energia = [(a.nombre, getattr(a, 'requiere_fusion', False)) for a, es_eng, _ in _armas_aliado(chloe) if es_eng]
+        self.assertTrue(con_energia)
+        self.assertTrue(all(req for _, req in con_energia), con_energia)
+
+    def test_terminar_fusion_purga_armas_de_emblema_y_reequipa(self):
+        chloe = resolver_unidad_con_catalogo({
+            "nombre": "Chloé", "x": 1, "y": 1, "es_aliado": True, "emblema_nombre": "Edelgard / Dimitri / Claude",
+            "nivel_vinculo": 20, "en_fusion": True, "turnos_fusion": 1,
+            "inventario": [{"nombre": "Poción"}, {"nombre": "Javelin", "equipada": False}, {"nombre": "Iron Lance"}],
+        })
+        self.assertTrue(any(i.get("es_engage") for i in chloe.inventario))
+        arma_emb = next(i for i in chloe.inventario if i.get("es_engage"))
+        for i in chloe.inventario:
+            i["equipada"] = i is arma_emb
+        from catalogo_loader import _arma_desde_item
+        chloe.arma = _arma_desde_item(arma_emb)
+        tablero.registrar_unidad(chloe)
+        tablero.fase = "enemigo"
+        tablero.avanzar_turno()
+        f = tablero.obtener_ficha("Chloé")
+        self.assertFalse(f.en_fusion)
+        self.assertEqual([i["nombre"] for i in f.inventario], ["Poción", "Javelin", "Iron Lance"])
+        self.assertEqual(f.arma.nombre, "Javelin")          # la primera ARMA, no la poción
+        self.assertEqual([i.get("equipada") for i in f.inventario], [False, True, False])
+        # las recomendaciones ya no ven armas de Emblema como ataques normales
+        from motor_analisis import _armas_aliado
+        self.assertFalse(any(es_eng and not getattr(a, 'requiere_fusion', False) for a, es_eng, _ in _armas_aliado(f)))
+
     def test_hortensia_secuencia_de_3_pasos_con_engage(self):
         """
         Verifica el flujo canónico de 3 pasos para derrotar a Hortensia (Boss) en Capítulo 7:
@@ -471,38 +515,57 @@ class TestFusionEmblema(unittest.TestCase):
         self.assertEqual(hort.hp_actual, 0, "Hortensia debe quedar en 0 HP tras el remate")
         self.assertFalse(hort.viva, "Hortensia debe estar derrotada")
 
-    def test_recarga_de_emblema_proporcional_a_golpes_reales(self):
+    def test_recarga_de_emblema_por_ataques_hechos_y_recibidos(self):
         """
-        La recarga de Fusión del defensor debe basarse en los contraataques que
-        REALMENTE ocurrieron, no asumir siempre +1: si el defensor tiene
-        follow-up (podría contraatacar 2 veces) pero su primer contraataque ya
-        mata al atacante, el segundo golpe nunca ocurre y solo debe dar 1 carga.
+        Medidor de Emblema (verificado en juego, Cap. 9): +1 por cada ataque que la unidad
+        hace o recibe en el combate (acierte o falle), sin Chain Attacks; matar no suma
+        salvo con Libération. Se cuentan los golpes REALES: si el rival muere al primer
+        golpe no hay follow-up ni contraataque que sumar.
         """
-        tablero.limpiar()
-        tablero.registrar_unidad(resolver_unidad_con_catalogo({
-            "nombre": "Rapido", "x": 5, "y": 5, "es_aliado": True,
-            "arma_nombre": "Iron Sword",
-            "emblema_nombre": "Marth", "energia_emblema": 0,
-            "stats": {"hp": 30, "fuerza": 10, "velocidad": 20, "defensa": 8}
-        }))
-        tablero.registrar_unidad(resolver_unidad_con_catalogo({
-            "nombre": "Debil", "x": 5, "y": 6, "es_aliado": False,
-            "arma_nombre": "Iron Sword",
-            "hp_actual": 3, "hp_max": 3,
-            "stats": {"hp": 3, "velocidad": 1, "defensa": 0}
-        }))
-
         client = app.test_client()
-        res = client.post("/api/combate/ejecutar", json={
-            "atacante": "Debil", "defensor": "Rapido", "arma_nombre": "Iron Sword"
-        })
-        self.assertEqual(res.status_code, 200)
-        secuencia = res.get_json()["combate"]["resultado"]["secuencia"]
-        golpes_rapido = [s for s in secuencia if s["actor"] == "Rapido"]
-        self.assertEqual(len(golpes_rapido), 1, "Rapido debe matar a Debil en su primer contraataque, sin llegar al follow-up")
 
-        f_rapido = tablero.obtener_ficha("Rapido")
-        self.assertEqual(f_rapido.energia_emblema, 1, "Solo debe recibir 1 carga por el único contraataque que ocurrió, no 2")
+        def _escena(arma_aliado="Iron Sword", hp_enemigo=3, velocidad=20):
+            tablero.limpiar()
+            tablero.registrar_unidad(resolver_unidad_con_catalogo({
+                "nombre": "Rapido", "x": 5, "y": 5, "es_aliado": True, "arma_nombre": arma_aliado,
+                "emblema_nombre": "Marth", "energia_emblema": 0,
+                "stats": {"hp": 30, "fuerza": 10, "velocidad": velocidad, "defensa": 8}
+            }))
+            tablero.registrar_unidad(resolver_unidad_con_catalogo({
+                "nombre": "Debil", "x": 5, "y": 6, "es_aliado": False, "arma_nombre": "Iron Sword",
+                "hp_actual": hp_enemigo, "hp_max": hp_enemigo,
+                "stats": {"hp": hp_enemigo, "velocidad": 1, "defensa": 0}
+            }))
+
+        # 1 ataque que mata: 1 carga (antes sumaba +1 por la baja → 2)
+        _escena()
+        r = client.post("/api/combate/ejecutar", json={"atacante": "Rapido", "defensor": "Debil", "arma_nombre": "Iron Sword"}).get_json()
+        self.assertEqual(len(r["combate"]["resultado"]["secuencia"]), 1)
+        self.assertEqual(tablero.obtener_ficha("Rapido").energia_emblema, 1)
+
+        # El enemigo ataca, Rapido contraataca y lo mata: 1 recibido + 1 hecho = 2
+        _escena()
+        r = client.post("/api/combate/ejecutar", json={"atacante": "Debil", "defensor": "Rapido", "arma_nombre": "Iron Sword"}).get_json()
+        self.assertEqual([x["actor"] for x in r["combate"]["resultado"]["secuencia"]], ["Debil", "Rapido"])
+        self.assertEqual(tablero.obtener_ficha("Rapido").energia_emblema, 2)
+
+        # Rival resistente: ataque, contraataque y follow-up = 3
+        _escena(hp_enemigo=40)
+        r = client.post("/api/combate/ejecutar", json={"atacante": "Rapido", "defensor": "Debil", "arma_nombre": "Iron Sword"}).get_json()
+        self.assertEqual(len(r["combate"]["resultado"]["secuencia"]), 3)
+        self.assertEqual(tablero.obtener_ficha("Rapido").energia_emblema, 3)
+
+        # Brave: cada golpe doble cuenta (2 golpes + contra + 2 golpes = 5)
+        _escena(arma_aliado="Brave Sword", hp_enemigo=60)
+        r = client.post("/api/combate/ejecutar", json={"atacante": "Rapido", "defensor": "Debil", "arma_nombre": "Brave Sword"}).get_json()
+        self.assertEqual(len(r["combate"]["resultado"]["secuencia"]), 5)
+        self.assertEqual(tablero.obtener_ficha("Rapido").energia_emblema, 5)
+
+        # Libération: la baja suma 1 más (1 ataque letal → 2)
+        _escena(arma_aliado="Libération")
+        r = client.post("/api/combate/ejecutar", json={"atacante": "Rapido", "defensor": "Debil", "arma_nombre": "Libération"}).get_json()
+        self.assertEqual(len(r["combate"]["resultado"]["secuencia"]), 1)
+        self.assertEqual(tablero.obtener_ficha("Rapido").energia_emblema, 2)
 
 if __name__ == "__main__":
     unittest.main()

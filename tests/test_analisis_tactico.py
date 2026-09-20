@@ -542,8 +542,26 @@ class TestAnalisisTactico(unittest.TestCase):
         self.assertTrue(len(ataques) > 0, "Debe existir una recomendación de ataque de Alear contra el enemigo normal")
         mejor = ataques[0]
         self.assertFalse(mejor.get("requiere_fusion"), "No debe recomendarse gastar la Fusión contra un enemigo normal derrotable con arma corriente")
-        self.assertFalse(mejor.get("es_engage"), "El arma recomendada contra un enemigo normal no debe ser de Engage")
-        self.assertEqual(mejor.get("arma_recomendada"), "Iron Sword", "Debe preferirse el arma corriente que ya asegura la baja")
+        # Ya fusionada, sus armas de Emblema no cuestan nada: gana la que mata con más margen (Rapier)
+        self.assertTrue(mejor.get("es_engage") and not mejor.get("es_engage_attack"), mejor.get("arma_recomendada"))
+
+        # Sin Fusión pero con el medidor lleno: activar la Fusión por un arma de Emblema
+        # contra un enemigo normal no debe ganar al arma corriente
+        tablero.limpiar()
+        alear_lleno = resolver_unidad_con_catalogo({
+            "nombre": "Alear", "x": 5, "y": 5, "es_aliado": True, "clase_nombre": "Dragon Child", "nivel": 10,
+            "emblema_nombre": "Marth", "nivel_vinculo": 15, "en_fusion": False, "energia_emblema": 6, "max_energia_emblema": 6,
+            "inventario": [{"nombre": "Iron Sword"}],
+            "stats": {"hp": 28, "fuerza": 12, "destreza": 12, "velocidad": 12, "defensa": 9, "resistencia": 6, "suerte": 8}
+        })
+        tablero.registrar_unidad(alear_lleno)
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Soldado Débil", "x": 5, "y": 4, "es_aliado": False, "hp_actual": 8, "hp_max": 8, "arma_nombre": "Iron Lance",
+            "stats": {"hp": 8, "defensa": 1, "resistencia": 1, "velocidad": 3, "fuerza": 4, "suerte": 0}}))
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        mejor = [r for r in res["resultados"] if r.get("aliado") == "Alear" and r.get("enemigo") == "Soldado Débil"][0]
+        self.assertFalse(mejor.get("requiere_fusion"), mejor.get("recomendacion"))
+        self.assertEqual(mejor.get("arma_recomendada"), "Iron Sword")
 
         # Contra un jefe, el ataque de Fusión SÍ debe ser el preferido
         tablero.limpiar()
@@ -567,6 +585,84 @@ class TestAnalisisTactico(unittest.TestCase):
         ataques_jefe = [r for r in res2["resultados"] if r.get("aliado") == "Alear" and r.get("enemigo") == "Jefe Enemigo"]
         self.assertTrue(len(ataques_jefe) > 0, "Debe existir una recomendación de ataque de Alear contra el jefe")
         self.assertTrue(ataques_jefe[0].get("es_engage"), "Contra un jefe debe preferirse el ataque de Fusión de Emblema")
+
+    def test_jefe_por_flag_del_dispos_y_sin_piedras_sigue_siendo_jefe(self):
+        """El jefe lo marca el bit 16 del Flag del dispos (Ivy en M009), no las piedras:
+        quitárselas en el modal (ficha ya registrada, payload sin es_jefe) no lo destrona."""
+        from app import _desplegar_capitulo
+        from motor_analisis import _es_jefe
+        from cargador_dispos import DISPOS_DIR
+        if not os.path.isdir(DISPOS_DIR):
+            self.skipTest("sin datamine (dispos)")
+        _desplegar_capitulo("M009", "Extremo")
+        ivy = tablero.obtener_ficha("Ivy")
+        self.assertTrue(ivy.es_jefe and _es_jefe(ivy))
+        self.assertFalse(any(_es_jefe(e) for e in tablero.obtener_enemigos() if e.nombre != "Ivy"))
+        editada = resolver_unidad_con_catalogo({"nombre": "Ivy", "x": ivy.x, "y": ivy.y, "es_aliado": False, "hp_stock": 0,
+                                                "clase_nombre": ivy.clase_nombre, "nivel": ivy.nivel})
+        tablero.registrar_unidad(editada)
+        self.assertEqual(editada.hp_stock, 0)
+        self.assertTrue(_es_jefe(tablero.obtener_ficha("Ivy")))
+
+    def test_desgastar_al_jefe_no_pesa_mas_que_un_kill_limpio(self):
+        """Un ataque de desgaste al jefe (sin kill) no debe arrastrar a la unidad si puede
+        matar limpiamente a un enemigo normal; el Ataque de Emblema compite por sus números."""
+        from motor_analisis import analizar_situacion_tactica
+        alear = resolver_unidad_con_catalogo({
+            "nombre": "Alear", "x": 5, "y": 5, "es_aliado": True, "clase_nombre": "Dragon Child", "nivel": 10,
+            "emblema_nombre": "Marth", "nivel_vinculo": 15, "en_fusion": True, "energia_emblema": 0,
+            "inventario": [{"nombre": "Iron Sword"}],
+            "stats": {"hp": 28, "fuerza": 14, "destreza": 14, "velocidad": 16, "defensa": 9, "resistencia": 6, "suerte": 8},
+        })
+        tablero.registrar_unidad(alear)
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Jefe Enemigo", "x": 5, "y": 4, "es_aliado": False, "es_jefe": True, "hp_actual": 60, "hp_max": 60,
+            "arma_nombre": "Iron Lance", "stats": {"hp": 60, "defensa": 12, "resistencia": 10, "velocidad": 5, "fuerza": 10, "suerte": 5}}))
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Debil", "x": 6, "y": 5, "es_aliado": False, "hp_actual": 10, "hp_max": 10,
+            "arma_nombre": "Iron Axe", "stats": {"hp": 10, "defensa": 2, "resistencia": 2, "velocidad": 3, "fuerza": 6, "suerte": 2}}))
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
+        de_alear = [r for r in res["resultados"] if r.get("aliado") == "Alear" and r.get("tipo_analisis") == "oportunidad_jugador"]
+        self.assertTrue(de_alear)
+        self.assertEqual(de_alear[0]["enemigo"], "Debil", de_alear[0].get("recomendacion"))
+
+
+    def test_condicion_de_victoria_del_guion(self):
+        from cargador_dispos import condicion_victoria, pids_jefe, DISPOS_DIR
+        if not os.path.isdir(DISPOS_DIR):
+            self.skipTest("sin datamine")
+        self.assertEqual(condicion_victoria("M009"), "jefe")        # WinRuleSetDestroyBoss(true)
+        self.assertEqual(condicion_victoria("M011"), "exterminio")  # WinRuleSetEnemyNumberLessThanOrEqualTo
+        self.assertEqual(condicion_victoria("M999"), "")
+        self.assertEqual(pids_jefe("M009"), {"PID_M009_アイビー"})
+
+    def test_kill_segura_del_jefe_gana_el_mapa_aunque_la_casilla_sea_letal(self):
+        """Con 'derrotar al jefe' como condición de victoria, la kill segura del jefe se
+        recomienda la primera aunque el atacante quede rodeado: no hay fase enemiga."""
+        from motor_analisis import analizar_situacion_tactica
+        celine = resolver_unidad_con_catalogo({
+            "nombre": "Céline", "x": 5, "y": 5, "es_aliado": True, "clase_nombre": "Mage", "nivel": 10, "mov": 1,
+            "inventario": [{"nombre": "Fire"}], "stats": {"hp": 20, "magia": 20, "destreza": 20, "velocidad": 10, "defensa": 1, "resistencia": 5, "suerte": 20},
+        })
+        tablero.registrar_unidad(celine)
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Jefe", "x": 5, "y": 4, "es_aliado": False, "es_jefe": True, "hp_actual": 12, "hp_max": 30, "hp_stock": 0,
+            "arma_nombre": "Iron Axe", "stats": {"hp": 30, "defensa": 5, "resistencia": 3, "velocidad": 1, "fuerza": 5, "suerte": 0}}))
+        # cuatro hachas alrededor que matarían a Céline en la fase enemiga
+        for k, (dx, dy) in enumerate(((1, 1), (-1, 1), (1, 0), (-1, 0))):
+            tablero.registrar_unidad(resolver_unidad_con_catalogo({
+                "nombre": f"Hacha{k}", "x": 5 + dx * 2, "y": 5 + dy * 2, "es_aliado": False, "hp_actual": 40, "hp_max": 40, "mov": 5,
+                "arma_nombre": "Steel Axe", "stats": {"hp": 40, "defensa": 10, "resistencia": 10, "velocidad": 12, "fuerza": 25, "suerte": 5}}))
+        sin = analizar_situacion_tactica(tablero, _mapa, perfil="seguro", condicion_victoria="")
+        con = analizar_situacion_tactica(tablero, _mapa, perfil="seguro", condicion_victoria="jefe")
+        vs_jefe_sin = [r for r in sin["resultados"] if r.get("aliado") == "Céline" and r.get("enemigo") == "Jefe" and r.get("categoria") == "kill_seguro"]
+        vs_jefe_con = [r for r in con["resultados"] if r.get("aliado") == "Céline" and r.get("enemigo") == "Jefe" and r.get("categoria") == "kill_seguro"]
+        self.assertTrue(vs_jefe_con, [r.get("recomendacion") for r in con["resultados"]])
+        self.assertEqual(con["resultados"][0].get("enemigo"), "Jefe")
+        self.assertIn("GANA EL MAPA", vs_jefe_con[0]["recomendacion"] + " " + str(vs_jefe_con[0].get("veredicto", {})))
+        # sin esa condición de victoria, la jugada suicida no se recomienda como kill limpia prioritaria
+        self.assertTrue(not vs_jefe_sin or vs_jefe_sin[0].get("score_tactico", 0) < 90000)
+
 
 if __name__ == "__main__":
     unittest.main()

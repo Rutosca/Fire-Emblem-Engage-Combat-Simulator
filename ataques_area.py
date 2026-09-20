@@ -3,11 +3,13 @@ ataques_area.py — Geometría de los Ataques de Emblema que afectan a más de u
 casilla:
 
   • Override / Superación (Sigurd): con una lanza o una espada, ataca al objetivo adyacente y
-    ATRAVIESA en línea recta a los enemigos consecutivos (hasta 3) en esa fila o
-    columna, acabando en la casilla inmediatamente después del último.
-    Un solo golpe a cada uno, Hit 100, sin contraataque. Después puede usar
-    Canter como tras un ataque normal. La casilla de llegada debe ser terreno
-    LLANO y estar libre (verificado en el juego); si no, el ataque no puede usarse.
+    ATRAVIESA en línea recta a TODOS los enemigos consecutivos en esa fila o
+    columna (verificado con 5 en el juego; no hay tope), acabando en la casilla
+    inmediatamente después del último. Un solo golpe a cada uno, Hit 100, sin
+    contraataque, con los mismos bonos de posición del atacante para todos (Guía
+    Divina de Alear adyacente, Momentum…). Después puede usar Canter como tras un
+    ataque normal. La casilla de llegada debe estar libre y ser transitable (sirve una
+    casilla de evasión; no un muro, un foso ni un bosque); si no, no puede usarse.
 
   • Blazing Lion / León ardiente (Roy): con una espada, golpea al objetivo
     adyacente y a los enemigos a su izquierda y derecha (perpendicular a la
@@ -25,7 +27,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-OVERRIDE_MAX_OBJETIVOS = 3
 FUEGO_DANO_POR_FASE = 10
 FUEGO_COSTE_EXTRA = 1
 
@@ -75,6 +76,18 @@ def es_terreno_llano(terreno) -> bool:
     return not any(k in nombre for k in ("muro", "foso", "agua", "pilar", "trono", "puerta", "cofre"))
 
 
+def es_casilla_llegada_override(terreno, es_volador: bool = False) -> bool:
+    """Casilla en la que puede acabar Override: transitable para el atacante y sin
+    obstáculo. Verificado en el juego: vale una casilla de evasión (coste 2); no vale
+    un muro, un foso ni un bosque."""
+    if terreno is None:
+        return False
+    if not (getattr(terreno, "volable", True) if es_volador else getattr(terreno, "caminable", False)):
+        return False
+    nombre = str(getattr(terreno, "nombre", "") or "").lower()
+    return not any(k in nombre for k in ("muro", "foso", "agua", "pilar", "trono", "puerta", "cofre", "bosque", "forest", "arbol", "árbol"))
+
+
 def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tablero, mapa) -> dict:
     """
     Resuelve el área de un Ataque de Emblema desde `pos_atk` contra `objetivo`.
@@ -112,7 +125,7 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
     if tipo == "override":
         objetivos = []
         cx, cy = pos_obj
-        while len(objetivos) < OVERRIDE_MAX_OBJETIVOS:
+        while _dentro(mapa, cx, cy):
             u = _unidad_en(tablero, cx, cy)
             if not es_enemigo(u):
                 break
@@ -121,12 +134,11 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
         if not objetivos:
             base.update(valido=False, motivo="no hay enemigo en la casilla objetivo")
             return base
-        # Casilla de llegada: la siguiente al último enemigo atravesado. Debe ser
-        # terreno llano (verificado en el juego: ni bosque, ni muro, ni foso…).
+        # Casilla de llegada: la siguiente al último enemigo atravesado.
         lx, ly = objetivos[-1].x + d[0], objetivos[-1].y + d[1]
         t = _terreno(mapa, lx, ly)
-        if not es_terreno_llano(t):
-            base.update(objetivos=objetivos, valido=False, motivo=f"la casilla de llegada ({lx},{ly}) no es terreno llano")
+        if not es_casilla_llegada_override(t, bool(getattr(atacante, "es_volador", False))):
+            base.update(objetivos=objetivos, valido=False, motivo=f"la casilla de llegada ({lx},{ly}) no es transitable")
             return base
         if _unidad_en(tablero, lx, ly) is not None:
             base.update(objetivos=objetivos, valido=False, motivo=f"la casilla de llegada ({lx},{ly}) está ocupada")

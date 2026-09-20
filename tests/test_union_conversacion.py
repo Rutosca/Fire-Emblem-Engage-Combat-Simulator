@@ -113,6 +113,44 @@ class TestUnionPorConversacion(unittest.TestCase):
         px, py = recs[0]["pos_sugerida"]
         self.assertEqual(abs(px - self.jade.x) + abs(py - self.jade.y), 1)
         self.assertFalse(any(r.get("aliado") == "Jade" for r in res["resultados"]), "Jade no recibe recomendaciones propias")
+        # Ejecutar la recomendación: mover + hablar es UNA acción (la UI manda la casilla al endpoint de hablar)
+        r = self.client.post("/api/unidad/hablar", json={"hablante": self.alear.nombre, "objetivo": "Jade", "x": px, "y": py})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        self.assertEqual((self.alear.x, self.alear.y), (px, py))
+        self.assertTrue(self.alear.ha_actuado)
+        self.assertTrue(tablero.obtener_ficha("Jade").controlable)
+
+    def test_hablar_con_movimiento_valida_alcance_y_deshace_si_falla(self):
+        lejos = (self.jade.x + 1, self.jade.y)
+        # una casilla fuera del alcance de movimiento: error y el hablante no se mueve
+        self.alear.mov = 0
+        r = self.client.post("/api/unidad/hablar", json={"hablante": self.alear.nombre, "objetivo": "Jade", "x": lejos[0], "y": lejos[1]})
+        self.assertEqual(r.status_code, 400)
+        self.assertNotEqual((self.alear.x, self.alear.y), lejos)
+        self.assertFalse(self.alear.ha_actuado)
+        # con alcance pero sin autorización (otro aliado): tampoco se queda movido ni gastado
+        otro = next(f for f in tablero.obtener_aliados() if getattr(f, "pid", "") not in ("PID_リュール", "PID_ディアマンド"))
+        tablero.mover_unidad(otro.nombre, self.jade.x + 2, self.jade.y)
+        otro.ha_actuado = False
+        r = self.client.post("/api/unidad/hablar", json={"hablante": otro.nombre, "objetivo": "Jade", "x": lejos[0], "y": lejos[1]})
+        self.assertEqual(r.status_code, 400)
+        f_otro = tablero.obtener_ficha(otro.nombre)
+        self.assertEqual((f_otro.x, f_otro.y), (self.jade.x + 2, self.jade.y))
+        self.assertFalse(f_otro.ha_actuado)
+
+    def test_mover_con_accion_pendiente_no_gasta_el_turno(self):
+        r = self.client.post("/api/mover", json={"nombre": self.alear.nombre, "x": self.alear.x + 1, "y": self.alear.y, "accion_pendiente": True})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        self.assertFalse(tablero.obtener_ficha(self.alear.nombre).ha_actuado)
+        r = self.client.post("/api/mover", json={"nombre": self.alear.nombre, "x": self.alear.x + 1, "y": self.alear.y})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        self.assertTrue(tablero.obtener_ficha(self.alear.nombre).ha_actuado)
+
+    def test_jade_tiene_sus_stats_oficiales(self):
+        # Base de clase + base personal + round-half-up(crecimiento personal × 11 / 100)
+        s = self.jade.stats
+        self.assertEqual((s.hp_max or s.hp, s.fuerza, s.magia, s.destreza, s.velocidad, s.defensa, s.resistencia, s.suerte, s.complexion),
+                         (33, 14, 4, 14, 5, 18, 6, 5, 8))
 
 
 if __name__ == "__main__":

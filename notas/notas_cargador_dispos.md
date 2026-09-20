@@ -73,3 +73,28 @@ sola vez; la Cronogema y exportar/importar conservan su estado.
   `EstadoTablero.hablar` / `POST /api/unidad/hablar` (gasta la acción del hablante);
   el análisis lo recomienda como `tipo_analisis = "conversacion"` con prioridad máxima.
 - M009: Jade ↔ Alear o Diamant (`ジェーデ加入_リュール` / `ジェーデ加入_ディアマンド`).
+
+## Stats de aliados al unirse, dificultad y reclutar (2026-09-20)
+
+- **Stats al unirse** (`join_stats` del catálogo, aliados/verdes de un dispos): base de
+  clase + base personal (Base + OffsetN de Person.xml) + round-half-up(crecimiento
+  PERSONAL × niveles / 100), contando el nivel interno de la clase. Los crecimientos de
+  clase no intervienen. Verificado contra las tablas oficiales: exacto para todos los
+  personajes de clase base (Jade 33/14/4/14/5/18/6/5/8, Amber, Louis, Ivy…), ±1 en
+  algunos promocionados. Antes se truncaba (int) y se sumaba el crecimiento de clase
+  (Jade salía 35/15/3/14/5/21).
+- **Dificultad**: la campaña del usuario es Extremo → valor por defecto en tablero,
+  selector y despliegue. Cada ficha recuerda su `dificultad` (se exporta); al importar
+  una partida sin `dificultad` se infiere de las fichas, y las definiciones de refuerzos
+  por evento aún no disparadas que se guardaron con otra dificultad se regeneran del
+  datamine. Origen del fallo visto en el Cap. 9: un reinicio del servidor devolvía
+  `tablero.dificultad` a "Hard" y los fuertes de Kagetsu/Zelkov salían con la fila
+  Normal/Hard (Iron Sword/Kard) en vez de la de Extremo (Flag 4: Steel Sword +
+  Armorslayer, Kard + Stiletto, con offsets de Lunatic).
+- **Mover + hablar/curar = una acción**: `POST /api/unidad/hablar` acepta `x, y` (mueve
+  al hablante validando alcance y recluta en la misma llamada; si falla, deshace);
+  `POST /api/mover` acepta `accion_pendiente: true` para no marcar "ha actuado" cuando
+  el movimiento es el primer paso de una acción (la UI lo usa al curar).
+- **Jefe**: bit 16 del `Flag` del dispos (Ivy M008/M009, Hortensia M007, Hyacinth y Morion
+  M010…), además de las piedras resurrectoras o "(Boss)" en el nombre. Editar la ficha en
+  el modal (p.ej. quitarle las piedras) conserva `es_jefe`.

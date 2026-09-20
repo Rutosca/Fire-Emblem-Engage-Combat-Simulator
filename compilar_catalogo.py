@@ -5,6 +5,7 @@ Parsea los XMLs oficiales del Datamining (FE17-DOC-main) y genera catalogo_engag
 
 import xml.etree.ElementTree as ET
 import os
+import math
 import json
 import csv
 import re
@@ -631,31 +632,17 @@ def compilar():
         c_bases = clase_def.get("base_stats", {})
         c_growths = clase_def.get("growths", {})
 
-        # Estadísticas canónicas exactas al unirse (Serenes Forest / Juego oficial)
+        # Stats al unirse (nivel de Person.xml): base de clase + base personal +
+        # round-half-up(crecimiento PERSONAL × niveles subidos / 100), con los niveles
+        # internos de la clase (una promocionada de nivel 1 cuenta 20). Verificado contra
+        # las tablas oficiales para todos los personajes de clase base (0 errores) y
+        # ±1 en algunos de clase promocionada. Los crecimientos de clase NO intervienen.
         join_stats = {}
-        serenes_path = os.path.join(BASE_DIR, "scratch_canonical_serenes_bases.json")
-        serenes_data = {}
-        if os.path.exists(serenes_path):
-            try:
-                with open(serenes_path, "r", encoding="utf-8") as sf:
-                    serenes_data = json.load(sf)
-            except Exception:
-                pass
+        lvl_ups = max(0, join_lvl - 1) + to_int(clase_def.get("internal_level"))
+        for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]:
+            b = c_bases.get(stat, 0) + p_bases.get(stat, 0)
+            join_stats[stat] = b + int(math.floor(p_growths.get(stat, 0) * lvl_ups / 100.0 + 0.5))
 
-        if nombre in serenes_data and not any(pid.startswith(pfx) for pfx in ['PID_M0', 'PID_M1', 'PID_M2', 'PID_S0']):
-            s_data = serenes_data[nombre]
-            join_stats = {
-                'hp': s_data['hp'], 'str': s_data['str'], 'mag': s_data['mag'],
-                'dex': s_data['dex'], 'spd': s_data['spd'], 'def': s_data['def'],
-                'res': s_data['res'], 'lck': s_data['lck'], 'bld': s_data['bld']
-            }
-        else:
-            lvl_diff = max(0, join_lvl - 1)
-            for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]:
-                b = c_bases.get(stat, 0) + p_bases.get(stat, 0)
-                g = c_growths.get(stat, 0) + p_growths.get(stat, 0)
-                join_stats[stat] = b + int(g * lvl_diff / 100.0)
-        
         personajes[pid] = {
             "id": pid,
             "nombre": nombre,

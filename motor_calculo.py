@@ -1674,6 +1674,9 @@ class CalculadoraEngage:
                     # El enemigo alcanza — simulamos desde su posición óptima
                     distancia_enemigo = peor["distancia_ataque"]
                     arma_enemigo = arma_def if arma_def else None
+                    # Sin arma que alcance esa distancia no hay segundo combate que simular
+                    if arma_enemigo and distancia_enemigo not in (getattr(arma_enemigo, 'rango', None) or [1]):
+                        arma_enemigo = None
 
                     if arma_enemigo:
                         defensor_post_combate = Unidad(
@@ -1881,12 +1884,14 @@ class CalculadoraEngage:
             max_energia = getattr(atacante, 'max_energia_emblema', 6)
 
             if energia_actual < max_energia or (terreno_atk and getattr(terreno_atk, 'es_recarga_emblema', False)):
-                ganancia = 1  # Base por combatir
-                nombre_arma_l = str(getattr(arma_atk, 'nombre', '')).lower()
-                es_lib = any(w in nombre_arma_l for w in ('liberation', 'libération')) or getattr(atacante, 'tiene_liberation', False)
-
-                if kill_seguro or (kill_probable and res["atacante_mata"]):
-                    ganancia += 2 if es_lib else 1  # Baja normal (+1) o Libération (+2)
+                # +1 por cada ataque hecho o recibido en el combate (sin Chain Attacks);
+                # derrotar al rival solo suma con Libération (SID_撃破時エンゲージカウント＋１)
+                combatientes = {getattr(atacante, 'nombre', ''), getattr(defensor, 'nombre', '')}
+                ganancia = sum(1 for s_ in res.get("secuencia", [])
+                               if s_.get("actor") in combatientes and s_.get("tipo") not in ("piedra_resurrectora", "chain_attack")) or 1
+                es_lib = 'SID_撃破時エンゲージカウント＋１' in (getattr(arma_atk, 'sids', None) or []) or getattr(atacante, 'tiene_liberation', False)
+                if es_lib and (kill_seguro or (kill_probable and res["atacante_mata"])):
+                    ganancia += 1
 
                 if terreno_atk and getattr(terreno_atk, 'es_recarga_emblema', False):
                     nueva_energia = max_energia

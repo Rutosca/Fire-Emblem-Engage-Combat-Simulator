@@ -17,6 +17,7 @@ import math
 import json
 import unicodedata
 from collections import deque
+import cargador_dispos
 from cargador_dispos import CargadorDisposEngage
 
 from ataques_area import resolver_ataque_area, tipo_ataque_area
@@ -404,6 +405,9 @@ def guardar_unidad():
     # Nombre original (edición con renombrado) para detectar bajadas de HP respecto a la ficha previa
     prev = tablero.obtener_ficha(data.get("nombre_original") or data.get("nombre"))
     hp_previo = prev.hp_actual if prev else None
+    pid_edit = data.get("pid") or (getattr(prev, "pid", "") if prev else "")
+    if pid_edit and pid_edit in cargador_dispos.pids_jefe(f"M{_capitulo_actual:03d}") and not data.get("es_aliado", False):
+        data["es_jefe"] = True
 
     ficha = resolver_unidad_con_catalogo(data)
     tablero.registrar_unidad(ficha)
@@ -495,6 +499,12 @@ def importar_partida():
     tablero.fase = partida.get("fase", "jugador")
     if partida.get("dificultad"):
         tablero.dificultad = str(partida["dificultad"])
+    else:
+        # Guardados antiguos sin dificultad: la de las fichas (cada unidad recuerda con
+        # cuál se desplegó), nunca un valor por defecto del servidor
+        dif_fichas = [str(f.get("dificultad")) for f in fichas_raw if f.get("dificultad")]
+        if dif_fichas:
+            tablero.dificultad = max(set(dif_fichas), key=dif_fichas.count)
 
     # Una partida guardada es una fotografía del estado actual del mapa.
     # Se filtran y colocan exclusivamente las unidades vivas (viva: true y hp_actual > 0).
@@ -503,8 +513,12 @@ def importar_partida():
         if bool(f.get("viva", True)) and int(f.get("hp_actual", 1)) > 0
     ]
 
+    jefes_cap = cargador_dispos.pids_jefe(f"M{_capitulo_actual:03d}")
     for f_data in fichas_vivas_raw:
         f_data.setdefault("dificultad", tablero.dificultad)
+        # El jefe lo marca el dispos (bit 16 del Flag), aunque el guardado venga de antes
+        if f_data.get("pid") in jefes_cap and not f_data.get("es_aliado", False):
+            f_data["es_jefe"] = True
         f_res = resolver_unidad_con_catalogo(f_data)
         if f_res.viva and f_res.hp_actual > 0:
             tablero.registrar_unidad(f_res)
@@ -526,6 +540,20 @@ def importar_partida():
         except Exception:
             tablero.programar_refuerzos({})
     ev_guardados = partida.get("refuerzos_por_evento")
+    # Definiciones guardadas con OTRA dificultad (p.ej. tras un reinicio del servidor que
+    # volvió al valor por defecto): las no disparadas se regeneran del datamine
+    if isinstance(ev_guardados, list) and any(
+        not e.get("disparado") and any(str(u.get("dificultad") or tablero.dificultad) != str(tablero.dificultad) for u in (e.get("unidades") or []))
+        for e in ev_guardados
+    ):
+        try:
+            frescos = {e["grupo"]: e for e in _cargador_dispos.refuerzos_por_evento(
+                f"M{_capitulo_actual:03d}", tablero.dificultad,
+                mapa_ancho=getattr(_mapa, "ancho", 24), mapa_alto=getattr(_mapa, "alto", 17))}
+            ev_guardados = [e if e.get("disparado") or e.get("grupo") not in frescos else dict(frescos[e["grupo"]], disparado=False)
+                            for e in ev_guardados]
+        except Exception:
+            pass
     if isinstance(ev_guardados, list):
         tablero.programar_refuerzos_por_evento(ev_guardados)
     else:
@@ -558,7 +586,7 @@ def eliminar_unidad():
 _cargador_dispos = CargadorDisposEngage()
 
 
-def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Hard") -> dict:
+def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
     """
     Nucleo reutilizable de despliegue: limpia el tablero y carga las unidades
     del capitulo indicado desde los XMLs de dispos/ del datamine.
@@ -708,12 +736,15 @@ def mover_unidad():
     """
     Actualiza la posición de una unidad respetando las reglas de movimiento táctico.
     Llamado por la UI cuando el jugador arrastra un token.
-    Body JSON: {nombre, x, y}
+    Body JSON: {nombre, x, y, accion_pendiente?}
+    `accion_pendiente`: el movimiento forma parte de una acción que sigue (hablar,
+    usar objeto): no marca la unidad como "ha actuado"; lo hará la acción.
     """
     data = request.get_json(force=True)
     nombre = data.get("nombre")
     x = data.get("x")
     y = data.get("y")
+    accion_pendiente = bool(data.get("accion_pendiente", False))
 
     if nombre is None or x is None or y is None:
         return jsonify({"error": "Faltan campos: nombre, x, y"}), 400
@@ -764,8 +795,9 @@ def mover_unidad():
         return jsonify({"error": f"Unidad '{nombre}' no encontrada"}), 404
 
     # Si un aliado se mueve en la fase de jugador, consume su acción del turno
+    # (salvo que el movimiento sea el primer paso de una acción: mover + hablar/curar)
     if tablero.fase == "jugador" and ficha.controlable:
-        ficha.ha_actuado = True
+        ficha.ha_actuado = not accion_pendiente
     elif tablero.fase == "enemigo" and not ficha.es_aliado:
         ficha.ha_actuado = True
 
@@ -810,6 +842,8 @@ def deshacer_accion():
         "mensaje": "Cronogema activada: Acción deshecha." if ok else "No hay más acciones previas para deshacer.",
         "turno": tablero.turno_actual,
         "fase": tablero.fase,
+        "casillas_fuego": tablero.casillas_fuego_lista(),
+        "objetos": tablero.objetos_como_lista(),
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
 
@@ -904,7 +938,9 @@ def hablar_con_unidad():
     """
     Recluta a un aliado verde pendiente de unión: `hablante` (adyacente, autorizado,
     con acción disponible) gasta su acción y `objetivo` pasa a ser controlable.
-    Body: {"hablante": "Alear", "objetivo": "Jade"}
+    Body: {"hablante": "Alear", "objetivo": "Jade", "x": 11, "y": 9}
+    `x`, `y` (opcional): casilla adyacente al objetivo a la que se mueve el hablante
+    antes de hablar; mover + hablar es UNA sola acción.
     """
     data = request.get_json(force=True) or {}
     hablante = data.get("hablante") or data.get("aliado")
@@ -912,9 +948,27 @@ def hablar_con_unidad():
     if not hablante or not objetivo:
         return jsonify({"error": "Faltan campos: hablante, objetivo"}), 400
     tablero.guardar_snapshot()
+    f_h = tablero.obtener_ficha(hablante)
+    if f_h and data.get("x") is not None and data.get("y") is not None:
+        x, y = int(data["x"]), int(data["y"])
+        if (x, y) != (f_h.x, f_h.y):
+            if f_h.ha_actuado:
+                tablero.historial.pop()
+                return jsonify({"error": f"{f_h.nombre} ya ha actuado este turno"}), 400
+            if any(f.viva and f.nombre != f_h.nombre and (f.x, f.y) == (x, y) for f in tablero.fichas.values()):
+                tablero.historial.pop()
+                return jsonify({"error": f"La casilla ({x},{y}) está ocupada"}), 400
+            analizador = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
+            umock = UnidadMock(x=f_h.x, y=f_h.y, mov=f_h.mov or 4, es_volador=f_h.es_volador, arma=ArmaMock([1]))
+            setattr(umock, 'tiene_pass', pasivas.tiene_sid(f_h, 'SID_すり抜け'))
+            bloqueo = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != f_h.es_aliado}
+            if (x, y) not in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo):
+                tablero.historial.pop()
+                return jsonify({"error": f"{f_h.nombre} no puede llegar a ({x},{y}) este turno"}), 400
+            tablero.mover_unidad(f_h.nombre, x, y)
     ok, mensaje = tablero.hablar(hablante, objetivo)
     if not ok:
-        tablero.historial.pop()
+        tablero.deshacer()
         return jsonify({"error": mensaje}), 400
     return jsonify({
         "ok": True,
@@ -1243,10 +1297,19 @@ def ejecutar_combate():
                 if not e_extra.viva or not e_extra.stats:
                     continue
                 t_ex = _mapa.grid[e_extra.x][e_extra.y]
+                # Mismos bonos de posición del atacante que contra el objetivo principal
+                # (Guía Divina, Gente de Cuento…): golpea a todos desde su casilla de ataque
+                aliados_cercanos_ex = [
+                    (f.stats, abs(f.x - e_extra.x) + abs(f.y - e_extra.y))
+                    for f in tablero.fichas.values()
+                    if f.viva and _mismo_bando(f, e_extra) and f.nombre != e_extra.nombre and f.stats
+                ]
                 r_ex = CalculadoraEngage.simular_combate(
                     f_atk.stats, e_extra.stats, f_atk.arma, e_extra.arma,
-                    Terreno(avo=t_ex.avo, dfn=t_ex.dfn), Terreno(0, 0), distancia=1,
+                    Terreno(avo=t_atk.avo, dfn=t_atk.dfn), Terreno(avo=t_ex.avo, dfn=t_ex.dfn), distancia=1,
                     es_engage_attack=True, engage_attack_nombre=engage_attack_nombre,
+                    aliados_cercanos_atk=aliados_cercanos_atk, aliados_cercanos_def=aliados_cercanos_ex,
+                    pos_atk=(f_atk.x, f_atk.y), pos_def=(e_extra.x, e_extra.y),
                 )
                 dmg_ex = int(r_ex["atacante"].get("daño_total_ronda", 0) or 0)
                 nuevo_hp = max(0, e_extra.hp_actual - dmg_ex)
@@ -1282,43 +1345,39 @@ def ejecutar_combate():
         if f_atk.stats:
             setattr(f_atk.stats, 'ataque_emblema_usado', True)
 
-    # Medidor de Emblema (Engage Gauge):
-    # La recarga de emblema solo entra en vigor cuando se hayan usado y gastado todos los turnos de fusion.
-    # La ganancia se basa en los golpes REALES ejecutados (secuencia devuelta por
-    # simular_combate), no en asumir siempre "ataque + contraataque" (+2): un
-    # intercambio que en teoría podría tener 3 golpes pero acaba en el primero
-    # (el enemigo muere) solo debe dar 1 carga, y un doble ataque (follow-up)
-    # sí debe dar 2.
+    # Medidor de Emblema (Engage Gauge): +1 por cada ataque que la unidad HACE o
+    # RECIBE en el combate (acierte o falle; los golpes dobles de Brave/Artes y el de
+    # Velocidad Divina cuentan cada uno), sin contar los Chain Attacks. Derrotar al
+    # rival no da carga por sí mismo: solo Libération (SID_撃破時エンゲージカウント＋１).
+    # Se cuentan los golpes REALES de la secuencia (si el rival muere al primer golpe
+    # no hay follow-up ni contraataque que sumar). Verificado en juego (Cap. 9).
     secuencia_combate = res.get("secuencia", [])
-    golpes_atk_ejecutados = sum(
+    combatientes = {f_atk.nombre, f_def.nombre}
+    ataques_en_combate = sum(
         1 for s in secuencia_combate
-        if s.get("actor") == f_atk.nombre and s.get("tipo") != "piedra_resurrectora"
+        if s.get("actor") in combatientes and s.get("tipo") not in ("piedra_resurrectora", "chain_attack")
     )
-    golpes_def_ejecutados = sum(
-        1 for s in secuencia_combate
-        if s.get("actor") == f_def.nombre and s.get("tipo") != "piedra_resurrectora"
-    )
+
+    def _sumar_medidor(ficha, ganancia):
+        if ficha.es_aliado and not ficha.en_fusion and getattr(ficha, 'turnos_fusion', 0) <= 0 and ganancia > 0:
+            ficha.energia_emblema = min(ficha.max_energia_emblema, ficha.energia_emblema + ganancia)
+            if ficha.stats:
+                ficha.stats.energia_emblema = ficha.energia_emblema
 
     # Ballesta: gasta el turno como un ataque normal pero NO recarga el medidor de
     # Emblema (sin verificar en el juego; cambiar aquí si se confirma lo contrario).
-    if f_atk.es_aliado and not f_atk.en_fusion and getattr(f_atk, 'turnos_fusion', 0) <= 0 and not objeto_ballesta:
-        if getattr(t_atk, 'es_recarga_emblema', False):
+    if not objeto_ballesta:
+        if f_atk.es_aliado and getattr(t_atk, 'es_recarga_emblema', False) and not f_atk.en_fusion:
             f_atk.energia_emblema = f_atk.max_energia_emblema
+            if f_atk.stats:
+                f_atk.stats.energia_emblema = f_atk.energia_emblema
         else:
-            ganancia = max(1, golpes_atk_ejecutados)
-            if hp_def_final <= 0:
-                nombre_arma_l = str(getattr(f_atk.arma, 'nombre', '')).lower() if f_atk.arma else ""
-                es_lib = any(w in nombre_arma_l for w in ('liberation', 'libération')) or (f_atk.stats and getattr(f_atk.stats, 'tiene_liberation', False))
-                ganancia += 2 if es_lib else 1
-            f_atk.energia_emblema = min(f_atk.max_energia_emblema, f_atk.energia_emblema + ganancia)
-        if f_atk.stats:
-            f_atk.stats.energia_emblema = f_atk.energia_emblema
-
-    # Contraatacar/recibir golpes da recarga proporcional a los golpes reales encajados
-    if f_def.es_aliado and not f_def.en_fusion and getattr(f_def, 'turnos_fusion', 0) <= 0 and golpes_def_ejecutados > 0:
-        f_def.energia_emblema = min(f_def.max_energia_emblema, f_def.energia_emblema + golpes_def_ejecutados)
-        if f_def.stats:
-            f_def.stats.energia_emblema = f_def.energia_emblema
+            ganancia_atk = ataques_en_combate
+            if hp_def_final <= 0 and (pasivas.tiene_sid(f_atk, 'SID_撃破時エンゲージカウント＋１')
+                                      or 'SID_撃破時エンゲージカウント＋１' in (getattr(f_atk.arma, 'sids', None) or [])):
+                ganancia_atk += 1
+            _sumar_medidor(f_atk, ganancia_atk)
+        _sumar_medidor(f_def, ataques_en_combate)
 
     # Ballesta: gastar un uso y devolver a la unidad su arma equipada real
     if objeto_ballesta:
@@ -1559,7 +1618,10 @@ def analizar():
         data = request.get_json(force=True) or {}
         perfil = data.get("perfil", "seguro")
         cronogema = data.get("cronogema_usada", False)
-        return jsonify(analizar_situacion_tactica(tablero, _mapa, perfil, cronogema))
+        return jsonify(analizar_situacion_tactica(
+            tablero, _mapa, perfil, cronogema,
+            condicion_victoria=cargador_dispos.condicion_victoria(f"M{_capitulo_actual:03d}"),
+        ))
     except Exception as e:
         import traceback
         traceback.print_exc()

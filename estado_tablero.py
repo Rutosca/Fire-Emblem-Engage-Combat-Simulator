@@ -65,6 +65,7 @@ class FichaUnidad:
     es_jefe: bool = False              # True si la unidad es un jefe (boss)
     es_refuerzo: bool = False          # True si entró como refuerzo (no estaba en el despliegue inicial)
     accion_turno: str = ""             # Acción consumida este turno: "combate" | "objeto" | "baston" | "" (esperó / aún no actuó)
+    dificultad: str = ""               # Dificultad con la que se resolvieron sus stats (enemigos/refuerzos): "Extremo" | "Hard" | "Normal"
     # Estados temporales (buffs "de 1 turno" del juego, p.ej. SID_力＋２_１ターン). Cada uno:
     #   {"sid", "nombre", "stat_boosts": {str,mag,...}, "expira_fase", "expira_turno", "origen"}
     # Caduca al ENTRAR en (expira_fase, expira_turno). Ver otorgar_estado_temporal / purgar_estados_temporales.
@@ -74,6 +75,46 @@ class FichaUnidad:
     def controlable(self) -> bool:
         """Aliado que el jugador controla (los verdes pendientes de unión no lo son)."""
         return bool(self.es_aliado and not self.union_pendiente)
+
+    def terminar_fusion(self) -> None:
+        """
+        Fin de la Fusión: las armas de Emblema desaparecen del inventario (solo
+        existen mientras dura) y, si estaba equipada una, se vuelve a la primera arma
+        normal del inventario (nunca a un objeto o bastón).
+        """
+        self.en_fusion = False
+        self.turnos_fusion = 0
+        self.energia_emblema = 0
+        self.ataque_emblema_usado = False
+
+        def _es_emblema(it):
+            return bool(it.get("es_engage")) or "(emblema)" in str(it.get("nombre") or it.get("arma") or "").lower()
+
+        self.inventario = [it for it in (self.inventario or []) if not (isinstance(it, dict) and _es_emblema(it))]
+        arma_era_emblema = bool(self.arma and (getattr(self.arma, 'es_engage', False) or '(emblema)' in str(self.arma.nombre).lower()))
+        if arma_era_emblema or not any(it.get("equipada") for it in self.inventario if isinstance(it, dict)):
+            from catalogo_loader import _arma_desde_item
+            nueva = None
+            for it in self.inventario:
+                if not isinstance(it, dict) or str(it.get("tipo", "")).lower() in ("objeto", "bastón", "baston", "accesorio", "staff", "item"):
+                    continue
+                a = _arma_desde_item(it)
+                if a and a.mt > 0:
+                    nueva = (it, a)
+                    break
+            for it in self.inventario:
+                if isinstance(it, dict):
+                    it["equipada"] = bool(nueva) and it is nueva[0]
+            if nueva:
+                self.arma = nueva[1]
+            elif arma_era_emblema:
+                from motor_calculo import Arma
+                self.arma = Arma("Espada de Hierro", mt=5, wt=5, hit=90, crit=0, es_magica=False, tipo="Espada", rango=[1])
+        if self.stats:
+            setattr(self.stats, 'en_fusion', False)
+            setattr(self.stats, 'turnos_fusion_restantes', 0)
+            setattr(self.stats, 'energia_emblema', 0)
+            setattr(self.stats, 'ataque_emblema_usado', False)
 
     @property
     def arma_equipada(self):
@@ -231,6 +272,7 @@ class FichaUnidad:
             "ha_actuado": self.ha_actuado,
             "accion_turno": self.accion_turno,
             "es_refuerzo": self.es_refuerzo,
+            "dificultad": self.dificultad,
             "estados_temporales": self.estados_temporales,
             "cargas_ruptura": self.cargas_ruptura,
             "en_ruptura": self.cargas_ruptura > 0,
@@ -320,7 +362,7 @@ class EstadoTablero:
         # Refuerzos por evento del guion (cargador_dispos.REFUERZOS_POR_EVENTO): se
         # despliegan cuando la unidad `pid` pisa `casilla`. [{grupo, pid, casilla, descripcion, unidades, disparado}]
         self.refuerzos_por_evento: list = []
-        self.dificultad: str = "Hard"   # dificultad con la que se desplegó el capítulo (refuerzos)
+        self.dificultad: str = "Extremo"   # dificultad con la que se desplegó el capítulo (refuerzos)
         # Fuego de Blazing Lion: {(x, y): turno_en_que_se_apaga}. Prende en el turno T del
         # jugador, quema a quien empiece su fase encima y se apaga al empezar el turno T+1.
         self.casillas_fuego: Dict[tuple, int] = {}
@@ -954,22 +996,7 @@ class EstadoTablero:
             if f.en_fusion or f.turnos_fusion > 0:
                 f.turnos_fusion = max(0, f.turnos_fusion - 1)
                 if f.turnos_fusion == 0:
-                    f.en_fusion = False
-                    f.energia_emblema = 0
-                    f.ataque_emblema_usado = False
-                    # Si el arma equipada es de Emblema, volver a arma regular del inventario
-                    if f.arma and (getattr(f.arma, 'es_engage', False) or '(emblema)' in str(f.arma.nombre).lower()):
-                        arma_regular = None
-                        for it in getattr(f, 'inventario', []):
-                            if not it.get('es_engage') and '(emblema)' not in str(it.get('nombre', '')).lower():
-                                arma_regular = it
-                                break
-                        if arma_regular:
-                            from catalogo_loader import _arma_desde_item
-                            f.arma = _arma_desde_item(arma_regular)
-                        else:
-                            from motor_calculo import Arma
-                            f.arma = Arma("Espada de Hierro", mt=5, wt=5, hit=90, crit=0, es_magica=False, tipo="Espada", rango=[1])
+                    f.terminar_fusion()
                 if f.stats:
                     f.stats.turnos_fusion_restantes = f.turnos_fusion
                     f.stats.en_fusion = f.en_fusion

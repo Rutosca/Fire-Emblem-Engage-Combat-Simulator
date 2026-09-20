@@ -167,3 +167,48 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
 - Pasivas "al esperar" (Timing 25: Self-Improver, Meditación): otorgan su efecto hasta el
   inicio de la siguiente fase de jugador (cubre la fase enemiga). Datamine: mismo Life/Cycle
   (1/2) para ambas. Sustituye la nota anterior de que Self-Improver moría al cerrar la fase.
+
+## Armas de Emblema e inventario (2026-09-20)
+
+- Las armas de Emblema solo existen en el inventario DURANTE la Fusión: el loader las
+  inyecta al fusionar y las descarta si la ficha no está en Fusión (aunque vengan en
+  una partida guardada); `FichaUnidad.terminar_fusion()` las purga al acabar y reequipa
+  la primera ARMA normal (nunca una poción). Antes se quedaban (Failnaught (Emblema)
+  equipada con el medidor a 0) y el análisis las recomendaba como ataques normales
+  mientras `/api/combate/ejecutar` fusionaba por su cuenta.
+- `motor_analisis._armas_aliado`: cualquier arma con `es_engage` (del catálogo o del
+  inventario) lleva `requiere_fusion` si la unidad no está fusionada → prefijo
+  "⚡ [FUSIÓN]" y botón "Fusionar y Atacar" coherentes con lo que hará el servidor.
+- Prioridad del jefe en el análisis (2026-09-20): +300 solo si la jugada mata / quiebra una
+  barra (antes siempre +300 y +1000 más por Ataque de Emblema, que arrastraba a todo el
+  ejército y obligaba a gastar la Fusión). Desgaste al jefe: +60; Ataque de Emblema contra
+  el jefe: +100 sobre sus números. Las armas/Ataques de Emblema solo se enumeran si la unidad
+  está en Fusión o con el medidor lleno (mismo criterio que el servidor al ejecutar).
+- Medidor de Emblema (verificado en juego, Cap. 9): +1 por cada ataque que la unidad hace
+  o recibe en el combate (acierte o falle; Brave/Artes cuentan cada golpe), sin Chain
+  Attacks; matar NO suma salvo Libération (SID_撃破時エンゲージカウント＋１, +1). Antes se
+  sumaba +1 por baja y no se contaban los ataques recibidos al defender.
+- Elección de arma (2026-09-20): entre kills igual de seguros y sin daño recibido
+  desempata la que mata en menos golpes y con más margen sobre los HP del rival. Activar la
+  Fusión por un arma de Emblema contra un enemigo normal tiene el mismo tope (40) que un
+  Ataque de Emblema; ya fusionada, sus armas de Emblema compiten en igualdad.
+- Override (verificado en el Cap. 9, 2026-09-20): atraviesa a TODOS los enemigos consecutivos
+  de la fila/columna (5 en el juego; antes tope de 3); la casilla de llegada puede ser de
+  evasión (coste 2) pero no muro, foso ni bosque (`ataques_area.es_casilla_llegada_override`);
+  los bonos de posición del atacante (Guía Divina de Alear adyacente, Momentum, Gente de
+  Cuento…) se aplican a todos los objetivos porque golpea a todos desde su casilla de
+  ataque; cada objetivo conserva sus propias auras y terreno. Igual en el análisis
+  (`_evaluar_objetivos_extra`) y al ejecutar (`/api/combate/ejecutar`).
+- Condición de victoria del capítulo (2026-09-20): `cargador_dispos.condicion_victoria(M0xx)`
+  lee el `WinRuleSet*` del .lua ("jefe" = derrotar al jefe, "exterminio", "" otras) y
+  `pids_jefe` los PIDs con bit 16 del Flag. En el análisis, una kill SEGURA que cumple la
+  condición (`termina_mapa`) no se descarta por las amenazas de la fase enemiga (no la hay)
+  y va la primera ("GANA EL MAPA"). Antes, Céline mataba a Ivy con Levin Sword pero se
+  descartaba porque quedaba rodeada de hachas. Al importar/guardar, el jefe del dispos se
+  marca aunque el guardado venga sin `es_jefe`.
+- `motor_analisis.ERRORES_ANALISIS`: las opciones descartadas por excepción ya no se pierden
+  en silencio (se registran y se loguean). Con ello se vio y corrigió `evaluar_riesgo`: el
+  segundo combate (fase enemiga) intentaba simular con un arma que no alcanzaba esa
+  distancia y tumbaba la evaluación de amenaza.
+- La Cronogema (`/api/tablero/deshacer`) devuelve `casillas_fuego`; la UI lo repinta (el fuego
+  apagado se quedaba dibujado tras deshacer).

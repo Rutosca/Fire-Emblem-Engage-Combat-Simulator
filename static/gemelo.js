@@ -342,7 +342,9 @@ function autoGuardarLocal() {
       turno_actual: state.turno || 1,
       fase: state.fase || "jugador",
       capitulo: state.capitulo || null,
-      dificultad: ($("select-dificultad") && $("select-dificultad").value) || state.dificultad || "Hard",
+      // La dificultad con la que se desplegó la partida (estado del servidor), no el valor
+      // por defecto del selector tras recargar la página
+      dificultad: state.dificultad || ($("select-dificultad") && $("select-dificultad").value) || "Extremo",
       // Refuerzos aún por llegar (el servidor los pierde al reiniciarse; se reprograman al restaurar)
       refuerzos_pendientes: state.refuerzosPendientes || null,
       casillas_fuego: state.casillasFuego || [],
@@ -1742,6 +1744,7 @@ function construirPayloadDesdeModal(fichaExistente) {
     union_pendiente: fichaExistente ? !!fichaExistente.union_pendiente : undefined,
     habla_con: fichaExistente ? (fichaExistente.habla_con || []) : undefined,
     pid: fichaExistente ? (fichaExistente.pid || undefined) : undefined,
+    es_jefe: fichaExistente ? !!fichaExistente.es_jefe : undefined,
     x, y,
     nivel,
     ha_actuado: haActuado,
@@ -2304,7 +2307,7 @@ function initModalEvents() {
   
   $("btn-preset-cap7").addEventListener("click", async () => {
     const selDif = $("select-dificultad");
-    const dificultad = selDif ? selDif.value : "Hard";
+    const dificultad = selDif ? selDif.value : "Extremo";
     const res = await api("/api/preset/actual", "POST", { dificultad });
     if (res.ok && res.fichas) {
       state.dificultad = dificultad;
@@ -2465,6 +2468,7 @@ $("btn-deshacer").addEventListener("click", async () => {
     if (res.fichas) {
       actualizarTokens(res.fichas);
     }
+    notificarEfectosArea(res);   // el fuego vuelve (o desaparece) con el estado restaurado
     state.turno = res.turno || state.turno;
     state.fase = res.fase || state.fase;
     actualizarBadge();
@@ -2652,13 +2656,10 @@ async function ejecutarAtaqueEnemigo(r) {
 }
 
 async function ejecutarConversacion(r) {
-  const ali = state.fichas[r.aliado];
-  if (r.pos_sugerida && ali && (ali.x !== r.pos_sugerida[0] || ali.y !== r.pos_sugerida[1])) {
-    const movRes = await api("/api/mover", "POST", { nombre: r.aliado, x: r.pos_sugerida[0], y: r.pos_sugerida[1] });
-    if (movRes.error) { mostrarToast(`No se pudo acercar a ${r.aliado}: ${movRes.error}`, "error"); return; }
-    if (movRes.fichas) actualizarTokens(movRes.fichas);
-  }
-  const res = await api("/api/unidad/hablar", "POST", { hablante: r.aliado, objetivo: r.objetivo });
+  // Mover + hablar es UNA acción: el servidor mueve al hablante y recluta en la misma llamada
+  const payload = { hablante: r.aliado, objetivo: r.objetivo };
+  if (r.pos_sugerida) { payload.x = r.pos_sugerida[0]; payload.y = r.pos_sugerida[1]; }
+  const res = await api("/api/unidad/hablar", "POST", payload);
   if (res.error) { mostrarToast(res.error, "error"); return; }
   if (res.fichas) actualizarTokens(res.fichas);
   mostrarToast(`💬 ${res.mensaje}`, "ok");
@@ -2670,7 +2671,8 @@ async function ejecutarCuracion(r) {
     const movRes = await api("/api/mover", "POST", {
       nombre: r.aliado,
       x: r.pos_sugerida[0],
-      y: r.pos_sugerida[1]
+      y: r.pos_sugerida[1],
+      accion_pendiente: true   // mover + usar el bastón es una sola acción
     });
     if (movRes.error) {
       mostrarToast(`No se pudo colocar al curandero: ${movRes.error}`, "error");
@@ -3309,7 +3311,10 @@ function aplicarMapaCargado(estado) {
   state.turno = estado.turno || 1;
   state.fase  = estado.fase  || "jugador";
   if (estado.refuerzos_pendientes) state.refuerzosPendientes = estado.refuerzos_pendientes;
-  if (estado.dificultad) state.dificultad = estado.dificultad;
+  if (estado.dificultad) {
+    state.dificultad = estado.dificultad;
+    if ($("select-dificultad")) $("select-dificultad").value = estado.dificultad;
+  }
   actualizarBadge();
   buildGrid(mapa.ancho || 24, mapa.alto || 17);
   renderObjetosMapa(mapa.objetos || []);

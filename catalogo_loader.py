@@ -899,16 +899,19 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             calc_lck = join_stats.get("lck", 4)
             calc_bld = join_stats.get("bld", 5)
         else:
-            lvl_diff = max(0, nivel - 1)
-            calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + round_half_up((c_growths.get("hp", 0)  + p_growths.get("hp", 45)) * lvl_diff / 100.0)
-            calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + round_half_up((c_growths.get("str", 0) + p_growths.get("str", 30)) * lvl_diff / 100.0)
-            calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + round_half_up((c_growths.get("mag", 0) + p_growths.get("mag", 15)) * lvl_diff / 100.0)
-            calc_dex = c_bases.get("dex", 0) + p_bases.get("dex", 5)  + round_half_up((c_growths.get("dex", 0) + p_growths.get("dex", 35)) * lvl_diff / 100.0)
-            calc_spd = c_bases.get("spd", 0) + p_bases.get("spd", 6)  + round_half_up((c_growths.get("spd", 0) + p_growths.get("spd", 35)) * lvl_diff / 100.0)
-            calc_def = c_bases.get("def", 0) + p_bases.get("def", 5)  + round_half_up((c_growths.get("def", 0) + p_growths.get("def", 25)) * lvl_diff / 100.0)
-            calc_res = c_bases.get("res", 0) + p_bases.get("res", 2)  + round_half_up((c_growths.get("res", 0) + p_growths.get("res", 20)) * lvl_diff / 100.0)
-            calc_lck = c_bases.get("lck", 0) + p_bases.get("lck", 4)  + round_half_up((c_growths.get("lck", 0) + p_growths.get("lck", 25)) * lvl_diff / 100.0)
-            calc_bld = c_bases.get("bld", 0) + p_bases.get("bld", 5)  + round_half_up((c_growths.get("bld", 0) + p_growths.get("bld", 5))  * lvl_diff / 100.0)
+            # Misma regla que join_stats del catálogo (verificada contra las tablas
+            # oficiales): base de clase + base personal + round-half-up(crecimiento
+            # PERSONAL × niveles / 100), contando el nivel interno de la clase.
+            lvl_diff = max(0, nivel - 1) + int(clase_info.get("internal_level", 0) if clase_info else 0)
+            calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + round_half_up(p_growths.get("hp", 45) * lvl_diff / 100.0)
+            calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + round_half_up(p_growths.get("str", 30) * lvl_diff / 100.0)
+            calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + round_half_up(p_growths.get("mag", 15) * lvl_diff / 100.0)
+            calc_dex = c_bases.get("dex", 0) + p_bases.get("dex", 5)  + round_half_up(p_growths.get("dex", 35) * lvl_diff / 100.0)
+            calc_spd = c_bases.get("spd", 0) + p_bases.get("spd", 6)  + round_half_up(p_growths.get("spd", 35) * lvl_diff / 100.0)
+            calc_def = c_bases.get("def", 0) + p_bases.get("def", 5)  + round_half_up(p_growths.get("def", 25) * lvl_diff / 100.0)
+            calc_res = c_bases.get("res", 0) + p_bases.get("res", 2)  + round_half_up(p_growths.get("res", 20) * lvl_diff / 100.0)
+            calc_lck = c_bases.get("lck", 0) + p_bases.get("lck", 4)  + round_half_up(p_growths.get("lck", 25) * lvl_diff / 100.0)
+            calc_bld = c_bases.get("bld", 0) + p_bases.get("bld", 5)  + round_half_up(p_growths.get("bld", 5)  * lvl_diff / 100.0)
     else:
         # Enemigo o unidad genérica
         p_bases = p_info.get("base_stats", {}) if p_info else {}
@@ -1228,10 +1231,13 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         setattr(stats_obj, 'debilidades_canonicas', True)
     setattr(stats_obj, 'pid', pid or (getattr(unidad_previa, 'pid', '') if unidad_previa else '') or (p_info.get("id", "") if p_info else ""))
     val_veneno = int(data.get("nivel_veneno", getattr(unidad_previa, 'nivel_veneno', 0) if unidad_previa else 0))
+    # Jefe: flag del dispos (bit 16), nombre "(Boss)" o piedras resurrectoras; y si la
+    # ficha ya era jefe, lo sigue siendo aunque el usuario le quite las piedras en el modal
     es_jefe_val = (
         bool(data.get("es_jefe", False))
         or nombre.lower().endswith("(boss)")
         or (int(data.get("hp_stock", 0)) > 0 and not bool(data.get("es_aliado", False)))
+        or ("es_jefe" not in data and unidad_previa is not None and bool(getattr(unidad_previa, 'es_jefe', False)))
     )
     val_lider_3h = data.get("lider_tres_casas") or (getattr(unidad_previa, 'lider_tres_casas', None) if unidad_previa else "Dimitri") or "Dimitri"
     if val_lider_3h not in ("Edelgard", "Dimitri", "Claude"):
@@ -1249,6 +1255,15 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     arma_id_directa = data.get("arma_id") or data.get("arma_nombre") or data.get("arma")
     if arma_id_directa and not inventario_raw:
         inventario_raw = [{"arma": arma_id_directa, "equipada": True}]
+
+    # Las armas de Emblema solo existen en el inventario DURANTE la Fusión (se
+    # inyectan abajo). Fuera de ella se descartan aunque vengan en una partida
+    # guardada: si no, el análisis las trataría como armas normales.
+    if not en_fusion:
+        inventario_raw = [
+            it for it in inventario_raw
+            if not ((isinstance(it, dict) and it.get("es_engage")) or (isinstance(it, str) and "(emblema)" in it.lower()))
+        ]
 
     # Inyección de Fusión (Engage Mode)
     if en_fusion and emblema_info:
@@ -1577,6 +1592,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         lider_tres_casas=val_lider_3h,
         estilo_combate=estilo_combate,
         accion_turno=str(data.get("accion_turno", getattr(unidad_previa, 'accion_turno', "") if unidad_previa else "") or ""),
+        dificultad=str(data.get("dificultad") or (getattr(unidad_previa, 'dificultad', "") if unidad_previa else "") or ""),
         estados_temporales=list(data.get("estados_temporales", getattr(unidad_previa, 'estados_temporales', []) if unidad_previa else []) or []),
     )
     setattr(ficha, 'genero', genero_val)

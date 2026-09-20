@@ -7,6 +7,7 @@ del datamine de FE Engage (FE17-DOC-main).
 import os
 import sys
 import json
+import re
 import xml.etree.ElementTree as ET
 from typing import List, Dict, Tuple, Optional
 from motor_calculo import resolver_estilo_combate
@@ -15,6 +16,53 @@ from motor_calculo import resolver_estilo_combate
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATAMINE_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata")
 DISPOS_DIR = os.path.join(DATAMINE_DIR, "dispos")
+SCRIPTS_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_scripts")
+
+_CONDICION_VICTORIA_CACHE = {}
+_PIDS_JEFE_CACHE = {}
+
+
+def pids_jefe(dispos_id: str) -> set:
+    """PIDs de los jefes del capítulo: filas enemigas del dispos con el bit 16 del Flag."""
+    clave = (dispos_id or "").upper()
+    if clave in _PIDS_JEFE_CACHE:
+        return _PIDS_JEFE_CACHE[clave]
+    salida = set()
+    ruta = os.path.join(DISPOS_DIR, f"{clave}.xml")
+    try:
+        for param in ET.parse(ruta).getroot().findall(".//Data/Param"):
+            flag = param.get("Flag", "0")
+            if param.get("Force") == "1" and flag.isdigit() and int(flag) & 16 and param.get("Pid"):
+                salida.add(param.get("Pid"))
+    except (OSError, ET.ParseError):
+        pass
+    _PIDS_JEFE_CACHE[clave] = salida
+    return salida
+
+
+def condicion_victoria(dispos_id: str) -> str:
+    """
+    Condición de victoria del capítulo según su guion (.lua):
+      "jefe"       WinRuleSetDestroyBoss(true)            → derrotar al jefe termina el mapa
+      "exterminio" WinRuleSetEnemyNumberLessThanOrEqualTo → derrotar a todos los enemigos
+      ""           otra (escapar, sobrevivir X turnos, llegar a una casilla…) o sin guion
+    """
+    clave = (dispos_id or "").upper()
+    if clave in _CONDICION_VICTORIA_CACHE:
+        return _CONDICION_VICTORIA_CACHE[clave]
+    resultado = ""
+    ruta = os.path.join(SCRIPTS_DIR, f"{clave}.lua")
+    try:
+        with open(ruta, "r", encoding="utf-8") as f:
+            txt = f.read()
+        if re.search(r"WinRuleSetDestroyBoss\(\s*true\s*\)", txt):
+            resultado = "jefe"
+        elif re.search(r"WinRuleSetEnemyNumberLessThanOrEqualTo\(", txt):
+            resultado = "exterminio"
+    except OSError:
+        resultado = ""
+    _CONDICION_VICTORIA_CACHE[clave] = resultado
+    return resultado
 
 # Unidades que el guion del capítulo mueve antes de dar el control al jugador
 # (UnitMovePos en el evento de apertura del .lua). {dispos_id: {pid: (X, Y)}} en
@@ -469,7 +517,9 @@ class CargadorDisposEngage:
                 "dificultad": dificultad,
                 "auto_grow_extra": auto_grow_extra,  # level-ups bonus para cálculo de crecimientos
                 "p_offset": p_offset,                # offsets de stats por dificultad desde Person.xml
-                "es_jefe": (hp_stock > 0 and not es_aliado) or "(Boss)" in nombre_unidad,
+                # Bit 16 del Flag del dispos = jefe del mapa (Hortensia M007, Ivy M008/M009, Hyacinth
+                # y Morion M010…); las piedras resurrectoras son solo una consecuencia en Extremo
+                "es_jefe": (not es_aliado and bool(flag_val & 16)) or (hp_stock > 0 and not es_aliado) or "(Boss)" in nombre_unidad,
                 "grupo": grupo_actual,
                 "es_refuerzo": es_refuerzo,
             })

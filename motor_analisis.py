@@ -299,6 +299,14 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
         'casillas_legales': {tuple(pos) for pos in candidatas},
     }
 
+def _en_fusion(aliado) -> bool:
+    return (
+        bool(getattr(aliado, "en_fusion", False))
+        or int(getattr(aliado, "turnos_fusion", 0) or 0) > 0
+        or int(getattr(aliado, "turnos_fusion_restantes", 0) or 0) > 0
+    )
+
+
 def _armas_aliado(aliado):
     """Obtiene todas las armas usables del inventario de un aliado, incluyendo armas de Engage si está en Fusión."""
     armas = []
@@ -312,20 +320,20 @@ def _armas_aliado(aliado):
             continue
         a = _arma_desde_item(item)
         if a and a.mt > 0:
-            es_engage = item.get("es_engage", False)
+            es_engage = bool(item.get("es_engage", False) or getattr(a, 'es_engage', False))
             nota = ""
             if "ragnarok" in a.nombre.lower() or "teleragna" in a.nombre.lower():
                 nota = "TeleRagnarok: expone al aliado (solo si kill seguro)"
             elif es_engage:
+                # Arma de Emblema que sigue en el inventario: solo vale en Fusión
+                setattr(a, 'es_engage', True)
+                if not _en_fusion(aliado):
+                    setattr(a, 'requiere_fusion', True)
                 nota = "Arma de Engage"
             armas.append((a, es_engage, nota))
 
     # Si está en modo Fusión o tiene energía al 100%, incorporar armas de emblema y Ataque de Emblema
-    es_fusion = (
-        bool(getattr(aliado, "en_fusion", False))
-        or int(getattr(aliado, "turnos_fusion", 0) or 0) > 0
-        or int(getattr(aliado, "turnos_fusion_restantes", 0) or 0) > 0
-    )
+    es_fusion = _en_fusion(aliado)
     tiene_energia_max = (
         int(getattr(aliado, "energia_emblema", 0) or 0) >= int(getattr(aliado, "max_energia_emblema", 6) or 6)
         and int(getattr(aliado, "max_energia_emblema", 6) or 6) > 0
@@ -558,6 +566,21 @@ CATEGORIAS_ATAQUE = {
 }
 
 
+# Errores tragados por el análisis (una opción rota no debe tumbarlo): se guardan para
+# poder diagnosticarlos (`ERRORES_ANALISIS`, últimos 200) y se registran en el log.
+ERRORES_ANALISIS = []
+
+
+def _registrar_error_analisis(quien, contra, arma, exc):
+    import logging
+    import traceback
+    entrada = {"quien": quien, "contra": contra, "arma": arma, "error": f"{type(exc).__name__}: {exc}",
+               "traza": traceback.format_exc().splitlines()[-4:]}
+    ERRORES_ANALISIS.append(entrada)
+    del ERRORES_ANALISIS[:-200]
+    logging.getLogger("engage.analisis").warning("opción descartada por error: %s vs %s (%s): %s", quien, contra, arma, entrada["error"])
+
+
 def _categoria_ataque(verd, daño_recibido):
     """kill_seguro | kill_probable | seguro | con_dano | arriesgado (ver CATEGORIAS_ATAQUE)."""
     v = verd or {}
@@ -573,21 +596,39 @@ def _categoria_ataque(verd, daño_recibido):
     return "con_dano"
 
 
-def _evaluar_objetivos_extra(aliado, arma, area, mapa):
+def _evaluar_objetivos_extra(aliado, arma, area, mapa, tablero=None, pos_atk=None):
     """
     Daño de un Ataque de Emblema de área a los objetivos adicionales (todos menos el
-    principal): un golpe cada uno, Hit 100, sin contraataque.
+    principal): un golpe cada uno, Hit 100, sin contraataque. El atacante golpea a
+    todos desde su casilla de ataque, así que sus bonos de posición (Guía Divina de
+    Alear adyacente, Gente de Cuento…) valen para todos (verificado en el juego); cada
+    objetivo conserva los suyos (auras de sus aliados, terreno).
     Devuelve [{"nombre", "daño", "hp_tras", "muere"}, ...].
     """
     extras = []
     nom_eng = getattr(arma, 'engage_attack_nombre', '') or arma.nombre
+    pos_atk = tuple(pos_atk) if pos_atk else (aliado.x, aliado.y)
+    aliados_atk = [
+        (a.stats, abs(a.x - pos_atk[0]) + abs(a.y - pos_atk[1]))
+        for a in (tablero.obtener_aliados() if tablero else [])
+        if a.viva and a.stats and a.nombre != aliado.nombre
+    ]
+    t_atk = mapa.grid[pos_atk[0]][pos_atk[1]] if (0 <= pos_atk[0] < mapa.ancho and 0 <= pos_atk[1] < mapa.alto) else None
     for e in (area.get("objetivos") or [])[1:]:
         try:
             t_def = mapa.grid[e.x][e.y]
+            aliados_def = [
+                (o.stats, abs(o.x - e.x) + abs(o.y - e.y))
+                for o in (tablero.obtener_enemigos() if tablero else [])
+                if o.viva and o.stats and o.nombre != e.nombre
+            ]
             r = CalculadoraEngage.simular_combate(
                 aliado.stats, e.stats, arma, e.arma,
-                Terreno(avo=t_def.avo, dfn=t_def.dfn), Terreno(0, 0), distancia=1,
+                Terreno(avo=t_atk.avo, dfn=t_atk.dfn) if t_atk else Terreno(0, 0),
+                Terreno(avo=t_def.avo, dfn=t_def.dfn), distancia=1,
                 es_engage_attack=True, engage_attack_nombre=nom_eng,
+                aliados_cercanos_atk=aliados_atk, aliados_cercanos_def=aliados_def,
+                pos_atk=pos_atk, pos_def=(e.x, e.y),
             )
             dmg = int(r["atacante"].get("daño_total_ronda", 0) or 0)
             hp_tras = max(0, int(getattr(e, 'hp_actual', 0) or 0) - dmg)
@@ -803,9 +844,12 @@ def obtener_protector_chain_guard(objetivo, tablero):
     return None
 
 
-def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
+def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, condicion_victoria=""):
     """
     Análisis táctico determinista completo de la situación actual del tablero:
+    `condicion_victoria` ("jefe" | "exterminio" | ""): la del guion del capítulo
+    (cargador_dispos.condicion_victoria). Una kill segura que cumple la condición
+    termina el mapa: no hay fase enemiga que temer y es la jugada prioritaria.
     1. Amenazas enemigas inminentes.
     2. Oportunidades de ataque del jugador con selección óptima de arma.
     3. Bastones de curación y pociones de supervivencia.
@@ -990,8 +1034,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                             "chain_attacks": chain_attacks_e,
                             "recomendacion": rec_texto,
                         })
-                except Exception:
-                    pass
+                except Exception as e_am:
+                    _registrar_error_analisis(enemigo.nombre, aliado.nombre, "amenaza", e_am)
 
     # ── 2. Evaluar oportunidades de ataque del jugador (multi-arma) ───────
     for aliado in aliados_activos:
@@ -1063,7 +1107,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         continue
                     pos_candidata = list(mejor_area_pos)
                     dist_combate = 1
-                    area_info["extras"] = _evaluar_objetivos_extra(aliado, arma_candidata, area_info, mapa)
+                    area_info["extras"] = _evaluar_objetivos_extra(aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)
 
                 is_tele = "ragnarok" in arma_candidata.nombre.lower()
                 apoyos_aliados = [] if pos_forzada is not None else obtener_aliados_backup(aliado, enemigo, tablero=tablero)
@@ -1148,8 +1192,13 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         score = -1
                     elif kill_seguro or quiebra_barra:
                         if daño_recibido == 0:
-                            # Clean Kill / OHKO o Quiebre de Barra sin contragolpe
-                            score = 1200 + precision + min(50, daño_total)
+                            # Clean Kill / OHKO o Quiebre de Barra sin contragolpe.
+                            # Desempate entre armas que matan igual de seguro: la que lo hace en
+                            # menos golpes (menos exposición a contraataques/Guardia en Cadena) y
+                            # con más margen de daño sobre los HP del rival.
+                            golpes_para_matar = max(1, int(atk_info.get("golpes_en_ronda", 1) or 1))
+                            margen = max(0, int(atk_info.get("daño_por_golpe", 0) or 0) * golpes_para_matar - int(enemigo.stats.hp))
+                            score = 1200 + precision + min(50, daño_total) + (10 if golpes_para_matar == 1 else 0) + min(20, margen)
                         else:
                             score = 1000 - (daño_recibido * 10) + (precision // 2)
                             if hp_aliado_fin <= 5:
@@ -1189,15 +1238,21 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                                 score = -1000
 
                     if es_jefe_e and score > 0:
-                        score += 300
+                        # El jefe es prioritario cuando la jugada le hace algo decisivo (matar,
+                        # quebrar una barra); un simple desgaste no debe arrastrar a todo el
+                        # ejército hacia él ni imponer gastar la Fusión: el Ataque de Emblema
+                        # compite por sus números (daño, 0 contraataque) con un plus moderado.
+                        score += 300 if (kill_seguro or kill_probable or quiebra_barra) else 60
                         if es_engage_candidato:
-                            score += 1000
-                    elif es_engage_candidato and not es_jefe_e and not (area_info and len(area_info.get("objetivos") or []) >= 2):
+                            score += 100
+                    elif (es_engage_candidato or getattr(arma_candidata, 'requiere_fusion', False)) and not es_jefe_e                             and not (area_info and len(area_info.get("objetivos") or []) >= 2):
                         # (Excepción: un Override / Blazing Lion que alcanza a 2+ enemigos sí
                         # merece gastar la técnica de Emblema aunque no haya jefe.)
                         # Reservar la Fusión de Emblema para jefes: contra enemigos normales,
-                        # un ataque de fusión nunca debe competir con (ni superar a) un kill
-                        # seguro/conjunto ni un ataque de desgaste sin kill. Solo se exceptúa
+                        # ni un Ataque de Emblema ni ACTIVAR la Fusión por un arma de Emblema
+                        # deben competir con (ni superar a) un kill seguro/conjunto ni un ataque
+                        # de desgaste sin kill. Estando ya fusionada, sus armas de Emblema
+                        # compiten en igualdad (no cuestan nada). Solo se exceptúa
                         # cuando esta acción es la que evita la muerte propia del atacante
                         # (supervivencia extrema); la supervivencia de otros aliados se sigue
                         # sugiriendo aparte como "OPCION" en la sección de táctica de Emblema.
@@ -1241,7 +1296,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                         mejor_area = area_info
                         mejor_advance = advance_desde
 
-                except Exception:
+                except Exception as e_op:
+                    # Una opción rota nunca tumba el análisis, pero tampoco se pierde en silencio
+                    _registrar_error_analisis(aliado.nombre, enemigo.nombre, getattr(arma_candidata, 'nombre', '?'), e_op)
                     continue
 
             # Los ataques con score negativo (desgaste recibiendo daño) no se muestran
@@ -1355,6 +1412,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             if pos_sug is None:
                 continue
 
+            # ¿Esta kill termina el mapa? (jefe sin más barras con "derrotar al jefe";
+            # último enemigo con "derrotar a todos"). Entonces la fase enemiga no llega:
+            # no se descarta por amenazas y pasa por delante de todo lo demás.
+            termina_mapa = bool(verd.get("kill_seguro")) and (
+                (condicion_victoria == "jefe" and es_jefe_e and _barras_vida(enemigo) <= 1)
+                or (condicion_victoria == "exterminio" and len(enemigos_activos) == 1)
+            )
+
             # Evaluación de exposición a peligro enemigo en la casilla de destino
             amenazas_en_destino = []
             if zonas_amenaza_enemigos:
@@ -1382,7 +1447,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
             # Se evalúa el HP restante real del aliado tras el combate (hp_atk_fin)
             # contra el daño acumulado de todos los enemigos que alcanzan la casilla final.
             amenazas_finales = canter.get("amenazas_final", len(amenazas_en_destino)) if canter else len(amenazas_en_destino)
-            if amenazas_finales >= 5 and not es_jefe_e:
+            if amenazas_finales >= 5 and not es_jefe_e and not termina_mapa:
                 continue
 
             hp_restante = hp_atk_fin
@@ -1418,6 +1483,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False):
                 except Exception:
                     continue
             letal_solo_por_objetivo = amenaza_letal and es_jefe_e and dano_amenazas_sin_objetivo < hp_restante
+            if termina_mapa:
+                amenaza_letal = False
+                letal_solo_por_objetivo = False
+                mejor_score = max(mejor_score, 90000)
+                bonus_txt = " | GANA EL MAPA: cumple la condición de victoria, no hay fase enemiga" + bonus_txt
             if amenaza_letal and not letal_solo_por_objetivo:
                 continue
             if letal_solo_por_objetivo:
