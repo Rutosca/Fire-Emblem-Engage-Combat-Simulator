@@ -88,9 +88,18 @@ def _dificultad_norm(dificultad: str) -> str:
     return "normal"
 
 
+# Emblemas que el guion entrega por evento y que por eso NO aparecen en el atributo
+# Gid del dispos: en M007 la cinemática le da a Hortensia el Emblema Oscuro de Lucina.
+EMBLEMA_POR_EVENTO = {
+    "M007": {"PID_M007_オルテンシア": "GID_M007_敵ルキナ"},
+}
+
 RECOLOCACIONES_APERTURA = {
     # M008: Amber aparece en (8,14) y el evento inicial lo lleva junto a Diamant
     "M008": {"PID_アンバー": (8, 16)},
+    # M010 (配置調整): la apertura baja a Hortensia al vestíbulo (junto a los pozos de
+    # Emblema) y sube a Hyacinth al fondo del trono. UnitSetPos del .lua.
+    "M010": {"PID_M010_オルテンシア": (9, 12), "PID_M010_ハイアシンス": (9, 30)},
 }
 
 
@@ -99,6 +108,11 @@ RECOLOCACIONES_APERTURA = {
 # jugador de ese turno. Los grupos "_Normal" / "_Lunatic" ya vienen filtrados por el
 # Flag de dificultad de cada fila, así que se listan todos y el flag decide.
 CALENDARIO_REFUERZOS = {
+    # M010.lua: EventEntryTurn(シーフ登場と魔砲台のAI変更, 2, 2) → Dispos("Thief") solo si
+    # NO es Extremo (`if not モードはルナティック()`); el Flag 3 de esas filas ya lo filtra.
+    "M010": {
+        2: ["Thief"],
+    },
     "M008": {
         2: ["Enemy_Reinforcement0", "Enemy_Reinforcement0_Normal"],
         3: ["Enemy_Reinforcement1", "Enemy_Reinforcement1_Normal"],
@@ -115,6 +129,16 @@ CALENDARIO_REFUERZOS = {
 # `<evento>` hace Dispos(grupo). Coordenadas en el sistema del datamine (1-indexed,
 # Y=1 fila inferior), igual que las filas del dispos. El grupo se retira del
 # despliegue inicial y el tablero lo coloca cuando la unidad pisa la casilla.
+# `disparos` lista las condiciones que lo activan (basta UNA, la primera que ocurra):
+#   {"tipo": "casilla", "pid": ..., "casilla_datamine": (x, y)}  la unidad llega a la casilla
+#   {"tipo": "combate", "pid": ...}   esa unidad entra en combate (g_flag_battle_*)
+#   {"tipo": "muerte",  "pid": ...}   esa unidad cae (o tiene su conversación de combate)
+#   {"tipo": "turno",   "turno": 6}   al empezar ese turno de jugador
+#   {"tipo": "objeto",  "objeto_tipo": "puerta"}  se destruye/abre ese objeto del mapa
+#   {"tipo": "accion",  "pid": ...}   esa unidad HACE algo que la herramienta no puede
+#       observar (atacar o usar un bastón en la fase enemiga). Lo registra el jugador con
+#       el botón del modal de esa unidad; al entrar en la fase enemiga se le recuerda.
+# Se admite la forma antigua (`pid` + `casilla_datamine` sueltos = disparo por casilla).
 REFUERZOS_POR_EVENTO = {
     "M009": [
         # 砦到着_カゲツ: Kagetsu llega al fuerte norte → 2 Sword Fighters a ambos lados
@@ -123,6 +147,29 @@ REFUERZOS_POR_EVENTO = {
         # 砦到着_ゼルコバ: Zelkov llega al fuerte sur → 2 Thieves a ambos lados
         {"grupo": "Enemy_Zelkova_Fort", "pid": "PID_M009_ゼルコバ", "casilla_datamine": (15, 2),
          "descripcion": "Zelkov llega al fuerte del sur"},
+    ],
+    "M010": [
+        # オルテンシア行動変化 (condition: g_flag_battle_holtencia == 1): al entrar en combate
+        # con Hortensia llegan 2 arqueros por los extremos de su misma fila. Las guías los
+        # anotan como "turno 6" (es cuando se suele llegar a ella): vale lo que pase antes.
+        # Verificado en juego: NO llegan en el turno 6 (las guías lo cuentan así porque es
+        # cuando se suele llegar a ella), y no basta con combatir: basta con que Hortensia
+        # HAGA ALGO — atacar, congelar con Freeze o recibir un ataque. Atacar o usar el
+        # bastón ocurre en fase enemiga y la herramienta no lo ve, así que el disparo
+        # "accion" lo registra el jugador desde el modal de la unidad.
+        {"grupo": "Enemy_Reinforcement1", "descripcion": "Hortensia actúa — arquero por el oeste",
+         "disparos": [{"tipo": "accion", "pid": "PID_M010_オルテンシア"},
+                      {"tipo": "combate", "pid": "PID_M010_オルテンシア"}]},
+        {"grupo": "Enemy_Reinforcement2", "descripcion": "Hortensia actúa — arquero por el este",
+         "disparos": [{"tipo": "accion", "pid": "PID_M010_オルテンシア"},
+                      {"tipo": "combate", "pid": "PID_M010_オルテンシア"}]},
+        # 増援 (condition_増援: Morion muere, queda fijado o tiene su conversación de combate).
+        # Morion está pasada la puerta, así que en la práctica ocurre al abrirla: las guías lo
+        # describen como "tras abrir la puerta"; aparecen en las escaleras junto a Hyacinth.
+        {"grupo": "Enemy_Reinforcement3", "descripcion": "Cae Morion o se abre la puerta — jinete con espada (escalera izquierda)",
+         "disparos": [{"tipo": "muerte", "pid": "PID_M010_異形兵_モリオン"}, {"tipo": "objeto", "objeto_tipo": "puerta"}]},
+        {"grupo": "Enemy_Reinforcement4", "descripcion": "Cae Morion o se abre la puerta — jinete con hacha (escalera derecha)",
+         "disparos": [{"tipo": "muerte", "pid": "PID_M010_異形兵_モリオン"}, {"tipo": "objeto", "objeto_tipo": "puerta"}]},
     ],
 }
 
@@ -139,6 +186,12 @@ UNION_POR_CONVERSACION = {
 
 def _grupos_por_evento(dispos_id: str) -> set:
     return {e["grupo"] for e in REFUERZOS_POR_EVENTO.get((dispos_id or "").upper(), [])}
+
+
+def _grupos_por_turno(dispos_id: str) -> set:
+    """Grupos del dispos que el guion despliega en un turno concreto (CALENDARIO_REFUERZOS).
+    No todos se llaman "Enemy_ReinforcementN" (M010: "Thief")."""
+    return {g for grupos in CALENDARIO_REFUERZOS.get((dispos_id or "").upper(), {}).values() for g in grupos}
 
 
 class CargadorDisposEngage:
@@ -311,7 +364,8 @@ class CargadorDisposEngage:
             if not x_str or not y_str or "紋章氣" in pid:
                 continue
 
-            es_refuerzo = grupo_actual.startswith("Enemy_Reinforcement") or grupo_actual in grupos_evento
+            es_refuerzo = (grupo_actual.startswith("Enemy_Reinforcement") or grupo_actual in grupos_evento
+                           or grupo_actual in _grupos_por_turno(dispos_id))
             if es_refuerzo and not incluir_refuerzos:
                 continue
 
@@ -437,35 +491,39 @@ class CargadorDisposEngage:
             # En M007 el mapa entrega a Hortensia el emblema enemigo de Lucina
             # mediante un evento (no aparece en el atributo Gid de Dispos.xml).
             # El arma de ese emblema también forma parte de su inventario real.
-            emblema_id = ""
-            if pid.endswith("オルテンシア") and dispos_id.upper() == "M007":
-                # Emblema Oscuro de Lucina (GID_M007_敵ルキナ): stats y sincronías del catálogo
-                emblema_id = "GID_M007_敵ルキナ"
-                emblema_nombre = self.catalogo.get("emblemas", {}).get(emblema_id, {}).get("nombre", "Lucina (Oscuro)")
-                emblema_bonos = None
-                rapier_id = "IID_ルキナ_ノーブルレイピア_M007"
-                if not any(item.get("id") == rapier_id or item.get("nombre") == "Noble Rapier (Evento)" for item in inventario):
-                    for item in inventario:
-                        item["equipada"] = False
-                    inventario.insert(0, {
-                        "id": rapier_id,
-                        "nombre": self.resolver_nombre_item(rapier_id),
-                        "arma": self.resolver_nombre_item(rapier_id),
-                        "equipada": True,
+            # Emblema asignado en el propio dispos (atributo Gid, p.ej. Diamant con
+            # GID_ロイ en M008, Hyacinth con GID_M010_敵リン). Se resuelve contra el
+            # catálogo de emblemas; los Emblemas Oscuros de jefe (GID_M0xx_敵…) están
+            # compilados con sus propias stats/sincronías, así que los bonos salen del
+            # catálogo y no de aquí.
+            gid = param.get("Gid", "") or EMBLEMA_POR_EVENTO.get(dispos_id.upper(), {}).get(pid, "")
+            emblema_id = gid if gid in self.catalogo.get("emblemas", {}) else ""
+            emblema_info = self.catalogo.get("emblemas", {}).get(emblema_id, {}) if emblema_id else {}
+            emblema_nombre = emblema_info.get("nombre", "")
+            if not emblema_nombre and pid == "PID_リュール":
+                emblema_nombre = "Marth"
+            emblema_bonos = None
+
+            # Un Emblema Oscuro no se fusiona: sus armas forman parte del inventario real
+            # del jefe durante toda la batalla (la Noble Rapier de Hortensia en el Cap. 7,
+            # la Mani Katti y la Killer Bow de Lyn que lleva Hyacinth en el Cap. 10...).
+            if emblema_info.get("es_oscuro"):
+                ya_tiene = {str(item.get("id") or "") for item in inventario}
+                nuevas = [iid for iid in emblema_info.get("engage_items", []) if iid not in ya_tiene]
+                for offset, iid in enumerate(nuevas):
+                    nombre_iid = self.resolver_nombre_item(iid)
+                    if offset == 0:
+                        for item in inventario:
+                            item["equipada"] = False
+                    inventario.insert(offset, {
+                        "id": iid,
+                        "nombre": nombre_iid,
+                        "arma": nombre_iid,
+                        "equipada": offset == 0,
                         "es_drop": False,
                     })
+                if nuevas:
                     arma_principal = inventario[0]["nombre"]
-            else:
-                # Emblema asignado en el propio dispos (atributo Gid, p.ej. Diamant con
-                # GID_ロイ en M008). Se resuelve contra el catálogo de emblemas.
-                # Los Emblemas Oscuros de jefe (GID_M008_敵リーフ...) están compilados con
-                # sus propias stats/sincronías; los bonos salen del catálogo, no de aquí.
-                gid = param.get("Gid", "") or ""
-                emblema_id = gid if gid in self.catalogo.get("emblemas", {}) else ""
-                emblema_nombre = self.catalogo.get("emblemas", {}).get(gid, {}).get("nombre", "") if gid else ""
-                if not emblema_nombre and pid == "PID_リュール":
-                    emblema_nombre = "Marth"
-                emblema_bonos = None
 
             # Recolocaciones de guion (UnitMovePos en el .lua de apertura): la posición
             # real al empezar a jugar no es la del dispos. Coordenadas del datamine (1-indexed).
@@ -541,15 +599,33 @@ class CargadorDisposEngage:
         refuerzos condicionales del capítulo (REFUERZOS_POR_EVENTO), ya filtrados por dificultad."""
         grupos = self.cargar_refuerzos(dispos_id, dificultad, mapa_ancho, mapa_alto)
         salida = []
+        def _a_mapa(casilla_datamine):
+            dx, dy = casilla_datamine
+            return (max(0, min(mapa_ancho - 1, int(dx) - 1)), max(0, min(mapa_alto - 1, mapa_alto - int(dy))))
+
         for ev in REFUERZOS_POR_EVENTO.get((dispos_id or "").upper(), []):
             unidades = grupos.get(ev["grupo"], [])
             if not unidades:
                 continue
-            dx, dy = ev["casilla_datamine"]
+            disparos = list(ev.get("disparos") or [])
+            if not disparos:   # forma antigua: pid + casilla (o `disparo` suelto)
+                disparos = [{"tipo": ev.get("disparo", "casilla"), "pid": ev.get("pid", ""),
+                             "casilla_datamine": ev.get("casilla_datamine")}]
+            normalizados = []
+            for d in disparos:
+                d = dict(d)
+                if d.get("casilla_datamine"):
+                    d["casilla"] = _a_mapa(d.pop("casilla_datamine"))
+                d.pop("casilla_datamine", None)
+                normalizados.append(d)
+            primero = normalizados[0]
             salida.append({
-                "grupo": ev["grupo"], "pid": ev["pid"], "descripcion": ev.get("descripcion", ""),
-                "casilla": (max(0, min(mapa_ancho - 1, int(dx) - 1)), max(0, min(mapa_alto - 1, mapa_alto - int(dy)))),
-                "unidades": unidades,
+                "grupo": ev["grupo"], "descripcion": ev.get("descripcion", ""),
+                "disparos": normalizados, "unidades": unidades,
+                # Compatibilidad con los guardados y la UI anteriores (primer disparo)
+                "pid": ev.get("pid", primero.get("pid", "")),
+                "disparo": primero.get("tipo", "casilla"),
+                "casilla": primero.get("casilla"),
             })
         return salida
 

@@ -246,6 +246,40 @@ class Terreno:
     volable: bool = True
 
 
+# Reliquias de Houses Unite (Unión de Casas, Emblema DLC de las Tres Casas). Sus datos
+# son los del datamine (Item.xml, armas de Byleth DLC: IID_ベレト_アイムール Mt 24 efectiva
+# contra dragón, IID_ベレト_アラドヴァル Mt 14 con SID_オフェンス時武器攻撃力上昇 (+50 % de Mt
+# al iniciar) e IID_ベレト_フェイルノート Mt 13 efectiva contra dragón y volador). Cada
+# entrada lleva el estilo de combate al que el texto oficial le da +10 % de daño.
+def _reliquias_houses_unite():
+    from catalogo_loader import _catalogo
+    armas_cat = (_catalogo or {}).get("armas", {})
+    plan = (
+        ("IID_ベレト_アイムール", "Aymr", 24, "Hacha", ["dragón"], False, "acorazado"),
+        ("IID_ベレト_アラドヴァル", "Areadbhar", 14, "Lanza", [], True, "caballeria"),
+        ("IID_ベレト_フェイルノート", "Failnaught", 13, "Arco", ["dragón", "volador"], False, "encubierto"),
+    )
+    salida = []
+    for iid, nombre, mt_def, tipo_def, ef_def, x15, estilo in plan:
+        info = armas_cat.get(iid) or {}
+        arma = Arma(
+            nombre=info.get("nombre") or nombre,
+            mt=int(info.get("mt", mt_def)),
+            wt=int(info.get("wt", 9)),
+            hit=int(info.get("hit", 75)),
+            crit=int(info.get("crit", 0)),
+            tipo=info.get("tipo", tipo_def),
+            rango=[1],
+            efectividades=list(info.get("efectividades") or ef_def),
+        )
+        setattr(arma, 'mt_x15_al_iniciar', x15 or "SID_オフェンス時武器攻撃力上昇" in (info.get("equip_sids") or []))
+        salida.append((arma, estilo))
+    return tuple(salida)
+
+
+RELIQUIAS_HOUSES_UNITE = None   # se construye al primer uso (el catálogo se carga después)
+
+
 # =============================================================================
 # Constantes del sistema de combate
 # =============================================================================
@@ -482,6 +516,73 @@ def calcular_bonos_apoyo(unidad, aliados_cercanos):
 # Motor de Cálculo
 # =============================================================================
 
+# Adaptable (SID_順応): habilidad de Fusión del Emblema de Leif. Skill.xml no la
+# describe con Acts porque la resuelve el motor del juego; el texto oficial dice que
+# al ser atacada la unidad contraataca con la mejor arma que tenga disponible.
+SID_ADAPTABLE = "SID_順応"
+
+
+def arma_de_respuesta(defensor, arma_def, distancia, atacante=None):
+    """
+    Arma con la que el DEFENSOR responde a `distancia`. Normalmente la que lleva
+    equipada; con Adaptable (SID_順応, habilidad de Emblema de Leif: "If foe initiates
+    combat, unit counters with the best weapon available (in terms of range, weapon
+    advantage, effective bonus, etc.)") el juego elige la mejor de su inventario que
+    alcance. Devuelve (arma, cambiada).
+    """
+    inventario = getattr(defensor, 'inventario', None) or []
+    if not inventario or not pasivas.tiene_sid(defensor, SID_ADAPTABLE):
+        return arma_def, False
+    candidatas = []
+    for item in inventario:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("tipo", "")) in ("Bastón", "Objeto", "Accesorio"):
+            continue
+        a = _arma_desde_item_seguro(item)
+        if a is None or a.mt <= 0 or distancia not in (a.rango or [1]):
+            continue
+        candidatas.append((_valor_de_respuesta(a, defensor, atacante), a.nombre == getattr(arma_def, 'nombre', ''), a))
+    if not candidatas:
+        return arma_def, False
+    mejor = max(candidatas)[2]
+    return mejor, mejor.nombre != getattr(arma_def, 'nombre', '')
+
+
+def _valor_de_respuesta(arma, defensor, atacante) -> float:
+    """Daño esperado aproximado (daño neto × precisión) con el que se compara qué arma
+    es "la mejor disponible": cubre alcance, efectividad y triángulo de armas."""
+    mult = 1.0
+    if atacante is not None:
+        mult, _ = CalculadoraEngage.calcular_efectividad(arma, atacante)
+    ofensiva = getattr(defensor, 'magia', 0) if arma.es_magica else getattr(defensor, 'fuerza', 0)
+    if atacante is None:
+        return (ofensiva + arma.mt * mult) * max(0.01, arma.hit / 100.0)
+    defensiva = getattr(atacante, 'resistencia', 0) if arma.es_magica else getattr(atacante, 'defensa', 0)
+    arma_rival = getattr(atacante, 'arma', None)
+    tipo_rival = getattr(arma_rival, 'tipo', None) if arma_rival else None
+    # La ventaja de triángulo rompe al rival: pesa más que unos puntos de daño
+    bono_tri = 3 if CalculadoraEngage.ventaja_triangulo(arma.tipo, tipo_rival) else 0
+    daño = max(0.0, ofensiva + arma.mt * mult - defensiva) + bono_tri
+    return daño * max(0.01, arma.hit / 100.0)
+
+
+def _arma_desde_item_seguro(item):
+    """Arma a partir de un dict de inventario ya resuelto, sin volver al catálogo."""
+    try:
+        return Arma(
+            nombre=item.get("nombre") or item.get("arma") or "Arma",
+            mt=int(item.get("mt", 0) or 0), wt=int(item.get("wt", 0) or 0),
+            hit=int(item.get("hit", 0) or 0), crit=int(item.get("crit", 0) or 0),
+            tipo=item.get("tipo", "Espada"), rango=list(item.get("rango") or [1]),
+            es_magica=bool(item.get("es_magica", False)),
+            efectividades=list(item.get("efectividades") or []),
+            avo_bonus=int(item.get("avo_bonus", 0) or 0), ddg_bonus=int(item.get("ddg_bonus", 0) or 0),
+        )
+    except Exception:
+        return None
+
+
 class CalculadoraEngage:
     """
     Motor matemático determinista.
@@ -672,6 +773,7 @@ class CalculadoraEngage:
         terreno_atacante=None,
         rival_contraataca=None,
         chain_attacks: int = 0,
+        ronda: int = 0,
     ):
         """
         Estadísticas de un golpe individual del atacante al defensor.
@@ -689,6 +791,10 @@ class CalculadoraEngage:
         `rival_contraataca` si el defensor puede devolver el golpe (相手の手番回数);
                             None = se deduce de arma_def/distancia.
         `chain_attacks`     Chain Attacks de apoyo que acompañan al atacante (チェインアタック回数).
+        `ronda`             Rondas de ataque YA ejecutadas (総手番回数 / 総行動回数): 0 en el
+                            primer golpe, 1 en el follow-up. Las pasivas cuya Condition lo
+                            mira solo valen en la ronda que les toca — Momentum (SID_助走:
+                            "移動距離 > 0 && 総行動回数 == 0") solo suma en el primer golpe.
         """
         estilo_atk_canon = resolver_estilo_combate(getattr(atacante, 'estilo_combate', ''))
         estilo_def_canon = resolver_estilo_combate(getattr(defensor, 'estilo_combate', ''))
@@ -726,7 +832,7 @@ class CalculadoraEngage:
             terreno_propio=terreno_propio_atk, terreno_rival=terreno_efectivo_def,
             aliados_cercanos=aliados_cercanos_atk or [],
             habilidades_sids=pasivas.sids_activos(atacante) + list(getattr(arma, 'sids', None) or []),
-            turno_actual=1, rondas_rival=1 if rival_contraataca else 0,
+            turno_actual=1, turno_total=int(ronda or 0), rondas_rival=1 if rival_contraataca else 0,
             rol="atacante" if es_iniciador else "defensor", rol_rival="defensor" if es_iniciador else "atacante",
             chain_attacks=int(chain_attacks or 0),
         )
@@ -749,13 +855,17 @@ class CalculadoraEngage:
         mods_def = pasivas.recopilar_combate(defensor, ctx_def, aliados_cercanos_def)
 
         # Veteran+ (SID_特効無効_効果): inmune a la efectividad; Stalwart / Veteran
-        # (SID_特効耐性_効果: "相手の武器特効 = 2"): la reduce a ×2.
-        if mods_def.presente('SID_特効無効_効果'):
-            mult_mt_efectividad = 1
-            desc_efectividad = None
-        elif mods_def.asignado('rival_effectividad') is not None and mult_mt_efectividad > 1:
-            mult_mt_efectividad = int(mods_def.asignado('rival_effectividad'))
-            desc_efectividad = f"Efectividad reducida (Stalwart/Veteran, Mt ×{mult_mt_efectividad})"
+        # (SID_特効耐性_効果: "相手の武器特効 = 2"): la reduce a ×2. Se aplica a cualquier
+        # arma que golpee en este combate, incluidas las reliquias de Houses Unite.
+        def _con_resistencias(mult, desc=None):
+            if mods_def.presente('SID_特効無効_効果'):
+                return 1, None
+            if mods_def.asignado('rival_effectividad') is not None and mult > 1:
+                m = int(mods_def.asignado('rival_effectividad'))
+                return m, f"Efectividad reducida (Stalwart/Veteran, Mt ×{m})"
+            return mult, desc
+
+        mult_mt_efectividad, desc_efectividad = _con_resistencias(mult_mt_efectividad, desc_efectividad)
 
         # Velocidad de ataque de ambos bandos (+ acts 攻撃速度: Flashing Fist Art)
         as_atk = cls.calcular_velocidad_ataque(atacante.velocidad, atacante.complexion, arma.wt) + int(mods_atk.suma('as', T))
@@ -800,8 +910,19 @@ class CalculadoraEngage:
         # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────
         eng_nom_norm = normalizar_texto(engage_attack_nombre) if engage_attack_nombre else ""
         es_houses_unite = es_engage_attack and any(t in eng_nom_norm for t in ('houses unite', 'union tres casas', 'union de casas'))
-        es_warp_ragnarok = es_engage_attack and any(t in eng_nom_norm for t in ('warp ragnarok', 'teleragnarok', 'tele ragnarok', 'ragnarok'))
-        es_lodestar_rush = es_engage_attack and any(t in eng_nom_norm for t in ('lodestar', 'torrente estelar', 'acometida estelar'))
+        # Ojo: "ragnarok" a secas es el nombre del TOMO de Celica (IID_セリカ_ライナロック),
+        # un arma de Emblema que se usa en ataques normales. Solo el nombre completo del
+        # Ataque de Emblema activa su ×1.2 Místico y su "ataca a RES sin contraataque".
+        es_warp_ragnarok = es_engage_attack and any(t in eng_nom_norm for t in ('warp ragnarok', 'teleragnarok', 'tele ragnarok'))
+        # Ataques de Emblema de varios golpes: los describe el propio Skill.xml
+        # (pasivas.forma_ataque_emblema). Solo se tratan aquí los que pegan N veces a
+        # una fracción del mismo daño; Quadruple Hit y Twin Strike usan un arma distinta
+        # por golpe y siguen resolviéndose como un ataque normal.
+        forma_multigolpe = None
+        if es_engage_attack:
+            _forma = pasivas.forma_ataque_emblema(atacante, nombre_ataque=engage_attack_nombre)
+            if _forma and _forma.get("fraccion") and normalizar_texto(_forma["nombre"]) in eng_nom_norm:
+                forma_multigolpe = _forma
         es_override = es_engage_attack and any(t in eng_nom_norm for t in ('override', 'superacion'))
 
         if es_warp_ragnarok:
@@ -861,37 +982,61 @@ class CalculadoraEngage:
         houses_unite_hits = None
         lodestar_hits = None
         if es_houses_unite:
+            # Houses Unite: "Use to attack with Aymr, Areadbhar, and Failnaught at 50 %
+            # damage". Cada golpe es el DAÑO NORMAL de esa reliquia partido por la mitad
+            # (truncando), no una fórmula aparte: verificado con Chloé (Voladora, sin bono
+            # de estilo) — Aymr 35 → 17, Areadbhar 32 → 16, Failnaught 24 → 12.
+            # Bonos de estilo del texto oficial, +10 % de daño sobre el golpe ya reducido:
+            #   [Dragon] a los tres · [Cavalry] Areadbhar · [Covert] Failnaught
+            #   [Armored] Aymr · [Qi Adept] rompe al objetivo (sin daño extra)
             def_stat = defensor.defensa + mods_def.suma('def', T) + terreno_dfn
             bono_atk = atk_base - (stat_ofensiva + mt_efectivo)
-            reliquias = (
-                Arma("Aymr", mt=24, tipo="Hacha", rango=[1], efectividades=["dragón"]),
-                Arma("Areadbhar", mt=math.floor(14 * 1.5), tipo="Lanza", rango=[1]),
-                Arma("Failnaught", mt=13, tipo="Arco", rango=[1], efectividades=["volador", "dragón"]),
-            )
-            hits = []
-            for reliquia in reliquias:
-                mult_r, _desc_r = cls.calcular_efectividad(reliquia, defensor)
-                hits.append(max(1, math.floor(max(0, fuerza + bono_atk + reliquia.mt * mult_r + 5 - def_stat) * 0.50)))
+            hits, detalles = [], []
+            global RELIQUIAS_HOUSES_UNITE
+            if RELIQUIAS_HOUSES_UNITE is None:
+                RELIQUIAS_HOUSES_UNITE = _reliquias_houses_unite()
+            for reliquia, estilo_bono in RELIQUIAS_HOUSES_UNITE:
+                # Cada reliquia lleva su propia efectividad (Failnaught ×3 contra voladores
+                # y dragones, Aymr ×3 contra dragones) y la resistencia del defensor se le
+                # aplica igual que a un arma normal: contra Hortensia, que tiene Veteran+,
+                # no hay efectividad; contra un Axe Flier normal sí.
+                mult_r, _desc_r = _con_resistencias(*cls.calcular_efectividad(reliquia, defensor))
+                mt_r = reliquia.mt * mult_r
+                # Areadbhar (SID_オフェンス時武器攻撃力上昇): +50 % de Mt al iniciar combate,
+                # y Houses Unite siempre inicia.
+                if getattr(reliquia, 'mt_x15_al_iniciar', False):
+                    mt_r = math.floor(mt_r * 1.5)
+                dano_normal = max(0, math.floor(stat_ofensiva + bono_atk + mt_r - def_stat))
+                if dano_normal > 0 and mult_dano != 1:
+                    dano_normal = math.floor(dano_normal * mult_dano)
+                fraccion_r = 0.50
+                if estilo_atk_canon == 'dragon' or estilo_atk_canon == estilo_bono:
+                    fraccion_r *= 1.10
+                    detalles.append(reliquia.nombre)
+                hits.append(math.floor(dano_normal * fraccion_r))
             d1, d2, d3 = hits
             daño = d1 + d2 + d3
             houses_unite_hits = [d1, d2, d3]
-            pasivas_activas.append(f"Unión Tres Casas (Tri-ataque Aymr/Areadbhar/Failnaught: {d1}, {d2}, {d3} dmg = {daño} dmg)")
-        elif es_lodestar_rush:
-            # Datamine Marth (SID_マルスエンゲージ技): múltiples golpes al 30% del daño neto (ceil)
-            # 竜族 (dragón): 9 golpes · 連携 (apoyo): 8 · resto: 7 (variantes por estilo del catálogo)
-            es_dragon = estilo_atk_canon == 'dragon' or getattr(atacante, 'tipo_movimiento', '') in ('dragón', 'dragon') or getattr(atacante, 'es_dragon', False)
-            es_backup = estilo_atk_canon == 'apoyo' or getattr(atacante, 'tipo_movimiento', '') in ('apoyo', 'backup')
-            num_golpes_lodestar = 9 if es_dragon else (8 if es_backup else 7)
-            es_mistico = estilo_atk_canon == 'mistico'
-            stat_def_lodestar = (defensor.resistencia + terreno_dfn) if es_mistico else (defensor.defensa + terreno_dfn)
-            daño_neto_lodestar = max(0, atk_efectivo - stat_def_lodestar)
-            if daño_neto_lodestar <= 0:
-                d_hit = 0
-            else:
-                d_hit = math.ceil(daño_neto_lodestar * 0.30)
-            daño = d_hit * num_golpes_lodestar
-            lodestar_hits = (num_golpes_lodestar, d_hit)
-            pasivas_activas.append(f"Acometida Estelar ({num_golpes_lodestar} golpes de {d_hit} dmg = {daño} dmg)")
+            extra = f" [+10% estilo: {', '.join(detalles)}]" if detalles else ""
+            pasivas_activas.append(
+                f"Unión Tres Casas (Tri-ataque Aymr/Areadbhar/Failnaught: {d1}, {d2}, {d3} dmg = {daño} dmg){extra}")
+            if estilo_atk_canon == 'qi_adept':
+                pasivas_activas.append("Unión Tres Casas: rompe al objetivo (estilo Qi Adept)")
+        elif forma_multigolpe:
+            # Ataque de Emblema de varios golpes a fracción del daño (Skill.xml:
+            # `攻撃回数 = N` + SID_ダメージNN％). Lodestar Rush 7 golpes al 30 % (Apoyo 8,
+            # Dragón 9, Místico ataca a RES con 魔力); Astra Storm 5 al 30 % (20 % en las
+            # versiones oscuras). Cada golpe redondea hacia arriba.
+            num_golpes_multi = int(forma_multigolpe["golpes"])
+            stat_def_multi = (defensor.resistencia + terreno_dfn) if forma_multigolpe["usa_magia"] else (defensor.defensa + terreno_dfn)
+            daño_neto_multi = max(0, atk_efectivo - stat_def_multi)
+            d_hit = 0 if daño_neto_multi <= 0 else math.ceil(daño_neto_multi * forma_multigolpe["fraccion"])
+            daño = d_hit * num_golpes_multi
+            lodestar_hits = (num_golpes_multi, d_hit)
+            pasivas_activas.append(
+                f"{forma_multigolpe['nombre']} ({num_golpes_multi} golpes de {d_hit} dmg = {daño} dmg)")
+            if forma_multigolpe["rompe"]:
+                pasivas_activas.append(f"{forma_multigolpe['nombre']}: rompe al objetivo (estilo Qi Adept)")
 
         # ── Precisión, Evasión, Crítico y Esquive ───────────────────────────
         # Propios (命中値/回避値/必殺値/必殺回避) + los que el rival impone (相手の命中値:
@@ -995,7 +1140,8 @@ class CalculadoraEngage:
             "sin_follow_up": sin_follow_up,
             "sin_follow_up_def": sin_follow_up_def,
             "es_houses_unite": es_houses_unite,
-            "es_lodestar_rush": es_lodestar_rush,
+            "es_lodestar_rush": bool(forma_multigolpe),
+            "nombre_multigolpe": forma_multigolpe["nombre"] if forma_multigolpe else "",
             "es_warp_ragnarok": es_warp_ragnarok,
             "es_override": es_override,
             "es_engage_attack": es_engage_attack,
@@ -1099,6 +1245,8 @@ class CalculadoraEngage:
         # golpe, sin contraataque, sin follow-up ni Chain Attacks ni golpes extra.
         es_ballesta = bool(getattr(arma_atk, 'es_ballesta', False))
         # Los ataques de Emblema y las ballestas no permiten contraataque del defensor
+        # Adaptable: el defensor responde con la mejor arma de su inventario que alcance
+        arma_def, arma_def_cambiada = arma_de_respuesta(defensor, arma_def, distancia, atacante)
         puede_contra = (not es_engage_attack) and (not es_ballesta) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
         n_chain_attacks = 0 if es_ballesta else len(aliados_apoyo_backup or [])
 
@@ -1135,6 +1283,28 @@ class CalculadoraEngage:
 
         es_smash_atk = getattr(arma_atk, 'es_smash', False)
         es_smash_def = getattr(arma_def, 'es_smash', False) if arma_def else False
+
+        def _stats_ronda_siguiente(stats_base, es_atk: bool):
+            """Golpe de la 2ª ronda (follow-up). Se recalcula solo si alguna pasiva del
+            primer golpe dependía de que fuera el primero (Momentum y compañía); si no,
+            se reutiliza el mismo resultado."""
+            if not any(a.get("condicion_primera_ronda") for a in stats_base["motor_pasivas"]["atk"]["activas"]):
+                return stats_base
+            if es_atk:
+                return cls._stats_de_golpe(
+                    atacante, arma_atk, defensor, arma_def, terreno_def,
+                    es_iniciador=True, aliados_cercanos_atk=norm_atk, aliados_cercanos_def=norm_def,
+                    distancia=distancia, es_engage_attack=es_engage_attack,
+                    engage_attack_nombre=engage_attack_nombre, defensor_en_ruptura=defensor_en_ruptura,
+                    terreno_atacante=terreno_atk, rival_contraataca=puede_contra,
+                    chain_attacks=n_chain_attacks, ronda=1)
+            return cls._stats_de_golpe(
+                defensor, arma_def, atacante, arma_atk, terreno_atk,
+                es_iniciador=False, aliados_cercanos_atk=norm_def, aliados_cercanos_def=norm_atk,
+                distancia=distancia, terreno_atacante=terreno_def, rival_contraataca=True, ronda=1)
+
+        stats_atk_seguimiento = _stats_ronda_siguiente(stats_atk, True)
+        stats_def_seguimiento = _stats_ronda_siguiente(stats_def, False) if stats_def else None
 
         diff_as_atk = stats_atk["as_atk"] - stats_atk["as_def"]
         follow_up_atk = (diff_as_atk >= 5) and (not es_smash_atk) and (not es_engage_attack) and (not es_ballesta) and not stats_atk.get("sin_follow_up")
@@ -1208,6 +1378,10 @@ class CalculadoraEngage:
 
         # 1. Chain Attacks de aliados de apoyo (Backup)
         chain_attacks_info = []
+        # "[Dragon] Ally chain attacks are guaranteed to hit" (All for One: GiveTarget 2
+        # de SID_チェインアタック命中率１００％ → 命中率 = 100 para los aliados que encadenan)
+        forzado_chain = pasivas.chain_attack_forzado(atacante, nombre_ataque=engage_attack_nombre) if es_engage_attack else None
+        precision_chain = 100 if (forzado_chain and forzado_chain["hit_garantizado"]) else 80
         if aliados_apoyo_backup:
             for apoyo in aliados_apoyo_backup:
                 if hp_def <= 0:
@@ -1219,7 +1393,7 @@ class CalculadoraEngage:
                 chain_attacks_info.append({
                     "nombre": apoyo_nom,
                     "daño": dano_aplicado_ultimo,
-                    "precision": 80,
+                    "precision": precision_chain,
                     "arma": getattr(getattr(apoyo, 'arma', None), 'nombre', 'Arma')
                 })
                 if barra_rota:
@@ -1258,7 +1432,7 @@ class CalculadoraEngage:
             # ── Follow-up del defensor si doblaba, atacante sigue vivo y defensor no quedó roto ──
             if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 hp_atk -= stats_def["daño"]
-                registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
+                registrar(defensor.nombre, "follow-up", stats_def_seguimiento["daño"], hp_atk)
 
         elif not barra_resucitada:
             # ── Secuencia estándar o Ataques de Emblema (sin Smash del atacante, o ambos con Smash) ──
@@ -1273,11 +1447,13 @@ class CalculadoraEngage:
                     if b_rota:
                         break
             elif stats_atk.get("es_lodestar_rush"):
+                # Ataque de Emblema de N golpes a fracción del daño (Lodestar Rush, Astra Storm)
                 num_g, dmg_g = stats_atk.get("lodestar_hits", (9, 3))
+                nom_multi = stats_atk.get("nombre_multigolpe") or "Lodestar Rush"
                 for i_g in range(num_g):
                     if hp_def <= 0 and not barra_resucitada:
                         break
-                    b_rota = golpear_defensor(atacante.nombre, f"ataque (Lodestar Rush {i_g+1}/{num_g})", dmg_g)
+                    b_rota = golpear_defensor(atacante.nombre, f"ataque ({nom_multi} {i_g+1}/{num_g})", dmg_g)
                     if b_rota:
                         break
             else:
@@ -1299,9 +1475,9 @@ class CalculadoraEngage:
 
             # 2b. Follow-up anticipado por Alacrity
             if activa_alacrity and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
-                golpear_defensor(atacante.nombre, "follow-up (alacrity)", stats_atk["daño"])
+                golpear_defensor(atacante.nombre, "follow-up (alacrity)", stats_atk_seguimiento["daño"])
                 if es_brave_atk and hp_def > 0 and not barra_resucitada:
-                    golpear_defensor(atacante.nombre, "follow-up (alacrity, Brave 2º golpe)", stats_atk["daño"])
+                    golpear_defensor(atacante.nombre, "follow-up (alacrity, Brave 2º golpe)", stats_atk_seguimiento["daño"])
 
             # 2c. Contraataque del defensor (si vivo, en rango y no roto; no si ya golpeó por Vantage)
             if puede_contra and not contra_ya_hecha and hp_def > 0 and not barra_resucitada and not defensor_roto and stats_def:
@@ -1312,14 +1488,14 @@ class CalculadoraEngage:
 
             # 2d. Follow-up regular del atacante (si no se ejecutó por Alacrity)
             if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0 and not barra_resucitada:
-                golpear_defensor(atacante.nombre, "follow-up", stats_atk["daño"])
+                golpear_defensor(atacante.nombre, "follow-up", stats_atk_seguimiento["daño"])
                 if es_brave_atk and hp_def > 0 and not barra_resucitada:
-                    golpear_defensor(atacante.nombre, "follow-up (Brave 2º golpe)", stats_atk["daño"])
+                    golpear_defensor(atacante.nombre, "follow-up (Brave 2º golpe)", stats_atk_seguimiento["daño"])
 
             # 2e. Follow-up del defensor
             if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not defensor_roto and stats_def:
                 hp_atk -= stats_def["daño"]
-                registrar(defensor.nombre, "follow-up", stats_def["daño"], hp_atk)
+                registrar(defensor.nombre, "follow-up", stats_def_seguimiento["daño"], hp_atk)
 
         # 2f. Velocidad Divina (Marth): SIEMPRE el último golpe del combate, tras
         # todos los follow-ups, al 50% del daño truncado. Verificado en capturas
@@ -1446,6 +1622,7 @@ class CalculadoraEngage:
                 "es_houses_unite": stats_atk.get("es_houses_unite", False),
                 "houses_unite_hits": stats_atk.get("houses_unite_hits", []),
                 "es_lodestar_rush": stats_atk.get("es_lodestar_rush", False),
+                "nombre_multigolpe": stats_atk.get("nombre_multigolpe", ""),
                 "lodestar_hits": stats_atk.get("lodestar_hits", (0, 0)),
                 "es_warp_ragnarok": stats_atk.get("es_warp_ragnarok", False),
                 "es_engage_attack": stats_atk.get("es_engage_attack", False),

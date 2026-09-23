@@ -108,6 +108,9 @@ function buildGrid(ancho, alto) {
       celda.dataset.y = y;
       celda.dataset.tip = `${x},${y}`;
 
+      // Clic derecho: siempre el objeto del mapa (aunque haya una unidad encima)
+      celda.addEventListener("contextmenu", onCeldaContextMenu);
+
       // Eventos drag-and-drop
       celda.addEventListener("dragover", onCeldaDragOver);
       celda.addEventListener("dragleave", onCeldaDragLeave);
@@ -218,6 +221,7 @@ function crearToken(ficha) {
   if (ficha.en_fusion || ficha.turnos_fusion > 0) claseBando += " fusion";
   if (ficha.ha_actuado) claseBando += " actuado";
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) claseBando += " en-ruptura";
+  if (ficha.es_doble) claseBando += " doble";   // residuo de Call Doubles: 1 HP, encadena solo con su invocador
   tok.className = `token ${claseBando}`;
   tok.dataset.nombre = ficha.nombre;
   tok.textContent = ficha.nombre[0].toUpperCase();
@@ -356,19 +360,24 @@ function autoGuardarLocal() {
   }
 }
 
+// OJO al leer de aquí: `guardado` es la copia del NAVEGADOR (lo que escribe
+// autoGuardarLocal) y `res` es la respuesta del SERVIDOR. Solo lo que el jugador edita a
+// mano sale de `guardado`; todo lo que calcula el servidor (eventos del guion, refuerzos,
+// estado de los objetos) tiene que salir de `res`, o se pierde al restaurar.
 async function restaurarDesdeLocalStorage() {
   try {
     const raw = localStorage.getItem("engage_tracker_partida_local");
     if (!raw) return false;
-    const estado = JSON.parse(raw);
-    if (!estado || !Array.isArray(estado.fichas) || estado.fichas.length === 0) return false;
+    const guardado = JSON.parse(raw);
+    if (!guardado || !Array.isArray(guardado.fichas) || guardado.fichas.length === 0) return false;
 
-    const res = await api("/api/partida/importar", "POST", { partida: estado });
+    const res = await api("/api/partida/importar", "POST", { partida: guardado });
     if (res.ok && res.fichas) {
-      state.turno = estado.turno_actual || 1;
-      state.fase = estado.fase || "jugador";
-      if (estado.dificultad && $("select-dificultad")) $("select-dificultad").value = estado.dificultad;
-      renderCasillasFuego(estado.casillas_fuego || []);
+      state.turno = guardado.turno_actual || 1;
+      state.fase = guardado.fase || "jugador";
+      if (guardado.dificultad && $("select-dificultad")) $("select-dificultad").value = guardado.dificultad;
+      renderCasillasFuego(guardado.casillas_fuego || []);
+      state.eventosPorAccion = res.eventos_por_accion || [];   // del servidor
       await refrescarRefuerzosPendientes();
       actualizarBadge();
       actualizarTokens(res.fichas);
@@ -490,14 +499,30 @@ async function onCeldaDrop(e) {
   }
 }
 
+// Con una unidad encima de una ballesta / cañón / destructible, el clic izquierdo edita
+// la unidad (el token está por encima): el clic DERECHO va siempre al objeto del mapa.
+function onCeldaContextMenu(e) {
+  const celda = e.currentTarget;
+  if (!celda.dataset.objetoId) return;
+  e.preventDefault();
+  abrirModalObjeto(celda.dataset.objetoId);
+}
+
 function onCeldaClick(e) {
   // Solo abrir creación si no se está arrastrando y no se hizo clic en un token existente
   if (e.target.classList.contains("token")) return;
   const x = parseInt(e.currentTarget.dataset.x, 10);
   const y = parseInt(e.currentTarget.dataset.y, 10);
-  // Casilla de un destructible (valla, caja…): editar su vida en vez de crear una unidad
-  if (e.currentTarget.classList.contains("obj-destructible") && e.currentTarget.dataset.objetoId) {
+  // Casilla de un destructible (valla, caja…) o de un arma de mapa (ballesta, cañón):
+  // editar su vida / sus usos en vez de crear una unidad
+  if (e.currentTarget.dataset.objetoId &&
+      (e.currentTarget.classList.contains("obj-destructible") || e.currentTarget.classList.contains("obj-arma_usable"))) {
     abrirModalObjeto(e.currentTarget.dataset.objetoId);
+    return;
+  }
+  // Cofre: lo abre una unidad aliada adyacente que aún no haya actuado (gasta su acción)
+  if (e.currentTarget.classList.contains("obj-cofre") && e.currentTarget.dataset.objetoId) {
+    abrirCofre(e.currentTarget.dataset.objetoId, x, y);
     return;
   }
   abrirModalCreacion(x, y, true);
@@ -1328,7 +1353,12 @@ function rellenarFormularioDesdeFicha(ficha) {
       esEq = !!item.equipada;
     }
 
-    if ($(`inv-nombre-${idx}`)) $(`inv-nombre-${idx}`).value = rawStr;
+    if ($(`inv-nombre-${idx}`)) {
+      $(`inv-nombre-${idx}`).value = rawStr;
+      const iid = (item && typeof item === "object") ? (item.id || "") : "";
+      if (iid) $(`inv-nombre-${idx}`).dataset.iid = iid;
+      else delete $(`inv-nombre-${idx}`).dataset.iid;
+    }
     if ($(`inv-forja-${idx}`)) $(`inv-forja-${idx}`).value = forja;
     if ($(`inv-grabado-${idx}`)) $(`inv-grabado-${idx}`).value = grabado;
     if ($(`inv-usos-${idx}`)) $(`inv-usos-${idx}`).value = usos;
@@ -1409,7 +1439,105 @@ function abrirModalEdicion(ficha) {
 
   $("btn-modal-eliminar").classList.remove("hidden");
   $("btn-modal-eliminar").textContent = "Eliminar Ficha";
+  actualizarBotonDobles(ficha);
+  actualizarBotonEscudo(ficha);
+  actualizarBotonAccion(ficha);
   $("modal-backdrop").classList.remove("hidden");
+}
+
+// ─── Call Doubles (Emblema de Lyn) ─────────────────────────────────────────
+// El jugador refleja el comando del jefe: aparecen 4 dobles (5 en estilo Dragón)
+// con 1 HP en las casillas de alrededor. Solo encadenan ataques con quien los invocó.
+function actualizarBotonDobles(ficha) {
+  const btn = $("btn-modal-dobles");
+  if (!btn) return;
+  state.fichaDobles = ficha;
+  if (!ficha || !ficha.puede_call_doubles) {
+    btn.classList.add("hidden");
+    return;
+  }
+  const tiene = Object.values(state.fichas || {}).some(f => f.invocador === ficha.nombre && f.viva);
+  btn.textContent = tiene ? "Disipar dobles" : "Invocar dobles";
+  btn.dataset.accion = tiene ? "disipar" : "invocar";
+  btn.classList.remove("hidden");
+}
+
+// Eventos del guion que dispara una unidad ENEMIGA al actuar (atacar, usar un bastón).
+// Pasa en la fase enemiga, así que la herramienta no puede verlo: lo marca el jugador.
+function actualizarBotonAccion(ficha) {
+  const btn = $("btn-modal-accion");
+  if (!btn) return;
+  state.fichaAccion = ficha;
+  const ev = (state.eventosPorAccion || []).find(e => ficha && e.nombre === ficha.nombre);
+  btn.classList.toggle("hidden", !ev);
+  if (!ev) return;
+  // Acción única: una vez disparado se queda visible pero en gris, para que se vea hecho
+  btn.disabled = !!ev.disparado;
+  btn.textContent = ev.disparado ? "Refuerzos ya llamados" : "Ha actuado → refuerzos";
+  btn.title = ev.disparado
+    ? `Ya llegaron los refuerzos de ${ficha.nombre}`
+    : `${ev.descripcion}. Púlsalo cuando ${ficha.nombre} ataque, use un bastón o reciba un ataque.`;
+}
+
+async function registrarAccionDeUnidad() {
+  const ficha = state.fichaAccion;
+  if (!ficha) return;
+  const res = await api("/api/unidad/registrar_accion", "POST", { nombre: ficha.nombre });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo registrar la acción", "error");
+    return;
+  }
+  cerrarModal();
+  state.eventosPorAccion = res.eventos_por_accion || [];
+  actualizarTokens(res.fichas);
+  const nombres = (res.refuerzos_desplegados || []).map(f => f.nombre).join(", ");
+  mostrarToast(nombres
+    ? `${ficha.nombre} ha actuado: llegan ${nombres}`
+    : `${ficha.nombre} ha actuado (sin refuerzos que desplegar)`, "error");
+  setTimeout(lanzarAnalisis, 250);
+}
+
+// Bonded Shield (Emblema de Lucina): el jugador marca a quién protege; la herramienta
+// no anula el golpe, solo avisa con qué probabilidad puede anularse.
+function actualizarBotonEscudo(ficha) {
+  const btn = $("btn-modal-escudo");
+  if (!btn) return;
+  state.fichaEscudo = ficha;
+  btn.classList.toggle("hidden", !(ficha && ficha.puede_escudo_vinculo));
+}
+
+async function activarEscudoVinculo() {
+  const ficha = state.fichaEscudo;
+  if (!ficha) return;
+  const res = await api("/api/unidad/escudo_vinculo", "POST", { nombre: ficha.nombre });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo usar Bonded Shield", "error");
+    return;
+  }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  const detalle = res.protegidos.map(p => `${p.aliado} ${p.probabilidad}%`).join(", ");
+  mostrarToast(`${ficha.nombre} protege con Bonded Shield: ${detalle}`, "ok");
+  setTimeout(lanzarAnalisis, 250);
+}
+
+async function alternarDobles() {
+  const ficha = state.fichaDobles;
+  if (!ficha) return;
+  const disipar = $("btn-modal-dobles").dataset.accion === "disipar";
+  const res = await api(disipar ? "/api/unidad/disipar_dobles" : "/api/unidad/invocar_dobles",
+                        "POST", { nombre: ficha.nombre });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo usar Call Doubles", "error");
+    return;
+  }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  mostrarToast(disipar
+    ? `${ficha.nombre}: dobles disipados (${res.retirados.length})`
+    : `${ficha.nombre} invoca ${res.dobles.length} doble${res.dobles.length === 1 ? "" : "s"} con 1 HP (encadenan ataques solo con ${ficha.nombre})`,
+    disipar ? "info" : "error");
+  setTimeout(lanzarAnalisis, 250);
 }
 
 function cerrarModal() {
@@ -1690,6 +1818,9 @@ function construirPayloadDesdeModal(fichaExistente) {
     }
 
     inventario.push({
+      // El IID exacto del catálogo (armas de evento: "Killer Bow" existe dos veces).
+      // El servidor lo ignora si deja de corresponder al arma escrita.
+      id: nomEl && nomEl.dataset ? (nomEl.dataset.iid || null) : null,
       arma: fullArmaString,
       nombre: fullArmaString,
       nombre_base: nombreItem,
@@ -1965,6 +2096,9 @@ function initModalEvents() {
   $("btn-modal-cancelar").addEventListener("click", cerrarModal);
   $("btn-modal-guardar").addEventListener("click", guardarUnidadDesdeModal);
   $("btn-modal-eliminar").addEventListener("click", eliminarUnidadDesdeModal);
+  if ($("btn-modal-dobles")) $("btn-modal-dobles").addEventListener("click", alternarDobles);
+  if ($("btn-modal-escudo")) $("btn-modal-escudo").addEventListener("click", activarEscudoVinculo);
+  if ($("btn-modal-accion")) $("btn-modal-accion").addEventListener("click", registrarAccionDeUnidad);
 
   // Botones rápidos de ajuste de HP en el modal
   $("btn-hp-pocion").addEventListener("click", () => {
@@ -2240,6 +2374,7 @@ function initModalEvents() {
     const nomInput = $(`inv-nombre-${i}`);
     if (nomInput) {
       nomInput.addEventListener("input", () => {
+        delete nomInput.dataset.iid;   // al reescribir el arma, el IID guardado ya no vale
         actualizarFilaSlot(i);
         recalcularCombatStats();
       });
@@ -2566,7 +2701,10 @@ async function ejecutarJugada(r) {
     pos_destino: r.pos_sugerida,
     pos_canter: r.pos_canter || null,
     requiere_fusion: !!r.requiere_fusion,
-    es_engage_attack: !!(r.es_engage_attack || (r.arma_recomendada && (r.arma_recomendada.toLowerCase().includes("rush") || r.arma_recomendada.toLowerCase().includes("override") || r.arma_recomendada.toLowerCase().includes("blazing") || r.arma_recomendada.toLowerCase().includes("ragnarok"))))
+    // Lo dice el análisis, no el nombre del arma: "Ragnarok" es también un tomo normal
+    // de Emblema, y marcarlo como Ataque de Emblema le sumaba el ×1.2 de Warp Ragnarök.
+    es_engage_attack: !!r.es_engage_attack,
+    engage_attack_nombre: r.engage_attack_nombre || ""
   };
 
   const res = await api("/api/combate/ejecutar", "POST", payload);
@@ -2615,6 +2753,7 @@ async function ejecutarJugada(r) {
   mostrarToast(toastMsg, kill ? "ok" : "info");
   notificarRecargaEmblema(res);
   notificarEfectosArea(res);
+  notificarRefuerzos(res);   // el guion puede desplegar al combatir con cierta unidad o al derrotarla
   if (res.objetos) refrescarObjetosMapa(res);
   // Un ataque de área puede haber cambiado a varias unidades y al atacante: refrescar todo
   if (res.objetivos_extra && res.objetivos_extra.length || res.pos_final_area) {
@@ -3320,6 +3459,8 @@ function aplicarMapaCargado(estado) {
   renderObjetosMapa(mapa.objetos || []);
   renderCasillasObjetivo(mapa.casillas_objetivo || []);
   renderCasillasFuego(estado.casillas_fuego || []);
+  // Eventos del guion que dispara una unidad enemiga al actuar (botón en su ficha)
+  state.eventosPorAccion = estado.eventos_por_accion || [];
   actualizarNavCapitulo(mapa);
 }
 
@@ -3357,22 +3498,26 @@ function initNavCapitulo() {
 
 // ─── Objetos de mapa y casillas objetivo ───────────────────────────────────
 
-const ETIQUETA_OBJETO = { recarga_emblema: "Pozo de Emblema (recarga 100% al terminar la acción aquí)", arma_usable: "Arma usable", destructible: "Destructible" };
+const ETIQUETA_OBJETO = { recarga_emblema: "Pozo de Emblema (recarga 100% al terminar la acción aquí)", arma_usable: "Arma usable", destructible: "Destructible", cofre: "Cofre" };
 
 function renderObjetosMapa(objetos) {
   state.objetosMapa = Array.isArray(objetos) ? objetos : [];
   // Limpiar marcas previas
   document.querySelectorAll(".celda .obj-marca, .celda .obj-usos").forEach(el => el.remove());
   document.querySelectorAll(".celda").forEach(c => {
-    c.classList.remove("obj-recarga_emblema", "obj-arma_usable", "obj-destructible");
+    c.classList.remove("obj-recarga_emblema", "obj-arma_usable", "obj-destructible", "obj-cofre",
+                       "obj-cofre-abierto", "obj-agotado");
     delete c.dataset.objetoId;
   });
   for (const o of objetos || []) {
-    if (!o.activo) continue;   // agotado / destruido: desaparece icono y efecto
+    // El cofre abierto y el arma de mapa agotada siguen ahí (mobiliario): se marcan en vez de desaparecer
+    if (!o.activo && o.tipo !== "cofre" && o.tipo !== "arma_usable") continue;   // destruido: desaparece icono y efecto
     for (const [x, y] of o.casillas || []) {
       const celda = $(`c-${x}-${y}`);
       if (!celda) continue;
       celda.classList.add(`obj-${o.tipo}`);
+      if (o.tipo === "cofre" && !o.activo) celda.classList.add("obj-cofre-abierto");
+      if (o.tipo === "arma_usable" && !o.activo) celda.classList.add("obj-agotado");
       celda.dataset.objetoId = o.id;
       // El pozo de Emblema es de 1 uso: basta el marco azul (está o no está).
       // Armas usables y destructibles sí muestran icono y usos / HP restantes.
@@ -3381,7 +3526,7 @@ function renderObjetosMapa(objetos) {
         const marca = document.createElement("div");
         marca.className = "obj-marca";
         celda.appendChild(marca);
-        if (o.usos !== null && o.usos !== undefined) detalle = `${o.usos} uso${o.usos === 1 ? "" : "s"}`;
+        if (o.usos !== null && o.usos !== undefined) detalle = o.usos > 0 ? `${o.usos} uso${o.usos === 1 ? "" : "s"}` : "agotada";
         if (o.vida !== null && o.vida !== undefined) detalle = `${o.vida}/${o.vida_max} HP`;
       }
       if (detalle) {
@@ -3392,11 +3537,37 @@ function renderObjetosMapa(objetos) {
       }
       const p = o.propiedades || {};
       let desc = `${o.nombre || ETIQUETA_OBJETO[o.tipo] || o.tipo}`;
-      if (o.tipo === "arma_usable") desc += ` (${p.arma_permitida || "Arco"}, alcance ${p.distancia_min || 3}-${p.distancia_max || 7}, Hit +20, 1 golpe sin contraataque)`;
+      if (o.tipo === "arma_usable") desc += ` (${p.arma_permitida || "Arco"}, alcance ${p.distancia_min || 3}-${p.distancia_max || 7}, Hit +20, 1 golpe sin contraataque) — clic para anotar los usos restantes`;
       else if (o.tipo === "recarga_emblema") desc += ` — ${ETIQUETA_OBJETO.recarga_emblema}`;
+      else if (o.tipo === "cofre") desc += o.activo ? " — clic para abrirlo con una unidad adyacente (gasta su acción)" : " (abierto)";
       celda.title = detalle ? `${desc} · ${detalle}` : desc;
     }
   }
+}
+
+// ─── Cofres: obstáculo que una unidad adyacente abre gastando su acción ─────
+
+async function abrirCofre(idObjeto, x, y) {
+  const obj = (state.objetosMapa || []).find(o => String(o.id) === String(idObjeto));
+  if (obj && !obj.activo) { mostrarToast("Ese cofre ya está abierto", "info"); return; }
+  const candidatas = Object.values(state.fichas || {}).filter(f =>
+    f.viva && f.es_aliado && !f.ha_actuado && f.controlable !== false &&
+    (obj ? (obj.casillas || []).some(([cx, cy]) => Math.abs(f.x - cx) + Math.abs(f.y - cy) === 1)
+         : Math.abs(f.x - x) + Math.abs(f.y - y) === 1));
+  if (!candidatas.length) {
+    mostrarToast("Ninguna unidad con acción disponible está junto al cofre", "error");
+    return;
+  }
+  const unidad = candidatas.length === 1
+    ? candidatas[0].nombre
+    : (prompt(`¿Quién abre el cofre? (${candidatas.map(f => f.nombre).join(", ")})`, candidatas[0].nombre) || "").trim();
+  if (!unidad) return;
+  const res = await api("/api/mapa/objeto/abrir_cofre", "POST", { id: idObjeto, unidad });
+  if (!res || !res.ok) { mostrarToast((res && res.error) || "No se pudo abrir el cofre", "error"); return; }
+  if (res.fichas) actualizarTokens(res.fichas);
+  renderObjetosMapa(res.objetos);
+  mostrarToast(`${unidad} abre ${res.objeto.nombre || "el cofre"} (acción gastada; anota el objeto en su inventario)`, "ok");
+  setTimeout(lanzarAnalisis, 250);
 }
 
 // ─── Destructibles: edición manual de vida (ataques enemigos / aliados) ──────
@@ -3413,22 +3584,61 @@ async function abrirModalObjeto(idObjeto) {
       obj = r.objetos.find(o => String(o.id) === String(idObjeto));
     }
   }
-  if (!obj || !obj.activo) return;
-  const vidaMax = obj.vida_max !== null && obj.vida_max !== undefined ? obj.vida_max : null;
+  if (!obj) return;
+  const esArma = obj.tipo === "arma_usable";
+  const tieneUsos = obj.usos !== null && obj.usos !== undefined;
+  if (!esArma && !obj.activo) return;          // destructible ya destruido: nada que editar
+  const maximo = esArma
+    ? (obj.usos_max !== null && obj.usos_max !== undefined ? obj.usos_max : (tieneUsos ? obj.usos : 99))
+    : (obj.vida_max !== null && obj.vida_max !== undefined ? obj.vida_max : null);
+  state.objetoModalTipo = esArma ? "usos" : "vida";
   $("objeto-id").value = obj.id;
-  $("objeto-titulo").textContent = `${obj.nombre || "Destructible"} (${(obj.casillas || []).map(c => `${c[0]},${c[1]}`).join(" · ")})`;
-  $("objeto-hint").textContent = (obj.casillas || []).length > 1
-    ? "Ocupa varias casillas: comparten una única vida. Al llegar a 0 desaparece y sus casillas quedan libres."
-    : "Al llegar a 0 desaparece y su casilla queda libre.";
-  $("objeto-vida").value = obj.vida !== null && obj.vida !== undefined ? obj.vida : 1;
-  $("objeto-vida").max = vidaMax !== null ? vidaMax : 999;
-  $("objeto-vida-max").textContent = vidaMax !== null ? vidaMax : "—";
+  $("objeto-titulo").textContent = `${obj.nombre || (esArma ? "Arma de mapa" : "Destructible")} (${(obj.casillas || []).map(c => `${c[0]},${c[1]}`).join(" · ")})`;
+  $("objeto-label").textContent = esArma ? "Usos restantes:" : "Vida actual:";
+  $("objeto-hint").textContent = esArma
+    ? (tieneUsos
+        ? "Los enemigos también la usan: anota aquí los usos que le quedan. Con 0 queda agotada (sigue en el mapa, pero nadie puede dispararla)."
+        : "El mapa no le puso un límite de usos: escribe los que veas en el juego (ese número pasa a ser su máximo). Con 0 queda agotada.")
+    : ((obj.casillas || []).length > 1
+        ? "Ocupa varias casillas: comparten una única vida. Al llegar a 0 desaparece y sus casillas quedan libres."
+        : "Al llegar a 0 desaparece y su casilla queda libre.");
+  $("objeto-vida").value = esArma ? (tieneUsos ? obj.usos : "") : (obj.vida !== null && obj.vida !== undefined ? obj.vida : 1);
+  $("objeto-vida").max = maximo !== null && maximo !== undefined ? maximo : 999;
+  $("objeto-vida-max").textContent = maximo !== null && maximo !== undefined ? maximo : "—";
+  $("btn-objeto-menos1").classList.toggle("hidden", !esArma);
+  $("btn-objeto-menos5").classList.toggle("hidden", esArma);
+  $("btn-objeto-menos10").classList.toggle("hidden", esArma);
+  $("btn-objeto-destruir").classList.toggle("hidden", esArma);
+  $("btn-objeto-agotar").classList.toggle("hidden", !esArma);
   $("objeto-backdrop").classList.remove("hidden");
   $("objeto-vida").focus();
 }
 
 function cerrarModalObjeto() {
   $("objeto-backdrop").classList.add("hidden");
+}
+
+async function aplicarObjeto(valor) {
+  if (state.objetoModalTipo === "usos") return aplicarUsosObjeto(valor);
+  return aplicarVidaObjeto(valor);
+}
+
+async function aplicarUsosObjeto(usos) {
+  const id = $("objeto-id").value;
+  if (!id) return;
+  const res = await api("/api/mapa/objeto/usos", "POST", { id, usos: Math.max(0, parseInt(usos, 10) || 0) });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudieron actualizar los usos", "error");
+    return;
+  }
+  state.objetosMapa = res.objetos;
+  renderObjetosMapa(res.objetos);
+  cerrarModalObjeto();
+  const o = res.objeto || {};
+  mostrarToast(o.usos > 0
+    ? `${o.nombre || "Arma de mapa"}: ${o.usos} uso${o.usos === 1 ? "" : "s"} restante${o.usos === 1 ? "" : "s"}`
+    : `${o.nombre || "Arma de mapa"} agotada: ya no se puede disparar`, o.usos > 0 ? "info" : "error");
+  setTimeout(lanzarAnalisis, 250);
 }
 
 async function aplicarVidaObjeto(vida) {
@@ -3471,12 +3681,14 @@ function initModalObjeto() {
     const cur = parseInt($("objeto-vida").value, 10) || 0;
     $("objeto-vida").value = Math.max(0, Math.min(max, cur + d));
   };
+  $("btn-objeto-menos1").addEventListener("click", () => ajustar(-1));
   $("btn-objeto-menos5").addEventListener("click", () => ajustar(-5));
   $("btn-objeto-menos10").addEventListener("click", () => ajustar(-10));
   $("btn-objeto-full").addEventListener("click", () => { $("objeto-vida").value = $("objeto-vida").max; });
-  $("btn-objeto-guardar").addEventListener("click", () => aplicarVidaObjeto($("objeto-vida").value));
+  $("btn-objeto-guardar").addEventListener("click", () => aplicarObjeto($("objeto-vida").value));
   $("btn-objeto-destruir").addEventListener("click", () => aplicarVidaObjeto(0));
-  $("objeto-vida").addEventListener("keydown", (e) => { if (e.key === "Enter") aplicarVidaObjeto($("objeto-vida").value); });
+  $("btn-objeto-agotar").addEventListener("click", () => aplicarUsosObjeto(0));
+  $("objeto-vida").addEventListener("keydown", (e) => { if (e.key === "Enter") aplicarObjeto($("objeto-vida").value); });
 }
 
 function renderCasillasObjetivo(casillas) {
@@ -3559,7 +3771,15 @@ async function avisarRefuerzosProximoTurno() {
   if (!r || !r.ok) return;
   (r.refuerzos_por_evento || []).forEach(ev => {
     const txt = ev.unidades.map(u => `${u.nombre} en (${u.x},${u.y})`).join(", ");
-    mostrarToast(`Refuerzo condicional: ${ev.descripcion} (${ev.casilla[0]},${ev.casilla[1]}) → ${txt}`, "info");
+    const cond = (ev.disparos || []).map(d => {
+      if (d.tipo === "turno") return `turno ${d.turno}`;
+      if (d.tipo === "objeto") return `al destruir ${d.objeto_tipo || "el objeto"}`;
+      if (d.tipo === "casilla" && d.casilla) return `al llegar a (${d.casilla[0]},${d.casilla[1]})`;
+      if (d.tipo === "combate") return "al combatir con esa unidad";
+      if (d.tipo === "muerte") return "al derrotarla";
+      return d.tipo;
+    }).join(" o ");
+    mostrarToast(`Refuerzo condicional: ${ev.descripcion}${cond ? ` [${cond}]` : ""} → ${txt}`, "info");
   });
   const proximo = (r.refuerzos || []).filter(u => u.turno === (r.turno_actual + 1));
   if (!proximo.length) return;

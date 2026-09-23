@@ -64874,7 +64874,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_不明": {
       "id": "SID_不明",
@@ -64936,7 +64938,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_個人ダミー": {
       "id": "SID_個人ダミー",
@@ -64998,7 +65002,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_主人公": {
       "id": "SID_主人公",
@@ -65060,7 +65066,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_王族": {
       "id": "SID_王族",
@@ -65122,7 +65130,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_リーダー": {
       "id": "SID_リーダー",
@@ -65184,7 +65194,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_立往生": {
       "id": "SID_立往生",
@@ -65246,7 +65258,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_不死身": {
       "id": "SID_不死身",
@@ -65308,7 +65322,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_死亡会話存在敵": {
       "id": "SID_死亡会話存在敵",
@@ -65370,7 +65386,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_強制死亡": {
       "id": "SID_強制死亡",
@@ -65432,7 +65450,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_リベラシオン装備可能": {
       "id": "SID_リベラシオン装備可能",
@@ -65494,7 +65514,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ヴィレグランツ装備可能": {
       "id": "SID_ヴィレグランツ装備可能",
@@ -65556,7 +65578,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ミセリコルデ装備可能": {
       "id": "SID_ミセリコルデ装備可能",
@@ -65618,7 +65642,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_オヴスキュリテ装備可能": {
       "id": "SID_オヴスキュリテ装備可能",
@@ -65680,7 +65706,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_轟雷発動可能": {
       "id": "SID_轟雷発動可能",
@@ -65742,7 +65770,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_業火発動可能": {
       "id": "SID_業火発動可能",
@@ -65804,7 +65834,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ダイムサンダ発動可能": {
       "id": "SID_ダイムサンダ発動可能",
@@ -65866,7 +65898,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ギガスカリバー発動可能": {
       "id": "SID_ギガスカリバー発動可能",
@@ -65928,7 +65962,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_旋風発動可能": {
       "id": "SID_旋風発動可能",
@@ -65990,7 +66026,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_鍵開け": {
       "id": "SID_鍵開け",
@@ -66052,7 +66090,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_踊り": {
       "id": "SID_踊り",
@@ -66114,7 +66154,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_手加減": {
       "id": "SID_手加減",
@@ -66182,7 +66224,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_気功": {
       "id": "SID_気功",
@@ -66250,7 +66294,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ブレス": {
       "id": "SID_ブレス",
@@ -66312,7 +66358,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相手の防御力無視": {
       "id": "SID_相手の防御力無視",
@@ -66380,7 +66428,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_チェインアタック許可": {
       "id": "SID_チェインアタック許可",
@@ -66442,7 +66492,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_チェインガード許可": {
       "id": "SID_チェインガード許可",
@@ -66504,7 +66556,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_地形回避有利時２倍": {
       "id": "SID_地形回避有利時２倍",
@@ -66572,7 +66626,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相手の地形回避有利時０": {
       "id": "SID_相手の地形回避有利時０",
@@ -66640,7 +66696,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相性ブレイク無効": {
       "id": "SID_相性ブレイク無効",
@@ -66702,7 +66760,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_聖水効果": {
       "id": "SID_聖水効果",
@@ -66764,7 +66824,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_地形ダメージ無効": {
       "id": "SID_地形ダメージ無効",
@@ -66826,7 +66888,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_馬特効": {
       "id": "SID_馬特効",
@@ -66888,7 +66952,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_鎧特効": {
       "id": "SID_鎧特効",
@@ -66950,7 +67016,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_飛行特効": {
       "id": "SID_飛行特効",
@@ -67012,7 +67080,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_竜特効": {
       "id": "SID_竜特効",
@@ -67074,7 +67144,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_邪竜特効": {
       "id": "SID_邪竜特効",
@@ -67136,7 +67208,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_異形特効": {
       "id": "SID_異形特効",
@@ -67198,7 +67272,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_メディウス特効": {
       "id": "SID_メディウス特効",
@@ -67260,7 +67336,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ドーマ特効": {
       "id": "SID_ドーマ特効",
@@ -67322,7 +67400,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ロプトウス特効": {
       "id": "SID_ロプトウス特効",
@@ -67384,7 +67464,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ベルド特効": {
       "id": "SID_ベルド特効",
@@ -67446,7 +67528,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_イドゥン特効": {
       "id": "SID_イドゥン特効",
@@ -67508,7 +67592,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ネルガル特効": {
       "id": "SID_ネルガル特効",
@@ -67570,7 +67656,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_フォデス特効": {
       "id": "SID_フォデス特効",
@@ -67632,7 +67720,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_アシュナード特効": {
       "id": "SID_アシュナード特効",
@@ -67694,7 +67784,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_アスタルテ特効": {
       "id": "SID_アスタルテ特効",
@@ -67756,7 +67848,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ギムレー特効": {
       "id": "SID_ギムレー特効",
@@ -67818,7 +67912,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ハイドラ特効": {
       "id": "SID_ハイドラ特効",
@@ -67880,7 +67976,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ネメシス特効": {
       "id": "SID_ネメシス特効",
@@ -67942,7 +68040,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_異形兵": {
       "id": "SID_異形兵",
@@ -68004,7 +68104,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_弓砲台": {
       "id": "SID_弓砲台",
@@ -68081,7 +68183,9 @@
         3,
         7
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_弓砲台_S010": {
       "id": "SID_弓砲台_S010",
@@ -68161,7 +68265,9 @@
         3,
         12
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔砲台": {
       "id": "SID_魔砲台",
@@ -68238,7 +68344,9 @@
         3,
         7
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_火炎砲台": {
       "id": "SID_火炎砲台",
@@ -68320,7 +68428,9 @@
         3,
         8
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_火炎砲台_M019": {
       "id": "SID_火炎砲台_M019",
@@ -68402,7 +68512,9 @@
         3,
         10
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_火炎砲台_S013": {
       "id": "SID_火炎砲台_S013",
@@ -68484,7 +68596,9 @@
         3,
         10
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_毒": {
       "id": "SID_毒",
@@ -68552,7 +68666,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "毒ヒットスキル"
     },
     "SID_猛毒": {
       "id": "SID_猛毒",
@@ -68620,7 +68736,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "毒ヒットスキル"
     },
     "SID_劇毒": {
       "id": "SID_劇毒",
@@ -68688,7 +68806,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "毒ヒットスキル"
     },
     "SID_沈黙": {
       "id": "SID_沈黙",
@@ -68750,7 +68870,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_移動不可": {
       "id": "SID_移動不可",
@@ -68812,7 +68934,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_弱体化": {
       "id": "SID_弱体化",
@@ -68874,7 +68998,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_気絶": {
       "id": "SID_気絶",
@@ -68936,7 +69062,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_強化": {
       "id": "SID_強化",
@@ -68998,7 +69126,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_移動禁止": {
       "id": "SID_移動禁止",
@@ -69060,7 +69190,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ＨＰ＋３": {
       "id": "SID_ＨＰ＋３",
@@ -69122,7 +69254,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋５": {
       "id": "SID_ＨＰ＋５",
@@ -69184,7 +69318,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋７": {
       "id": "SID_ＨＰ＋７",
@@ -69246,7 +69382,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋１０": {
       "id": "SID_ＨＰ＋１０",
@@ -69308,7 +69446,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋１２": {
       "id": "SID_ＨＰ＋１２",
@@ -69370,7 +69510,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋１５": {
       "id": "SID_ＨＰ＋１５",
@@ -69432,7 +69574,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋１": {
       "id": "SID_力＋１",
@@ -69494,7 +69638,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋２": {
       "id": "SID_力＋２",
@@ -69556,7 +69702,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋３": {
       "id": "SID_力＋３",
@@ -69618,7 +69766,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋４": {
       "id": "SID_力＋４",
@@ -69680,7 +69830,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋５": {
       "id": "SID_力＋５",
@@ -69742,7 +69894,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋６": {
       "id": "SID_力＋６",
@@ -69804,7 +69958,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋１": {
       "id": "SID_技＋１",
@@ -69866,7 +70022,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋２": {
       "id": "SID_技＋２",
@@ -69928,7 +70086,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋３": {
       "id": "SID_技＋３",
@@ -69990,7 +70150,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋４": {
       "id": "SID_技＋４",
@@ -70052,7 +70214,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋５": {
       "id": "SID_技＋５",
@@ -70114,7 +70278,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋１": {
       "id": "SID_速さ＋１",
@@ -70176,7 +70342,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋２": {
       "id": "SID_速さ＋２",
@@ -70238,7 +70406,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋３": {
       "id": "SID_速さ＋３",
@@ -70300,7 +70470,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋４": {
       "id": "SID_速さ＋４",
@@ -70362,7 +70534,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋５": {
       "id": "SID_速さ＋５",
@@ -70424,7 +70598,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋２": {
       "id": "SID_幸運＋２",
@@ -70486,7 +70662,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋４": {
       "id": "SID_幸運＋４",
@@ -70548,7 +70726,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋６": {
       "id": "SID_幸運＋６",
@@ -70610,7 +70790,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋８": {
       "id": "SID_幸運＋８",
@@ -70672,7 +70854,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋１０": {
       "id": "SID_幸運＋１０",
@@ -70734,7 +70918,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋１２": {
       "id": "SID_幸運＋１２",
@@ -70796,7 +70982,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋１": {
       "id": "SID_守備＋１",
@@ -70858,7 +71046,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋２": {
       "id": "SID_守備＋２",
@@ -70920,7 +71110,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋３": {
       "id": "SID_守備＋３",
@@ -70982,7 +71174,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋４": {
       "id": "SID_守備＋４",
@@ -71044,7 +71238,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋５": {
       "id": "SID_守備＋５",
@@ -71106,7 +71302,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋１": {
       "id": "SID_魔力＋１",
@@ -71168,7 +71366,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋２": {
       "id": "SID_魔力＋２",
@@ -71230,7 +71430,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋３": {
       "id": "SID_魔力＋３",
@@ -71292,7 +71494,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋４": {
       "id": "SID_魔力＋４",
@@ -71354,7 +71558,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋５": {
       "id": "SID_魔力＋５",
@@ -71416,7 +71622,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋１": {
       "id": "SID_魔防＋１",
@@ -71478,7 +71686,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋２": {
       "id": "SID_魔防＋２",
@@ -71540,7 +71750,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋３": {
       "id": "SID_魔防＋３",
@@ -71602,7 +71814,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋４": {
       "id": "SID_魔防＋４",
@@ -71664,7 +71878,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋５": {
       "id": "SID_魔防＋５",
@@ -71726,7 +71942,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋１": {
       "id": "SID_体格＋１",
@@ -71788,7 +72006,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋２": {
       "id": "SID_体格＋２",
@@ -71850,7 +72070,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋３": {
       "id": "SID_体格＋３",
@@ -71912,7 +72134,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋４": {
       "id": "SID_体格＋４",
@@ -71974,7 +72198,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋５": {
       "id": "SID_体格＋５",
@@ -72036,7 +72262,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_移動＋１": {
       "id": "SID_移動＋１",
@@ -72098,7 +72326,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋３_継承用": {
       "id": "SID_ＨＰ＋３_継承用",
@@ -72160,7 +72390,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋５_継承用": {
       "id": "SID_ＨＰ＋５_継承用",
@@ -72222,7 +72454,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋７_継承用": {
       "id": "SID_ＨＰ＋７_継承用",
@@ -72284,7 +72518,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋１０_継承用": {
       "id": "SID_ＨＰ＋１０_継承用",
@@ -72346,7 +72582,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋１２_継承用": {
       "id": "SID_ＨＰ＋１２_継承用",
@@ -72408,7 +72646,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_ＨＰ＋１５_継承用": {
       "id": "SID_ＨＰ＋１５_継承用",
@@ -72470,7 +72710,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋１_継承用": {
       "id": "SID_力＋１_継承用",
@@ -72532,7 +72774,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋２_継承用": {
       "id": "SID_力＋２_継承用",
@@ -72594,7 +72838,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋３_継承用": {
       "id": "SID_力＋３_継承用",
@@ -72656,7 +72902,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋４_継承用": {
       "id": "SID_力＋４_継承用",
@@ -72718,7 +72966,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋５_継承用": {
       "id": "SID_力＋５_継承用",
@@ -72780,7 +73030,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_力＋６_継承用": {
       "id": "SID_力＋６_継承用",
@@ -72842,7 +73094,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋１_継承用": {
       "id": "SID_技＋１_継承用",
@@ -72904,7 +73158,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋２_継承用": {
       "id": "SID_技＋２_継承用",
@@ -72966,7 +73222,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋３_継承用": {
       "id": "SID_技＋３_継承用",
@@ -73028,7 +73286,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋４_継承用": {
       "id": "SID_技＋４_継承用",
@@ -73090,7 +73350,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_技＋５_継承用": {
       "id": "SID_技＋５_継承用",
@@ -73152,7 +73414,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋１_継承用": {
       "id": "SID_速さ＋１_継承用",
@@ -73214,7 +73478,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋２_継承用": {
       "id": "SID_速さ＋２_継承用",
@@ -73276,7 +73542,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋３_継承用": {
       "id": "SID_速さ＋３_継承用",
@@ -73338,7 +73606,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋４_継承用": {
       "id": "SID_速さ＋４_継承用",
@@ -73400,7 +73670,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_速さ＋５_継承用": {
       "id": "SID_速さ＋５_継承用",
@@ -73462,7 +73734,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋２_継承用": {
       "id": "SID_幸運＋２_継承用",
@@ -73524,7 +73798,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋４_継承用": {
       "id": "SID_幸運＋４_継承用",
@@ -73586,7 +73862,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋６_継承用": {
       "id": "SID_幸運＋６_継承用",
@@ -73648,7 +73926,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋８_継承用": {
       "id": "SID_幸運＋８_継承用",
@@ -73710,7 +73990,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋１０_継承用": {
       "id": "SID_幸運＋１０_継承用",
@@ -73772,7 +74054,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_幸運＋１２_継承用": {
       "id": "SID_幸運＋１２_継承用",
@@ -73834,7 +74118,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋１_継承用": {
       "id": "SID_守備＋１_継承用",
@@ -73896,7 +74182,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋２_継承用": {
       "id": "SID_守備＋２_継承用",
@@ -73958,7 +74246,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋３_継承用": {
       "id": "SID_守備＋３_継承用",
@@ -74020,7 +74310,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋４_継承用": {
       "id": "SID_守備＋４_継承用",
@@ -74082,7 +74374,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_守備＋５_継承用": {
       "id": "SID_守備＋５_継承用",
@@ -74144,7 +74438,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋１_継承用": {
       "id": "SID_魔力＋１_継承用",
@@ -74206,7 +74502,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋２_継承用": {
       "id": "SID_魔力＋２_継承用",
@@ -74268,7 +74566,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋３_継承用": {
       "id": "SID_魔力＋３_継承用",
@@ -74330,7 +74630,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋４_継承用": {
       "id": "SID_魔力＋４_継承用",
@@ -74392,7 +74694,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔力＋５_継承用": {
       "id": "SID_魔力＋５_継承用",
@@ -74454,7 +74758,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋１_継承用": {
       "id": "SID_魔防＋１_継承用",
@@ -74516,7 +74822,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋２_継承用": {
       "id": "SID_魔防＋２_継承用",
@@ -74578,7 +74886,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋３_継承用": {
       "id": "SID_魔防＋３_継承用",
@@ -74640,7 +74950,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋４_継承用": {
       "id": "SID_魔防＋４_継承用",
@@ -74702,7 +75014,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_魔防＋５_継承用": {
       "id": "SID_魔防＋５_継承用",
@@ -74764,7 +75078,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋１_継承用": {
       "id": "SID_体格＋１_継承用",
@@ -74826,7 +75142,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋２_継承用": {
       "id": "SID_体格＋２_継承用",
@@ -74888,7 +75206,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋３_継承用": {
       "id": "SID_体格＋３_継承用",
@@ -74950,7 +75270,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋４_継承用": {
       "id": "SID_体格＋４_継承用",
@@ -75012,7 +75334,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_体格＋５_継承用": {
       "id": "SID_体格＋５_継承用",
@@ -75074,7 +75398,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_移動＋１_継承用": {
       "id": "SID_移動＋１_継承用",
@@ -75136,7 +75462,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_死亡回避": {
       "id": "SID_死亡回避",
@@ -75207,7 +75535,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_命中０": {
       "id": "SID_命中０",
@@ -75275,7 +75605,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_命中０_砲撃中無効": {
       "id": "SID_命中０_砲撃中無効",
@@ -75343,7 +75675,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_命中１００": {
       "id": "SID_命中１００",
@@ -75414,7 +75748,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_必殺０": {
       "id": "SID_必殺０",
@@ -75482,7 +75818,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_必殺値と必殺率０": {
       "id": "SID_必殺値と必殺率０",
@@ -75553,7 +75891,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_必殺０_オフェンス時": {
       "id": "SID_必殺０_オフェンス時",
@@ -75621,7 +75961,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相手の命中０": {
       "id": "SID_相手の命中０",
@@ -75689,7 +76031,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相手の命中１００": {
       "id": "SID_相手の命中１００",
@@ -75757,7 +76101,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相手の必殺０": {
       "id": "SID_相手の必殺０",
@@ -75825,7 +76171,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_相手の取得経験値０": {
       "id": "SID_相手の取得経験値０",
@@ -75893,7 +76241,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_蛇毒": {
       "id": "SID_蛇毒",
@@ -75961,7 +76311,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ヒット"
     },
     "SID_死の吐息": {
       "id": "SID_死の吐息",
@@ -76023,7 +76375,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ヒット"
     },
     "SID_剣殺し": {
       "id": "SID_剣殺し",
@@ -76094,7 +76448,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍殺し": {
       "id": "SID_槍殺し",
@@ -76165,7 +76521,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_斧殺し": {
       "id": "SID_斧殺し",
@@ -76236,7 +76594,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔殺し": {
       "id": "SID_魔殺し",
@@ -76307,7 +76667,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓殺し": {
       "id": "SID_弓殺し",
@@ -76378,7 +76740,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_短刀殺し": {
       "id": "SID_短刀殺し",
@@ -76449,7 +76813,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_気功殺し": {
       "id": "SID_気功殺し",
@@ -76520,7 +76886,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_力封じ": {
       "id": "SID_力封じ",
@@ -76584,7 +76952,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_力封じ_効果": {
       "id": "SID_力封じ_効果",
@@ -76646,7 +77016,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_魔力封じ": {
       "id": "SID_魔力封じ",
@@ -76710,7 +77082,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_魔力封じ_効果": {
       "id": "SID_魔力封じ_効果",
@@ -76772,7 +77146,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_守備封じ": {
       "id": "SID_守備封じ",
@@ -76836,7 +77212,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_守備封じ_効果": {
       "id": "SID_守備封じ_効果",
@@ -76898,7 +77276,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_速さ封じ": {
       "id": "SID_速さ封じ",
@@ -76962,7 +77342,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_速さ封じ_効果": {
       "id": "SID_速さ封じ_効果",
@@ -77024,7 +77406,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_魔防封じ": {
       "id": "SID_魔防封じ",
@@ -77088,7 +77472,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_魔防封じ_効果": {
       "id": "SID_魔防封じ_効果",
@@ -77150,7 +77536,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_鬼神の構え": {
       "id": "SID_鬼神の構え",
@@ -77218,7 +77606,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_金剛の構え": {
       "id": "SID_金剛の構え",
@@ -77286,7 +77676,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_飛燕の構え": {
       "id": "SID_飛燕の構え",
@@ -77354,7 +77746,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_明鏡の構え": {
       "id": "SID_明鏡の構え",
@@ -77422,7 +77816,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_死線": {
       "id": "SID_死線",
@@ -77493,7 +77889,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_相性激化": {
       "id": "SID_相性激化",
@@ -77564,7 +77962,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_噛描": {
       "id": "SID_噛描",
@@ -77632,7 +78032,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_自壊": {
       "id": "SID_自壊",
@@ -77700,7 +78102,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_清流の一撃": {
       "id": "SID_清流の一撃",
@@ -77768,7 +78172,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_飛燕の一撃": {
       "id": "SID_飛燕の一撃",
@@ -77836,7 +78242,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_鬼神の一撃": {
       "id": "SID_鬼神の一撃",
@@ -77904,7 +78312,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_凶鳥の一撃": {
       "id": "SID_凶鳥の一撃",
@@ -77972,7 +78382,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_金剛の一撃": {
       "id": "SID_金剛の一撃",
@@ -78040,7 +78452,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_明鏡の一撃": {
       "id": "SID_明鏡の一撃",
@@ -78108,7 +78522,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_狂乱の一撃": {
       "id": "SID_狂乱の一撃",
@@ -78176,7 +78592,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_ブレイク無効": {
       "id": "SID_ブレイク無効",
@@ -78240,7 +78658,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_特効耐性": {
       "id": "SID_特効耐性",
@@ -78304,7 +78724,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_特効無効": {
       "id": "SID_特効無効",
@@ -78368,7 +78790,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_不動": {
       "id": "SID_不動",
@@ -78432,7 +78856,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_熟練者": {
       "id": "SID_熟練者",
@@ -78497,7 +78923,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_熟練者＋": {
       "id": "SID_熟練者＋",
@@ -78562,7 +78990,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_ブレイク無効_効果": {
       "id": "SID_ブレイク無効_効果",
@@ -78624,7 +79054,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_特効耐性_効果": {
       "id": "SID_特効耐性_効果",
@@ -78692,7 +79124,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_特効無効_効果": {
       "id": "SID_特効無効_効果",
@@ -78754,7 +79188,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_不動_効果": {
       "id": "SID_不動_効果",
@@ -78816,7 +79252,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_不動_隠蔽": {
       "id": "SID_不動_隠蔽",
@@ -78878,7 +79316,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_虚無の呪い": {
       "id": "SID_虚無の呪い",
@@ -78946,7 +79386,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_ダメージ無効化": {
       "id": "SID_ダメージ無効化",
@@ -79011,7 +79453,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ無効化_防御時": {
       "id": "SID_ダメージ無効化_防御時",
@@ -79079,7 +79523,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ無効化_攻撃時": {
       "id": "SID_ダメージ無効化_攻撃時",
@@ -79147,7 +79593,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア１": {
       "id": "SID_バリア１",
@@ -79212,7 +79660,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア２": {
       "id": "SID_バリア２",
@@ -79277,7 +79727,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア３": {
       "id": "SID_バリア３",
@@ -79342,7 +79794,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア４": {
       "id": "SID_バリア４",
@@ -79407,7 +79861,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減１_防御時": {
       "id": "SID_ダメージ軽減１_防御時",
@@ -79475,7 +79931,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減２_防御時": {
       "id": "SID_ダメージ軽減２_防御時",
@@ -79543,7 +80001,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減３_防御時": {
       "id": "SID_ダメージ軽減３_防御時",
@@ -79611,7 +80071,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減４_防御時": {
       "id": "SID_ダメージ軽減４_防御時",
@@ -79679,7 +80141,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減１_攻撃時": {
       "id": "SID_ダメージ軽減１_攻撃時",
@@ -79747,7 +80211,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減２_攻撃時": {
       "id": "SID_ダメージ軽減２_攻撃時",
@@ -79815,7 +80281,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減３_攻撃時": {
       "id": "SID_ダメージ軽減３_攻撃時",
@@ -79883,7 +80351,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減４_攻撃時": {
       "id": "SID_ダメージ軽減４_攻撃時",
@@ -79951,7 +80421,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア１_ノーマル用": {
       "id": "SID_バリア１_ノーマル用",
@@ -80016,7 +80488,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア２_ノーマル用": {
       "id": "SID_バリア２_ノーマル用",
@@ -80081,7 +80555,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア３_ノーマル用": {
       "id": "SID_バリア３_ノーマル用",
@@ -80146,7 +80622,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_バリア４_ノーマル用": {
       "id": "SID_バリア４_ノーマル用",
@@ -80211,7 +80689,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減１_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減１_防御時_ノーマル用",
@@ -80279,7 +80759,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減２_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減２_防御時_ノーマル用",
@@ -80347,7 +80829,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減３_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減３_防御時_ノーマル用",
@@ -80415,7 +80899,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減４_防御時_ノーマル用": {
       "id": "SID_ダメージ軽減４_防御時_ノーマル用",
@@ -80483,7 +80969,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減１_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減１_攻撃時_ノーマル用",
@@ -80551,7 +81039,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減２_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減２_攻撃時_ノーマル用",
@@ -80619,7 +81109,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減３_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減３_攻撃時_ノーマル用",
@@ -80687,7 +81179,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ軽減４_攻撃時_ノーマル用": {
       "id": "SID_ダメージ軽減４_攻撃時_ノーマル用",
@@ -80755,7 +81249,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_チェインアタック威力軽減": {
       "id": "SID_チェインアタック威力軽減",
@@ -80825,7 +81321,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_移動－１": {
       "id": "SID_移動－１",
@@ -80887,7 +81385,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_移動－２": {
       "id": "SID_移動－２",
@@ -80949,7 +81449,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_命中回避－１０": {
       "id": "SID_命中回避－１０",
@@ -81020,7 +81522,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_命中回避－２０": {
       "id": "SID_命中回避－２０",
@@ -81091,7 +81595,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_撃破経験加算５０": {
       "id": "SID_撃破経験加算５０",
@@ -81159,7 +81665,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_回避＋１０": {
       "id": "SID_回避＋１０",
@@ -81227,7 +81735,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_回避＋１５": {
       "id": "SID_回避＋１５",
@@ -81295,7 +81805,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_回避＋２０": {
       "id": "SID_回避＋２０",
@@ -81363,7 +81875,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_回避＋２５": {
       "id": "SID_回避＋２５",
@@ -81431,7 +81945,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_回避＋３０": {
       "id": "SID_回避＋３０",
@@ -81499,7 +82015,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_命中＋１０": {
       "id": "SID_命中＋１０",
@@ -81567,7 +82085,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_命中＋１５": {
       "id": "SID_命中＋１５",
@@ -81635,7 +82155,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_命中＋２０": {
       "id": "SID_命中＋２０",
@@ -81703,7 +82225,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_命中＋２５": {
       "id": "SID_命中＋２５",
@@ -81771,7 +82295,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_命中＋３０": {
       "id": "SID_命中＋３０",
@@ -81839,7 +82365,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺回避＋１０": {
       "id": "SID_必殺回避＋１０",
@@ -81907,7 +82435,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺回避＋１５": {
       "id": "SID_必殺回避＋１５",
@@ -81975,7 +82505,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺回避＋２０": {
       "id": "SID_必殺回避＋２０",
@@ -82043,7 +82575,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺回避＋２５": {
       "id": "SID_必殺回避＋２５",
@@ -82111,7 +82645,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺回避＋３０": {
       "id": "SID_必殺回避＋３０",
@@ -82179,7 +82715,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・柔１": {
       "id": "SID_剣術・柔１",
@@ -82251,7 +82789,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・柔２": {
       "id": "SID_剣術・柔２",
@@ -82323,7 +82863,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・柔３": {
       "id": "SID_剣術・柔３",
@@ -82395,7 +82937,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・柔４": {
       "id": "SID_剣術・柔４",
@@ -82467,7 +83011,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・柔５": {
       "id": "SID_剣術・柔５",
@@ -82539,7 +83085,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・剛１": {
       "id": "SID_剣術・剛１",
@@ -82611,7 +83159,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・剛２": {
       "id": "SID_剣術・剛２",
@@ -82683,7 +83233,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・剛３": {
       "id": "SID_剣術・剛３",
@@ -82755,7 +83307,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・剛４": {
       "id": "SID_剣術・剛４",
@@ -82827,7 +83381,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・剛５": {
       "id": "SID_剣術・剛５",
@@ -82899,7 +83455,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・心１": {
       "id": "SID_剣術・心１",
@@ -82971,7 +83529,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・心２": {
       "id": "SID_剣術・心２",
@@ -83043,7 +83603,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・心３": {
       "id": "SID_剣術・心３",
@@ -83115,7 +83677,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・心４": {
       "id": "SID_剣術・心４",
@@ -83187,7 +83751,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剣術・心５": {
       "id": "SID_剣術・心５",
@@ -83259,7 +83825,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・柔１": {
       "id": "SID_槍術・柔１",
@@ -83331,7 +83899,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・柔２": {
       "id": "SID_槍術・柔２",
@@ -83403,7 +83973,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・柔３": {
       "id": "SID_槍術・柔３",
@@ -83475,7 +84047,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・柔４": {
       "id": "SID_槍術・柔４",
@@ -83547,7 +84121,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・柔５": {
       "id": "SID_槍術・柔５",
@@ -83619,7 +84195,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・剛１": {
       "id": "SID_槍術・剛１",
@@ -83691,7 +84269,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・剛２": {
       "id": "SID_槍術・剛２",
@@ -83763,7 +84343,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・剛３": {
       "id": "SID_槍術・剛３",
@@ -83835,7 +84417,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・剛４": {
       "id": "SID_槍術・剛４",
@@ -83907,7 +84491,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_槍術・剛５": {
       "id": "SID_槍術・剛５",
@@ -83979,7 +84565,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_斧術・剛１": {
       "id": "SID_斧術・剛１",
@@ -84051,7 +84639,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_斧術・剛２": {
       "id": "SID_斧術・剛２",
@@ -84123,7 +84713,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_斧術・剛３": {
       "id": "SID_斧術・剛３",
@@ -84195,7 +84787,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_斧術・剛４": {
       "id": "SID_斧術・剛４",
@@ -84267,7 +84861,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_斧術・剛５": {
       "id": "SID_斧術・剛５",
@@ -84339,7 +84935,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・柔１": {
       "id": "SID_弓術・柔１",
@@ -84411,7 +85009,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・柔２": {
       "id": "SID_弓術・柔２",
@@ -84483,7 +85083,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・柔３": {
       "id": "SID_弓術・柔３",
@@ -84555,7 +85157,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・柔４": {
       "id": "SID_弓術・柔４",
@@ -84627,7 +85231,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・柔５": {
       "id": "SID_弓術・柔５",
@@ -84699,7 +85305,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・心１": {
       "id": "SID_弓術・心１",
@@ -84771,7 +85379,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・心２": {
       "id": "SID_弓術・心２",
@@ -84843,7 +85453,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・心３": {
       "id": "SID_弓術・心３",
@@ -84915,7 +85527,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・心４": {
       "id": "SID_弓術・心４",
@@ -84987,7 +85601,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_弓術・心５": {
       "id": "SID_弓術・心５",
@@ -85059,7 +85675,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_体術・心１": {
       "id": "SID_体術・心１",
@@ -85131,7 +85749,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_体術・心２": {
       "id": "SID_体術・心２",
@@ -85203,7 +85823,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_体術・心３": {
       "id": "SID_体術・心３",
@@ -85275,7 +85897,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_体術・心４": {
       "id": "SID_体術・心４",
@@ -85347,7 +85971,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_体術・心５": {
       "id": "SID_体術・心５",
@@ -85419,7 +86045,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_短剣術１": {
       "id": "SID_短剣術１",
@@ -85490,7 +86118,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_短剣術２": {
       "id": "SID_短剣術２",
@@ -85561,7 +86191,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_短剣術３": {
       "id": "SID_短剣術３",
@@ -85632,7 +86264,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_短剣術４": {
       "id": "SID_短剣術４",
@@ -85703,7 +86337,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_短剣術５": {
       "id": "SID_短剣術５",
@@ -85774,7 +86410,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔道１": {
       "id": "SID_魔道１",
@@ -85845,7 +86483,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔道２": {
       "id": "SID_魔道２",
@@ -85916,7 +86556,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔道３": {
       "id": "SID_魔道３",
@@ -85987,7 +86629,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔道４": {
       "id": "SID_魔道４",
@@ -86058,7 +86702,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔道５": {
       "id": "SID_魔道５",
@@ -86129,7 +86775,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_信仰１": {
       "id": "SID_信仰１",
@@ -86199,7 +86847,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_信仰２": {
       "id": "SID_信仰２",
@@ -86269,7 +86919,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_信仰３": {
       "id": "SID_信仰３",
@@ -86339,7 +86991,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_信仰４": {
       "id": "SID_信仰４",
@@ -86409,7 +87063,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_信仰５": {
       "id": "SID_信仰５",
@@ -86479,7 +87135,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_妨害杖命中＋１０": {
       "id": "SID_妨害杖命中＋１０",
@@ -86547,7 +87205,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_妨害杖命中＋１５": {
       "id": "SID_妨害杖命中＋１５",
@@ -86615,7 +87275,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_妨害杖命中＋２０": {
       "id": "SID_妨害杖命中＋２０",
@@ -86683,7 +87345,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_妨害杖命中＋２５": {
       "id": "SID_妨害杖命中＋２５",
@@ -86751,7 +87415,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_妨害杖命中＋３０": {
       "id": "SID_妨害杖命中＋３０",
@@ -86819,7 +87485,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_回避－１０_隠蔽": {
       "id": "SID_回避－１０_隠蔽",
@@ -86887,7 +87555,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_必殺－１０_隠蔽": {
       "id": "SID_必殺－１０_隠蔽",
@@ -86955,7 +87625,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_必殺回避－１０_隠蔽": {
       "id": "SID_必殺回避－１０_隠蔽",
@@ -87023,7 +87695,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_エンゲージ技_汎用設定": {
       "id": "SID_エンゲージ技_汎用設定",
@@ -87106,7 +87780,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_敵エンゲージ技ダメージ軽減": {
       "id": "SID_敵エンゲージ技ダメージ軽減",
@@ -87174,7 +87850,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_見切り": {
       "id": "SID_見切り",
@@ -87242,7 +87920,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_見切り＋": {
       "id": "SID_見切り＋",
@@ -87310,7 +87990,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_ブレイク時追撃": {
       "id": "SID_ブレイク時追撃",
@@ -87374,7 +88056,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_ブレイク時追撃_ダメージ５０％": {
       "id": "SID_ブレイク時追撃_ダメージ５０％",
@@ -87444,7 +88128,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ブレイク時追撃_ダメージ５０％_発動済み": {
       "id": "SID_ブレイク時追撃_ダメージ５０％_発動済み",
@@ -87506,7 +88192,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_不屈": {
       "id": "SID_不屈",
@@ -87574,7 +88262,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_不屈＋": {
       "id": "SID_不屈＋",
@@ -87642,7 +88332,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_不屈＋＋": {
       "id": "SID_不屈＋＋",
@@ -87710,7 +88402,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_カウンター": {
       "id": "SID_カウンター",
@@ -87783,7 +88477,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_カウンター_隠密": {
       "id": "SID_カウンター_隠密",
@@ -87855,7 +88551,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_カウンター_竜族": {
       "id": "SID_カウンター_竜族",
@@ -87927,7 +88625,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_カウンター_ダメージ５０％": {
       "id": "SID_カウンター_ダメージ５０％",
@@ -87997,7 +88697,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_カウンター_隠密効果": {
       "id": "SID_カウンター_隠密効果",
@@ -88061,7 +88763,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_カウンター_隠密効果_発動チェック": {
       "id": "SID_カウンター_隠密効果_発動チェック",
@@ -88125,7 +88829,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_カウンター_竜族効果": {
       "id": "SID_カウンター_竜族効果",
@@ -88195,7 +88901,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_カウンター_竜族効果_発動終了チェック": {
       "id": "SID_カウンター_竜族効果_発動終了チェック",
@@ -88259,7 +88967,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_カウンター_竜族効果_発動終了": {
       "id": "SID_カウンター_竜族効果_発動終了",
@@ -88321,7 +89031,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_神速発動済み": {
       "id": "SID_神速発動済み",
@@ -88383,7 +89095,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_神速スタイル効果発動済み": {
       "id": "SID_神速スタイル効果発動済み",
@@ -88445,7 +89159,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_マルスエンゲージ技": {
       "id": "SID_マルスエンゲージ技",
@@ -88520,7 +89236,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_マルスエンゲージ技_竜族": {
       "id": "SID_マルスエンゲージ技_竜族",
@@ -88591,7 +89309,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_マルスエンゲージ技_連携": {
       "id": "SID_マルスエンゲージ技_連携",
@@ -88662,7 +89382,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_マルスエンゲージ技_魔法": {
       "id": "SID_マルスエンゲージ技_魔法",
@@ -88736,7 +89458,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_ダメージ３０％": {
       "id": "SID_ダメージ３０％",
@@ -88804,7 +89528,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_再移動": {
       "id": "SID_再移動",
@@ -88866,7 +89592,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_再移動＋": {
       "id": "SID_再移動＋",
@@ -88928,7 +89656,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_助走": {
       "id": "SID_助走",
@@ -88996,7 +89726,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_助走＋": {
       "id": "SID_助走＋",
@@ -89064,7 +89796,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_猛進": {
       "id": "SID_猛進",
@@ -89126,7 +89860,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_迅走": {
       "id": "SID_迅走",
@@ -89192,7 +89928,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_迅走_竜族": {
       "id": "SID_迅走_竜族",
@@ -89254,7 +89992,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_迅走_騎馬": {
       "id": "SID_迅走_騎馬",
@@ -89316,7 +90056,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_迅走_隠密": {
       "id": "SID_迅走_隠密",
@@ -89378,7 +90120,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_迅走_闇": {
       "id": "SID_迅走_闇",
@@ -89440,7 +90184,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_シグルドエンゲージ技": {
       "id": "SID_シグルドエンゲージ技",
@@ -89515,7 +90261,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_シグルド"
     },
     "SID_シグルドエンゲージ技_竜族": {
       "id": "SID_シグルドエンゲージ技_竜族",
@@ -89585,7 +90333,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_シグルド"
     },
     "SID_シグルドエンゲージ技_重装": {
       "id": "SID_シグルドエンゲージ技_重装",
@@ -89656,7 +90406,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_シグルド"
     },
     "SID_シグルドエンゲージ技_魔法": {
       "id": "SID_シグルドエンゲージ技_魔法",
@@ -89727,7 +90479,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_シグルド"
     },
     "SID_シグルドエンゲージ技_気功": {
       "id": "SID_シグルドエンゲージ技_気功",
@@ -89798,7 +90552,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_シグルド"
     },
     "SID_魔力ダメージ加算": {
       "id": "SID_魔力ダメージ加算",
@@ -89866,7 +90622,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_異形リベンジ": {
       "id": "SID_異形リベンジ",
@@ -89934,7 +90692,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_異形リベンジ＋": {
       "id": "SID_異形リベンジ＋",
@@ -90002,7 +90762,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_異形リベンジ＋＋": {
       "id": "SID_異形リベンジ＋＋",
@@ -90070,7 +90832,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_異形リベンジ＋＋_闇": {
       "id": "SID_異形リベンジ＋＋_闇",
@@ -90138,7 +90902,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_共鳴の黒魔法": {
       "id": "SID_共鳴の黒魔法",
@@ -90209,7 +90975,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_共鳴の黒魔法＋": {
       "id": "SID_共鳴の黒魔法＋",
@@ -90280,7 +91048,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_大好物": {
       "id": "SID_大好物",
@@ -90342,7 +91112,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_重唱": {
       "id": "SID_重唱",
@@ -90410,7 +91182,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_重唱_竜族": {
       "id": "SID_重唱_竜族",
@@ -90476,7 +91250,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_重唱_魔法": {
       "id": "SID_重唱_魔法",
@@ -90541,7 +91317,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_重唱_発動演出": {
       "id": "SID_重唱_発動演出",
@@ -90603,7 +91381,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_魔法ダメージ５０％": {
       "id": "SID_魔法ダメージ５０％",
@@ -90671,7 +91451,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_魔法ダメージ６０％": {
       "id": "SID_魔法ダメージ６０％",
@@ -90739,7 +91521,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_セリカエンゲージ技": {
       "id": "SID_セリカエンゲージ技",
@@ -90814,7 +91598,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_セリカエンゲージ技_竜族": {
       "id": "SID_セリカエンゲージ技_竜族",
@@ -90885,7 +91671,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_セリカエンゲージ技_騎馬": {
       "id": "SID_セリカエンゲージ技_騎馬",
@@ -90955,7 +91743,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_セリカエンゲージ技_飛行": {
       "id": "SID_セリカエンゲージ技_飛行",
@@ -91025,7 +91815,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_セリカエンゲージ技_魔法": {
       "id": "SID_セリカエンゲージ技_魔法",
@@ -91095,7 +91887,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_セリカエンゲージ技_闇": {
       "id": "SID_セリカエンゲージ技_闇",
@@ -91165,7 +91959,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_セリカエンゲージ技_闇_M020": {
       "id": "SID_セリカエンゲージ技_闇_M020",
@@ -91235,7 +92031,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_杖使い": {
       "id": "SID_杖使い",
@@ -91297,7 +92095,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_杖使い＋": {
       "id": "SID_杖使い＋",
@@ -91359,7 +92159,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_杖使い＋＋": {
       "id": "SID_杖使い＋＋",
@@ -91421,7 +92223,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_サイレス無効": {
       "id": "SID_サイレス無効",
@@ -91483,7 +92287,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_癒しの響き": {
       "id": "SID_癒しの響き",
@@ -91551,7 +92357,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_増幅": {
       "id": "SID_増幅",
@@ -91616,7 +92424,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_増幅_竜族": {
       "id": "SID_増幅_竜族",
@@ -91678,7 +92488,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_増幅_気功": {
       "id": "SID_増幅_気功",
@@ -91742,7 +92554,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_杖回復量＋２０％": {
       "id": "SID_杖回復量＋２０％",
@@ -91810,7 +92624,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_増幅_闇": {
       "id": "SID_増幅_闇",
@@ -91872,7 +92688,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ミカヤエンゲージ技": {
       "id": "SID_ミカヤエンゲージ技",
@@ -91944,7 +92762,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ミカヤ"
     },
     "SID_ミカヤエンゲージ技_竜族": {
       "id": "SID_ミカヤエンゲージ技_竜族",
@@ -92012,7 +92832,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ミカヤ"
     },
     "SID_ミカヤエンゲージ技_重装": {
       "id": "SID_ミカヤエンゲージ技_重装",
@@ -92080,7 +92902,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ミカヤ"
     },
     "SID_ミカヤエンゲージ技_気功": {
       "id": "SID_ミカヤエンゲージ技_気功",
@@ -92148,7 +92972,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ミカヤ"
     },
     "SID_次戦闘守備＋１": {
       "id": "SID_次戦闘守備＋１",
@@ -92210,7 +93036,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_踏ん張り": {
       "id": "SID_踏ん張り",
@@ -92275,7 +93103,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_踏ん張り＋": {
       "id": "SID_踏ん張り＋",
@@ -92340,7 +93170,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_踏ん張り＋＋": {
       "id": "SID_踏ん張り＋＋",
@@ -92405,7 +93237,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_踏ん張り＋＋＋": {
       "id": "SID_踏ん張り＋＋＋",
@@ -92470,7 +93304,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_踏ん張り_防御時効果": {
       "id": "SID_踏ん張り_防御時効果",
@@ -92538,7 +93374,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り＋_防御時効果": {
       "id": "SID_踏ん張り＋_防御時効果",
@@ -92606,7 +93444,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り＋＋_防御時効果": {
       "id": "SID_踏ん張り＋＋_防御時効果",
@@ -92674,7 +93514,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り＋＋＋_防御時効果": {
       "id": "SID_踏ん張り＋＋＋_防御時効果",
@@ -92742,7 +93584,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り_攻撃時効果": {
       "id": "SID_踏ん張り_攻撃時効果",
@@ -92810,7 +93654,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り＋_攻撃時効果": {
       "id": "SID_踏ん張り＋_攻撃時効果",
@@ -92878,7 +93724,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り＋＋_攻撃時効果": {
       "id": "SID_踏ん張り＋＋_攻撃時効果",
@@ -92946,7 +93794,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏ん張り＋＋＋_攻撃時効果": {
       "id": "SID_踏ん張り＋＋＋_攻撃時効果",
@@ -93014,7 +93864,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_踏み込み": {
       "id": "SID_踏み込み",
@@ -93076,7 +93928,9 @@
         1,
         1
       ],
-      "move_self": 1
+      "move_self": 1,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_超越": {
       "id": "SID_超越",
@@ -93142,7 +93996,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_超越_竜族": {
       "id": "SID_超越_竜族",
@@ -93204,7 +94060,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_超越_騎馬": {
       "id": "SID_超越_騎馬",
@@ -93266,7 +94124,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_超越_重装": {
       "id": "SID_超越_重装",
@@ -93328,7 +94188,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_超越_闇": {
       "id": "SID_超越_闇",
@@ -93390,7 +94252,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ロイエンゲージ技": {
       "id": "SID_ロイエンゲージ技",
@@ -93457,7 +94321,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ロイ"
     },
     "SID_ロイエンゲージ技_竜族": {
       "id": "SID_ロイエンゲージ技_竜族",
@@ -93521,7 +94387,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ロイ"
     },
     "SID_ロイエンゲージ技_魔法": {
       "id": "SID_ロイエンゲージ技_魔法",
@@ -93585,7 +94453,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ロイ"
     },
     "SID_武器相性激化": {
       "id": "SID_武器相性激化",
@@ -93653,7 +94523,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_武器相性激化＋": {
       "id": "SID_武器相性激化＋",
@@ -93721,7 +94593,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_武器相性激化＋＋": {
       "id": "SID_武器相性激化＋＋",
@@ -93789,7 +94663,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_待ち伏せ": {
       "id": "SID_待ち伏せ",
@@ -93851,7 +94727,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_待ち伏せ＋": {
       "id": "SID_待ち伏せ＋",
@@ -93913,7 +94791,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_待ち伏せ＋＋": {
       "id": "SID_待ち伏せ＋＋",
@@ -93975,7 +94855,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_順応": {
       "id": "SID_順応",
@@ -94043,7 +94925,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_順応_竜族": {
       "id": "SID_順応_竜族",
@@ -94111,7 +94995,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_順応_連携": {
       "id": "SID_順応_連携",
@@ -94179,7 +95065,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_順応_隠密": {
       "id": "SID_順応_隠密",
@@ -94247,7 +95135,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_順応_重装": {
       "id": "SID_順応_重装",
@@ -94315,7 +95205,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_順応_飛行": {
       "id": "SID_順応_飛行",
@@ -94383,7 +95275,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_リーフエンゲージ技": {
       "id": "SID_リーフエンゲージ技",
@@ -94457,7 +95351,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リーフエンゲージ技_竜族": {
       "id": "SID_リーフエンゲージ技_竜族",
@@ -94528,7 +95424,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リーフエンゲージ技_隠密": {
       "id": "SID_リーフエンゲージ技_隠密",
@@ -94599,7 +95497,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リーフエンゲージ技_気功": {
       "id": "SID_リーフエンゲージ技_気功",
@@ -94670,7 +95570,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_ダメージ１２０％": {
       "id": "SID_ダメージ１２０％",
@@ -94738,7 +95640,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リーフエンゲージ技_ブレイク": {
       "id": "SID_リーフエンゲージ技_ブレイク",
@@ -94802,7 +95706,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_お金入手_500G": {
       "id": "SID_お金入手_500G",
@@ -94870,7 +95776,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_お金入手_1000G": {
       "id": "SID_お金入手_1000G",
@@ -94938,7 +95846,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_絆の力": {
       "id": "SID_絆の力",
@@ -95002,7 +95912,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_デュアルアシスト": {
       "id": "SID_デュアルアシスト",
@@ -95064,7 +95976,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_デュアルアシスト＋": {
       "id": "SID_デュアルアシスト＋",
@@ -95126,7 +96040,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_デュアルサポート": {
       "id": "SID_デュアルサポート",
@@ -95194,7 +96110,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_絆盾": {
       "id": "SID_絆盾",
@@ -95262,7 +96180,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_絆盾_竜族": {
       "id": "SID_絆盾_竜族",
@@ -95324,7 +96244,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_絆盾_騎馬": {
       "id": "SID_絆盾_騎馬",
@@ -95386,7 +96308,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_絆盾_重装": {
       "id": "SID_絆盾_重装",
@@ -95448,7 +96372,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_絆盾_飛行": {
       "id": "SID_絆盾_飛行",
@@ -95510,7 +96436,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_絆盾_気功": {
       "id": "SID_絆盾_気功",
@@ -95572,7 +96500,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_ルキナエンゲージ技": {
       "id": "SID_ルキナエンゲージ技",
@@ -95640,7 +96570,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_ルキナエンゲージ技_竜族": {
       "id": "SID_ルキナエンゲージ技_竜族",
@@ -95707,7 +96639,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_ルキナエンゲージ技_連携": {
       "id": "SID_ルキナエンゲージ技_連携",
@@ -95772,7 +96706,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_強制チェインアタック２マス": {
       "id": "SID_強制チェインアタック２マス",
@@ -95834,7 +96770,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_強制チェインアタック３マス": {
       "id": "SID_強制チェインアタック３マス",
@@ -95896,7 +96834,9 @@
         1,
         3
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_攻め立て": {
       "id": "SID_攻め立て",
@@ -95958,7 +96898,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_攻め立て＋": {
       "id": "SID_攻め立て＋",
@@ -96020,7 +96962,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_攻め立て＋＋": {
       "id": "SID_攻め立て＋＋",
@@ -96082,7 +97026,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_速さの吸収": {
       "id": "SID_速さの吸収",
@@ -96146,7 +97092,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_速さの増強＋２": {
       "id": "SID_速さの増強＋２",
@@ -96208,7 +97156,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_速さの増強＋４": {
       "id": "SID_速さの増強＋４",
@@ -96270,7 +97220,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_速さの増強＋６": {
       "id": "SID_速さの増強＋６",
@@ -96332,7 +97284,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_速さの増強＋８": {
       "id": "SID_速さの増強＋８",
@@ -96394,7 +97348,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_速さの増強＋１０": {
       "id": "SID_速さの増強＋１０",
@@ -96456,7 +97412,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_残像": {
       "id": "SID_残像",
@@ -96521,7 +97479,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 4,
+      "efecto": "エンゲージスキル"
     },
     "SID_残像_竜族": {
       "id": "SID_残像_竜族",
@@ -96583,7 +97543,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 5,
+      "efecto": "エンゲージスキル"
     },
     "SID_残像_飛行": {
       "id": "SID_残像_飛行",
@@ -96647,7 +97609,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 4,
+      "efecto": "エンゲージスキル"
     },
     "SID_残像_飛行_効果": {
       "id": "SID_残像_飛行_効果",
@@ -96715,7 +97679,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リンエンゲージ技": {
       "id": "SID_リンエンゲージ技",
@@ -96790,7 +97756,9 @@
         1,
         10
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リンエンゲージ技_竜族": {
       "id": "SID_リンエンゲージ技_竜族",
@@ -96861,7 +97829,9 @@
         1,
         15
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リンエンゲージ技_隠密": {
       "id": "SID_リンエンゲージ技_隠密",
@@ -96932,7 +97902,9 @@
         1,
         20
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リンエンゲージ技_気功": {
       "id": "SID_リンエンゲージ技_気功",
@@ -97004,7 +97976,9 @@
         1,
         10
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リンエンゲージ技_威力減": {
       "id": "SID_リンエンゲージ技_威力減",
@@ -97075,7 +98049,9 @@
         1,
         10
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リンエンゲージ技_闇_気功": {
       "id": "SID_リンエンゲージ技_闇_気功",
@@ -97147,7 +98123,9 @@
         1,
         10
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リンエンゲージ技_ブレイク": {
       "id": "SID_リンエンゲージ技_ブレイク",
@@ -97211,7 +98189,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ダメージ２０％": {
       "id": "SID_ダメージ２０％",
@@ -97279,7 +98259,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_破壊": {
       "id": "SID_破壊",
@@ -97347,7 +98329,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_引き戻し": {
       "id": "SID_引き戻し",
@@ -97409,7 +98393,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_怒り": {
       "id": "SID_怒り",
@@ -97477,7 +98463,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_勇将": {
       "id": "SID_勇将",
@@ -97543,7 +98531,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_勇将＋": {
       "id": "SID_勇将＋",
@@ -97609,7 +98599,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_勇将_効果": {
       "id": "SID_勇将_効果",
@@ -97671,7 +98663,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_勇将＋_効果": {
       "id": "SID_勇将＋_効果",
@@ -97733,7 +98727,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_アイクエンゲージスキル": {
       "id": "SID_アイクエンゲージスキル",
@@ -97805,7 +98801,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_アイクエンゲージスキル_竜族": {
       "id": "SID_アイクエンゲージスキル_竜族",
@@ -97875,7 +98873,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル"
     },
     "SID_アイクエンゲージスキル_ダメージ50%減": {
       "id": "SID_アイクエンゲージスキル_ダメージ50%減",
@@ -97943,7 +98943,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_アイクエンゲージスキル_ダメージ60%減": {
       "id": "SID_アイクエンゲージスキル_ダメージ60%減",
@@ -98011,7 +99013,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_アイクエンゲージ技": {
       "id": "SID_アイクエンゲージ技",
@@ -98080,7 +99084,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_アイク"
     },
     "SID_アイクエンゲージ技_竜族": {
       "id": "SID_アイクエンゲージ技_竜族",
@@ -98151,7 +99157,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_アイク"
     },
     "SID_アイクエンゲージ技_重装": {
       "id": "SID_アイクエンゲージ技_重装",
@@ -98216,7 +99224,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_アイク"
     },
     "SID_アイクエンゲージ技_飛行": {
       "id": "SID_アイクエンゲージ技_飛行",
@@ -98281,7 +99291,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_アイク"
     },
     "SID_アイクエンゲージ技_回復": {
       "id": "SID_アイクエンゲージ技_回復",
@@ -98349,7 +99361,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_天刻の拍動": {
       "id": "SID_天刻の拍動",
@@ -98417,7 +99431,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_天刻の拍動＋": {
       "id": "SID_天刻の拍動＋",
@@ -98485,7 +99501,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_師の導き": {
       "id": "SID_師の導き",
@@ -98549,7 +99567,9 @@
         0,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_師の導き効果": {
       "id": "SID_師の導き効果",
@@ -98617,7 +99637,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_拾得": {
       "id": "SID_拾得",
@@ -98679,7 +99701,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_先生": {
       "id": "SID_先生",
@@ -98750,7 +99774,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_竜族": {
       "id": "SID_先生_竜族",
@@ -98814,7 +99840,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_連携": {
       "id": "SID_先生_連携",
@@ -98878,7 +99906,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_騎馬": {
       "id": "SID_先生_騎馬",
@@ -98942,7 +99972,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_隠密": {
       "id": "SID_先生_隠密",
@@ -99006,7 +100038,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_重装": {
       "id": "SID_先生_重装",
@@ -99070,7 +100104,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_飛行": {
       "id": "SID_先生_飛行",
@@ -99134,7 +100170,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_魔法": {
       "id": "SID_先生_魔法",
@@ -99198,7 +100236,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_先生_気功": {
       "id": "SID_先生_気功",
@@ -99262,7 +100302,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用ステータス上昇"
     },
     "SID_ベレトエンゲージ技": {
       "id": "SID_ベレトエンゲージ技",
@@ -99333,7 +100375,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_竜族": {
       "id": "SID_ベレトエンゲージ技_竜族",
@@ -99397,7 +100441,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_連携": {
       "id": "SID_ベレトエンゲージ技_連携",
@@ -99461,7 +100507,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_騎馬": {
       "id": "SID_ベレトエンゲージ技_騎馬",
@@ -99525,7 +100573,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_隠密": {
       "id": "SID_ベレトエンゲージ技_隠密",
@@ -99589,7 +100639,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_重装": {
       "id": "SID_ベレトエンゲージ技_重装",
@@ -99653,7 +100705,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_飛行": {
       "id": "SID_ベレトエンゲージ技_飛行",
@@ -99717,7 +100771,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_魔法": {
       "id": "SID_ベレトエンゲージ技_魔法",
@@ -99781,7 +100837,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_気功": {
       "id": "SID_ベレトエンゲージ技_気功",
@@ -99845,7 +100903,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレトエンゲージ技_闇": {
       "id": "SID_ベレトエンゲージ技_闇",
@@ -99909,7 +100969,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_ベレト"
     },
     "SID_ベレト増強_竜族": {
       "id": "SID_ベレト増強_竜族",
@@ -99971,7 +101033,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_連携": {
       "id": "SID_ベレト増強_連携",
@@ -100033,7 +101097,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_騎馬": {
       "id": "SID_ベレト増強_騎馬",
@@ -100095,7 +101161,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_隠密": {
       "id": "SID_ベレト増強_隠密",
@@ -100157,7 +101225,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_重装": {
       "id": "SID_ベレト増強_重装",
@@ -100219,7 +101289,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_飛行": {
       "id": "SID_ベレト増強_飛行",
@@ -100281,7 +101353,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_魔法": {
       "id": "SID_ベレト増強_魔法",
@@ -100343,7 +101417,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ベレト増強_気功": {
       "id": "SID_ベレト増強_気功",
@@ -100405,7 +101481,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_竜脈": {
       "id": "SID_竜脈",
@@ -100476,7 +101554,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_竜族": {
       "id": "SID_竜脈_竜族",
@@ -100546,7 +101626,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_連携": {
       "id": "SID_竜脈_連携",
@@ -100608,7 +101690,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_騎馬": {
       "id": "SID_竜脈_騎馬",
@@ -100670,7 +101754,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_隠密": {
       "id": "SID_竜脈_隠密",
@@ -100732,7 +101818,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_重装": {
       "id": "SID_竜脈_重装",
@@ -100794,7 +101882,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_飛行": {
       "id": "SID_竜脈_飛行",
@@ -100856,7 +101946,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_魔法": {
       "id": "SID_竜脈_魔法",
@@ -100918,7 +102010,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜脈_気功": {
       "id": "SID_竜脈_気功",
@@ -100980,7 +102074,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_竜呪": {
       "id": "SID_竜呪",
@@ -101044,7 +102140,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル_発動ステータス下降"
     },
     "SID_竜呪効果": {
       "id": "SID_竜呪効果",
@@ -101106,7 +102204,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_防陣": {
       "id": "SID_防陣",
@@ -101174,7 +102274,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_スキンシップ": {
       "id": "SID_スキンシップ",
@@ -101242,7 +102344,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_スキンシップ＋": {
       "id": "SID_スキンシップ＋",
@@ -101310,7 +102414,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_呪縛": {
       "id": "SID_呪縛",
@@ -101376,7 +102482,9 @@
         0,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ステータス下降"
     },
     "SID_呪縛_隠密": {
       "id": "SID_呪縛_隠密",
@@ -101441,7 +102549,9 @@
         0,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ステータス下降"
     },
     "SID_呪縛_隠密_効果": {
       "id": "SID_呪縛_隠密_効果",
@@ -101509,7 +102619,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_カムイエンゲージ技": {
       "id": "SID_カムイエンゲージ技",
@@ -101581,7 +102693,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_カムイ"
     },
     "SID_カムイエンゲージ技_竜族": {
       "id": "SID_カムイエンゲージ技_竜族",
@@ -101651,7 +102765,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージ技_カムイ"
     },
     "SID_月輪": {
       "id": "SID_月輪",
@@ -101718,7 +102834,9 @@
         0,
         99
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_日輪": {
       "id": "SID_日輪",
@@ -101785,7 +102903,9 @@
         0,
         99
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_双聖": {
       "id": "SID_双聖",
@@ -101849,7 +102969,9 @@
         0,
         99
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_月輪効果": {
       "id": "SID_月輪効果",
@@ -101911,7 +103033,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_日輪効果": {
       "id": "SID_日輪効果",
@@ -101973,7 +103097,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_双聖効果": {
       "id": "SID_双聖効果",
@@ -102035,7 +103161,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_オルタネイト": {
       "id": "SID_オルタネイト",
@@ -102097,7 +103225,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_月の腕輪": {
       "id": "SID_月の腕輪",
@@ -102174,7 +103304,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_太陽の腕輪": {
       "id": "SID_太陽の腕輪",
@@ -102249,7 +103381,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_日月の腕輪": {
       "id": "SID_日月の腕輪",
@@ -102314,7 +103448,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_月の腕輪＋": {
       "id": "SID_月の腕輪＋",
@@ -102391,7 +103527,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_太陽の腕輪＋": {
       "id": "SID_太陽の腕輪＋",
@@ -102466,7 +103604,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_日月の腕輪＋": {
       "id": "SID_日月の腕輪＋",
@@ -102531,7 +103671,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_日月の腕輪_月の腕輪_効果": {
       "id": "SID_日月の腕輪_月の腕輪_効果",
@@ -102599,7 +103741,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_日月の腕輪_月の腕輪＋_効果": {
       "id": "SID_日月の腕輪_月の腕輪＋_効果",
@@ -102667,7 +103811,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_日月の腕輪_太陽の腕輪_効果": {
       "id": "SID_日月の腕輪_太陽の腕輪_効果",
@@ -102735,7 +103881,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_日月の腕輪_太陽の腕輪＋_効果": {
       "id": "SID_日月の腕輪_太陽の腕輪＋_効果",
@@ -102803,7 +103951,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_優風": {
       "id": "SID_優風",
@@ -102880,7 +104030,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_勇空": {
       "id": "SID_勇空",
@@ -102955,7 +104107,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_蒼穹": {
       "id": "SID_蒼穹",
@@ -103020,7 +104174,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_優風＋": {
       "id": "SID_優風＋",
@@ -103097,7 +104253,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_勇空＋": {
       "id": "SID_勇空＋",
@@ -103172,7 +104330,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_蒼穹＋": {
       "id": "SID_蒼穹＋",
@@ -103237,7 +104397,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_蒼穹_優風": {
       "id": "SID_蒼穹_優風",
@@ -103305,7 +104467,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_蒼穹_優風＋": {
       "id": "SID_蒼穹_優風＋",
@@ -103373,7 +104537,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_蒼穹_勇空": {
       "id": "SID_蒼穹_勇空",
@@ -103441,7 +104607,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_蒼穹_勇空＋": {
       "id": "SID_蒼穹_勇空＋",
@@ -103509,7 +104677,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_エイリークエンゲージ技": {
       "id": "SID_エイリークエンゲージ技",
@@ -103582,7 +104752,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_エイリークエンゲージ技_竜族": {
       "id": "SID_エイリークエンゲージ技_竜族",
@@ -103655,7 +104827,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_エイリークエンゲージ技_騎馬": {
       "id": "SID_エイリークエンゲージ技_騎馬",
@@ -103726,7 +104900,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_エフラム_ダメージ１５０％": {
       "id": "SID_エフラム_ダメージ１５０％",
@@ -103794,7 +104970,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュール邪竜特効": {
       "id": "SID_リュール邪竜特効",
@@ -103858,7 +105036,9 @@
         0,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_邪竜特効変化": {
       "id": "SID_邪竜特効変化",
@@ -103924,7 +105104,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_神竜の加護": {
       "id": "SID_神竜の加護",
@@ -103986,7 +105168,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_絆を繋薙くもの": {
       "id": "SID_絆を繋薙くもの",
@@ -104052,7 +105236,9 @@
         0,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_絆を繋薙くもの＋": {
       "id": "SID_絆を繋薙くもの＋",
@@ -104118,7 +105304,9 @@
         0,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_絆を繋薙くもの効果": {
       "id": "SID_絆を繋薙くもの効果",
@@ -104189,7 +105377,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_絆を繋薙くもの効果＋": {
       "id": "SID_絆を繋薙くもの効果＋",
@@ -104260,7 +105450,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_エレオスの祝福": {
       "id": "SID_エレオスの祝福",
@@ -104331,7 +105523,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_以心": {
       "id": "SID_以心",
@@ -104402,7 +105596,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心_竜族": {
       "id": "SID_以心_竜族",
@@ -104466,7 +105662,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_連携": {
       "id": "SID_以心_連携",
@@ -104530,7 +105728,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_騎馬": {
       "id": "SID_以心_騎馬",
@@ -104594,7 +105794,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_隠密": {
       "id": "SID_以心_隠密",
@@ -104658,7 +105860,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_重装": {
       "id": "SID_以心_重装",
@@ -104722,7 +105926,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_飛行": {
       "id": "SID_以心_飛行",
@@ -104786,7 +105992,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_魔法": {
       "id": "SID_以心_魔法",
@@ -104850,7 +106058,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心_気功": {
       "id": "SID_以心_気功",
@@ -104914,7 +106124,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エンゲージスキル_発動ヒット"
     },
     "SID_以心効果_竜族": {
       "id": "SID_以心効果_竜族",
@@ -104976,7 +106188,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_連携": {
       "id": "SID_以心効果_連携",
@@ -105038,7 +106252,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_騎馬": {
       "id": "SID_以心効果_騎馬",
@@ -105100,7 +106316,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_隠密": {
       "id": "SID_以心効果_隠密",
@@ -105162,7 +106380,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_重装": {
       "id": "SID_以心効果_重装",
@@ -105224,7 +106444,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_飛行": {
       "id": "SID_以心効果_飛行",
@@ -105286,7 +106508,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_魔法": {
       "id": "SID_以心効果_魔法",
@@ -105348,7 +106572,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_以心効果_気功": {
       "id": "SID_以心効果_気功",
@@ -105410,7 +106636,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技": {
       "id": "SID_リュールエンゲージ技",
@@ -105485,7 +106713,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技_竜族": {
       "id": "SID_リュールエンゲージ技_竜族",
@@ -105556,7 +106786,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技_連携": {
       "id": "SID_リュールエンゲージ技_連携",
@@ -105627,7 +106859,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技_魔法": {
       "id": "SID_リュールエンゲージ技_魔法",
@@ -105698,7 +106932,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技_気功": {
       "id": "SID_リュールエンゲージ技_気功",
@@ -105769,7 +107005,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同": {
       "id": "SID_リュールエンゲージ技共同",
@@ -105846,7 +107084,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同_汎用": {
       "id": "SID_リュールエンゲージ技共同_汎用",
@@ -105920,7 +107160,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同_竜族": {
       "id": "SID_リュールエンゲージ技共同_竜族",
@@ -105995,7 +107237,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同_連携": {
       "id": "SID_リュールエンゲージ技共同_連携",
@@ -106070,7 +107314,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同_魔法": {
       "id": "SID_リュールエンゲージ技共同_魔法",
@@ -106145,7 +107391,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同_気功": {
       "id": "SID_リュールエンゲージ技共同_気功",
@@ -106220,7 +107468,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用エンゲージ技"
     },
     "SID_リュールエンゲージ技共同_１撃目": {
       "id": "SID_リュールエンゲージ技共同_１撃目",
@@ -106282,7 +107532,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技共同_１撃目_ブレイク判定": {
       "id": "SID_リュールエンゲージ技共同_１撃目_ブレイク判定",
@@ -106346,7 +107598,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技共同_２撃目": {
       "id": "SID_リュールエンゲージ技共同_２撃目",
@@ -106408,7 +107662,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技共同_３撃目": {
       "id": "SID_リュールエンゲージ技共同_３撃目",
@@ -106476,7 +107732,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技_竜族効果": {
       "id": "SID_リュールエンゲージ技_竜族効果",
@@ -106544,7 +107802,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技_連携効果": {
       "id": "SID_リュールエンゲージ技_連携効果",
@@ -106612,7 +107872,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技_魔法効果": {
       "id": "SID_リュールエンゲージ技_魔法効果",
@@ -106680,7 +107942,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技_気功効果_２撃目": {
       "id": "SID_リュールエンゲージ技_気功効果_２撃目",
@@ -106744,7 +108008,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技_気功効果_３撃目": {
       "id": "SID_リュールエンゲージ技_気功効果_３撃目",
@@ -106808,7 +108074,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リュールエンゲージ技_設定": {
       "id": "SID_リュールエンゲージ技_設定",
@@ -106888,7 +108156,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_神竜の結束": {
       "id": "SID_神竜の結束",
@@ -106953,7 +108223,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_神竜の結束_被ダメ軽減": {
       "id": "SID_神竜の結束_被ダメ軽減",
@@ -107021,7 +108293,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_神竜の結束_与ダメ上昇": {
       "id": "SID_神竜の結束_与ダメ上昇",
@@ -107089,7 +108363,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_白の忠誠": {
       "id": "SID_白の忠誠",
@@ -107153,7 +108429,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_白の忠誠_効果": {
       "id": "SID_白の忠誠_効果",
@@ -107221,7 +108499,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_碧の信仰": {
       "id": "SID_碧の信仰",
@@ -107285,7 +108565,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_碧の信仰_効果": {
       "id": "SID_碧の信仰_効果",
@@ -107353,7 +108635,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_緋い声援": {
       "id": "SID_緋い声援",
@@ -107417,7 +108701,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_緋い声援_効果": {
       "id": "SID_緋い声援_効果",
@@ -107485,7 +108771,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_自己研鑽": {
       "id": "SID_自己研鑽",
@@ -107549,7 +108837,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_筋肉増強剤": {
       "id": "SID_筋肉増強剤",
@@ -107613,7 +108903,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_力＋２_１ターン": {
       "id": "SID_力＋２_１ターン",
@@ -107675,7 +108967,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_涙腺崩壊": {
       "id": "SID_涙腺崩壊",
@@ -107745,7 +109039,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_涙腺崩壊_演出用": {
       "id": "SID_涙腺崩壊_演出用",
@@ -107809,7 +109105,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_涙腺崩壊_発動済み": {
       "id": "SID_涙腺崩壊_発動済み",
@@ -107871,7 +109169,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_平和の花": {
       "id": "SID_平和の花",
@@ -107935,7 +109235,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_平和の花効果": {
       "id": "SID_平和の花効果",
@@ -107997,7 +109299,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_絵になる二人": {
       "id": "SID_絵になる二人",
@@ -108065,7 +109369,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_花園の門番": {
       "id": "SID_花園の門番",
@@ -108133,7 +109439,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_真っ向勝負": {
       "id": "SID_真っ向勝負",
@@ -108204,7 +109512,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_名乗り上げ": {
       "id": "SID_名乗り上げ",
@@ -108275,7 +109585,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_瞑想": {
       "id": "SID_瞑想",
@@ -108339,7 +109651,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_瞑想効果": {
       "id": "SID_瞑想効果",
@@ -108401,7 +109715,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_僕が守ります！": {
       "id": "SID_僕が守ります！",
@@ -108465,7 +109781,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_僕が守ります！効果": {
       "id": "SID_僕が守ります！効果",
@@ -108527,7 +109845,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_戦果委譲": {
       "id": "SID_戦果委譲",
@@ -108601,7 +109921,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_大盤振る舞い": {
       "id": "SID_大盤振る舞い",
@@ -108663,7 +109985,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_執着": {
       "id": "SID_執着",
@@ -108731,7 +110055,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_『次』はない": {
       "id": "SID_『次』はない",
@@ -108799,7 +110125,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_光彩奪目！": {
       "id": "SID_光彩奪目！",
@@ -108867,7 +110195,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_煌めく理力": {
       "id": "SID_煌めく理力",
@@ -108929,7 +110259,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_微笑み": {
       "id": "SID_微笑み",
@@ -108997,7 +110329,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_溜め息": {
       "id": "SID_溜め息",
@@ -109065,7 +110399,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_ソルムの騒音": {
       "id": "SID_ソルムの騒音",
@@ -109129,7 +110465,9 @@
         1,
         3
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ソルムの騒音_効果": {
       "id": "SID_ソルムの騒音_効果",
@@ -109197,7 +110535,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_エスコート": {
       "id": "SID_エスコート",
@@ -109261,7 +110601,9 @@
         0,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_エスコート効果": {
       "id": "SID_エスコート効果",
@@ -109332,7 +110674,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_戦の血": {
       "id": "SID_戦の血",
@@ -109400,7 +110744,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_人たらし": {
       "id": "SID_人たらし",
@@ -109468,7 +110814,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_大集会": {
       "id": "SID_大集会",
@@ -109539,7 +110887,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_料理再現": {
       "id": "SID_料理再現",
@@ -109601,7 +110951,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_一攫千金": {
       "id": "SID_一攫千金",
@@ -109665,7 +111017,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_努力の才": {
       "id": "SID_努力の才",
@@ -109727,7 +111081,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_殺しの技術": {
       "id": "SID_殺しの技術",
@@ -109795,7 +111151,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_神秘の踊り": {
       "id": "SID_神秘の踊り",
@@ -109857,7 +111215,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_歴戦の勘": {
       "id": "SID_歴戦の勘",
@@ -109925,7 +111285,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_勝利への意思": {
       "id": "SID_勝利への意思",
@@ -109996,7 +111358,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_邪竜の救済": {
       "id": "SID_邪竜の救済",
@@ -110061,7 +111425,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_邪竜の救済_被ダメ軽減": {
       "id": "SID_邪竜の救済_被ダメ軽減",
@@ -110129,7 +111495,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_邪竜の救済_与ダメ上昇": {
       "id": "SID_邪竜の救済_与ダメ上昇",
@@ -110197,7 +111565,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_次への備え": {
       "id": "SID_次への備え",
@@ -110261,7 +111631,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_次への備え効果": {
       "id": "SID_次への備え効果",
@@ -110323,7 +111695,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_切り抜け": {
       "id": "SID_切り抜け",
@@ -110385,7 +111759,9 @@
         1,
         1
       ],
-      "move_self": 2
+      "move_self": 2,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_助太刀": {
       "id": "SID_助太刀",
@@ -110453,7 +111829,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_挟撃": {
       "id": "SID_挟撃",
@@ -110521,7 +111899,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_手助け": {
       "id": "SID_手助け",
@@ -110585,7 +111965,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_スマッシュ＋": {
       "id": "SID_スマッシュ＋",
@@ -110653,7 +112035,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_無慈悲": {
       "id": "SID_無慈悲",
@@ -110721,7 +112105,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_集中": {
       "id": "SID_集中",
@@ -110789,7 +112175,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_狙撃": {
       "id": "SID_狙撃",
@@ -110857,7 +112245,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_入れ替え": {
       "id": "SID_入れ替え",
@@ -110919,7 +112309,9 @@
         1,
         1
       ],
-      "move_self": 1
+      "move_self": 1,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_護衛": {
       "id": "SID_護衛",
@@ -110987,7 +112379,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_回り込み": {
       "id": "SID_回り込み",
@@ -111049,7 +112443,9 @@
         1,
         1
       ],
-      "move_self": 2
+      "move_self": 2,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_足狙い": {
       "id": "SID_足狙い",
@@ -111115,7 +112511,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_足狙い発動チェック": {
       "id": "SID_足狙い発動チェック",
@@ -111179,7 +112577,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_足狙い発動済み": {
       "id": "SID_足狙い発動済み",
@@ -111241,7 +112641,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_足狙い効果": {
       "id": "SID_足狙い効果",
@@ -111303,7 +112705,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_移動補助": {
       "id": "SID_移動補助",
@@ -111365,7 +112769,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_急襲": {
       "id": "SID_急襲",
@@ -111433,7 +112839,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_すり抜け": {
       "id": "SID_すり抜け",
@@ -111495,7 +112903,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_魔力増幅": {
       "id": "SID_魔力増幅",
@@ -111563,7 +112973,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_背理の法": {
       "id": "SID_背理の法",
@@ -111631,7 +113043,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_気の拡散": {
       "id": "SID_気の拡散",
@@ -111701,7 +113115,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_気の拡散効果": {
       "id": "SID_気の拡散効果",
@@ -111763,7 +113179,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_自己回復": {
       "id": "SID_自己回復",
@@ -111825,7 +113243,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_神竜気": {
       "id": "SID_神竜気",
@@ -111887,7 +113307,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_邪竜気": {
       "id": "SID_邪竜気",
@@ -111955,7 +113377,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_邪竜気・闇": {
       "id": "SID_邪竜気・闇",
@@ -112017,7 +113441,9 @@
         1,
         2
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_金蓮": {
       "id": "SID_金蓮",
@@ -112085,7 +113511,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_華炎": {
       "id": "SID_華炎",
@@ -112153,7 +113581,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_太陽": {
       "id": "SID_太陽",
@@ -112221,7 +113651,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_月光": {
       "id": "SID_月光",
@@ -112289,7 +113721,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_虚空": {
       "id": "SID_虚空",
@@ -112357,7 +113791,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_大樹": {
       "id": "SID_大樹",
@@ -112425,7 +113861,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_砂陣": {
       "id": "SID_砂陣",
@@ -112493,7 +113931,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_水鏡": {
       "id": "SID_水鏡",
@@ -112563,7 +114003,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_水鏡効果": {
       "id": "SID_水鏡効果",
@@ -112634,7 +114076,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_魔法剣": {
       "id": "SID_魔法剣",
@@ -112702,7 +114146,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_特別な踊り": {
       "id": "SID_特別な踊り",
@@ -112766,7 +114212,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_踊り効果": {
       "id": "SID_踊り効果",
@@ -112828,7 +114276,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_伝道師": {
       "id": "SID_伝道師",
@@ -112896,7 +114346,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺剣": {
       "id": "SID_必殺剣",
@@ -112964,7 +114416,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_百戦練磨": {
       "id": "SID_百戦練磨",
@@ -113028,7 +114482,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必殺の増強＋1": {
       "id": "SID_必殺の増強＋1",
@@ -113096,7 +114552,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋2": {
       "id": "SID_必殺の増強＋2",
@@ -113164,7 +114622,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋3": {
       "id": "SID_必殺の増強＋3",
@@ -113232,7 +114692,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋4": {
       "id": "SID_必殺の増強＋4",
@@ -113300,7 +114762,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋5": {
       "id": "SID_必殺の増強＋5",
@@ -113368,7 +114832,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋6": {
       "id": "SID_必殺の増強＋6",
@@ -113436,7 +114902,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋7": {
       "id": "SID_必殺の増強＋7",
@@ -113504,7 +114972,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋8": {
       "id": "SID_必殺の増強＋8",
@@ -113572,7 +115042,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋9": {
       "id": "SID_必殺の増強＋9",
@@ -113640,7 +115112,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必殺の増強＋10": {
       "id": "SID_必殺の増強＋10",
@@ -113708,7 +115182,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_回復": {
       "id": "SID_回復",
@@ -113776,7 +115252,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_風薙ぎ": {
       "id": "SID_風薙ぎ",
@@ -113844,7 +115322,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_轟雷": {
       "id": "SID_轟雷",
@@ -113912,7 +115392,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_瞬殺": {
       "id": "SID_瞬殺",
@@ -113980,7 +115462,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_慈悲": {
       "id": "SID_慈悲",
@@ -114048,7 +115532,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_業火": {
       "id": "SID_業火",
@@ -114116,7 +115602,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_剛腕": {
       "id": "SID_剛腕",
@@ -114184,7 +115672,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_祈り": {
       "id": "SID_祈り",
@@ -114255,7 +115745,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_ダイムサンダ": {
       "id": "SID_ダイムサンダ",
@@ -114323,7 +115815,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_王の器": {
       "id": "SID_王の器",
@@ -114391,7 +115885,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_いやしの心": {
       "id": "SID_いやしの心",
@@ -114459,7 +115955,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_引き寄せ": {
       "id": "SID_引き寄せ",
@@ -114521,7 +116019,9 @@
         1,
         1
       ],
-      "move_self": -1
+      "move_self": -1,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_ギガスカリバー": {
       "id": "SID_ギガスカリバー",
@@ -114589,7 +116089,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_旋風": {
       "id": "SID_旋風",
@@ -114657,7 +116159,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_体当たり": {
       "id": "SID_体当たり",
@@ -114719,7 +116223,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_閃花": {
       "id": "SID_閃花",
@@ -114783,7 +116289,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル_発動ステータス下降"
     },
     "SID_幻月": {
       "id": "SID_幻月",
@@ -114845,7 +116353,9 @@
         1,
         1
       ],
-      "move_self": -1
+      "move_self": -1,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_風神": {
       "id": "SID_風神",
@@ -114907,7 +116417,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_騎士道": {
       "id": "SID_騎士道",
@@ -114972,7 +116484,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_騎士道_被ダメ軽減": {
       "id": "SID_騎士道_被ダメ軽減",
@@ -115040,7 +116554,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_騎士道_与ダメ上昇": {
       "id": "SID_騎士道_与ダメ上昇",
@@ -115108,7 +116624,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_武士道": {
       "id": "SID_武士道",
@@ -115179,7 +116697,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_武士道_被ダメ軽減": {
       "id": "SID_武士道_被ダメ軽減",
@@ -115247,7 +116767,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_武士道_与ダメ上昇": {
       "id": "SID_武士道_与ダメ上昇",
@@ -115315,7 +116837,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_滅殺": {
       "id": "SID_滅殺",
@@ -115383,7 +116907,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_必的": {
       "id": "SID_必的",
@@ -115451,7 +116977,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_絆の指輪_アルフォンス": {
       "id": "SID_絆の指輪_アルフォンス",
@@ -115515,7 +117043,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_絆の指輪_アルフォンス_効果": {
       "id": "SID_絆の指輪_アルフォンス_効果",
@@ -115583,7 +117113,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_絆の指輪_シャロン": {
       "id": "SID_絆の指輪_シャロン",
@@ -115648,7 +117180,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_絆の指輪_シャロン_効果": {
       "id": "SID_絆の指輪_シャロン_効果",
@@ -115710,7 +117244,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_絆の指輪_シャロン_発動": {
       "id": "SID_絆の指輪_シャロン_発動",
@@ -115772,7 +117308,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_絆の指輪_アンナ": {
       "id": "SID_絆の指輪_アンナ",
@@ -115837,7 +117375,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_絆の指輪_アンナ_効果": {
       "id": "SID_絆の指輪_アンナ_効果",
@@ -115899,7 +117439,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_絆の指輪_アンナ_発動": {
       "id": "SID_絆の指輪_アンナ_発動",
@@ -115961,7 +117503,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "汎用スキル"
     },
     "SID_２回行動": {
       "id": "SID_２回行動",
@@ -116029,7 +117573,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_追撃不可": {
       "id": "SID_追撃不可",
@@ -116097,7 +117643,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_攻撃速度＋５": {
       "id": "SID_攻撃速度＋５",
@@ -116165,7 +117713,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_被ダメージ＋５": {
       "id": "SID_被ダメージ＋５",
@@ -116233,7 +117783,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_スマッシュ": {
       "id": "SID_スマッシュ",
@@ -116306,7 +117858,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_撃破時エンゲージカウント＋１": {
       "id": "SID_撃破時エンゲージカウント＋１",
@@ -116374,7 +117928,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_撃破時周囲エンゲージカウント＋１": {
       "id": "SID_撃破時周囲エンゲージカウント＋１",
@@ -116436,7 +117992,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_経験値２倍": {
       "id": "SID_経験値２倍",
@@ -116504,7 +118062,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_攻撃属性弱点変化": {
       "id": "SID_攻撃属性弱点変化",
@@ -116572,7 +118132,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_オフェンス時武器攻撃力上昇": {
       "id": "SID_オフェンス時武器攻撃力上昇",
@@ -116640,7 +118202,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_オフェンス回避＋２０": {
       "id": "SID_オフェンス回避＋２０",
@@ -116708,7 +118272,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_威力上昇魔力": {
       "id": "SID_威力上昇魔力",
@@ -116776,7 +118342,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_威力上昇速さ": {
       "id": "SID_威力上昇速さ",
@@ -116844,7 +118412,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_確率被ダメ半減": {
       "id": "SID_確率被ダメ半減",
@@ -116912,7 +118482,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_アイギスの盾効果": {
       "id": "SID_アイギスの盾効果",
@@ -116974,7 +118546,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_魔法射程＋１": {
       "id": "SID_魔法射程＋１",
@@ -117036,7 +118610,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_魔法射程＋２": {
       "id": "SID_魔法射程＋２",
@@ -117098,7 +118674,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_リザイア": {
       "id": "SID_リザイア",
@@ -117166,7 +118744,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ブレイク１０％": {
       "id": "SID_ブレイク１０％",
@@ -117230,7 +118810,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ブレイク２０％": {
       "id": "SID_ブレイク２０％",
@@ -117294,7 +118876,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_必中": {
       "id": "SID_必中",
@@ -117364,7 +118948,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_必中_命中率１００": {
       "id": "SID_必中_命中率１００",
@@ -117432,7 +119018,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_フォルクヴァング武器スキル": {
       "id": "SID_フォルクヴァング武器スキル",
@@ -117496,7 +119084,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_フォルクヴァング武器スキル_効果": {
       "id": "SID_フォルクヴァング武器スキル_効果",
@@ -117564,7 +119154,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_フェンサリル武器スキル": {
       "id": "SID_フェンサリル武器スキル",
@@ -117628,7 +119220,9 @@
         1,
         1
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_フェンサリル武器スキル_効果": {
       "id": "SID_フェンサリル武器スキル_効果",
@@ -117696,7 +119290,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_ノーアトゥーン武器スキル": {
       "id": "SID_ノーアトゥーン武器スキル",
@@ -117760,7 +119356,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "シンクロスキル"
     },
     "SID_ノーアトゥーン武器スキル_効果": {
       "id": "SID_ノーアトゥーン武器スキル_効果",
@@ -117822,7 +119420,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_追加エンゲージ武器１_巻き込み無効化": {
       "id": "SID_追加エンゲージ武器１_巻き込み無効化",
@@ -117884,7 +119484,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     },
     "SID_チェインアタック命中率１００％": {
       "id": "SID_チェインアタック命中率１００％",
@@ -117952,7 +119554,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_チェインアタック命中率３０％": {
       "id": "SID_チェインアタック命中率３０％",
@@ -118020,7 +119624,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": ""
     },
     "SID_神将スキル確率補正１００": {
       "id": "SID_神将スキル確率補正１００",
@@ -118088,7 +119694,9 @@
         0,
         0
       ],
-      "move_self": 0
+      "move_self": 0,
+      "vision_count": 0,
+      "efecto": "エフェクト無し"
     }
   },
   "emblemas": {

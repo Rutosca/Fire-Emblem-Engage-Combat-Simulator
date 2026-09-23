@@ -590,6 +590,12 @@
       <!-- Botones del modal -->
       <div class="modal-footer">
         <button type="button" id="btn-modal-eliminar" class="btn-danger hidden">Eliminar Ficha</button>
+        <button type="button" id="btn-modal-dobles" class="btn-tool btn-gold hidden"
+                title="Call Doubles (Emblema de Lyn): rodea a la unidad de copias con 1 HP que encadenan ataques con ella">Invocar dobles</button>
+        <button type="button" id="btn-modal-escudo" class="btn-tool btn-gold hidden"
+                title="Bonded Shield (Emblema de Lucina): marca a los aliados adyacentes como protegidos del primer ataque hasta el turno siguiente">Bonded Shield</button>
+        <button type="button" id="btn-modal-accion" class="btn-tool btn-red hidden"
+                title="El guion trae refuerzos cuando esta unidad actúa (ataca, usa un bastón...). Márcalo aquí para que aparezcan">Ha actuado → refuerzos</button>
         <div class="footer-right">
           <button type="button" id="btn-modal-cancelar" class="btn-secondary">Cancelar</button>
           <button type="button" id="btn-modal-guardar" class="btn-primary">Guardar Unidad</button>
@@ -634,10 +640,11 @@
       <p class="roster-hint" id="objeto-hint">Ocupa varias casillas: comparten una única vida. Al llegar a 0 desaparece y sus casillas quedan libres.</p>
       <input type="hidden" id="objeto-id" value="">
       <div class="form-row">
-        <label for="objeto-vida">Vida actual:</label>
+        <label for="objeto-vida" id="objeto-label">Vida actual:</label>
         <div class="hp-row">
           <input type="number" id="objeto-vida" min="0" value="0">
           <span class="objeto-vida-max">/ <b id="objeto-vida-max">0</b></span>
+          <button type="button" id="btn-objeto-menos1" class="btn-hp-tool btn-red hidden">-1</button>
           <button type="button" id="btn-objeto-menos5" class="btn-hp-tool btn-red">-5</button>
           <button type="button" id="btn-objeto-menos10" class="btn-hp-tool btn-red">-10</button>
           <button type="button" id="btn-objeto-full" class="btn-hp-tool btn-blue">Max</button>
@@ -646,6 +653,7 @@
     </div>
     <div class="modal-footer">
       <button type="button" id="btn-objeto-destruir" class="btn-danger">Destruir</button>
+      <button type="button" id="btn-objeto-agotar" class="btn-danger hidden">Agotar</button>
       <div class="footer-right">
         <button type="button" id="btn-objeto-cancelar" class="btn-secondary">Cancelar</button>
         <button type="button" id="btn-objeto-guardar" class="btn-primary">Aplicar</button>

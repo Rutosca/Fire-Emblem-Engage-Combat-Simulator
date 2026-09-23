@@ -173,6 +173,32 @@ def sids_activos(unidad, incluir_variantes_estilo: bool = True) -> list:
     return _dedup(sids)
 
 
+def bono_movimiento_fusion(unidad) -> int:
+    """
+    Mov extra que dan las habilidades de FUSIÓN activas, con la variante de estilo de
+    combate de la unidad: Gallop de Sigurd (SID_迅走) es +5, +7 en caballería (_騎馬),
+    +6 en dragón (_竜族), +3 la versión oscura. 0 si la unidad no está en Fusión.
+    Las sincronías (el +1 de llevar a Sigurd equipado) NO entran aquí: van en los
+    stat_boosts del nivel de vínculo que aplica catalogo_loader.
+    """
+    stats = getattr(unidad, "stats", None) or unidad
+    en_fusion = bool(getattr(stats, "en_fusion", False) or int(getattr(stats, "turnos_fusion_restantes", 0) or 0) > 0
+                     or getattr(unidad, "en_fusion", False) or int(getattr(unidad, "turnos_fusion", 0) or 0) > 0)
+    return bono_movimiento_fusion_potencial(unidad) if en_fusion else 0
+
+
+def bono_movimiento_fusion_potencial(unidad) -> int:
+    """El mismo bono, esté o no fusionada ahora: lo que GANARÍA al fusionarse (lo usa el
+    análisis para ver a qué enemigos llegaría activando la Fusión)."""
+    stats = getattr(unidad, "stats", None) or unidad
+    estilo = getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", "")
+    total = 0
+    for sid in _dedup(getattr(stats, "habilidades_sids_fusion", None) or []):
+        info = HABILIDADES.get(variante_por_estilo(sid, estilo)) or {}
+        total += int((info.get("stat_boosts") or {}).get("mov") or 0)
+    return total
+
+
 # Advance (Roy, sincronía a vínculo 3): comando de ataque (Skill.xml Timing 21,
 # MoveSelf 1, RangeI/O 1). "Avanza 1 casilla hacia un enemigo a 2 casillas y ataca":
 # la geometría vive en motor_de_movimiento_y_amenaza.casillas_advance.
@@ -181,6 +207,251 @@ SID_ADVANCE = "SID_踏み込み"
 
 def tiene_advance(unidad) -> bool:
     return tiene_sid(unidad, SID_ADVANCE)
+
+
+# ── Call Doubles / Residuos (SID_残像: habilidad de Emblema de Lyn) ───────────
+# Skill.xml declara cuántas copias invoca en `VisionCount` (4; el estilo Dragón usa
+# SID_残像_竜族 con 5) y qué reciben en GiveSids (estilo Volador: SID_残像_飛行_効果,
+# +10 Evasión). El doble en sí es una unidad de Person.xml (PID_残像, "Illusory
+# Double", clase Villager) que solo lleva IID_残像_マーニ・カティ y SID_相手の取得経験値０
+# (no da experiencia). El texto del juego ("自分のみチェインアタック可能な残像") dice que
+# solo hacen Chain Attack cuando ataca QUIEN los invocó.
+SID_CALL_DOUBLES = "SID_残像"
+PID_DOBLE = "PID_残像"
+IID_ARMA_DOBLE = "IID_残像_マーニ・カティ"
+
+
+def call_doubles(unidad) -> Optional[dict]:
+    """
+    Datos del comando Call Doubles si la unidad lo tiene activo, o None:
+    {sid, nombre, copias, give_sids, pid, arma_iid}. Todo sale del datamine; el
+    número de copias es el VisionCount de la variante de estilo de la unidad.
+    """
+    estilo = getattr(getattr(unidad, "stats", None) or unidad, "estilo_combate", "")
+    for sid in sids_activos(unidad):
+        if not sid.startswith(SID_CALL_DOUBLES):
+            continue
+        info = HABILIDADES.get(sid) or {}
+        copias = int(info.get("vision_count") or 0)
+        if copias <= 0:
+            continue
+        return {
+            "sid": sid,
+            "nombre": info.get("nombre") or "Call Doubles",
+            "copias": copias,
+            "give_sids": list(info.get("give_sids") or []),
+            "pid": PID_DOBLE,
+            "arma_iid": IID_ARMA_DOBLE,
+            "estilo": estilo,
+        }
+    return None
+
+
+# ── Ataques de Emblema de varios golpes ──────────────────────────────────────
+# Skill.xml los describe todos igual: un SID con `攻撃回数 = N` (golpes) que sincroniza
+# SID_エンゲージ技_汎用設定 (Hit 100, Crit 0, el rival no responde) y, si el ataque pega a
+# fracción, SID_ダメージNN％ (相手のダメージ = techo(daño × NN/100)). Lodestar Rush son 7
+# golpes al 30 % (Apoyo 8, Dragón 9), Astra Storm 5 al 30 % (20 % en las versiones
+# oscuras y debilitadas) y Quadruple Hit 4 a daño completo.
+_SID_ENGAGE_GENERICO = "SID_エンゲージ技_汎用設定"
+_PREFIJO_FRACCION_DANO = "SID_ダメージ"
+
+
+def _fraccion_dano_sincronizada(sids_sync: Iterable[str]) -> Optional[float]:
+    """Fracción de daño (0.2, 0.3, 1.2…) que impone un SID_ダメージNN％ sincronizado."""
+    import re
+    for sid in sids_sync or []:
+        if not sid.startswith(_PREFIJO_FRACCION_DANO):
+            continue
+        info = HABILIDADES.get(sid) or {}
+        for nombre, valor in zip(info.get("act_names") or [], info.get("act_values") or []):
+            if nombre != "相手のダメージ":
+                continue
+            m = re.search(r"\*\s*(\d*\.?\d+)", str(valor))
+            if m:
+                return float(m.group(1))
+    return None
+
+
+def _indice_ataques_emblema() -> dict:
+    """{nombre en minúsculas: SID base} de los Ataques de Emblema del datamine."""
+    indice = {}
+    for sid, info in HABILIDADES.items():
+        if _SID_ENGAGE_GENERICO not in (info.get("sync_sids") or []):
+            continue
+        nombre = str(info.get("nombre") or "").strip().lower()
+        if nombre and (nombre not in indice or len(sid) < len(indice[nombre])):
+            indice[nombre] = sid
+    return indice
+
+
+_ATAQUES_EMBLEMA_POR_NOMBRE = None
+
+
+def sid_ataque_emblema_por_nombre(nombre_ataque: str) -> str:
+    """SID del Ataque de Emblema que se llama así ("Lodestar Rush (Acometida estelar)"
+    → SID_マルスエンゲージ技); "" si no hay ninguno."""
+    global _ATAQUES_EMBLEMA_POR_NOMBRE
+    if _ATAQUES_EMBLEMA_POR_NOMBRE is None:
+        _ATAQUES_EMBLEMA_POR_NOMBRE = _indice_ataques_emblema()
+    n = str(nombre_ataque or "").strip().lower()
+    if not n:
+        return ""
+    for nombre, sid in _ATAQUES_EMBLEMA_POR_NOMBRE.items():
+        if nombre == n or nombre in n:
+            return sid
+    return ""
+
+
+def forma_ataque_emblema(unidad, sid_ataque: str = "", nombre_ataque: str = "") -> Optional[dict]:
+    """
+    Forma de un Ataque de Emblema de varios golpes leída del datamine, con la variante
+    de estilo de la unidad: {sid, nombre, golpes, fraccion, rompe, rango, usa_magia}.
+    `fraccion` es None cuando el ataque pega a daño completo; `rompe` lo marca el SID
+    de ruptura sincronizado (Qi Adept en Astra Storm / Quadruple Hit). None si la
+    unidad no tiene Ataque de Emblema o si no es de varios golpes.
+    El SID sale del Emblema de la unidad (God.xml EngageAttack) o, si no lo trae,
+    del nombre del ataque que se está simulando.
+    """
+    stats = getattr(unidad, "stats", None) or unidad
+    sid = sid_ataque or getattr(stats, "sid_ataque_emblema", "") or getattr(unidad, "sid_ataque_emblema", "")
+    if not sid and nombre_ataque:
+        sid = sid_ataque_emblema_por_nombre(nombre_ataque)
+    if not sid or sid not in HABILIDADES:
+        return None
+    sid = variante_por_estilo(sid, getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", ""))
+    info = HABILIDADES.get(sid) or {}
+    sync = list(info.get("sync_sids") or [])
+    if _SID_ENGAGE_GENERICO not in sync:
+        return None
+    golpes = 0
+    usa_magia = False
+    for nombre, op, valor in zip(info.get("act_names") or [], info.get("act_operations") or [], info.get("act_values") or []):
+        if nombre == "攻撃回数" and op == "=":
+            golpes = int(float(valor))
+        elif nombre == "ユニット攻撃力" and str(valor).strip() == "魔力":
+            usa_magia = True
+    if golpes <= 0:
+        return None
+    rango_i, rango_o = (info.get("rango_efecto") or [1, 1])[:2]
+    return {
+        "sid": sid,
+        "nombre": info.get("nombre") or "",
+        "golpes": golpes,
+        "fraccion": _fraccion_dano_sincronizada(sync),
+        "rompe": any(s.endswith("ブレイク") for s in sync),
+        "rango": list(range(max(1, int(rango_i or 1)), max(1, int(rango_o or 1)) + 1)),
+        "usa_magia": usa_magia,
+    }
+
+
+# Chain Attack fuera del estilo Apoyo: Skill.xml lo concede con el SID oculto
+# SID_チェインアタック許可 ("Chain Attack Allowed"), que sincronizan Dual Strike de Lucina
+# (SID_絆の力) y cualquier otra habilidad que lo dé.
+SID_CHAIN_ATTACK_PERMITIDO = "SID_チェインアタック許可"
+
+
+def permite_chain_attack(unidad) -> bool:
+    """True si una habilidad activa le permite encadenar ataques aunque no sea de Apoyo."""
+    for sid in sids_activos(unidad):
+        if sid == SID_CHAIN_ATTACK_PERMITIDO:
+            return True
+        if SID_CHAIN_ATTACK_PERMITIDO in ((HABILIDADES.get(sid) or {}).get("sync_sids") or []):
+            return True
+    return False
+
+
+# ── Chain Attack forzado: All for One (SID_ルキナエンゲージ技) ────────────────
+# El Ataque de Emblema sincroniza SID_強制チェインアタック２マス (RangeI/O 1-2): TODOS los
+# aliados a esa distancia encadenan, sean o no de estilo Apoyo. La variante de Apoyo usa
+# la de 3 casillas ("[Backup] Range +1") y la de Dragón otorga (GiveTarget 2)
+# SID_チェインアタック命中率１００％ ("[Dragon] Ally chain attacks are guaranteed to hit").
+_PREFIJO_CHAIN_FORZADO = "SID_強制チェインアタック"
+SID_CHAIN_HIT_100 = "SID_チェインアタック命中率１００％"
+
+
+def chain_attack_forzado(unidad, sid_ataque: str = "", nombre_ataque: str = "") -> Optional[dict]:
+    """
+    {sid, nombre, rango, hit_garantizado} si el Ataque de Emblema obliga a encadenar a los
+    aliados cercanos, o None. `rango` es la distancia máxima (RangeO del SID sincronizado).
+    """
+    stats = getattr(unidad, "stats", None) or unidad
+    sid = sid_ataque or getattr(stats, "sid_ataque_emblema", "") or getattr(unidad, "sid_ataque_emblema", "")
+    if not sid and nombre_ataque:
+        sid = sid_ataque_emblema_por_nombre(nombre_ataque)
+    if not sid or sid not in HABILIDADES:
+        return None
+    sid = variante_por_estilo(sid, getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", ""))
+    info = HABILIDADES.get(sid) or {}
+    for s_sync in (info.get("sync_sids") or []):
+        if not s_sync.startswith(_PREFIJO_CHAIN_FORZADO):
+            continue
+        rango = int(((HABILIDADES.get(s_sync) or {}).get("rango_efecto") or [1, 1])[1] or 1)
+        return {
+            "sid": sid,
+            "nombre": info.get("nombre") or "",
+            "rango": max(1, rango),
+            "hit_garantizado": SID_CHAIN_HIT_100 in (info.get("give_sids") or []),
+        }
+    return None
+
+
+# ── Bonded Shield (SID_絆盾, habilidad de Fusión de Lucina) ───────────────────
+# "Use to prevent first attacks on adjacent allies until your next turn. Trigger %=80."
+# La probabilidad vive en la Condition de la variante de estilo: スキル確率(80) de base,
+# スキル確率(90) en Dragón ("+10 % to trigger rate" — NO es 100 %), スキル確率(100) en Qi
+# Adept, y "スキル確率(80) || 相手の戦闘スタイル == Xスタイル" en Caballería / Acorazado /
+# Volador, que es el "Trigger %=100 for X allies" del texto del juego.
+SID_BONDED_SHIELD = "SID_絆盾"
+
+
+def bonded_shield(unidad) -> Optional[dict]:
+    """{sid, nombre, prob_base, estilo_garantizado} si la unidad tiene Bonded Shield."""
+    for sid in sids_activos(unidad):
+        if not sid.startswith(SID_BONDED_SHIELD):
+            continue
+        info = HABILIDADES.get(sid) or {}
+        base, estilo_100 = _leer_probabilidades(str(info.get("condition") or ""))
+        return {
+            "sid": sid,
+            "nombre": info.get("nombre") or "Bonded Shield",
+            "prob_base": base,
+            "estilo_garantizado": estilo_100,
+        }
+    return None
+
+
+def probabilidad_bonded_shield(unidad, aliado=None) -> int:
+    """% con el que Bonded Shield anula el primer ataque contra `aliado`; 0 si no la tiene."""
+    datos = bonded_shield(unidad)
+    if not datos:
+        return 0
+    if datos["estilo_garantizado"] and aliado is not None:
+        from motor_calculo import resolver_estilo_combate
+        estilo_aliado = getattr(getattr(aliado, "stats", None) or aliado, "estilo_combate", "")
+        if resolver_estilo_combate(estilo_aliado) == datos["estilo_garantizado"]:
+            return 100
+    return datos["prob_base"]
+
+
+def _leer_probabilidades(condicion: str):
+    """(probabilidad base, estilo canónico que la sube a 100) de una Condition del tipo
+    "スキル確率(80) || 相手の戦闘スタイル == 騎馬スタイル"."""
+    import re
+    base = 0
+    estilo_100 = ""
+    for alternativa in str(condicion).split("||"):
+        m = re.search(r"スキル確率\s*\(\s*(\d+)\s*\)", alternativa)
+        if m:
+            base = max(base, int(m.group(1)))
+            continue
+        m_est = re.search(r"戦闘スタイル\s*==\s*(\S+?)スタイル", alternativa)
+        if m_est:
+            for canon, sufijo in SUFIJO_ESTILO.items():
+                if sufijo == m_est.group(1):
+                    estilo_100 = canon
+                    break
+    return base, estilo_100
 
 
 def alcance_canter(unidad) -> int:
@@ -476,6 +747,9 @@ def _aplicar_sid(sid: str, ctx, mods: Modificadores, profundidad: int = 0, de: s
     entrada = {
         "sid": sid, "nombre": nombre, "valores": sumas, "mult": mult, "asig": asig,
         "timing": int(info.get("timing") or 0), "stand": stand, "action": int(info.get("action") or 0), "de": de,
+        # La Condition mira que sea el PRIMER golpe del combate (Momentum: "総行動回数 == 0"):
+        # el motor tiene que recalcular el golpe de seguimiento sin esta habilidad.
+        "condicion_primera_ronda": _mira_la_primera_ronda(info.get("condition")),
     }
     if prob is not None:
         mods.procs.append(dict(entrada, prob=prob))
@@ -501,6 +775,18 @@ def _aplicar_sid(sid: str, ctx, mods: Modificadores, profundidad: int = 0, de: s
                 _aplicar_sid(hijo, ctx, mods, profundidad + 1, de)
     elif info.get("give_sids") and (gt != 1 or es_evento) and int(info.get("timing") or 0) != TIMING_AURA:
         mods.ignoradas.append((sid, f"give_target={gt}, timing={info.get('timing')} (evento/comando, Fase 3)"))
+
+
+# Variables de la DSL que valen "rondas ya ejecutadas": una Condition que las compara con 0
+# solo se cumple en el primer golpe (Momentum, Alacrity, Counter…).
+_VARS_PRIMERA_RONDA = ("総行動回数", "総手番回数")
+
+
+def _mira_la_primera_ronda(condicion) -> bool:
+    import re
+    if not condicion or not isinstance(condicion, str):
+        return False
+    return any(re.search(v + r"\s*==\s*0", condicion) for v in _VARS_PRIMERA_RONDA)
 
 
 def _es_aura(info: dict) -> bool:

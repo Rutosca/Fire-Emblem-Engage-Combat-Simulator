@@ -179,12 +179,7 @@ ATAQUES_ENGAGE_CONFIG = {
             "nombre": "Houses Unite", "mt": 19, "hit": 100, "crit": 0, "wt": 10, "tipo": "Lanza", "es_magica": False, "rango": [1]
         }
     },
-    "Astra Storm": {
-        "es_variable": False,
-        "arma_fija": {
-            "nombre": "Astra Storm", "mt": 16, "hit": 100, "crit": 0, "wt": 9, "tipo": "Arco", "es_magica": False, "rango": list(range(10, 16))
-        }
-    },
+    "Astra Storm": {"es_variable": True, "tipos_permitidos": ["Arco"]},
     "Torrential Roar": {
         "es_variable": False,
         "arma_fija": {
@@ -462,12 +457,54 @@ def tiene_arma_de_tipo(ficha, tipo) -> bool:
     return False
 
 
+# Tipo de arma que exige cada arma de mapa. El objeto de Tiled lo declara en
+# `arma_permitida` ("Arco" en una ballesta, "Tomo" en un cañón mágico); si no lo
+# trae, se deduce de su `tipo` y, en última instancia, es una ballesta de arco.
+_ARMA_MAPA_POR_TIPO = {
+    "ballesta": "Arco", "canon": "Arco", "cañon": "Arco",
+    "canon_magico": "Tomo", "cañon_magico": "Tomo", "magico": "Tomo",
+}
+
+
+# Nombre bonito por `tipo` del tile, para no depender de cómo se llame en Tiled
+_NOMBRE_ARMA_MAPA = {
+    "ballesta": "Ballesta", "canon": "Cañón", "cañon": "Cañón",
+    "canon_magico": "Cañón mágico", "cañon_magico": "Cañón mágico",
+}
+
+
+def nombre_arma_de_mapa(props_objeto: dict, nombre_objeto: str = "") -> str:
+    """Etiqueta legible del arma de mapa: la del catálogo por `tipo`, o el nombre del
+    objeto de Tiled con los guiones bajos convertidos en espacios."""
+    props_objeto = props_objeto or {}
+    por_tipo = _NOMBRE_ARMA_MAPA.get(normalizar_texto(str(props_objeto.get("tipo", ""))))
+    if por_tipo:
+        return por_tipo
+    limpio = str(nombre_objeto or "").replace("_", " ").strip()
+    return limpio or ("Cañón mágico" if tipo_arma_de_objeto(props_objeto) == "Tomo" else "Ballesta")
+
+
+def tipo_arma_de_objeto(props_objeto: dict) -> str:
+    """Tipo de arma que hay que llevar para usar esta arma de mapa ("Arco", "Tomo"…)."""
+    props_objeto = props_objeto or {}
+    declarado = str(props_objeto.get("arma_permitida", "") or "").strip()
+    if declarado:
+        return normalizar_tipo_arma(declarado) or declarado
+    return _ARMA_MAPA_POR_TIPO.get(normalizar_texto(str(props_objeto.get("tipo", ""))), "Arco")
+
+
+def puede_usar_arma_de_mapa(ficha, props_objeto: dict = None) -> bool:
+    """
+    Armas de mapa (ballesta del Cap. 8, cañón mágico del Cap. 10): solo unidades cuya
+    clase tiene maestría en el tipo que pide el objeto Y que llevan un arma de ese tipo.
+    """
+    tipo = tipo_arma_de_objeto(props_objeto)
+    return puede_usar_tipo_arma(ficha, tipo) and tiene_arma_de_tipo(ficha, tipo)
+
+
 def puede_usar_ballesta(ficha) -> bool:
-    """
-    Ballestas / arcos de mapa (p.ej. Capítulo 8): solo unidades cuya clase tiene
-    maestría en Arco Y que llevan un arco en el inventario.
-    """
-    return puede_usar_tipo_arma(ficha, "Arco") and tiene_arma_de_tipo(ficha, "Arco")
+    """Compatibilidad: arma de mapa de tipo Arco (ballesta)."""
+    return puede_usar_arma_de_mapa(ficha, {"arma_permitida": "Arco"})
 
 
 def info_curacion_item(nombre_item: str, sanador=None) -> Optional[dict]:
@@ -541,39 +578,57 @@ def boosts_rise_above(nombre_personaje: str, clase_nombre: str, niveles: int = 5
     return out
 
 
-def arco_de_ficha(ficha):
-    """El arco equipado o, si no, el primer arco del inventario (objeto Arma) — None si no hay."""
-    if getattr(ficha, 'arma', None) and normalizar_tipo_arma(getattr(ficha.arma, 'tipo', '')) == "Arco":
+def arma_de_tipo_de_ficha(ficha, tipo):
+    """El arma equipada de ese tipo o, si no, la de más Mt del inventario — None si no lleva."""
+    tipo_c = normalizar_tipo_arma(tipo)
+    if getattr(ficha, 'arma', None) and normalizar_tipo_arma(getattr(ficha.arma, 'tipo', '')) == tipo_c:
         return ficha.arma
+    candidatas = []
     for it in getattr(ficha, 'inventario', []) or []:
         a_obj = _arma_desde_item(it)
-        if a_obj and normalizar_tipo_arma(getattr(a_obj, 'tipo', '')) == "Arco":
-            return a_obj
-    return None
+        if a_obj and normalizar_tipo_arma(getattr(a_obj, 'tipo', '')) == tipo_c:
+            candidatas.append(a_obj)
+    return max(candidatas, key=lambda a: int(getattr(a, 'mt', 0) or 0)) if candidatas else None
+
+
+def arco_de_ficha(ficha):
+    """El arco equipado o, si no, el mejor arco del inventario (objeto Arma) — None si no hay."""
+    return arma_de_tipo_de_ficha(ficha, "Arco")
+
+
+def arma_de_mapa_desde(ficha, props_objeto: dict, nombre_objeto: str = ""):
+    """
+    Arma efectiva al disparar un arma de mapa (ballesta de arco, cañón mágico) con el
+    arma propia del tipo que pide el objeto: su Mt, Hit +20, sin crítico, alcance
+    `distancia_min`..`distancia_max` (3–7 en el datamine), UN solo golpe y sin
+    contraataque (Skill.xml SID_弓砲台 / SID_魔砲台: 命中値+20, 必殺率=0, 手番回数=1,
+    相手の手番回数=0, RangeI=3 RangeO=7). Conserva el tipo del arma base, así que un
+    cañón mágico ataca a la RES, y su efectividad (el arco x3 contra pegasos/grifos;
+    NO contra jinetes de wyvern como Ivy: ver `debilidades` de la clase).
+    """
+    import copy
+    props_objeto = props_objeto or {}
+    tipo = tipo_arma_de_objeto(props_objeto)
+    base = arma_de_tipo_de_ficha(ficha, tipo)
+    if not base:
+        return None
+    arma = copy.copy(base)
+    d_min = int(props_objeto.get("distancia_min", 3))
+    d_max = int(props_objeto.get("distancia_max", 7))
+    arma.nombre = f"{nombre_arma_de_mapa(props_objeto, nombre_objeto)} ({base.nombre})"
+    arma.rango = list(range(d_min, d_max + 1))
+    arma.hit = int(getattr(base, 'hit', 0) or 0) + int(props_objeto.get("hit_bonus", 20))
+    arma.crit = 0
+    setattr(arma, 'es_ballesta', True)          # comportamiento: 1 golpe, sin contra, sin pasivas externas
+    setattr(arma, 'es_arma_mapa', True)
+    setattr(arma, 'tipo_arma_mapa', tipo)
+    setattr(arma, 'arma_base_nombre', base.nombre)
+    return arma
 
 
 def arma_ballesta_desde(ficha, props_objeto: dict):
-    """
-    Arma efectiva al disparar una ballesta de mapa con el arco de la unidad:
-    usa el Mt del arco propio, Hit +20, alcance `distancia_min`..`distancia_max`
-    (3–7), UN solo golpe y sin contraataque (Skill.xml SID_弓砲台: 命中値+20,
-    手番回数=1, 相手の手番回数=0, RangeI=3 RangeO=7). Conserva la efectividad
-    del arco (x3 contra pegasos/grifos; NO contra jinetes de wyvern como Ivy:
-    ver `debilidades` de la clase). Ataque = Fue + Mt − Def del rival.
-    """
-    import copy
-    arco = arco_de_ficha(ficha)
-    if not arco:
-        return None
-    arma = copy.copy(arco)
-    d_min = int(props_objeto.get("distancia_min", 3))
-    d_max = int(props_objeto.get("distancia_max", 7))
-    arma.nombre = f"Ballesta ({arco.nombre})"
-    arma.rango = list(range(d_min, d_max + 1))
-    arma.hit = int(getattr(arco, 'hit', 0) or 0) + int(props_objeto.get("hit_bonus", 20))
-    setattr(arma, 'es_ballesta', True)
-    setattr(arma, 'arma_base_nombre', arco.nombre)
-    return arma
+    """Compatibilidad: `arma_de_mapa_desde` para ballestas de arco."""
+    return arma_de_mapa_desde(ficha, props_objeto)
 
 
 _NOMBRES_ARMAS_EMBLEMA_CACHE = {}
@@ -605,8 +660,10 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
     """
     if not raw_str:
         return None
+    iid_explicito = ""
     if isinstance(raw_str, dict):
         es_arma_emblema = es_arma_emblema or bool(raw_str.get("es_engage"))
+        iid_explicito = str(raw_str.get("id") or "")
         base = raw_str.get("nombre_base") or raw_str.get("nombre") or raw_str.get("arma") or ""
         ref = raw_str.get("refine_lvl", 0)
         grab = raw_str.get("grabado", "")
@@ -643,6 +700,11 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
 
     # 3. Buscar arma base en el catálogo
     base_aid, ainfo = _buscar_en_catalogo("armas", limpio)
+    if iid_explicito and iid_explicito in (_catalogo.get("armas") or {}):
+        candidata = _catalogo["armas"][iid_explicito]
+        nom_sin_etiqueta = re.sub(r"\([^)]+\)", "", str(candidata.get("nombre", ""))).strip()
+        if normalizar_texto(nom_sin_etiqueta) == normalizar_texto(limpio):
+            base_aid, ainfo = iid_explicito, candidata
     if not ainfo:
         return None
 
@@ -669,7 +731,7 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
         avo_bonus += grabado_info["avo"]
         ddg_bonus += grabado_info["ddg"]
 
-    nombre_base = ainfo.get("nombre", base_aid)
+    nombre_base = re.sub(r"\s*\((?:Evento|Prólogo)\)\s*$", "", str(ainfo.get("nombre", base_aid))).strip()
     nombre_formateado = nombre_base
     if refine_lvl > 0:
         nombre_formateado += f"+{refine_lvl}"
@@ -867,6 +929,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if es_emblema_oscuro:
         nivel_vinculo = 1
         energia_emblema_val = 0
+    # Como nunca entra en Fusión, lo que el juego le da "de Fusión" (armas de Emblema,
+    # engage_skills y Ataque de Emblema) lo tiene puesto de forma permanente: Hyacinth
+    # lleva la Mani Katti y la Killer Bow de Lyn y usa Call Doubles sin fusionarse.
+    engage_permanente = es_emblema_oscuro
     bond_data = emblema_info.get("bond_levels", {}).get(str(nivel_vinculo)) if emblema_info else None
     emblem_mov = bond_data.get("stat_boosts", {}).get("mov", 0) if bond_data else (1 if es_sigurd else 0)
 
@@ -875,10 +941,18 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     style = clase_info.get("estilo_combate", "") if clase_info else ""
     mov_base = clase_info.get("mov", 4) if clase_info else 4
 
-    if "mov" in data and data["mov"] is not None and str(data["mov"]).strip() != "":
-        mov = int(data["mov"])
+    # Mov SIN Fusión: el guardado (`mov_base`), el TOTAL que trae el payload menos el
+    # bono de Fusión (el modal muestra y reenvía el total), o el calculado. El bono de
+    # las habilidades de Fusión (Gallop de Sigurd) se suma al final, cuando ya se sabe
+    # si la unidad está fusionada y con qué estilo de combate.
+    mov_total_explicito = None
+    if data.get("mov_base") not in (None, "", 0):
+        mov_sin_fusion = int(data["mov_base"])
+    elif "mov" in data and data["mov"] is not None and str(data["mov"]).strip() != "":
+        mov_sin_fusion = mov_total_explicito = int(data["mov"])
     else:
-        mov = mov_base + emblem_mov + (1 if tiene_botas else 0)
+        mov_sin_fusion = mov_base + emblem_mov + (1 if tiene_botas else 0)
+    mov = mov_sin_fusion
 
     if p_info and es_aliado:
         # Personaje único aliado con estadísticas canónicas de Serenes Forest
@@ -1083,10 +1157,11 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 habs_lista.append(s_nom)
 
         engage_items_bond = bond_data.get("engage_skills") if bond_data and "engage_skills" in bond_data else emblema_info.get("engage_skills", [])
+        destino_engage = sids_emblema_sync if engage_permanente else sids_emblema_fusion
         for sk_item in engage_items_bond or []:
             s_sid = sk_item.get("sid") if isinstance(sk_item, dict) else sk_item
-            if s_sid and str(s_sid).startswith("SID_") and s_sid not in sids_emblema_fusion:
-                sids_emblema_fusion.append(s_sid)
+            if s_sid and str(s_sid).startswith("SID_") and s_sid not in destino_engage:
+                destino_engage.append(s_sid)
 
     # Enriquecer habilidades personales y de clase desde el catálogo compilado
     sids_solo_motor = []   # SIDs que el motor necesita pero que el juego no muestra como pasivas
@@ -1220,6 +1295,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
+    # SID del Ataque de Emblema (God.xml EngageAttack): pasivas.forma_ataque_emblema lo
+    # lee para saber cuántos golpes da y a qué fracción de daño (Astra Storm, Lodestar…).
+    setattr(stats_obj, 'sid_ataque_emblema', (emblema_info or {}).get("engage_attack", "") or "")
     genero_val = int(data.get("genero", 0) or (p_info.get("genero", p_info.get("gender", 0)) if p_info else 0) or 0)
     setattr(stats_obj, 'genero', genero_val)
     if not getattr(stats_obj, 'clase_nombre', ''):
@@ -1259,15 +1337,16 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     # Las armas de Emblema solo existen en el inventario DURANTE la Fusión (se
     # inyectan abajo). Fuera de ella se descartan aunque vengan en una partida
     # guardada: si no, el análisis las trataría como armas normales.
-    if not en_fusion:
+    if not en_fusion and not engage_permanente:
         inventario_raw = [
             it for it in inventario_raw
             if not ((isinstance(it, dict) and it.get("es_engage")) or (isinstance(it, str) and "(emblema)" in it.lower()))
         ]
 
-    # Inyección de Fusión (Engage Mode)
-    if en_fusion and emblema_info:
-        stats_obj.turnos_fusion_restantes = turnos_fusion
+    # Inyección de Fusión (Engage Mode) — y del Emblema Oscuro, que la tiene permanente
+    if (en_fusion or engage_permanente) and emblema_info:
+        if en_fusion:
+            stats_obj.turnos_fusion_restantes = turnos_fusion
         
         # Armas y habilidades de Engage específicas para este nivel de vínculo
         b_items = None
@@ -1278,7 +1357,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             if disp:
                 b_items = emblema_info["bond_levels"][str(disp[-1])].get("engage_items")
         if b_items is not None:
-            armas_engage_a_anadir = [it.get("nombre") or it.get("iid") if isinstance(it, dict) else it for it in b_items]
+            armas_engage_a_anadir = [it.get("iid") or it.get("nombre") if isinstance(it, dict) else it for it in b_items]
         else:
             armas_engage_a_anadir = []
 
@@ -1326,10 +1405,12 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 p_it = parsear_arma_string({"nombre": nom_it, "es_engage": True})
                 return bool(p_it) and normalizar_texto(p_it["nombre_base"]) == base_eng_norm
 
-            ya_esta = any(
+            ya_esta = any(isinstance(it, dict) and it.get("id") == iid for it in inventario_raw) or any(
                 _misma_arma_emblema(it)
                 for it in inventario_raw
-                if (isinstance(it, dict) and it.get("es_engage")) or (isinstance(it, str) and "(emblema)" in it.lower())
+                if engage_permanente
+                or (isinstance(it, dict) and it.get("es_engage"))
+                or (isinstance(it, str) and "(emblema)" in it.lower())
             )
             if not ya_esta:
                 inventario_raw.append({"arma": nombre_eng, "id": iid, "nombre": nombre_eng, "equipada": False, "es_engage": True})
@@ -1379,7 +1460,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         else:
             base_aid = str(aid).strip()
 
-        parsed_w = parsear_arma_string(aid if aid else base_aid)
+        iid_item = item.get("id") if isinstance(item, dict) else None
+        parsed_w = parsear_arma_string({"nombre": aid if aid else base_aid, "id": iid_item, "es_engage": es_eng}
+                                       if iid_item else (aid if aid else base_aid))
         if parsed_w:
             tipo_w = parsed_w.get("tipo", "Espada")
             es_staff_o_item = str(tipo_w).lower() in ("bastón", "baston", "staff", "objeto", "accesorio", "item")
@@ -1526,6 +1609,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if arma_equipada is None:
         arma_equipada = Arma("Espada de Hierro", mt=5, wt=5, hit=90, crit=0, es_magica=False, tipo="Espada", rango=[1], efectividades=[])
 
+    # El inventario resuelto viaja con la Unidad: Adaptable (SID_順応) contraataca con
+    # la mejor arma disponible, no con la equipada (ver motor_calculo.arma_de_respuesta).
+    setattr(stats_obj, 'inventario', list(inventario_resuelto))
+
     # Identidad de la ficha (verde, fija, pendiente de unión): si el dato no viene
     # explícito (el modal solo envía stats/equipo), se conserva de la ficha previa.
     def _dato_o_previo(clave, defecto):
@@ -1563,6 +1650,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         stats=stats_obj,
         arma=arma_equipada,
         mov=mov,
+        mov_base=mov_sin_fusion,
         es_volador=es_volador,
         viva=es_viva,
         hp_max=hp_m,
@@ -1605,4 +1693,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     setattr(ficha, '_chain_guard_activo_explicito', 'chain_guard_activo' in data)
     setattr(ficha, '_hp_stock_explicito', 'hp_stock' in data)
     setattr(ficha, '_energia_emblema_explicito', 'energia_emblema' in data)
+    # Gallop (Sigurd) y cualquier otra habilidad de Fusión con bono de Mov: el Mov del
+    # payload es el total que ve el jugador, así que el bono se descuenta de la base.
+    if mov_total_explicito is not None:
+        ficha.mov_base = max(1, mov_total_explicito - pasivas.bono_movimiento_fusion(ficha))
+    ficha.actualizar_movimiento_fusion()
     return ficha

@@ -61,7 +61,10 @@ class Terreno:
 #   destructible     → cajas, muros rompibles: bloquean sus casillas hasta ser destruidos
 #                      (todas a la vez, aunque ocupen varias).
 #   recarga_emblema  → pozo de Emblema: recarga al 100% y desaparece al usarse.
-TIPOS_OBJETO_MAPA = {"arma_usable", "destructible", "recarga_emblema"}
+#   cofre            → cofre: obstáculo que se abre gastando la acción de una unidad
+#                      adyacente. Sigue bloqueando su casilla después de abrirse
+#                      (es mobiliario del mapa), solo cambia a "abierto".
+TIPOS_OBJETO_MAPA = {"arma_usable", "destructible", "recarga_emblema", "cofre"}
 
 # `tipo` del tile (tileset) → clase de objeto de mapa. Permite colocar objetos-tile
 # en Tiled sin rellenar la clase a mano: las propiedades viven en el tileset.
@@ -71,6 +74,7 @@ _TIPO_TILE_A_CLASE = {
     "cañon_magico": "arma_usable", "canon_magico": "arma_usable", "arma_usable": "arma_usable",
     "valla": "destructible", "caja": "destructible", "barril": "destructible",
     "muro_rompible": "destructible", "destructible": "destructible",
+    "cofre": "cofre", "arcon": "cofre", "arcón": "cofre",
 }
 
 
@@ -429,9 +433,18 @@ class MapaTactico:
             self.grid[cx][cy] = _copy.copy(t_base)
         for ent in self.objetos_mapa():
             activo = bool((estados.get(ent.id_entidad) or {}).get("activo", True))
+            tipo_l = str(ent.tipo).lower()
+            # Un cofre bloquea su casilla esté abierto o cerrado (es mobiliario)
+            if tipo_l == "cofre":
+                for (cx, cy) in ent.casillas:
+                    if 0 <= cx < self.ancho and 0 <= cy < self.alto:
+                        t = self.grid[cx][cy]
+                        t.caminable = bool(ent.propiedades.get("caminable", False))
+                        t.volable = bool(ent.propiedades.get("volable", False))
+                        t.nombre = "Cofre abierto" if not activo else "Cofre"
+                continue
             if not activo:
                 continue
-            tipo_l = str(ent.tipo).lower()
             for (cx, cy) in ent.casillas:
                 if not (0 <= cx < self.ancho and 0 <= cy < self.alto):
                     continue

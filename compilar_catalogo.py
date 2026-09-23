@@ -753,6 +753,12 @@ def compilar():
             # Comandos (Advance, Timing 21): casillas a las que se desplaza / desde las que ataca.
             "rango_efecto": [to_int(s.get("RangeI")), to_int(s.get("RangeO"))],
             "move_self": to_int(s.get("MoveSelf")),
+            # Nº de copias que invoca la habilidad (VisionCount): solo Call Doubles de Lyn
+            # (SID_残像 4, _竜族 5, _飛行 4). 0 = la habilidad no invoca nada.
+            "vision_count": to_int(s.get("VisionCount")),
+            # Clasificación del motor del juego (Effect): "エンゲージスキル" = habilidad de
+            # Emblema con comando propio, "汎用エンゲージ技" / "エンゲージ技_*" = Ataque de Emblema.
+            "efecto": s.get("Effect", ""),
         }
 
     print(f"Habilidades procesadas: {len(habilidades)}")

@@ -7,6 +7,7 @@ Tests unitarios para las mecánicas de Emblemas:
 
 import unittest
 from catalogo_loader import resolver_unidad_con_catalogo, ATAQUES_ENGAGE_CONFIG
+import pasivas
 from motor_analisis import _armas_aliado
 
 
@@ -88,8 +89,13 @@ class TestEmblemAttacksAndBond(unittest.TestCase):
         self.assertFalse(ATAQUES_ENGAGE_CONFIG["Houses Unite"]["es_variable"])
         self.assertEqual(ATAQUES_ENGAGE_CONFIG["Houses Unite"]["arma_fija"]["mt"], 19)
 
-        self.assertFalse(ATAQUES_ENGAGE_CONFIG["Astra Storm"]["es_variable"])
-        self.assertEqual(ATAQUES_ENGAGE_CONFIG["Astra Storm"]["arma_fija"]["mt"], 16)
+        # Astra Storm dispara el ARCO equipado (Skill.xml WeaponProhibit 1007 = solo Kind 4):
+        # 5 golpes al 30 % del daño, alcance 1-10 (Encubierto +10, Dragón +5)
+        self.assertTrue(ATAQUES_ENGAGE_CONFIG["Astra Storm"]["es_variable"])
+        self.assertEqual(ATAQUES_ENGAGE_CONFIG["Astra Storm"]["tipos_permitidos"], ["Arco"])
+        forma = pasivas.forma_ataque_emblema(None, nombre_ataque="Astra Storm")
+        self.assertEqual((forma["golpes"], forma["fraccion"]), (5, 0.3))
+        self.assertEqual((forma["rango"][0], forma["rango"][-1]), (1, 10))
 
 
 if __name__ == "__main__":

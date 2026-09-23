@@ -66,6 +66,8 @@ class FichaUnidad:
     es_refuerzo: bool = False          # True si entró como refuerzo (no estaba en el despliegue inicial)
     accion_turno: str = ""             # Acción consumida este turno: "combate" | "objeto" | "baston" | "" (esperó / aún no actuó)
     dificultad: str = ""               # Dificultad con la que se resolvieron sus stats (enemigos/refuerzos): "Extremo" | "Hard" | "Normal"
+    mov_base: int = 0                  # Mov SIN el bono de Fusión (Gallop de Sigurd); `mov` = mov_base + bono
+    invocador: str = ""                # Nombre de quien la invocó: doble de Call Doubles (SID_残像) de Lyn
     # Estados temporales (buffs "de 1 turno" del juego, p.ej. SID_力＋２_１ターン). Cada uno:
     #   {"sid", "nombre", "stat_boosts": {str,mag,...}, "expira_fase", "expira_turno", "origen"}
     # Caduca al ENTRAR en (expira_fase, expira_turno). Ver otorgar_estado_temporal / purgar_estados_temporales.
@@ -75,6 +77,33 @@ class FichaUnidad:
     def controlable(self) -> bool:
         """Aliado que el jugador controla (los verdes pendientes de unión no lo son)."""
         return bool(self.es_aliado and not self.union_pendiente)
+
+    def _puede_call_doubles(self) -> bool:
+        """True si la unidad tiene el comando Call Doubles (SID_残像) activo — lo usa la
+        UI para ofrecer el botón de invocar / disipar dobles."""
+        try:
+            import pasivas
+            return pasivas.call_doubles(self) is not None
+        except Exception:
+            return False
+
+    def _puede_escudo_vinculo(self) -> bool:
+        """True si la unidad tiene Bonded Shield (SID_絆盾) activo."""
+        try:
+            import pasivas
+            return pasivas.bonded_shield(self) is not None
+        except Exception:
+            return False
+
+    def actualizar_movimiento_fusion(self) -> None:
+        """Recalcula `mov` = mov_base + bono de Fusión (Gallop de Sigurd: +5, +7 caballería).
+        Se llama al activar la Fusión y al terminarla."""
+        import pasivas
+        if not self.mov_base:
+            self.mov_base = self.mov
+        self.mov = max(1, int(self.mov_base) + pasivas.bono_movimiento_fusion(self))
+        if self.stats:
+            setattr(self.stats, 'mov', self.mov)
 
     def terminar_fusion(self) -> None:
         """
@@ -115,6 +144,7 @@ class FichaUnidad:
             setattr(self.stats, 'turnos_fusion_restantes', 0)
             setattr(self.stats, 'energia_emblema', 0)
             setattr(self.stats, 'ataque_emblema_usado', False)
+        self.actualizar_movimiento_fusion()   # se va el Mov extra de Gallop
 
     @property
     def arma_equipada(self):
@@ -228,7 +258,9 @@ class FichaUnidad:
 
     @property
     def puede_usar_ballesta(self) -> bool:
-        """Maestría en Arco + un arco en el inventario (requisito de las ballestas de mapa)."""
+        """Maestría en Arco + un arco en el inventario (requisito de las ballestas de mapa).
+        Para otras armas de mapa (cañón mágico: Tomo) usar
+        `catalogo_loader.puede_usar_arma_de_mapa(ficha, props_del_objeto)`."""
         from catalogo_loader import puede_usar_ballesta
         return puede_usar_ballesta(self)
 
@@ -272,6 +304,10 @@ class FichaUnidad:
             "ha_actuado": self.ha_actuado,
             "accion_turno": self.accion_turno,
             "es_refuerzo": self.es_refuerzo,
+            "invocador": self.invocador,
+            "es_doble": bool(self.invocador),
+            "puede_call_doubles": self._puede_call_doubles(),
+            "puede_escudo_vinculo": self._puede_escudo_vinculo(),
             "dificultad": self.dificultad,
             "estados_temporales": self.estados_temporales,
             "cargas_ruptura": self.cargas_ruptura,
@@ -281,6 +317,7 @@ class FichaUnidad:
             "x": self.x,
             "y": self.y,
             "mov": self.mov,
+            "mov_base": self.mov_base or self.mov,
             "es_volador": self.es_volador,
             "viva": self.viva and hp_a > 0,
             "hp_actual": hp_a,
@@ -464,6 +501,7 @@ class EstadoTablero:
             self.objetos[ent.id_entidad] = {
                 "activo": True,
                 "usos": int(usos) if usos is not None else None,
+                "usos_max": int(usos) if usos is not None else None,
                 "vida": int(vida) if vida is not None else None,   # HP de los destructibles
                 "vida_max": int(vida) if vida is not None else None,
                 "tipo": str(ent.tipo).lower(),
@@ -482,6 +520,44 @@ class EstadoTablero:
             return []
         return [{**ent.como_dict(), **self.objetos.get(ent.id_entidad, {"activo": True})}
                 for ent in self.mapa.objetos_mapa()]
+
+    def abrir_cofre(self, id_objeto: str, nombre_unidad: str = "") -> Optional[dict]:
+        """
+        Abre un cofre: gasta la acción de `nombre_unidad` (debe estar viva, ser
+        controlable, no haber actuado y estar en una casilla adyacente) y marca el cofre
+        como abierto. El cofre sigue bloqueando su casilla. Devuelve el estado del cofre
+        o None con el motivo en `self.ultimo_error_cofre`.
+        """
+        self.ultimo_error_cofre = ""
+        est = self.objetos.get(str(id_objeto))
+        ent = next((e for e in (self.mapa.objetos_mapa() if self.mapa and hasattr(self.mapa, 'objetos_mapa') else [])
+                    if e.id_entidad == str(id_objeto)), None)
+        if not est or not ent or str(ent.tipo).lower() != "cofre":
+            self.ultimo_error_cofre = f"'{id_objeto}' no es un cofre de este mapa"
+            return None
+        if not est.get("activo"):
+            self.ultimo_error_cofre = f"{ent.nombre or 'El cofre'} ya está abierto"
+            return None
+        if nombre_unidad:
+            f = self.fichas.get(nombre_unidad)
+            if not f or not f.viva:
+                self.ultimo_error_cofre = f"'{nombre_unidad}' no está en el tablero"
+                return None
+            if not f.controlable:
+                self.ultimo_error_cofre = f"{f.nombre} no es una unidad controlable"
+                return None
+            if f.ha_actuado:
+                self.ultimo_error_cofre = f"{f.nombre} ya ha actuado este turno"
+                return None
+            if not any(abs(f.x - cx) + abs(f.y - cy) == 1 for (cx, cy) in ent.casillas):
+                self.ultimo_error_cofre = f"{f.nombre} debe estar en una casilla adyacente al cofre"
+                return None
+            f.ha_actuado = True
+            f.accion_turno = "cofre"
+        est["activo"] = False
+        est["abierto_por"] = nombre_unidad
+        self.sincronizar_objetos_mapa()
+        return {**ent.como_dict(), **est}
 
     def consumir_objeto_mapa(self, id_objeto: str) -> bool:
         """
@@ -521,6 +597,31 @@ class EstadoTablero:
         if est["vida"] <= 0:
             est["activo"] = False
             self.sincronizar_objetos_mapa()
+        return est
+
+    def fijar_usos_objeto(self, id_objeto: str, usos: int) -> Optional[dict]:
+        """
+        Fija los usos restantes de un arma de mapa (ballesta, cañón, cañón mágico): el
+        jugador anota los que gastaron los enemigos. Con 0 queda agotada (sigue en el
+        mapa, pero no se puede disparar); con más de 0 vuelve a estar disponible.
+        Devuelve el estado del objeto o None si no existe / no tiene usos.
+        """
+        est = self.objetos.get(str(id_objeto))
+        if not est or est.get("tipo") != "arma_usable":
+            return None
+        ent = next((e for e in (self.mapa.objetos_mapa() if self.mapa and hasattr(self.mapa, 'objetos_mapa') else [])
+                    if e.id_entidad == str(id_objeto)), None)
+        declarado = (ent.propiedades.get("usos") if ent else None)
+        if declarado is not None:
+            tope = int(declarado)            # el mapa fija un máximo: se respeta
+        else:
+            # Sin `usos` en el tile (arma "ilimitada" hasta que el jugador anota los que
+            # ve en pantalla): manda el número que escriba, y ese pasa a ser el máximo.
+            tope = max(int(usos), int(est.get("usos_max") or 0))
+        est["usos_max"] = tope
+        est["usos"] = max(0, min(tope, int(usos)))
+        est["activo"] = est["usos"] > 0
+        self.sincronizar_objetos_mapa()
         return est
 
     def restaurar_objeto_mapa(self, id_objeto: str) -> bool:
@@ -899,50 +1000,195 @@ class EstadoTablero:
         self.refuerzos_pendientes = {int(t): list(us) for t, us in (calendario or {}).items() if us}
         self.refuerzos_desplegados_ultimo = []
 
+    @staticmethod
+    def _normalizar_evento(e: dict) -> dict:
+        disparos = [dict(d) for d in (e.get("disparos") or [])]
+        if not disparos:   # guardados antiguos: un solo disparo con pid/casilla sueltos
+            disparos = [{"tipo": e.get("disparo", "casilla"), "pid": e.get("pid", ""), "casilla": e.get("casilla")}]
+        for d in disparos:
+            if d.get("casilla"):
+                d["casilla"] = tuple(d["casilla"])
+        return dict(e, disparos=disparos, disparado=bool(e.get("disparado", False)),
+                    casilla=tuple(e["casilla"]) if e.get("casilla") else None)
+
     def programar_refuerzos_por_evento(self, eventos: list) -> None:
         """Arma los refuerzos condicionales del capítulo (ver cargador_dispos.refuerzos_por_evento)."""
-        self.refuerzos_por_evento = [dict(e, casilla=tuple(e["casilla"]), disparado=bool(e.get("disparado", False))) for e in (eventos or [])]
+        self.refuerzos_por_evento = [self._normalizar_evento(e) for e in (eventos or [])]
+
+    def resincronizar_refuerzos_por_evento(self, eventos: list) -> list:
+        """
+        Pone al día las CONDICIONES de los refuerzos por evento sin tocar la partida.
+        Los disparadores se programan al cargar el capítulo y se quedan en el estado, así
+        que una partida empezada antes de cambiarlos se queda con los antiguos; esto los
+        refresca conservando lo que ya se disparó y sin volver a desplegar nada.
+        Devuelve los grupos cuyas condiciones han cambiado.
+        """
+        if not eventos:
+            return []
+        nuevos = {e["grupo"]: e for e in eventos if e.get("grupo")}
+        actuales = {e["grupo"]: e for e in self.refuerzos_por_evento if e.get("grupo")}
+        cambiados = []
+        for grupo, nuevo in nuevos.items():
+            viejo = actuales.get(grupo)
+            if viejo is None:
+                continue   # grupo que no estaba en esta partida: no se añade a mitad de mapa
+            normalizado = self._normalizar_evento(nuevo)
+            if viejo.get("disparos") == normalizado["disparos"]:
+                continue
+            viejo["disparos"] = normalizado["disparos"]
+            viejo["descripcion"] = nuevo.get("descripcion", viejo.get("descripcion", ""))
+            cambiados.append(grupo)
+        return cambiados
 
     def refuerzos_por_evento_previstos(self) -> list:
         """Eventos aún no disparados, para la UI: [{grupo, descripcion, pid, casilla, unidades: [{nombre, x, y}]}]."""
         return [
-            {"grupo": e["grupo"], "descripcion": e.get("descripcion", ""), "pid": e["pid"], "casilla": list(e["casilla"]),
+            {"grupo": e["grupo"], "descripcion": e.get("descripcion", ""), "pid": e.get("pid", ""),
+             "casilla": list(e["casilla"]) if e.get("casilla") else None, "disparo": e.get("disparo", "casilla"),
+             "disparos": [dict(d, casilla=list(d["casilla"]) if d.get("casilla") else None) for d in e.get("disparos", [])],
              "unidades": [{"nombre": u["nombre"], "x": u["x"], "y": u["y"]} for u in e["unidades"]]}
             for e in self.refuerzos_por_evento if not e.get("disparado")
         ]
 
     def comprobar_refuerzos_por_evento(self) -> list:
         """
-        Dispara los refuerzos por evento cuya unidad `pid` está viva en su casilla.
-        Se llama tras cada movimiento y al cambiar de fase. Devuelve las fichas
-        desplegadas (como_dict). Las casillas ocupadas se posponen al turno siguiente.
+        Dispara los refuerzos por evento cuyas condiciones de posición o de turno ya se
+        cumplen: la unidad `pid` está viva sobre la casilla del guion, o ha llegado el
+        turno indicado. Se llama tras cada movimiento y al cambiar de turno/fase.
+        Devuelve las fichas desplegadas; las casillas ocupadas se posponen al turno siguiente.
         """
         desplegados = []
-        for ev in self.refuerzos_por_evento:
+        for ev in list(self.refuerzos_por_evento):
             if ev.get("disparado"):
                 continue
-            en_casilla = any(
-                f.viva and getattr(f, "pid", "") == ev["pid"] and (f.x, f.y) == tuple(ev["casilla"])
-                for f in self.fichas.values()
-            )
-            if not en_casilla:
-                continue
-            ev["disparado"] = True
-            nuevos, pospuestos = self._desplegar_unidades(ev["unidades"])
-            desplegados += nuevos
-            if pospuestos:
-                self.refuerzos_pendientes.setdefault(int(self.turno_actual) + 1, []).extend(pospuestos)
+            for d in ev.get("disparos", []):
+                tipo = d.get("tipo", "casilla")
+                if tipo == "casilla" and d.get("casilla") and any(
+                        f.viva and getattr(f, "pid", "") == d.get("pid") and (f.x, f.y) == tuple(d["casilla"])
+                        for f in self.fichas.values()):
+                    desplegados += self._disparar_evento(ev, d)
+                    break
+                if tipo == "turno" and int(self.turno_actual) >= int(d.get("turno", 99)):
+                    desplegados += self._disparar_evento(ev, d)
+                    break
         return desplegados
 
+    def disparar_refuerzos_por_evento(self, tipo: str, *unidades) -> list:
+        """
+        Dispara los refuerzos por evento de tipo "combate" o "muerte" asociados a alguna
+        de `unidades` (fichas o nombres). Devuelve las fichas desplegadas (como_dict).
+        """
+        implicadas = set()
+        for u in unidades:
+            f = self.fichas.get(u) if isinstance(u, str) else u
+            if f is None:
+                continue
+            implicadas.add(str(getattr(f, "pid", "") or ""))
+            implicadas.add(str(getattr(f, "nombre", "") or ""))
+        implicadas.discard("")
+        desplegados = []
+        for ev in list(self.refuerzos_por_evento):
+            if ev.get("disparado"):
+                continue
+            for d in ev.get("disparos", []):
+                if d.get("tipo") == tipo and d.get("pid") in implicadas:
+                    desplegados += self._disparar_evento(ev, d)
+                    break
+        return desplegados
+
+    def eventos_por_accion(self) -> list:
+        """
+        Eventos del guion de tipo "accion", agrupados por la unidad que los dispara:
+        el juego los lanza cuando ESA unidad hace algo que la herramienta no puede
+        observar (atacar o usar un bastón en la fase enemiga), así que los marca el
+        jugador con un botón en su ficha. Va en el estado del tablero (una sola lista,
+        no un cálculo por ficha) para que la UI sepa a quién ponerle el botón.
+        Devuelve [{nombre, pid, descripcion, grupos, disparado}].
+        """
+        por_unidad = {}
+        for ev in self.refuerzos_por_evento:
+            for d in ev.get("disparos", []):
+                if d.get("tipo") != "accion":
+                    continue
+                pid = str(d.get("pid") or "")
+                ficha = next((f for f in self.fichas.values() if getattr(f, "pid", "") == pid), None)
+                if ficha is None:
+                    continue
+                entrada = por_unidad.setdefault(ficha.nombre, {
+                    "nombre": ficha.nombre, "pid": pid,
+                    "descripcion": ev.get("descripcion", ""), "grupos": [], "disparado": True,
+                })
+                entrada["grupos"].append(ev["grupo"])
+                if not ev.get("disparado"):
+                    entrada["disparado"] = False
+        return list(por_unidad.values())
+
+    def tiene_evento_por_accion(self, nombre: str) -> bool:
+        """True si esa unidad tiene un evento por acción AÚN SIN disparar."""
+        return any(e["nombre"] == nombre and not e["disparado"] for e in self.eventos_por_accion())
+
+    def disparar_refuerzos_por_objeto(self, objeto: dict) -> list:
+        """
+        Dispara los refuerzos que el guion asocia a un objeto del mapa destruido o abierto
+        (M010: la puerta). `objeto` es la entrada de `objetos_como_lista()` / el estado.
+        """
+        tipo_obj = str((objeto or {}).get("propiedades", {}).get("tipo", "") or (objeto or {}).get("tipo", "")).lower()
+        id_obj = str((objeto or {}).get("id", ""))
+        desplegados = []
+        for ev in list(self.refuerzos_por_evento):
+            if ev.get("disparado"):
+                continue
+            for d in ev.get("disparos", []):
+                if d.get("tipo") != "objeto":
+                    continue
+                if str(d.get("objeto_tipo", "")).lower() == tipo_obj or (d.get("objeto_id") and str(d["objeto_id"]) == id_obj):
+                    desplegados += self._disparar_evento(ev, d)
+                    break
+        return desplegados
+
+    def _disparar_evento(self, ev: dict, disparo: dict = None) -> list:
+        """Marca el evento y despliega su grupo (posponiendo lo que caiga en casillas ocupadas)."""
+        ev["disparado"] = True
+        ev["disparado_por"] = dict(disparo) if disparo else None
+        nuevos, pospuestos = self._desplegar_unidades(ev["unidades"])
+        if pospuestos:
+            self.refuerzos_pendientes.setdefault(int(self.turno_actual) + 1, []).extend(pospuestos)
+        return nuevos
+
+    def _casilla_libre_cerca(self, x: int, y: int, ocupadas: set, es_volador: bool = False, radio: int = 3):
+        """Casilla transitable y libre más cercana a (x, y) (anillos crecientes, orden
+        determinista). None si no hay ninguna dentro de `radio`. Al aparecer, un refuerzo
+        se coloca junto a su casilla si esta está ocupada, como hace el juego."""
+        for r in range(0, radio + 1):
+            candidatas = sorted({(x + dx, y + dy) for dx in range(-r, r + 1) for dy in range(-r, r + 1)
+                                 if abs(dx) + abs(dy) == r})
+            for (cx, cy) in candidatas:
+                if (cx, cy) in ocupadas:
+                    continue
+                if self.mapa and hasattr(self.mapa, 'es_casilla_valida_para_unidad'):
+                    if not self.mapa.es_casilla_valida_para_unidad(cx, cy, es_volador):
+                        continue
+                elif not (0 <= cx < 99 and 0 <= cy < 99):
+                    continue
+                return (cx, cy)
+        return None
+
     def _desplegar_unidades(self, unidades: list):
-        """Coloca `unidades` (dicts del cargador). Devuelve (desplegadas como_dict, pospuestas por casilla ocupada)."""
+        """
+        Coloca `unidades` (dicts del cargador). Si su casilla está ocupada, se busca la
+        libre más cercana (radio 3); solo si tampoco hay se pospone al turno siguiente.
+        Devuelve (desplegadas como_dict, pospuestas).
+        """
         from catalogo_loader import resolver_unidad_con_catalogo
         desplegados, pospuestos = [], []
         ocupadas = {(f.x, f.y) for f in self.fichas.values() if f.viva}
         for u in unidades:
             if (u["x"], u["y"]) in ocupadas:
-                pospuestos.append(u)
-                continue
+                hueco = self._casilla_libre_cerca(u["x"], u["y"], ocupadas, bool(u.get("es_volador", False)))
+                if hueco is None:
+                    pospuestos.append(u)
+                    continue
+                u = dict(u, x=hueco[0], y=hueco[1])
             datos = dict(u)
             # Nombre único si ya existiera una ficha (viva o muerta) con ese nombre
             base = datos["nombre"]
@@ -956,6 +1202,171 @@ class EstadoTablero:
             ocupadas.add((ficha.x, ficha.y))
             desplegados.append(ficha.como_dict())
         return desplegados, pospuestos
+
+    # ── Call Doubles (SID_残像, Emblema de Lyn) ──────────────────────────
+
+    def invocar_dobles(self, nombre_invocador: str):
+        """
+        Ejecuta el comando Call Doubles: rodea a la unidad de copias suyas con 1 HP
+        (VisionCount del datamine: 4, 5 en estilo Dragón), con el resto de stats
+        idénticas y la Mani Katti de los dobles equipada. Solo hacen Chain Attack
+        cuando ataca quien las invocó y no dan experiencia.
+        Devuelve (fichas desplegadas como_dict, motivo de error o "").
+        """
+        import pasivas
+        from catalogo_loader import resolver_unidad_con_catalogo
+
+        f = self.fichas.get(nombre_invocador)
+        if f is None or not f.viva:
+            return [], f"'{nombre_invocador}' no está en el tablero"
+        datos = pasivas.call_doubles(f)
+        if not datos:
+            return [], f"{f.nombre} no tiene Call Doubles"
+        ya = [d for d in self.fichas.values() if d.viva and d.invocador == f.nombre]
+        if ya:
+            return [], f"{f.nombre} ya tiene {len(ya)} doble(s) en el tablero"
+
+        casillas = self._casillas_para_dobles(f, datos["copias"])
+        if not casillas:
+            return [], f"no hay casillas libres alrededor de {f.nombre}"
+
+        # El doble copia las stats del invocador (Params.xml "残像能力倍率" = 1) menos el HP
+        stats_copia = {
+            "hp": 1,
+            "fuerza": getattr(f.stats, "fuerza", 0), "magia": getattr(f.stats, "magia", 0),
+            "destreza": getattr(f.stats, "destreza", 0), "velocidad": getattr(f.stats, "velocidad", 0),
+            "defensa": getattr(f.stats, "defensa", 0), "resistencia": getattr(f.stats, "resistencia", 0),
+            "suerte": getattr(f.stats, "suerte", 0), "complexion": getattr(f.stats, "complexion", 1),
+        } if f.stats else {"hp": 1}
+        arma_doble = (self.catalogo_armas() or {}).get(datos["arma_iid"], {})
+        nombre_arma = arma_doble.get("nombre") or "Mani Katti"
+        # El doble es una unidad propia del datamine (PID_残像): clase Villager, sin estilo
+        # de combate — solo copia las stats, no las reglas de estilo del invocador.
+        ficha_doble = (self.catalogo_personajes() or {}).get(datos["pid"], {})
+
+        desplegados = []
+        for i, (x, y) in enumerate(casillas, start=1):
+            nombre = f"{f.nombre} (Doble {i})"
+            n, sufijo = nombre, 2
+            while n in self.fichas:
+                n = f"{nombre} #{sufijo}"
+                sufijo += 1
+            doble = resolver_unidad_con_catalogo({
+                "nombre": n, "pid": datos["pid"], "es_aliado": f.es_aliado,
+                "x": x, "y": y, "nivel": 1,
+                "clase_id": ficha_doble.get("jid_default", ""),
+                "clase_nombre": ficha_doble.get("clase_default", ""),
+                "stats": stats_copia, "hp_actual": 1, "hp_max": 1,
+                "arma_nombre": nombre_arma,
+                "inventario": [{"id": datos["arma_iid"], "nombre": nombre_arma,
+                                "arma": nombre_arma, "equipada": True}],
+                "habilidades": list(datos["give_sids"]),
+                "dificultad": f.dificultad,
+            }, tablero=self)
+            doble.invocador = f.nombre
+            doble.es_jefe = False
+            doble.hp_stock = 0
+            self.registrar_unidad(doble, resolver_colision=False)
+            desplegados.append(doble.como_dict())
+        return desplegados, ""
+
+    def disipar_dobles(self, nombre_invocador: str) -> list:
+        """Quita del tablero los dobles de `nombre_invocador` (el juego los disipa al
+        morir quien los invocó, al acabar la Fusión o con el comando Dispel Doubles).
+        Devuelve los nombres retirados."""
+        fuera = [d.nombre for d in list(self.fichas.values()) if d.invocador == nombre_invocador]
+        for n in fuera:
+            self.fichas.pop(n, None)
+        return fuera
+
+    def purgar_dobles_huerfanos(self) -> list:
+        """Retira los dobles cuyo invocador ya no está vivo en el tablero: en el juego
+        los residuos se disipan al caer quien los creó. Devuelve los nombres retirados."""
+        fuera = []
+        for d in list(self.fichas.values()):
+            if not d.invocador:
+                continue
+            jefe = self.fichas.get(d.invocador)
+            if jefe is None or not jefe.viva:
+                fuera.append(d.nombre)
+        for n in fuera:
+            self.fichas.pop(n, None)
+        return fuera
+
+    def _casillas_para_dobles(self, ficha, cuantas: int) -> list:
+        """Casillas donde caben los dobles: las adyacentes en cruz primero (el juego lo
+        describe como rodearse) y, si faltan, las diagonales."""
+        ocupadas = {(u.x, u.y) for u in self.fichas.values() if u.viva}
+        cruz = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        diagonales = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+        salida = []
+        for dx, dy in cruz + diagonales:
+            if len(salida) >= cuantas:
+                break
+            x, y = ficha.x + dx, ficha.y + dy
+            if (x, y) in ocupadas or not self._casilla_transitable(x, y, ficha.es_volador):
+                continue
+            ocupadas.add((x, y))
+            salida.append((x, y))
+        return salida
+
+    def _casilla_transitable(self, x: int, y: int, es_volador: bool = False) -> bool:
+        """True si (x, y) está dentro del mapa y una unidad puede estar ahí."""
+        if not self.mapa:
+            return True
+        if not (0 <= x < self.mapa.ancho and 0 <= y < self.mapa.alto):
+            return False
+        t = self.mapa.grid[x][y]
+        return bool(getattr(t, "volable", False)) if es_volador else bool(getattr(t, "caminable", False))
+
+    def catalogo_armas(self) -> dict:
+        """Armas del catálogo compilado (para resolver un IID a su nombre)."""
+        import catalogo_loader
+        return (catalogo_loader._catalogo or {}).get("armas", {})
+
+    def catalogo_personajes(self) -> dict:
+        """Personajes del catálogo compilado (para resolver un PID a su clase)."""
+        import catalogo_loader
+        return (catalogo_loader._catalogo or {}).get("personajes", {})
+
+    # ── Bonded Shield (SID_絆盾, habilidad de Fusión de Lucina) ──────────
+
+    def activar_escudo_vinculo(self, nombre_unidad: str):
+        """
+        Bonded Shield: anula el primer ataque contra los aliados ADYACENTES hasta el
+        turno siguiente de quien la usa. El porcentaje sale del datamine según el estilo
+        de combate (80 % de base; 90 % en Dragón; 100 % en Qi Adept y, en Caballería /
+        Acorazado / Volador, para los aliados de ese mismo estilo).
+        La herramienta no simula la anulación: deja el estado marcado para que el
+        análisis lo avise y el jugador registre el daño que acabe recibiendo.
+        Devuelve (lista de {aliado, probabilidad}, motivo de error o "").
+        """
+        import pasivas
+        f = self.fichas.get(nombre_unidad)
+        if f is None or not f.viva:
+            return [], f"'{nombre_unidad}' no está en el tablero"
+        datos = pasivas.bonded_shield(f)
+        if not datos:
+            return [], f"{f.nombre} no tiene Bonded Shield"
+        protegidos = []
+        for c in self.fichas.values():
+            if not c.viva or c is f or c.es_aliado != f.es_aliado:
+                continue
+            if abs(c.x - f.x) + abs(c.y - f.y) != 1:
+                continue
+            prob = pasivas.probabilidad_bonded_shield(f, c)
+            c.otorgar_estado_temporal(
+                sid=pasivas.SID_BONDED_SHIELD,
+                nombre=f"{datos['nombre']} ({prob}%)",
+                stat_boosts={},
+                expira_fase="jugador" if f.es_aliado else "enemigo",
+                expira_turno=int(self.turno_actual) + 1,
+                origen=f.nombre,
+            )
+            protegidos.append({"aliado": c.nombre, "probabilidad": prob})
+        if not protegidos:
+            return [], f"{f.nombre} no tiene aliados adyacentes a los que proteger"
+        return protegidos, ""
 
     def refuerzos_previstos(self, turno: Optional[int] = None) -> list:
         """Refuerzos que aparecerán en `turno` (o todos los pendientes, ordenados) — para la UI / análisis."""
@@ -1044,8 +1455,16 @@ class EstadoTablero:
             "fase": self.fase,
             "dificultad": self.dificultad,
             "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(self.refuerzos_pendientes.items())},
-            "refuerzos_por_evento": [dict(e, casilla=list(e["casilla"])) for e in self.refuerzos_por_evento],
+            # `casilla` es None en los eventos que no se disparan al pisar una casilla
+            # (combate / muerte / objeto): no se puede serializar con list() a ciegas.
+            "refuerzos_por_evento": [
+                dict(e,
+                     casilla=list(e["casilla"]) if e.get("casilla") else None,
+                     disparos=[dict(d, casilla=list(d["casilla"]) if d.get("casilla") else None)
+                               for d in (e.get("disparos") or [])])
+                for e in self.refuerzos_por_evento],
             "casillas_fuego": self.casillas_fuego_lista(),
+            "eventos_por_accion": self.eventos_por_accion(),
             "aliados": [f.como_dict() for f in self.obtener_aliados()],
             "enemigos": [f.como_dict() for f in self.obtener_enemigos()],
             "fichas": [f.como_dict() for f in self.fichas.values() if f.viva and f.hp_actual > 0]

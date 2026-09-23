@@ -14,7 +14,9 @@ import math
 from collections import deque
 from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept, resolver_estilo_combate
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock, casillas_advance
-from catalogo_loader import _arma_desde_item, _catalogo, normalizar_texto, puede_usar_ballesta, arma_ballesta_desde, info_curacion_item
+from catalogo_loader import (_arma_desde_item, _catalogo, normalizar_texto, info_curacion_item,
+                             puede_usar_arma_de_mapa, arma_de_mapa_desde, tipo_arma_de_objeto,
+                             nombre_arma_de_mapa)
 from ataques_area import resolver_ataque_area, tipo_ataque_area, FUEGO_DANO_POR_FASE
 import pasivas
 
@@ -43,12 +45,14 @@ def es_unidad_backup(ficha_o_stats) -> bool:
         return True
     return False
 
-def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None):
+def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_emblema=""):
     """
     Retorna la lista de fichas compañeras vivas que pueden realizar Chain Attack contra defensor_ficha.
     Reglas FE Engage:
       - Mismo bando que el atacante (aliado o enemigo).
-      - Unidad de estilo Backup (De apoyo / 連携).
+      - Unidad de estilo Backup (De apoyo / 連携) o con Chain Attack concedido por una
+        habilidad (Dual Strike de Lucina), o un doble de Call Doubles cuando ataca justo
+        quien lo invocó.
       - En rango de su arma equipada respecto a la posición del defensor.
       - Viva y distinta del atacante y del defensor.
     """
@@ -67,13 +71,32 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None):
     else:
         companeros = tablero.obtener_enemigos()
 
+    # All for One (Lucina): el Ataque de Emblema obliga a encadenar a TODOS los aliados
+    # a 2 casillas del atacante (3 en estilo Apoyo), sean o no de estilo Apoyo y sin
+    # necesidad de que su arma alcance al defensor.
+    forzado = pasivas.chain_attack_forzado(atacante_ficha, nombre_ataque=ataque_emblema) if ataque_emblema else None
+    if forzado:
+        return [
+            c for c in companeros
+            if c.viva and c.stats and c.arma
+            and c.nombre not in (atacante_ficha.nombre, defensor_ficha.nombre)
+            and abs(c.x - atacante_ficha.x) + abs(c.y - atacante_ficha.y) <= forzado["rango"]
+        ]
+
     apoyos = []
     for c in companeros:
         if not c.viva or c.nombre in (atacante_ficha.nombre, defensor_ficha.nombre):
             continue
         if not c.stats or not c.arma:
             continue
-        if not es_unidad_backup(c):
+        # Dobles de Call Doubles (SID_残像): "自分のみチェインアタック可能な残像" — solo
+        # encadenan cuando ataca quien los invocó, no con el resto del ejército.
+        invocador = str(getattr(c, "invocador", "") or "")
+        if invocador:
+            if invocador != atacante_ficha.nombre:
+                continue
+        # Dual Strike (SID_絆の力, sincronía de Lucina) permite encadenar sin ser de Apoyo
+        elif not es_unidad_backup(c) and not pasivas.permite_chain_attack(c):
             continue
         dist_c = abs(c.x - defensor_ficha.x) + abs(c.y - defensor_ficha.y)
         r_c = c.arma.rango if (c.arma and c.arma.rango) else [1]
@@ -299,6 +322,16 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
         'casillas_legales': {tuple(pos) for pos in candidatas},
     }
 
+def puede_fusionar(aliado) -> bool:
+    """La unidad puede activar la Fusión ahora mismo: tiene Emblema y el medidor lleno."""
+    if _en_fusion(aliado):
+        return False
+    if not _emblema_equipado(aliado):
+        return False
+    maxi = int(getattr(aliado, "max_energia_emblema", 6) or 6)
+    return maxi > 0 and int(getattr(aliado, "energia_emblema", 0) or 0) >= maxi
+
+
 def _en_fusion(aliado) -> bool:
     return (
         bool(getattr(aliado, "en_fusion", False))
@@ -429,6 +462,8 @@ def _armas_aliado(aliado):
                                 nombres_vistos.add(w_c.nombre)
                                 armas_candidatas_unicas.append(w_c)
 
+                        forma_eng = pasivas.forma_ataque_emblema(aliado, nombre_ataque=clean_name)
+                        rango_eng = forma_eng["rango"] if (forma_eng and len(forma_eng["rango"]) > 1) else None
                         for w_c in armas_candidatas_unicas:
                             a_eng_atk = Arma(
                                 nombre=f"{clean_name} ({w_c.nombre})",
@@ -442,6 +477,11 @@ def _armas_aliado(aliado):
                                 efectividades=list(getattr(w_c, 'efectividades', []) or []),
                                 efectivo_contra=list(getattr(w_c, 'efectivo_contra', []) or [])
                             )
+                            # El alcance lo fija el SID del ataque (Astra Storm 1-10, 1-20 en
+                            # Encubierto): se asigna después de construir el Arma porque
+                            # inferir_rango_arma devolvería el rango normal del arco.
+                            if rango_eng and not tipo_ataque_area(clean_name):
+                                a_eng_atk.rango = list(rango_eng)
                             setattr(a_eng_atk, 'es_engage_attack', True)
                             setattr(a_eng_atk, 'es_engage', getattr(w_c, 'es_engage', False))
                             setattr(a_eng_atk, 'engage_attack_nombre', clean_name)
@@ -484,33 +524,33 @@ def _armas_aliado(aliado):
 
 def _armas_ballesta(aliado, tablero, mapa):
     """
-    Armas usables del mapa (ballestas) que este aliado podría disparar este turno:
-    una entrada por ballesta activa con usos, construida con su propio arco
-    (ver catalogo_loader.arma_ballesta_desde). Cada arma lleva `objeto_id` y
-    `pos_forzada` (la casilla de la ballesta, desde la que hay que disparar).
+    Armas de mapa que este aliado podría disparar este turno (ballesta de arco del
+    Cap. 8, cañón mágico del Cap. 10…): una entrada por objeto activo con usos,
+    construida con el arma propia del tipo que pide (ver catalogo_loader.
+    arma_de_mapa_desde). Cada arma lleva `objeto_id` y `pos_forzada` (la casilla del
+    objeto, desde la que hay que disparar).
     """
     if not tablero or not mapa or not hasattr(mapa, 'objetos_mapa'):
-        return []
-    if not puede_usar_ballesta(aliado):
         return []
     armas = []
     for ent in mapa.objetos_mapa():
         if str(ent.tipo).lower() != "arma_usable":
             continue
+        if not puede_usar_arma_de_mapa(aliado, ent.propiedades):
+            continue
         est = tablero.objetos.get(ent.id_entidad) or {}
-        if not est.get("activo", True):
-            continue
         usos = est.get("usos")
-        if usos is not None and usos <= 0:
-            continue
-        arma = arma_ballesta_desde(aliado, ent.propiedades)
+        if not est.get("activo", True) or (usos is not None and usos <= 0):
+            continue   # agotada: los enemigos también la gastan (ver /api/mapa/objeto/usos)
+        arma = arma_de_mapa_desde(aliado, ent.propiedades, ent.nombre)
         if not arma or not ent.casillas:
             continue
         setattr(arma, 'objeto_id', ent.id_entidad)
         setattr(arma, 'pos_forzada', tuple(ent.casillas[0]))
         setattr(arma, 'usos_restantes', usos)
         usos_txt = f" · {usos} uso{'s' if usos != 1 else ''} restante{'s' if usos != 1 else ''}" if usos is not None else ""
-        nota = f"{ent.nombre or 'Ballesta'}: 1 golpe, sin contraataque, gasta el turno y 1 uso{usos_txt}"
+        nota = (f"{nombre_arma_de_mapa(ent.propiedades, ent.nombre)}: 1 golpe, sin contraataque, "
+                f"gasta el turno{usos_txt}")
         armas.append((arma, False, nota))
     return armas
 
@@ -887,6 +927,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     enemigos_bloqueo = {(f.x, f.y) for f in enemigos_activos}
 
     casillas_mov_aliados = {}
+    # Alcance EXTRA que daría activar la Fusión (Gallop de Sigurd: +5 Mov, +7 caballería).
+    # Solo para quien puede fusionar ahora; si ya está en Fusión, su `mov` ya lo incluye.
+    casillas_mov_fusion = {}
     for a in aliados_activos:
         tiene_pass = pasivas.tiene_sid(a, 'SID_すり抜け')
         u_mock = UnidadMock(
@@ -901,6 +944,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             u_mock,
             casillas_bloqueadas=enemigos_bloqueo
         )
+        bono_mov = pasivas.bono_movimiento_fusion_potencial(a) if puede_fusionar(a) else 0
+        if bono_mov > 0:
+            u_fus = UnidadMock(x=a.x, y=a.y, mov=a.mov + bono_mov, es_volador=a.es_volador, arma=ArmaMock(rango=[1]))
+            setattr(u_fus, 'tiene_pass', tiene_pass)
+            casillas_mov_fusion[a.nombre] = analizador.calcular_casillas_alcanzables(
+                u_fus, casillas_bloqueadas=enemigos_bloqueo)
 
     casillas_mov_enemigos = {}
     zonas_amenaza_enemigos = {}
@@ -1040,6 +1089,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     # ── 2. Evaluar oportunidades de ataque del jugador (multi-arma) ───────
     for aliado in aliados_activos:
         todas_armas = _armas_aliado(aliado) + _armas_ballesta(aliado, tablero, mapa)
+        alcanzables_normales = casillas_mov_aliados.get(aliado.nombre) or set()
+        # Si fusionarse le da más movimiento, las casillas extra también son candidatas:
+        # la jugada se marca entonces como "requiere Fusión" (⚡ Fusionar y atacar).
+        alcanzables_con_fusion = casillas_mov_fusion.get(aliado.nombre)
+        mov_extra_fusion = (len(alcanzables_con_fusion) - len(alcanzables_normales)) if alcanzables_con_fusion else 0
 
         for enemigo in enemigos_activos:
             dist = abs(aliado.x - enemigo.x) + abs(aliado.y - enemigo.y)
@@ -1050,6 +1104,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             mejor_pos = None
             mejor_area = None
             mejor_advance = None
+            mejor_fusion_mov = False
             mejor_score = -10**9   # centinela: también se aceptan scores negativos (plan de jefe)
 
             for (arma_candidata, es_engage, nota_arma) in todas_armas:
@@ -1063,7 +1118,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         continue
                     pos_candidata = pos_forzada
                 else:
-                    alcance = (10 if is_tele_candidata else aliado.mov) + rango_max
+                    mov_util = aliado.mov + (mov_extra_fusion and pasivas.bono_movimiento_fusion_potencial(aliado) or 0)
+                    alcance = (10 if is_tele_candidata else mov_util) + rango_max
                     if dist > alcance:
                         continue
 
@@ -1071,7 +1127,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     pos_candidata = encontrar_pos_ataque_optima(
                         aliado, enemigo, arma_candidata,
                         mapa=mapa, tablero=tablero, analizador=analizador,
-                        casillas_alcanzables_precalc=casillas_mov_aliados.get(aliado.nombre) if not is_tele_candidata else None,
+                        casillas_alcanzables_precalc=(alcanzables_con_fusion or alcanzables_normales) if not is_tele_candidata else None,
                         zonas_amenaza_enemigos=zonas_amenaza_enemigos, detalle=detalle_pos,
                     )
                     advance_desde = detalle_pos.get("advance_desde")
@@ -1081,6 +1137,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 dist_combate = abs(pos_candidata[0] - enemigo.x) + abs(pos_candidata[1] - enemigo.y)
                 if dist_combate not in (arma_candidata.rango or [1]):
                     continue
+
+                # ¿La casilla de ataque solo se alcanza fusionándose? (Gallop de Sigurd)
+                fusion_por_movimiento = bool(
+                    alcanzables_con_fusion and tuple(pos_candidata) not in alcanzables_normales
+                    and tuple(pos_candidata) in alcanzables_con_fusion
+                )
 
                 # Ataques de Emblema de área (Override / Blazing Lion): objetivos extra,
                 # casilla de llegada y fuego. Si Override no puede acabar detrás del
@@ -1110,7 +1172,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     area_info["extras"] = _evaluar_objetivos_extra(aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)
 
                 is_tele = "ragnarok" in arma_candidata.nombre.lower()
-                apoyos_aliados = [] if pos_forzada is not None else obtener_aliados_backup(aliado, enemigo, tablero=tablero)
+                apoyos_aliados = [] if pos_forzada is not None else obtener_aliados_backup(
+                    aliado, enemigo, tablero=tablero, ataque_emblema=nom_eng_cand)
                 aliados_backup_stats = [a_sup.stats for a_sup in apoyos_aliados]
 
                 try:
@@ -1245,7 +1308,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         score += 300 if (kill_seguro or kill_probable or quiebra_barra) else 60
                         if es_engage_candidato:
                             score += 100
-                    elif (es_engage_candidato or getattr(arma_candidata, 'requiere_fusion', False)) and not es_jefe_e                             and not (area_info and len(area_info.get("objetivos") or []) >= 2):
+                    elif (es_engage_candidato or getattr(arma_candidata, 'requiere_fusion', False) or fusion_por_movimiento) and not es_jefe_e                             and not (area_info and len(area_info.get("objetivos") or []) >= 2):
                         # (Excepción: un Override / Blazing Lion que alcanza a 2+ enemigos sí
                         # merece gastar la técnica de Emblema aunque no haya jefe.)
                         # Reservar la Fusión de Emblema para jefes: contra enemigos normales,
@@ -1295,6 +1358,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         mejor_pos = pos_candidata
                         mejor_area = area_info
                         mejor_advance = advance_desde
+                        mejor_fusion_mov = fusion_por_movimiento
 
                 except Exception as e_op:
                     # Una opción rota nunca tumba el análisis, pero tampoco se pierde en silencio
@@ -1508,8 +1572,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             if mejor_advance:
                 pos_txt = f"Mover a ({mejor_advance[0]},{mejor_advance[1]}) y ADVANCE a ({pos_sug[0]},{pos_sug[1]}) · "
 
-            req_fusion = bool(getattr(mejor_arma, 'requiere_fusion', False) or (getattr(mejor_arma, 'es_engage_attack', False) and not getattr(aliado, 'en_fusion', False)))
+            req_fusion = bool(getattr(mejor_arma, 'requiere_fusion', False)
+                              or (getattr(mejor_arma, 'es_engage_attack', False) and not getattr(aliado, 'en_fusion', False))
+                              or mejor_fusion_mov)
             prefijo_fusion = "⚡ [FUSIÓN] " if req_fusion else ""
+            if mejor_fusion_mov:
+                bonus_txt += f" | Solo llega fusionándose (+{pasivas.bono_movimiento_fusion_potencial(aliado)} Mov del Emblema)"
 
             # Descripción del área (Override / Blazing Lion)
             area_txt = ""
@@ -1544,6 +1612,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 "objeto_id": objeto_id_sug,
                 "requiere_fusion": req_fusion,
                 "es_engage": bool(getattr(mejor_arma, 'es_engage', False) or getattr(mejor_arma, 'es_engage_attack', False)),
+                # Ataque de Emblema propiamente dicho (Warp Ragnarök, Override…), no solo
+                # un arma de Emblema: la UI no tiene que adivinarlo por el nombre del arma.
+                "es_engage_attack": bool(getattr(mejor_arma, 'es_engage_attack', False)),
+                "engage_attack_nombre": getattr(mejor_arma, 'engage_attack_nombre', ''),
                 "pos_sugerida": pos_sug,
                 "advance_desde": mejor_advance,
                 "pos_canter": pos_canter,
@@ -1615,7 +1687,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 try:
                     t_def = mapa.grid[enemigo.x][enemigo.y]
                     t_atk = mapa.grid[pos[0]][pos[1]]
-                    apoyos_aliados = [] if pos_forzada_c is not None else obtener_aliados_backup(a, enemigo, tablero=tablero)
+                    apoyos_aliados = [] if pos_forzada_c is not None else obtener_aliados_backup(
+                        a, enemigo, tablero=tablero,
+                        ataque_emblema=getattr(arma, 'engage_attack_nombre', '') if getattr(arma, 'es_engage_attack', False) else "")
                     setattr(a.stats, 'distancia_movida', _casillas_movidas(a, pos, analizador, enemigos_bloqueo))
                     aliados_backup_stats = [a_sup.stats for a_sup in apoyos_aliados]
                     v = CalculadoraEngage.evaluar_riesgo(

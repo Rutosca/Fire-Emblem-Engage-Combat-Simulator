@@ -434,6 +434,124 @@ class TestFusionEmblema(unittest.TestCase):
         from motor_analisis import _armas_aliado
         self.assertFalse(any(es_eng and not getattr(a, 'requiere_fusion', False) for a, es_eng, _ in _armas_aliado(f)))
 
+    def test_gallop_sigurd_suma_movimiento_solo_en_fusion(self):
+        """Gallop (SID_迅走, habilidad de Fusión de Sigurd): +5 Mov, +7 en caballería (_騎馬),
+        +6 en dragón (_竜族), según el datamine. Sin Fusión solo queda el +1 del vínculo."""
+        def _u(nombre, clase, **kw):
+            d = {"nombre": nombre, "x": 1, "y": 1, "es_aliado": True, "clase_nombre": clase,
+                 "emblema_nombre": "Sigurd", "nivel_vinculo": 10}
+            d.update(kw)
+            return resolver_unidad_con_catalogo(d)
+
+        for clase, extra in (("Lance Armor", 5), ("Noble (Caballería)", 7), ("Dragon Child", 6), ("Lance Flier", 5)):
+            base = _u("X", clase)
+            fus = _u("X", clase, en_fusion=True, turnos_fusion=3)
+            self.assertEqual(fus.mov, base.mov + extra, clase)
+            self.assertEqual(fus.mov_base, base.mov, clase)
+        # Sin Sigurd no hay bono
+        sin_emb = resolver_unidad_con_catalogo({"nombre": "X", "x": 1, "y": 1, "es_aliado": True,
+                                                "clase_nombre": "Noble (Caballería)", "emblema_nombre": "Marth",
+                                                "nivel_vinculo": 10, "en_fusion": True, "turnos_fusion": 3})
+        self.assertEqual(sin_emb.mov, sin_emb.mov_base)
+
+    def test_gallop_no_se_acumula_al_reguardar_y_se_va_al_acabar_la_fusion(self):
+        tablero.limpiar()
+        alfred = resolver_unidad_con_catalogo({"nombre": "Alfred", "x": 1, "y": 1, "es_aliado": True,
+                                               "clase_nombre": "Noble (Caballería)", "emblema_nombre": "Sigurd", "nivel_vinculo": 10})
+        tablero.registrar_unidad(alfred)
+        mov_normal = alfred.mov
+        client = app.test_client()
+        d = alfred.como_dict(); d.update({"en_fusion": True, "turnos_fusion": 3})
+        f1 = client.post("/api/unidad/guardar", json=d).get_json()["ficha"]
+        self.assertEqual(f1["mov"], mov_normal + 7)
+        # el modal reenvía el total: no se acumula
+        f2 = client.post("/api/unidad/guardar", json=f1).get_json()["ficha"]
+        self.assertEqual(f2["mov"], mov_normal + 7)
+        self.assertEqual(f2["mov_base"], mov_normal)
+        # editar el Mov a mano estando fusionado: el número escrito es el total
+        d3 = dict(f2); d3.pop("mov_base"); d3["mov"] = mov_normal + 9
+        f3 = client.post("/api/unidad/guardar", json=d3).get_json()["ficha"]
+        self.assertEqual(f3["mov"], mov_normal + 9)
+        # al agotarse la Fusión vuelve su Mov normal
+        tablero.fase = "enemigo"
+        for _ in range(3):
+            tablero.avanzar_turno()
+        self.assertFalse(tablero.obtener_ficha("Alfred").en_fusion)
+        self.assertEqual(tablero.obtener_ficha("Alfred").mov, mov_normal + 2)   # conserva la edición manual (base 8)
+
+    def test_gallop_abre_ataques_fuera_de_alcance_y_se_ejecutan_fusionando_antes_de_mover(self):
+        """El análisis debe ver que fusionarse con Sigurd da alcance (Gallop) y proponer
+        '⚡ Fusionar y atacar'; al ejecutarlo, la Fusión se activa ANTES de mover."""
+        from motor_analisis import analizar_situacion_tactica, puede_fusionar
+        from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock
+        from app import _mapa
+        an = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
+        # Casilla desde la que Mov 13 (6 + 7 de Gallop en caballería) llega mucho más lejos que Mov 6
+        origen, destino = None, None
+        for x in range(_mapa.ancho):
+            for y in range(_mapa.alto):
+                if not getattr(_mapa.grid[x][y], "caminable", True):
+                    continue
+                normal = an.calcular_casillas_alcanzables(UnidadMock(x, y, 6, False, ArmaMock([1])))
+                fus = an.calcular_casillas_alcanzables(UnidadMock(x, y, 13, False, ArmaMock([1])))
+                extra = fus - normal
+                if extra:
+                    origen = (x, y)
+                    destino = max(extra, key=lambda c: abs(c[0] - x) + abs(c[1] - y))
+                    break
+            if origen:
+                break
+        self.assertIsNotNone(origen, "el mapa no permite probar el alcance extra de Gallop")
+
+        tablero.limpiar()
+        tablero.fase = "jugador"
+        alfred = resolver_unidad_con_catalogo({
+            "nombre": "Alfred", "x": origen[0], "y": origen[1], "es_aliado": True, "clase_nombre": "Noble (Caballería)",
+            "emblema_nombre": "Sigurd", "nivel_vinculo": 10, "energia_emblema": 6, "max_energia_emblema": 6,
+            "inventario": [{"nombre": "Iron Lance"}],
+            "stats": {"hp": 31, "fuerza": 14, "destreza": 12, "velocidad": 12, "defensa": 9, "resistencia": 6, "suerte": 8}})
+        tablero.registrar_unidad(alfred)
+        self.assertTrue(puede_fusionar(alfred))
+        self.assertEqual(alfred.mov, 6)
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Jefe", "x": destino[0], "y": destino[1], "es_aliado": False, "es_jefe": True,
+            "hp_actual": 20, "hp_max": 40, "arma_nombre": "Iron Axe",
+            "stats": {"hp": 40, "defensa": 5, "resistencia": 5, "velocidad": 3, "fuerza": 10, "suerte": 2}}))
+
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro", condicion_victoria="jefe")
+        top = res["resultados"][0]
+        self.assertEqual((top["aliado"], top["enemigo"]), ("Alfred", "Jefe"), top.get("recomendacion"))
+        self.assertTrue(top["requiere_fusion"], top.get("recomendacion"))
+        self.assertIn("Solo llega fusionándose", top["recomendacion"])
+
+        r = app.test_client().post("/api/combate/ejecutar", json={
+            "atacante": "Alfred", "defensor": "Jefe", "arma_nombre": top["arma_recomendada"],
+            "pos_destino": top["pos_sugerida"], "requiere_fusion": True})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        f = tablero.obtener_ficha("Alfred")
+        self.assertEqual([f.x, f.y], list(top["pos_sugerida"]))
+        self.assertTrue(f.en_fusion)
+        self.assertEqual(f.mov, 13)
+        self.assertEqual(f.energia_emblema, 0)
+        self.assertLessEqual(tablero.obtener_ficha("Jefe").hp_actual if tablero.obtener_ficha("Jefe") else 0, 0)
+
+    def test_sin_medidor_lleno_no_se_propone_la_fusion_para_llegar(self):
+        from motor_analisis import analizar_situacion_tactica, puede_fusionar
+        from app import _mapa
+        tablero.limpiar()
+        alfred = resolver_unidad_con_catalogo({
+            "nombre": "Alfred", "x": 10, "y": 9, "es_aliado": True, "clase_nombre": "Noble (Caballería)",
+            "emblema_nombre": "Sigurd", "nivel_vinculo": 10, "energia_emblema": 2, "max_energia_emblema": 6,
+            "inventario": [{"nombre": "Iron Lance"}], "stats": {"hp": 31, "fuerza": 14}})
+        tablero.registrar_unidad(alfred)
+        self.assertFalse(puede_fusionar(alfred))
+        tablero.registrar_unidad(resolver_unidad_con_catalogo({
+            "nombre": "Jefe", "x": 17, "y": 3, "es_aliado": False, "es_jefe": True, "hp_actual": 20, "hp_max": 40,
+            "arma_nombre": "Iron Axe", "stats": {"hp": 40, "defensa": 5}}))
+        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro", condicion_victoria="jefe")
+        self.assertFalse([r for r in res["resultados"] if r.get("enemigo") == "Jefe" and r.get("tipo_analisis") == "oportunidad_jugador"],
+                         [r.get("recomendacion") for r in res["resultados"]])
+
     def test_hortensia_secuencia_de_3_pasos_con_engage(self):
         """
         Verifica el flujo canónico de 3 pasos para derrotar a Hortensia (Boss) en Capítulo 7:

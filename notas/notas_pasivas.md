@@ -212,3 +212,202 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
   distancia y tumbaba la evaluación de amenaza.
 - La Cronogema (`/api/tablero/deshacer`) devuelve `casillas_fuego`; la UI lo repinta (el fuego
   apagado se quedaba dibujado tras deshacer).
+- Gallop (Sigurd, SID_迅走): bono de Mov de la FUSIÓN, del datamine (stat_boosts.mov con
+  variante de estilo): +5 general, **+7 caballería** (_騎馬), +6 dragón (_竜族), +5 volador
+  / encubierto, +3 la versión oscura. El +1 de llevar a Sigurd equipado sigue saliendo de
+  los stat_boosts del nivel de vínculo. `FichaUnidad.mov_base` guarda el Mov sin Fusión y
+  `actualizar_movimiento_fusion()` recalcula `mov = mov_base + bono` al fusionar, al cargar
+  una ficha y al terminar la Fusión. El campo Mov del modal es el TOTAL que ve el jugador:
+  al guardar se le descuenta el bono para no acumularlo.
+- Gallop en el análisis (2026-09-22): si una unidad puede fusionar (Emblema + medidor lleno)
+  y la Fusión le daría Mov extra, se calcula también su alcance FUSIONADO
+  (`casillas_mov_fusion`); las casillas de ataque que solo se alcanzan así marcan la jugada
+  como `requiere_fusion` ("⚡ [FUSIÓN] … | Solo llega fusionándose (+N Mov del Emblema)") y,
+  contra enemigos normales, tienen el mismo tope de score que un Ataque de Emblema (no se
+  gasta la Fusión por un soldado). `/api/combate/ejecutar` con `requiere_fusion` activa la
+  Fusión ANTES de mover (`_activar_fusion`), porque la casilla propuesta depende de ese Mov.
+
+## Emblema de Lyn (2026-09-22)
+
+Registrado entero desde el datamine; en el Cap. 10 lo lleva Hyacinth como Emblema
+Oscuro (`GID_M010_敵リン`).
+
+- **Call Doubles** (`SID_残像`, comando de Emblema). Skill.xml lo describe con
+  `VisionCount`: **4 copias**, **5 en estilo Dragón** (`SID_残像_竜族`); en estilo Volador
+  siguen siendo 4 pero reciben `SID_残像_飛行_効果` (**+10 Evasión**). El doble es una
+  unidad propia del datamine: `PID_残像` ("Illusory Double", clase Villager) con
+  `IID_残像_マーニ・カティ` (Mani Katti Mt 6 / Hit 80 / Crit 20, efectiva contra caballería
+  y acorazados) y `SID_相手の取得経験値０` (no da experiencia). Params.xml
+  `残像能力倍率` ("Doubles stats multiplier") = **1**: mismas stats que el invocador,
+  con **1 HP**.
+  El texto japonés ("自分のみチェインアタック可能な残像") aclara que **solo hacen Chain
+  Attack cuando ataca quien los invocó**, no con el resto del ejército — por eso
+  `obtener_aliados_backup` los filtra por `invocador` en vez de tratarlos como Backup.
+  En el tablero: `EstadoTablero.invocar_dobles` / `disipar_dobles` /
+  `purgar_dobles_huerfanos` (se disipan solos al caer el invocador), endpoints
+  `POST /api/unidad/invocar_dobles` y `/api/unidad/disipar_dobles`, y botón
+  "Invocar dobles" en el modal de la unidad (solo si `puede_call_doubles`).
+  `pasivas.call_doubles(unidad)` devuelve {sid, copias, give_sids, pid, arma_iid}.
+
+- **Astra Storm** (`SID_リンエンゲージ技`): NO es un arma fija. Dispara el **arco
+  equipado** (`WeaponProhibit` 1007 = solo Kind 4) **5 veces** (`攻撃回数 = 5`) a una
+  **fracción del daño** (`SID_ダメージ３０％` → techo(daño × 0.3)), alcance **1-10**
+  (`RangeI/O`), Hit 100, sin respuesta del rival. Bonos de estilo del propio Skill.xml:
+  **Encubierto alcance +10** (1-20), **Dragón +5** (1-15), **Qi Adept rompe** al objetivo
+  sin ganar alcance. Las versiones oscuras / debilitadas pegan al **20 %**: la de Hyacinth
+  es `SID_リンエンゲージ技_闇_気功` (20 % + ruptura).
+  *(Ojo: el bono de Encubierto es +10, no +5; el +5 es el de Dragón.)*
+
+### Ataques de Emblema de varios golpes, genéricos
+
+`pasivas.forma_ataque_emblema(unidad, sid, nombre)` lee la forma del ataque del propio
+Skill.xml: `攻撃回数 = N` + el `SID_ダメージNN％` sincronizado (más `SID_エンゲージ技_汎用設定`,
+que es lo que fija Hit 100 / Crit 0 / rival sin turno). `motor_calculo._stats_de_golpe` ya
+no tiene el bloque hardcodeado de Lodestar Rush con sus 9/8/7: los golpes y la fracción
+salen del SID con la variante de estilo, así que Lodestar Rush (7, Apoyo 8, Dragón 9, al
+30 %) y Astra Storm (5 al 30 %/20 %) comparten camino. El SID del ataque viaja en la
+Unidad (`sid_ataque_emblema`, de God.xml `EngageAttack`) y, si falta, se resuelve por el
+nombre del ataque que se simula.
+**Pendiente**: Quadruple Hit (4 golpes) y Twin Strike (2) NO pasan por aquí porque cada
+golpe usa un arma distinta (espada/lanza/hacha/arco; Eirika + lanza de Ephraim); siguen
+resolviéndose como un ataque normal. El filtro es `fraccion is not None`, no una lista de
+nombres.
+
+### Adaptable (`SID_順応`, Emblema de Leif)
+
+El datamine no la describe con Acts (la resuelve el motor del juego); el texto oficial
+dice "If foe initiates combat, unit counters with the best weapon available (in terms of
+range, weapon advantage, effective bonus, etc.)". Implementada en
+`motor_calculo.arma_de_respuesta`: al DEFENDER, la unidad elige de su inventario el arma
+que alcanza esa distancia y maximiza el daño esperado (daño neto × precisión, con
+efectividad y ventaja de triángulo). Para eso la Unidad de combate ahora lleva su
+`inventario` resuelto. Las variantes de estilo sí traen Acts normales: la de Volador
+(`SID_順応_飛行`, la que tiene Ivy) da **+5 Res en combate**.
+
+### Emblemas Oscuros: no se fusionan, así que lo llevan todo puesto
+
+Un `es_oscuro` tiene `EngageCount 0`: nunca entra en Fusión, pero en la batalla lleva las
+armas del Emblema y usa sus habilidades y su Ataque de Emblema. Por eso, cuando el Emblema
+es oscuro, `catalogo_loader` trata la inyección de Fusión como **permanente**
+(`engage_permanente`): sus `engage_items` entran en el inventario (y no se retiran fuera de
+Fusión) y sus `engage_skills` van a las pasivas siempre activas en vez de a
+`habilidades_sids_fusion`. Esto sustituye al caso especial que había para Hortensia en el
+Cap. 7 y arregla a Hyacinth (Mani Katti + Killer Bow + Call Doubles + Astra Storm) y a Ivy
+en el Cap. 8 (Killer Axe + Master Lance + Adaptable, `GID_M008_敵リーフ`).
+
+**Golden cap8 regenerado** por este cambio: 66 combates nuevos (Ivy atacando con sus dos
+armas de Leif) y 93 modificados, todos "aliado → Ivy" y todos por Adaptable — +5 Res en
+combate (25 combates pierden daño mágico) y la respuesta con la mejor arma disponible (15).
+Ninguno desaparece.
+
+### Dual Strike (`SID_絆の力`, sincronía de Lucina)
+
+"Unit participates in chain attacks as if it were a backup unit": lo concede el SID oculto
+`SID_チェインアタック許可` que sincroniza. `pasivas.permite_chain_attack(unidad)` lo detecta y
+`obtener_aliados_backup` ya no exige estilo Apoyo. En el Cap. 7 eso significa que
+**Hortensia encadena ataques** con los enemigos que la rodean (verificado en el juego junto
+con All for One y la Noble Rapier): el golden `cap7_turno10` cambió en 4 combates, todos
+"alguien ataca a Louis" con un `chain_attack` de 3 de Hortensia por delante. `cap7_inicial`
+no se movió (al desplegar no llega a nadie).
+
+**Pendiente**: All for One (`SID_ルキナエンゲージ技`) sincroniza
+`SID_強制チェインアタック２マス` — fuerza el Chain Attack de TODOS los aliados a 2 casillas,
+no solo de los de Apoyo. El motor aún lo trata como un ataque normal de arma variable.
+
+### All for One (`SID_ルキナエンゲージ技`) y Bonded Shield (`SID_絆盾`)
+
+**All for One**: ataque de espada al adyacente + Chain Attack **forzado de todos los
+aliados** a 2 casillas del atacante, sean o no de estilo Apoyo. El radio no está en el
+nombre sino en el `RangeO` del SID sincronizado (`SID_強制チェインアタック２マス` → 2;
+la variante de Apoyo sincroniza la de **3 casillas**, que es el "[Backup] Range +1") y el
+"[Dragon] Ally chain attacks are guaranteed to hit" es el `GiveSids`
+`SID_チェインアタック命中率１００％` (`命中率 = 100`, GiveTarget 2) de la variante de Dragón.
+`pasivas.chain_attack_forzado()` lo lee; `obtener_aliados_backup(..., ataque_emblema=...)`
+devuelve entonces a todos los cercanos y los Chain Attacks pasan de 80 % a 100 % de Hit.
+En el Cap. 7 queda **registrado** en Hortensia (su `EngageAttack` es este SID): el jugador
+anota el daño si llega a usarlo, no lo simula la IA.
+
+**Bonded Shield**: comando que anula el primer ataque contra los aliados **adyacentes**
+hasta el turno siguiente. El porcentaje está en la `Condition` de la variante de estilo:
+
+| Estilo | Condition | % |
+|---|---|---|
+| base | `スキル確率(80)` | 80 |
+| Dragón | `スキル確率(90)` | **90**, no 100 (coincide con "[Dragon] +10 % to trigger rate") |
+| Qi Adept | `スキル確率(100)` | 100 |
+| Caballería / Acorazado / Volador | `スキル確率(80) \|\| 相手の戦闘スタイル == Xスタイル` | 80, y **100 para los aliados de ese mismo estilo** |
+
+`pasivas.probabilidad_bonded_shield(unidad, aliado)` resuelve el % que toca.
+`EstadoTablero.activar_escudo_vinculo` / `POST /api/unidad/escudo_vinculo` marcan a los
+adyacentes con un estado temporal "Bonded Shield (N %)" que caduca en el turno siguiente;
+la herramienta **no** anula el golpe (el jugador registra el daño real), solo avisa.
+El Emblema Oscuro de Lucina del Cap. 7 **no** trae Bonded Shield: su `GGID_M007_敵ルキナ`
+solo declara `SID_絆の力`.
+
+### Houses Unite (Unión de Casas, Emblema DLC de las Tres Casas)
+
+"Use to attack with Aymr, Areadbhar, and Failnaught at 50 % damage."
+Cada golpe es el **daño normal de esa reliquia partido por la mitad, truncando** — no una
+fórmula aparte. El motor ya no lleva el "+5" fijo que tenía: era un parche que compensaba
+una Fue mal reconstruida en un test, y hacía que los tres golpes salieran ~2-3 de más.
+
+Reliquias, con sus datos del datamine (Item.xml, armas DLC de Byleth):
+
+| Reliquia | IID | Mt | Notas |
+|---|---|---|---|
+| Aymr | `IID_ベレト_アイムール` | 24 | Hacha |
+| Areadbhar | `IID_ベレト_アラドヴァル` | 14 → **21** | `SID_オフェンス時武器攻撃力上昇`: +50 % de Mt al iniciar, y Houses Unite siempre inicia |
+| Failnaught | `IID_ベレト_フェイルノート` | 13 | Arco |
+
+Bonos de estilo del texto oficial, **+10 % sobre el golpe ya reducido**:
+Dragón a los tres · Caballería a Areadbhar · Encubierto a Failnaught · Acorazado a Aymr ·
+Qi Adept rompe al objetivo (sin daño extra).
+
+**La efectividad sí se aplica**, con la resistencia del defensor como en cualquier otro
+ataque. Lo que parecía una excepción era el **Veteran+ de Hortensia** (`SID_熟練者＋` →
+`SID_特効無効_効果`), que anula la efectividad: por eso Failnaught no la triplica contra
+ella y sí contra un volador corriente. El bloque de Houses Unite se saltaba esa regla
+llamando directo a `calcular_efectividad`; ahora pasa por el mismo `_con_resistencias` que
+el arma principal, así que Veteran/Veteran+/Stalwart valen también para las reliquias.
+
+Las tres observaciones en juego cuadran a la vez:
+
+| Observación | Defensor | Golpes | Failnaught |
+|---|---|---|---|
+| Cap. 7 combate 70 (Chloé Fue 15) | Hortensia (voladora **con Veteran+**) | 15 / 13 / 9 = **37** | ×1 |
+| Cap. 9 (Chloé Fue 20, Weapon Sync+ +7) | Axe Flier (volador normal) | 19 / 18 / **27** | ×3 |
+| Cap. 10 (Chloé, sin bonos) | Hortensia | **17 / 16 / 12** | ×1 |
+
+De paso: la Fue de las dos reconstrucciones de test estaba 5 por debajo de la real, que es
+justo lo que tapaba el "+5". Y Hortensia es voladora, así que el +1 de defensa de la casilla
+de protección del Cap. 7 no cuenta.
+
+### "Ragnarok" el tomo vs "Warp Ragnarök" el Ataque de Emblema (2026-09-23)
+
+`es_warp_ragnarok` se detectaba con el fragmento `"ragnarok"` a secas, que también es el
+nombre del **tomo** de Celica (`IID_セリカ_ライナロック`), un arma de Emblema con la que se
+hacen ataques normales. Y la UI marcaba `es_engage_attack` mirando el nombre del arma
+recomendada (`...includes("ragnarok")`), así que atacar con el tomo se enviaba como Ataque
+de Emblema y se llevaba el ×1.2 de estilo Místico, el atacar a RES y el "sin contraataque".
+Ahora: el motor solo reconoce el nombre completo del ataque, el análisis publica
+`es_engage_attack` / `engage_attack_nombre` en cada jugada y la UI los reenvía tal cual en
+vez de deducirlos del nombre del arma.
+
+### Pasivas de "solo el primer golpe" (2026-09-23)
+
+Momentum (`SID_助走`) suma `min(移動距離, 10)` al ataque, pero su Condition es
+`移動距離 > 0 && 総行動回数 == 0`: **solo el primer golpe del combate**. Verificado en un
+vídeo (unidad con Sigurd que dobla: 16 y 10 de daño, los +6 solo en el primero).
+
+El motor evaluaba todas las pasivas de Timing "estático" con un contexto fijo
+(`総行動回数 = 0`), así que el bono se colaba también en el follow-up. Ahora:
+- `_stats_de_golpe` acepta `ronda` (rondas ya ejecutadas) y la pone en el contexto.
+- `pasivas` marca cada habilidad activa con `condicion_primera_ronda` cuando su Condition
+  compara `総行動回数` o `総手番回数` con 0.
+- `simular_combate` recalcula el golpe de seguimiento con `ronda=1` **solo si** alguna
+  pasiva del primer golpe llevaba esa marca; si no, reutiliza el mismo resultado y no
+  paga el cálculo.
+
+Es un primer trozo de la Fase 3 (evaluación por golpe) y vale para cualquier otra
+habilidad con esa forma, no solo Momentum y Momentum+.
+

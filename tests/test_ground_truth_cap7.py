@@ -320,12 +320,21 @@ class TestGroundTruthCapitulo7(CasoCapitulo7):
         """
         Combat 70 (22:57): Chloé con Emblema Tres Casas (Edelgard/Dimitri/Claude)
         asesta el golpe final a Hortensia con el Ataque de Emblema Houses Unite.
-        - Tri-ataque secuencial: Areadbhar (15) + Failnaught (13) + Aymr (9) = 37 Daño!
+        - Tri-ataque secuencial de 15 + 13 + 9 = 37 Daño (por orden de reliquia son
+          Aymr 15, Areadbhar 13 y Failnaught 9: Aymr es el de más Mt, así que no puede
+          ser el golpe de 9; la nota original los listó en el orden de la animación).
         - Elimina a Hortensia (36 HP -> 0 HP) y completa el mapa.
+
+        Cada golpe es el daño normal de la reliquia partido por la mitad (truncando):
+        Fue 15 + Mt (24 / 14×1.5 = 21 / 13) − Def 9 = 30/27/19 → 15/13/9. Hortensia es
+        voladora, así que el +1 de defensa de su casilla no cuenta.
+        Failnaught no llega a aplicar su efectividad anti-volador: Hortensia es voladora,
+        pero tiene Veteran+ (SID_熟練者＋ → SID_特効無効_効果), que la anula. Con el ×3 el
+        tercer golpe sería 21 y el total 49, no los 37 observados.
         """
         chloe = Unidad(
             nombre="Chloé",
-            fuerza=11, magia=5, destreza=13, velocidad=16,
+            fuerza=15, magia=5, destreza=13, velocidad=16,
             defensa=8, resistencia=10, suerte=10,
             hp_max=28, hp=28, bando="aliado",
             emblema="Edelgard",
@@ -342,6 +351,8 @@ class TestGroundTruthCapitulo7(CasoCapitulo7):
             fuerza=6, magia=11, destreza=14, velocidad=15,
             defensa=9, resistencia=17, suerte=14,
             hp_max=36, hp=36, bando="enemigo",
+            tipo_movimiento="volador", es_volador=True,
+            habilidades=["Veteran+"], habilidades_sids=["SID_熟練者＋"],
             es_jefe=True
         )
         noble_rapier = Arma(
@@ -365,7 +376,8 @@ class TestGroundTruthCapitulo7(CasoCapitulo7):
         atk = res["atacante"]
         res_comb = res["resultado"]
 
-        assert atk["daño_por_golpe"] >= 36  # Daño de Houses Unite suficiente para derrotar a Hortensia
+        assert atk["houses_unite_hits"] == [15, 13, 9]   # Aymr, Areadbhar, Failnaught
+        assert atk["daño_por_golpe"] == 37
         assert res_comb["atacante_mata"] is True
         assert res_comb["hp_defensor_final"] == 0
         assert "Unión Tres Casas" in str(res_comb.get("pasivas_activas", []))

@@ -3,7 +3,8 @@ app.py — FE Engage Tactical Assistant
 API REST Flask que conecta la UI del Gemelo con el motor de cálculo.
 """
 
-from flask import Flask, jsonify, request, render_template, abort
+from flask import Flask, jsonify, request, render_template, abort, has_request_context, session
+from werkzeug.local import LocalProxy
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from estado_tablero import EstadoTablero, FichaUnidad
 import pasivas
@@ -16,6 +17,8 @@ import re
 import math
 import json
 import unicodedata
+import threading
+import time
 from collections import deque
 import cargador_dispos
 from cargador_dispos import CargadorDisposEngage
@@ -25,7 +28,7 @@ from catalogo_loader import (
     normalizar_texto, round_half_up, cargar_catalogo,
     _catalogo, GRABADOS_EMBLEMA, REFINES_GENERICOS,
     parsear_arma_string, _buscar_en_catalogo, _arma_desde_item,
-    resolver_unidad_con_catalogo, puede_usar_ballesta, arma_ballesta_desde
+    resolver_unidad_con_catalogo, puede_usar_arma_de_mapa, arma_de_mapa_desde, tipo_arma_de_objeto
 )
 from motor_analisis import (
     BACKUP_CLASSES, es_unidad_backup, obtener_aliados_backup,
@@ -35,11 +38,21 @@ from motor_analisis import (
 
 app = Flask(__name__)
 
+# Cada navegador recibe un identificador firmado en su cookie de sesión. El valor
+# por defecto es deliberadamente efímero para el uso local: al reiniciar el proceso
+# la UI ya restaura la partida que guarda en el navegador. En un despliegue estable,
+# ENGAGE_SECRET_KEY debe configurarse para conservar las cookies entre reinicios.
+import uuid as _uuid
+app.config.update(
+    SECRET_KEY=os.environ.get("ENGAGE_SECRET_KEY") or _uuid.uuid4().hex,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
+
 # Identificador del arranque del servidor. El tablero vive en memoria: si el proceso
 # se reinicia (p.ej. el autoreload de Flask al editar código) mientras el navegador
 # sigue abierto, el cliente lo detecta por esta cabecera y restaura su partida local
 # en vez de seguir enviando acciones a un tablero recién inicializado.
-import uuid as _uuid
 _BOOT_ID = _uuid.uuid4().hex
 
 
@@ -49,13 +62,15 @@ def _marcar_arranque(resp):
     return resp
 
 # =============================================================================
-# Estado global del tablero (singleton por sesión Flask)
+# Estado de la partida por navegador
 # =============================================================================
 
 # Mapas por capítulo: mapas/CAP_<n>_Tiled.json. El capítulo activo se cambia en
 # caliente con /api/mapa/seleccionar; el tablero se vacía (las unidades se
 # despliegan aparte con los presets / dispos de cada capítulo).
 _DIR_MAPAS = os.path.join(os.path.dirname(__file__), "mapas")
+# Valor de compatibilidad para scripts de exploración antiguos. Las rutas usan el
+# capítulo de la partida de la sesión, no este módulo global.
 _capitulo_actual = 7
 
 
@@ -93,9 +108,67 @@ def _info_capitulo(n: int) -> dict:
     }
 
 
-_ruta_mapa = _ruta_mapa_capitulo(_capitulo_actual)
-_mapa = MapaTactico(_ruta_mapa)
-tablero = EstadoTablero(mapa=_mapa)
+class _PartidaEnMemoria:
+    """Estado volátil de una partida perteneciente a una sesión de navegador."""
+
+    def __init__(self, capitulo: int = 7):
+        self.capitulo = capitulo
+        self.mapa = MapaTactico(_ruta_mapa_capitulo(capitulo))
+        self.tablero = EstadoTablero(mapa=self.mapa)
+        self.ultimo_acceso = time.monotonic()
+
+
+_PARTIDA_POR_DEFECTO = _PartidaEnMemoria()
+_PARTIDAS_POR_SESION = {}
+_PARTIDAS_LOCK = threading.RLock()
+_MAX_PARTIDAS_EN_MEMORIA = 32
+
+
+def _partida_actual() -> _PartidaEnMemoria:
+    """Devuelve la partida aislada de la petición actual.
+
+    Los accesos fuera de una petición (scripts y la suite histórica) mantienen el
+    tablero por defecto. La suite activa ``TESTING`` para conservar su contrato
+    directo con ``from app import tablero``.
+    """
+    if not has_request_context() or app.config.get("TESTING"):
+        return _PARTIDA_POR_DEFECTO
+
+    identificador = session.get("engage_session_id")
+    if not identificador:
+        identificador = _uuid.uuid4().hex
+        session["engage_session_id"] = identificador
+
+    with _PARTIDAS_LOCK:
+        partida = _PARTIDAS_POR_SESION.get(identificador)
+        if partida is None:
+            partida = _PartidaEnMemoria()
+            _PARTIDAS_POR_SESION[identificador] = partida
+        partida.ultimo_acceso = time.monotonic()
+
+        # Límite defensivo para un servidor local que reciba muchas sesiones. Nunca
+        # elimina la partida que está realizando la petición actual.
+        while len(_PARTIDAS_POR_SESION) > _MAX_PARTIDAS_EN_MEMORIA:
+            candidata = min(
+                (p for sid, p in _PARTIDAS_POR_SESION.items() if sid != identificador),
+                key=lambda p: p.ultimo_acceso,
+                default=None,
+            )
+            if candidata is None:
+                break
+            sid_caducada = next(sid for sid, p in _PARTIDAS_POR_SESION.items() if p is candidata)
+            del _PARTIDAS_POR_SESION[sid_caducada]
+        return partida
+
+
+def _capitulo_sesion() -> int:
+    return _partida_actual().capitulo
+
+
+# Los proxies preservan el contrato de los módulos del motor: dentro de una ruta
+# ``tablero`` y ``_mapa`` siempre se resuelven a la partida del navegador actual.
+tablero = LocalProxy(lambda: _partida_actual().tablero)
+_mapa = LocalProxy(lambda: _partida_actual().mapa)
 
 
 
@@ -118,7 +191,7 @@ def obtener_catalogo_emblemas():
 @app.route("/api/mapa/capitulos", methods=["GET"])
 def listar_capitulos():
     """Capítulo activo y lista de capítulos con mapa disponible (para las flechas de navegación)."""
-    return jsonify({"ok": True, **_info_capitulo(_capitulo_actual)})
+    return jsonify({"ok": True, **_info_capitulo(_capitulo_sesion())})
 
 
 @app.route("/api/mapa/seleccionar", methods=["POST"])
@@ -128,24 +201,23 @@ def seleccionar_mapa():
     reinicia turno/fase y los objetos de mapa; las unidades se despliegan aparte.
     Body: {"capitulo": 8}  o  {"direccion": 1 | -1} (siguiente/anterior disponible).
     """
-    global _mapa, _ruta_mapa, _capitulo_actual
     data = request.get_json(force=True) or {}
+    partida = _partida_actual()
     if "capitulo" in data:
         objetivo = int(data["capitulo"])
     else:
-        info = _info_capitulo(_capitulo_actual)
+        info = _info_capitulo(partida.capitulo)
         objetivo = info["siguiente"] if int(data.get("direccion", 1)) > 0 else info["anterior"]
     if objetivo is None or objetivo not in capitulos_disponibles():
-        return jsonify({"error": f"No hay mapa para el capítulo {objetivo}", **_info_capitulo(_capitulo_actual)}), 400
+        return jsonify({"error": f"No hay mapa para el capítulo {objetivo}", **_info_capitulo(partida.capitulo)}), 400
     try:
         nuevo_mapa = MapaTactico(_ruta_mapa_capitulo(objetivo))
     except Exception as e:
         return jsonify({"error": f"No se pudo cargar el mapa del capítulo {objetivo}: {e}"}), 500
 
-    _capitulo_actual = objetivo
-    _ruta_mapa = _ruta_mapa_capitulo(objetivo)
-    _mapa = nuevo_mapa
-    tablero.mapa = _mapa
+    partida.capitulo = objetivo
+    partida.mapa = nuevo_mapa
+    tablero.mapa = nuevo_mapa
     tablero.limpiar()
     tablero.historial.clear()
     tablero.turno_actual = 1
@@ -167,7 +239,7 @@ def _mapa_como_dict() -> dict:
         "casillas_objetivo": [{"x": x, "y": y, "objetivo": o} for x, y, o in _mapa.casillas_objetivo()] if hasattr(_mapa, 'casillas_objetivo') else [],
         "propiedades": getattr(_mapa, 'propiedades_mapa', {}) or {},
         "objetos": tablero.objetos_como_lista(),
-        **{k: v for k, v in _info_capitulo(_capitulo_actual).items() if k != "tiene_mapa"},
+        **{k: v for k, v in _info_capitulo(_capitulo_sesion()).items() if k != "tiene_mapa"},
     }
 
 
@@ -175,10 +247,10 @@ def _mapa_como_dict() -> dict:
 def recargar_mapa_endpoint():
     """Recarga el JSON del mapa activo en caliente, sin reiniciar el servidor.
     Util durante el desarrollo: edita en Tiled, exporta, llama a este endpoint."""
-    global _mapa, tablero
     try:
-        _mapa = MapaTactico(_ruta_mapa)
-        tablero.mapa = _mapa
+        partida = _partida_actual()
+        partida.mapa = MapaTactico(_ruta_mapa_capitulo(partida.capitulo))
+        tablero.mapa = partida.mapa
         tablero.inicializar_objetos_mapa()
         tipos = {}
         for x in range(_mapa.ancho):
@@ -199,9 +271,29 @@ def recargar_mapa_endpoint():
 def index():
     return render_template("index.html")
 
+def _resincronizar_eventos_del_capitulo():
+    """
+    Los disparadores de los refuerzos por evento se programan al cargar el capítulo y se
+    quedan guardados en la partida. Si se corrige una condición (p.ej. los arqueros del
+    Cap. 10 pasaron de "turno 6" a "cuando Hortensia actúa"), una partida ya empezada se
+    quedaría con la antigua. Aquí se ponen al día sin tocar el tablero ni lo ya disparado.
+    """
+    if not tablero.refuerzos_por_evento:
+        return []
+    try:
+        cap = _dispos_id_activo()
+        eventos = _cargador_dispos.refuerzos_por_evento(
+            cap, tablero.dificultad, mapa_ancho=_mapa.ancho, mapa_alto=_mapa.alto)
+        return tablero.resincronizar_refuerzos_por_evento(eventos)
+    except Exception as e:
+        print(f"[refuerzos] no se pudieron resincronizar los eventos: {e}")
+        return []
+
+
 @app.route("/api/estado", methods=["GET"])
 def obtener_estado():
     """Devuelve el estado completo del tablero."""
+    _resincronizar_eventos_del_capitulo()
     snap = tablero.snapshot()
     snap["mapa"] = _mapa_como_dict()
     return jsonify(snap)
@@ -231,6 +323,32 @@ def consumir_objeto_mapa():
     return jsonify({"ok": True, "objetos": tablero.objetos_como_lista()})
 
 
+@app.route("/api/mapa/objeto/abrir_cofre", methods=["POST"])
+def abrir_cofre_mapa():
+    """
+    Abre un cofre gastando la acción de una unidad adyacente.
+    Body: {"id": "<id del cofre>", "unidad": "Yunaka"}  (`unidad` opcional: sin ella
+    solo se marca el cofre como abierto, sin gastar acción).
+    El cofre sigue bloqueando su casilla; el contenido lo anota el jugador en el
+    inventario de la unidad (la herramienta no lo conoce ni lo recomienda).
+    """
+    data = request.get_json(force=True) or {}
+    id_obj = str(data.get("id", ""))
+    if not id_obj:
+        return jsonify({"error": "Falta campo id"}), 400
+    tablero.guardar_snapshot()
+    est = tablero.abrir_cofre(id_obj, str(data.get("unidad", "") or ""))
+    if est is None:
+        tablero.historial.pop()
+        return jsonify({"error": getattr(tablero, "ultimo_error_cofre", "") or f"No se pudo abrir '{id_obj}'"}), 400
+    return jsonify({
+        "ok": True,
+        "objeto": est,
+        "objetos": tablero.objetos_como_lista(),
+        "fichas": [f.como_dict() for f in tablero.fichas.values()],
+    })
+
+
 @app.route("/api/mapa/objeto/dañar", methods=["POST"])
 @app.route("/api/mapa/objeto/danar", methods=["POST"])
 def dañar_objeto_mapa():
@@ -252,6 +370,34 @@ def dañar_objeto_mapa():
     if est is None:
         tablero.historial.pop()
         return jsonify({"error": f"Objeto '{id_obj}' no existe o ya estaba destruido"}), 400
+    # Al derribar la puerta (u otro objeto del guion) pueden llegar refuerzos
+    refuerzos = []
+    if not est.get("activo"):
+        entrada = next((o for o in tablero.objetos_como_lista() if str(o.get("id")) == id_obj), None)
+        refuerzos = tablero.disparar_refuerzos_por_objeto(entrada or est)
+    return jsonify({
+        "ok": True, "objeto": est,
+        "objetos": tablero.objetos_como_lista(),
+        "refuerzos_desplegados": refuerzos,
+        "fichas": [f.como_dict() for f in tablero.fichas.values()] if refuerzos else None,
+    })
+
+
+@app.route("/api/mapa/objeto/usos", methods=["POST"])
+def fijar_usos_objeto_mapa():
+    """
+    Fija los usos restantes de un arma de mapa (los enemigos también la usan).
+    Body: {"id": "<id>", "usos": 2}. Con 0 queda agotada; con >0 vuelve a poder usarse.
+    """
+    data = request.get_json(force=True) or {}
+    id_obj = str(data.get("id", ""))
+    if not id_obj or data.get("usos") is None:
+        return jsonify({"error": "Faltan campos: id, usos"}), 400
+    tablero.guardar_snapshot()
+    est = tablero.fijar_usos_objeto(id_obj, int(data["usos"]))
+    if est is None:
+        tablero.historial.pop()
+        return jsonify({"error": f"'{id_obj}' no es un arma de mapa con usos"}), 400
     return jsonify({"ok": True, "objeto": est, "objetos": tablero.objetos_como_lista()})
 
 
@@ -406,7 +552,7 @@ def guardar_unidad():
     prev = tablero.obtener_ficha(data.get("nombre_original") or data.get("nombre"))
     hp_previo = prev.hp_actual if prev else None
     pid_edit = data.get("pid") or (getattr(prev, "pid", "") if prev else "")
-    if pid_edit and pid_edit in cargador_dispos.pids_jefe(f"M{_capitulo_actual:03d}") and not data.get("es_aliado", False):
+    if pid_edit and pid_edit in cargador_dispos.pids_jefe(f"M{_capitulo_sesion():03d}") and not data.get("es_aliado", False):
         data["es_jefe"] = True
 
     ficha = resolver_unidad_con_catalogo(data)
@@ -475,7 +621,7 @@ def exportar_partida():
     estado = {
         "turno_actual": tablero.turno_actual,
         "fase": tablero.fase,
-        "capitulo": _capitulo_actual,
+        "capitulo": _capitulo_sesion(),
         "dificultad": tablero.dificultad,
         "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(tablero.refuerzos_pendientes.items())},
         "refuerzos_por_evento": [dict(e, casilla=list(e["casilla"])) for e in tablero.refuerzos_por_evento],
@@ -513,7 +659,7 @@ def importar_partida():
         if bool(f.get("viva", True)) and int(f.get("hp_actual", 1)) > 0
     ]
 
-    jefes_cap = cargador_dispos.pids_jefe(f"M{_capitulo_actual:03d}")
+    jefes_cap = cargador_dispos.pids_jefe(f"M{_capitulo_sesion():03d}")
     for f_data in fichas_vivas_raw:
         f_data.setdefault("dificultad", tablero.dificultad)
         # El jefe lo marca el dispos (bit 16 del Flag), aunque el guardado venga de antes
@@ -534,7 +680,7 @@ def importar_partida():
     else:
         try:
             cal = _cargador_dispos.calendario_refuerzos(
-                f"M{_capitulo_actual:03d}", tablero.dificultad,
+                f"M{_capitulo_sesion():03d}", tablero.dificultad,
                 mapa_ancho=getattr(_mapa, "ancho", 24), mapa_alto=getattr(_mapa, "alto", 17))
             tablero.programar_refuerzos({t: us for t, us in cal.items() if t > tablero.turno_actual})
         except Exception:
@@ -548,7 +694,7 @@ def importar_partida():
     ):
         try:
             frescos = {e["grupo"]: e for e in _cargador_dispos.refuerzos_por_evento(
-                f"M{_capitulo_actual:03d}", tablero.dificultad,
+                f"M{_capitulo_sesion():03d}", tablero.dificultad,
                 mapa_ancho=getattr(_mapa, "ancho", 24), mapa_alto=getattr(_mapa, "alto", 17))}
             ev_guardados = [e if e.get("disparado") or e.get("grupo") not in frescos else dict(frescos[e["grupo"]], disparado=False)
                             for e in ev_guardados]
@@ -559,7 +705,7 @@ def importar_partida():
     else:
         try:
             tablero.programar_refuerzos_por_evento(_cargador_dispos.refuerzos_por_evento(
-                f"M{_capitulo_actual:03d}", tablero.dificultad,
+                f"M{_capitulo_sesion():03d}", tablero.dificultad,
                 mapa_ancho=getattr(_mapa, "ancho", 24), mapa_alto=getattr(_mapa, "alto", 17)))
         except Exception:
             tablero.programar_refuerzos_por_evento([])
@@ -571,6 +717,7 @@ def importar_partida():
         "fichas": fichas_retorno,
         "refuerzos_previstos": tablero.refuerzos_previstos(),
         "refuerzos_por_evento": tablero.refuerzos_por_evento_previstos(),
+        "eventos_por_accion": tablero.eventos_por_accion(),
     })
 
 @app.route("/api/unidad/eliminar", methods=["POST"])
@@ -622,7 +769,10 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
     eventos = _cargador_dispos.refuerzos_por_evento(capitulo_id, dificultad, mapa_ancho=ancho_m, mapa_alto=alto_m)
     tablero.programar_refuerzos_por_evento(eventos)
     if eventos:
-        txt_ref += " · " + "; ".join(f"{len(e['unidades'])} refuerzos cuando {e['descripcion'] or e['grupo']} ({e['casilla'][0]},{e['casilla'][1]})" for e in eventos)
+        txt_ref += " · " + "; ".join(
+            f"{len(e['unidades'])} refuerzos cuando {e['descripcion'] or e['grupo']}"
+            + (f" ({e['casilla'][0]},{e['casilla'][1]})" if e.get('casilla') else "")
+            for e in eventos)
 
     return {
         "ok": True,
@@ -656,7 +806,7 @@ _auto_despliegue_inicial()
 
 def _dispos_id_activo() -> str:
     """Id de dispos del capítulo activo: M007, M008, ... (o el del mapa datamine si lo trae)."""
-    return getattr(_mapa, "dispos_id", None) or f"M{int(_capitulo_actual):03d}"
+    return getattr(_mapa, "dispos_id", None) or f"M{_capitulo_sesion():03d}"
 
 
 @app.route("/api/preset/actual", methods=["POST"])
@@ -813,6 +963,100 @@ def mover_unidad():
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
 
+@app.route("/api/unidad/registrar_accion", methods=["POST"])
+def registrar_accion_de_unidad():
+    """
+    El jugador marca que una unidad enemiga ha ACTUADO (ha atacado, ha usado un bastón…),
+    algo que la herramienta no puede observar porque pasa en la fase enemiga. Dispara los
+    refuerzos del guion que dependían de ello. Body: {"nombre": "Hortensia"}.
+    """
+    data = request.get_json(force=True) or {}
+    nombre = str(data.get("nombre", "") or "")
+    if not nombre:
+        return jsonify({"error": "Falta campo 'nombre'"}), 400
+    ficha = tablero.obtener_ficha(nombre)
+    if ficha is None:
+        return jsonify({"error": f"'{nombre}' no está en el tablero"}), 400
+    if not tablero.tiene_evento_por_accion(nombre):
+        return jsonify({"error": f"{nombre} no tiene ningún evento pendiente de que actúe"}), 400
+    tablero.guardar_snapshot()
+    refuerzos = tablero.disparar_refuerzos_por_evento("accion", ficha)
+    return jsonify({
+        "ok": True, "unidad": nombre,
+        "refuerzos_desplegados": refuerzos,
+        "eventos_por_accion": tablero.eventos_por_accion(),
+        "fichas": [f.como_dict() for f in tablero.fichas.values()],
+    })
+
+
+@app.route("/api/unidad/escudo_vinculo", methods=["POST"])
+def activar_escudo_vinculo():
+    """
+    Bonded Shield (Emblema de Lucina): marca a los aliados adyacentes como protegidos
+    del primer ataque hasta el turno siguiente, con el % que corresponda a su estilo.
+    Body: {"nombre": "Lucina"}.
+    """
+    data = request.get_json(force=True) or {}
+    nombre = str(data.get("nombre", "") or "")
+    if not nombre:
+        return jsonify({"error": "Falta campo 'nombre'"}), 400
+    tablero.guardar_snapshot()
+    protegidos, error = tablero.activar_escudo_vinculo(nombre)
+    if error:
+        tablero.historial.pop()
+        return jsonify({"error": error}), 400
+    f = tablero.obtener_ficha(nombre)
+    if f is not None and f.es_aliado:
+        f.ha_actuado = True   # el comando consume la acción de la unidad
+    return jsonify({
+        "ok": True, "unidad": nombre, "protegidos": protegidos,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()],
+    })
+
+
+@app.route("/api/unidad/invocar_dobles", methods=["POST"])
+def invocar_dobles_unidad():
+    """
+    Call Doubles (SID_残像, Emblema de Lyn): rodea a la unidad de copias suyas con 1 HP.
+    El jugador lo usa para reflejar que el jefe (Hyacinth en el Cap. 10) ha usado el
+    comando. Body: {"nombre": "Hyacinth"}.
+    """
+    data = request.get_json(force=True) or {}
+    nombre = str(data.get("nombre", "") or "")
+    if not nombre:
+        return jsonify({"error": "Falta campo 'nombre'"}), 400
+    tablero.guardar_snapshot()
+    dobles, error = tablero.invocar_dobles(nombre)
+    if error:
+        tablero.historial.pop()
+        return jsonify({"error": error}), 400
+    f = tablero.obtener_ficha(nombre)
+    if f is not None and f.es_aliado:
+        f.ha_actuado = True   # el comando consume la acción de la unidad
+    return jsonify({
+        "ok": True, "invocador": nombre, "dobles": dobles,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()],
+    })
+
+
+@app.route("/api/unidad/disipar_dobles", methods=["POST"])
+def disipar_dobles_unidad():
+    """Dispel Doubles: retira del tablero los dobles de una unidad. Body: {"nombre": ...}."""
+    data = request.get_json(force=True) or {}
+    nombre = str(data.get("nombre", "") or "")
+    if not nombre:
+        return jsonify({"error": "Falta campo 'nombre'"}), 400
+    tablero.guardar_snapshot()
+    retirados = tablero.disipar_dobles(nombre)
+    if not retirados:
+        tablero.historial.pop()
+        return jsonify({"error": f"'{nombre}' no tiene dobles en el tablero"}), 400
+    return jsonify({
+        "ok": True, "retirados": retirados,
+        "fichas": [x.como_dict() for x in tablero.fichas.values()],
+    })
+
+
 @app.route("/api/muerte", methods=["POST"])
 def registrar_muerte():
     """Marca una unidad como muerta. Body JSON: {nombre}"""
@@ -821,8 +1065,16 @@ def registrar_muerte():
     if not nombre:
         return jsonify({"error": "Falta campo 'nombre'"}), 400
     tablero.guardar_snapshot()
+    ficha = tablero.obtener_ficha(nombre)
     tablero.registrar_muerte(nombre)
-    return jsonify({"ok": True, "nombre": nombre})
+    # Refuerzos que el guion dispara al caer esa unidad (M010: Morion)
+    refuerzos = tablero.disparar_refuerzos_por_evento("muerte", ficha) if ficha else []
+    dobles_disipados = tablero.purgar_dobles_huerfanos()
+    return jsonify({
+        "ok": True, "nombre": nombre, "dobles_disipados": dobles_disipados,
+        "refuerzos_desplegados": refuerzos,
+        "fichas": [f.como_dict() for f in tablero.fichas.values()] if refuerzos else None,
+    })
 
 
 
@@ -1020,6 +1272,31 @@ def _casillas_movidas_en_mapa(ficha, destino):
         return abs(ficha.x - destino[0]) + abs(ficha.y - destino[1])
 
 
+def _activar_fusion(ficha, es_engage_attack: bool = False):
+    """
+    Activa la Fusión de Emblema de `ficha` (gasta el medidor). Devuelve un mensaje de
+    error si no tiene energía, o None si se activó. El Mov se recalcula porque la
+    Fusión puede cambiarlo (Gallop de Sigurd).
+    """
+    max_e = getattr(ficha, "max_energia_emblema", 6) or 6
+    cur_e = getattr(ficha, "energia_emblema", max_e)
+    if cur_e < max_e and not es_engage_attack:
+        arma_nom = getattr(ficha.arma, 'nombre', 'su arma de Emblema') if ficha.arma else 'su Emblema'
+        return (f"{ficha.nombre} no tiene energía suficiente ({cur_e}/{max_e}) para usar {arma_nom}. "
+                "Debe recargar el medidor de Emblema.")
+    # Todas las clases reciben 3 turnos de Fusión; solo el nivel de vínculo
+    # con el Emblema (>=11) lo eleva a 4, sin excepción por estilo de clase.
+    ficha.en_fusion = True
+    ficha.turnos_fusion = 4 if getattr(ficha, 'nivel_vinculo', 1) >= 11 else 3
+    ficha.energia_emblema = 0
+    if ficha.stats:
+        setattr(ficha.stats, 'en_fusion', True)
+        setattr(ficha.stats, 'turnos_fusion_restantes', ficha.turnos_fusion)
+        setattr(ficha.stats, 'energia_emblema', 0)
+    ficha.actualizar_movimiento_fusion()   # Gallop (Sigurd): +5 Mov, +7 en caballería
+    return None
+
+
 @app.route("/api/combate/ejecutar", methods=["POST"])
 def ejecutar_combate():
     """
@@ -1045,6 +1322,14 @@ def ejecutar_combate():
     if not f_atk or not f_def:
         return jsonify({"error": "No se encontraron las unidades especificadas"}), 400
 
+    # La jugada pide Fusión: se activa ANTES de mover, porque la Fusión puede cambiar
+    # el movimiento (Gallop de Sigurd: +5 Mov, +7 en caballería) y la casilla de ataque
+    # propuesta puede depender de ese alcance extra.
+    if bool(data.get("requiere_fusion", False)) and not f_atk.en_fusion:
+        error_fusion = _activar_fusion(f_atk, es_engage_attack)
+        if error_fusion:
+            return jsonify({"error": error_fusion}), 400
+
     # 0. Ballesta de mapa (objeto_id): la unidad dispara su propio arco desde la
     # casilla de la ballesta. Requiere maestría en Arco + un arco en el inventario.
     objeto_id = str(data.get("objeto_id", "") or "")
@@ -1056,8 +1341,9 @@ def ejecutar_combate():
             return jsonify({"error": f"No hay un arma usable con id '{objeto_id}' en el mapa"}), 400
         if not est_obj.get("activo") or (est_obj.get("usos") is not None and est_obj["usos"] <= 0):
             return jsonify({"error": f"{ent_obj.nombre} ya no tiene usos"}), 400
-        if not puede_usar_ballesta(f_atk):
-            return jsonify({"error": f"{f_atk.nombre} no puede usar {ent_obj.nombre}: necesita una clase con maestría en Arco y un arco en el inventario"}), 400
+        if not puede_usar_arma_de_mapa(f_atk, ent_obj.propiedades):
+            tipo_req = tipo_arma_de_objeto(ent_obj.propiedades)
+            return jsonify({"error": f"{f_atk.nombre} no puede usar {ent_obj.nombre}: necesita una clase con maestría en {tipo_req} y un arma de ese tipo en el inventario"}), 400
         objeto_ballesta = ent_obj
         pos_destino = list(ent_obj.casillas[0])   # hay que disparar desde la propia ballesta
         nombre_arma = None                          # el arma se construye a partir del arco propio
@@ -1111,14 +1397,16 @@ def ejecutar_combate():
     # 2b. Arma efectiva de la ballesta (arco propio + Hit 20, alcance 3–7, un golpe)
     arma_original_ballesta = None
     if objeto_ballesta:
-        arma_b = arma_ballesta_desde(f_atk, objeto_ballesta.propiedades)
+        arma_b = arma_de_mapa_desde(f_atk, objeto_ballesta.propiedades, objeto_ballesta.nombre)
         if not arma_b:
-            return jsonify({"error": f"{f_atk.nombre} no lleva ningún arco"}), 400
+            return jsonify({"error": f"{f_atk.nombre} no lleva ningún arma de tipo {tipo_arma_de_objeto(objeto_ballesta.propiedades)}"}), 400
         arma_original_ballesta = f_atk.arma
         f_atk.arma = arma_b
 
     # 3. Detectar aliados de apoyo (Backup) cercanos al objetivo para Chain Attacks
-    apoyos_fichas = obtener_aliados_backup(f_atk, f_def, tablero=tablero) if not objeto_ballesta else []
+    apoyos_fichas = obtener_aliados_backup(
+        f_atk, f_def, tablero=tablero,
+        ataque_emblema=engage_attack_nombre if es_engage_attack else "") if not objeto_ballesta else []
     for a in apoyos_fichas:
         if a.stats and a.arma:
             setattr(a.stats, 'arma', a.arma)
@@ -1175,25 +1463,10 @@ def ejecutar_combate():
             return jsonify({"error": f"{engage_attack_nombre} no puede usarse desde ({f_atk.x}, {f_atk.y}): {area_engage.get('motivo')}"}), 400
 
     es_arma_emblema = bool(getattr(f_atk.arma, 'es_engage', False) or "(emblema)" in getattr(f_atk.arma, 'nombre', '').lower())
-    requiere_fusion = bool(data.get("requiere_fusion", False) or es_engage_attack or es_arma_emblema)
-
-    if requiere_fusion and not f_atk.en_fusion:
-        max_e = getattr(f_atk, "max_energia_emblema", 6) or 6
-        cur_e = getattr(f_atk, "energia_emblema", max_e)
-        if cur_e < max_e and not es_engage_attack:
-            return jsonify({
-                "error": f"{f_atk.nombre} no tiene energía suficiente ({cur_e}/{max_e}) para usar {f_atk.arma.nombre}. Debe recargar el medidor de Emblema."
-            }), 400
-        # Todas las clases reciben 3 turnos de Fusión; solo el nivel de vínculo
-        # con el Emblema (>=11) lo eleva a 4, sin excepción por estilo de clase.
-        duracion_fusion = 4 if getattr(f_atk, 'nivel_vinculo', 1) >= 11 else 3
-        f_atk.en_fusion = True
-        f_atk.turnos_fusion = duracion_fusion
-        f_atk.energia_emblema = 0
-        if f_atk.stats:
-            setattr(f_atk.stats, 'en_fusion', True)
-            setattr(f_atk.stats, 'turnos_fusion_restantes', f_atk.turnos_fusion)
-            setattr(f_atk.stats, 'energia_emblema', 0)
+    if (es_engage_attack or es_arma_emblema) and not f_atk.en_fusion:
+        error_fusion = _activar_fusion(f_atk, es_engage_attack)
+        if error_fusion:
+            return jsonify({"error": error_fusion}), 400
 
     # Sincronización estricta de HP actual con el objeto de stats antes de simular
     if f_atk.stats:
@@ -1388,6 +1661,17 @@ def ejecutar_combate():
     # Pozo de Emblema: la acción termina sobre la casilla final (tras Canter) → recarga y se agota
     recarga = tablero.aplicar_recarga_emblema_en_casilla(f_atk.nombre) if (f_atk.es_aliado and hp_atk_final > 0) else None
 
+    # Refuerzos que dispara el guion al combatir con cierta unidad (M010: Hortensia) o
+    # al derrotarla (M010: Morion). Ver cargador_dispos.REFUERZOS_POR_EVENTO.
+    refuerzos_evento = tablero.disparar_refuerzos_por_evento("combate", f_atk, f_def)
+    caidos = [f_def] if hp_def_final <= 0 else []
+    caidos += [tablero.obtener_ficha(e["nombre"]) for e in objetivos_extra_res if e.get("muere")]
+    if hp_atk_final <= 0:
+        caidos.append(f_atk)
+    if caidos:
+        refuerzos_evento += tablero.disparar_refuerzos_por_evento("muerte", *[c for c in caidos if c])
+    dobles_disipados = tablero.purgar_dobles_huerfanos()
+
     return jsonify({
         "ok": True,
         "combate": combate,
@@ -1398,6 +1682,8 @@ def ejecutar_combate():
         "objetivos_extra": objetivos_extra_res,
         "pos_final_area": pos_final_area,
         "casillas_fuego": tablero.casillas_fuego_lista(),
+        "refuerzos_desplegados": refuerzos_evento,
+        "dobles_disipados": dobles_disipados,
         "objetos": tablero.objetos_como_lista() if (objeto_ballesta or recarga) else None,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
@@ -1456,10 +1742,15 @@ def ajustar_hp():
     estados_otorgados = []
     if ok and f and hp_previo is not None and int(hp) < hp_previo:
         estados_otorgados = pasivas_temporales.al_danar_aliado(tablero, f)
+    # Bajar el HP a 0 a mano es derrotar a la unidad: puede disparar refuerzos del guion
+    refuerzos = tablero.disparar_refuerzos_por_evento("muerte", f) if (ok and f and int(hp) <= 0) else []
+    dobles_disipados = tablero.purgar_dobles_huerfanos()
     return jsonify({
         "ok": ok,
         "ficha": f.como_dict() if f else None,
+        "dobles_disipados": dobles_disipados,
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
+        "refuerzos_desplegados": refuerzos,
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
@@ -1620,7 +1911,7 @@ def analizar():
         cronogema = data.get("cronogema_usada", False)
         return jsonify(analizar_situacion_tactica(
             tablero, _mapa, perfil, cronogema,
-            condicion_victoria=cargador_dispos.condicion_victoria(f"M{_capitulo_actual:03d}"),
+            condicion_victoria=cargador_dispos.condicion_victoria(f"M{_capitulo_sesion():03d}"),
         ))
     except Exception as e:
         import traceback

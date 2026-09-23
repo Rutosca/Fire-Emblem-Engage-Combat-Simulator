@@ -98,7 +98,8 @@ class TestChainGuardYEmblema(unittest.TestCase):
                                                 es_engage_attack=True, engage_attack_nombre="Houses Unite",
                                                 aliados_cercanos_atk=[(alear, 1)])
         h_sin, h_con = sin["atacante"]["houses_unite_hits"], con["atacante"]["houses_unite_hits"]
-        self.assertEqual(h_sin, [18, 16, 12])
+        # Fue 12 + Mt (24 / 21 / 13) − Def 5 = 31/28/20, a la mitad truncando
+        self.assertEqual(h_sin, [15, 14, 10])
         self.assertTrue(all(c > s for c, s in zip(h_con, h_sin)), (h_sin, h_con))
 
 

@@ -98,3 +98,99 @@ sola vez; la Cronogema y exportar/importar conservan su estado.
 - **Jefe**: bit 16 del `Flag` del dispos (Ivy M008/M009, Hortensia M007, Hyacinth y Morion
   M010…), además de las piedras resurrectoras o "(Boss)" en el nombre. Editar la ficha en
   el modal (p.ej. quitarle las piedras) conserva `es_jefe`.
+
+## Capítulo 10: cañón mágico, cofres y refuerzos por evento (2026-09-22)
+
+- **Armas de mapa genéricas**: el objeto de Tiled declara `arma_permitida` ("Arco" en una
+  ballesta, "Tomo" en el cañón mágico) y `distancia_min/max`. `catalogo_loader`:
+  `tipo_arma_de_objeto`, `puede_usar_arma_de_mapa` (maestría de clase + llevar un arma de
+  ese tipo) y `arma_de_mapa_desde` (arma propia + Hit +20, crítico 0, 1 golpe, sin
+  contraataque, sin pasivas externas). El cañón mágico usa el tomo de la unidad, así que
+  ataca a la RES. Datamine: SID_魔砲台 == SID_弓砲台 (命中値+20, 必殺率=0, 手番回数=1,
+  相手の手番回数=0, RangeI 3 RangeO 7); el alcance real lo manda el objeto del mapa.
+- **Cofres** (`tipo: cofre` en el tile): objeto de mapa que BLOQUEA su casilla, abierto o
+  cerrado (es mobiliario). `POST /api/mapa/objeto/abrir_cofre {id, unidad}` gasta la acción
+  de una unidad adyacente y lo marca abierto; el contenido lo anota el jugador. No genera
+  recomendaciones.
+- **Refuerzos por evento con varias condiciones**: cada entrada de `REFUERZOS_POR_EVENTO`
+  lleva `disparos`, una lista de condiciones de las que basta UNA (la primera que ocurra):
+  `casilla` (pid + casilla_datamine), `combate` (pid), `muerte` (pid), `turno` (nº) y
+  `objeto` (objeto_tipo del mapa, p.ej. la puerta). M010:
+  - `Enemy_Reinforcement1/2` (2 arqueros en (1,18) y (15,18), los extremos de la fila de
+    Hortensia): al entrar en combate con Hortensia (`condition_オルテンシア行動変化`:
+    g_flag_battle_holtencia) **o** al empezar el turno 6 (como lo anotan las guías).
+  - `Enemy_Reinforcement3/4` (jinete con espada en (3,4) y con hacha en (13,4), las
+    escaleras junto a Hyacinth): cuando cae Morion (`condition_増援`) **o** al derribar la
+    puerta — Morion está pasada la puerta, por eso las guías lo describen así.
+  - El grupo `Thief` llega en el turno 2 salvo en Extremo (Flag 3 de sus filas =
+    Normal+Difícil, como `if not モードはルナティック()`), por CALENDARIO_REFUERZOS.
+- **Apertura de M010** (`配置調整` del .lua): Hortensia baja al vestíbulo de los pozos de
+  Emblema (8,18) y Hyacinth sube al fondo del trono (8,0). En RECOLOCACIONES_APERTURA.
+- **Casilla de aparición ocupada**: el refuerzo ya no espera un turno entero; se coloca en
+  la casilla transitable libre más cercana (radio 3) y solo se pospone si no hay ninguna.
+- **Usos de las armas de mapa**: los enemigos también gastan la ballesta / el cañón, así que
+  el jugador anota los que quedan: clic en su casilla (o **clic derecho**, que funciona
+  aunque haya una unidad encima) → modal con "Usos restantes". `POST /api/mapa/objeto/usos
+  {id, usos}`. Con 0 el arma queda **agotada**: sigue dibujada en el mapa (en gris) pero no
+  se ofrece en las recomendaciones ni se puede disparar; con más de 0 vuelve a estar
+  disponible. Si el tile no declaró `usos`, el número que escriba el jugador pasa a ser el
+  máximo.
+
+- **Emblema Oscuro del jefe** (2026-09-22): el `Gid` del dispos ya trae el Emblema
+  (`GID_M010_敵リン` en Hyacinth, `GID_M008_敵リーフ` en Ivy, `GID_M010_敵ベレト` en la
+  Hortensia del Cap. 10). Sus **armas de Emblema pasan al inventario real del jefe**, con
+  la primera equipada, porque un Emblema Oscuro no se fusiona y las lleva toda la batalla.
+  El único que el guion entrega por evento (y no aparece en el Gid) es el de Lucina para
+  Hortensia en M007: está en `EMBLEMA_POR_EVENTO`, no como caso especial en el código.
+- **Las armas "(Evento)" no son las genéricas**: `IID_リン_キラーボウ_M010` es Mt 9 / crit 10
+  y la genérica `IID_キラーボウ` es Mt 7 / crit 30; la Mani Katti del Cap. 10 tiene crit 5 y
+  la normal 20. Resolverlas por nombre daba el arma equivocada, así que
+  `parsear_arma_string` respeta el **IID** del ítem cuando nombra la misma arma, y el
+  nombre visible se queda sin la etiqueta "(Evento)"/"(Prólogo)" del compilador.
+- **Bugs del Cap. 10 (2026-09-22)**:
+  - `/api/estado` daba **500** en cualquier mapa con refuerzos por evento de tipo
+    combate / muerte / objeto: `snapshot()` hacía `list(e["casilla"])` y esos eventos no
+    tienen casilla. Arreglado (y los `disparos` también se serializan). El efecto colateral
+    eran los 404 de `/api/terreno`: sin estado, la UI se quedaba con el mapa anterior y
+    pedía casillas fuera de los 17×30 del Cap. 10.
+  - **Armas de Emblema duplicadas al guardar desde el modal**: el modal reconstruye el
+    inventario desde sus 5 ranuras de texto, sin marca de Emblema y (antes) sin el IID, así
+    que la inyección del Emblema no reconocía el arma y la añadía otra vez. Ahora la ranura
+    guarda el `IID` en `dataset.iid` y lo reenvía (se borra al reescribir el nombre), y la
+    inyección, cuando el Emblema es Oscuro, deduplica también por arma base. Sin el IID ya
+    no duplica, pero el arma pasa a ser la genérica del mismo nombre.
+- **Arqueros del Cap. 10 (verificado en juego, 2026-09-23)**: `Enemy_Reinforcement1/2` NO
+  llegan por turno. Se jugó hasta el turno 6 sin combatir con Hortensia y no aparecieron,
+  así que su único disparador es el combate con ella (`g_flag_battle_holtencia`). Las guías
+  lo cuentan como "turno 6" porque es cuando se suele llegar hasta ella. Los jinetes de las
+  escaleras (`Enemy_Reinforcement3/4`) sí conservan sus dos condiciones (Morion cae **o**
+  se derriba la puerta).
+- **Disparo por acción de una unidad (`accion`)**, 2026-09-23: algunos eventos del guion
+  dependen de que una unidad ENEMIGA haga algo que la herramienta no puede observar
+  porque pasa en la fase enemiga (atacar, usar un bastón). Los arqueros del Cap. 10 son
+  el primer caso: no llegan por turno ni solo por combate, sino en cuanto **Hortensia
+  actúa** — ataca, congela con Freeze o recibe un ataque.
+  Cómo funciona:
+  - En `REFUERZOS_POR_EVENTO`, `{"tipo": "accion", "pid": ...}` junto a los demás disparos
+    (basta el primero que ocurra; el de `combate` sigue estando para cuando la ataques tú).
+  - `EstadoTablero.acciones_pendientes_de_registrar()` lista las unidades vivas con un
+    evento así sin disparar, y `como_dict` publica `evento_por_accion` por ficha.
+  - En el modal de esa unidad aparece el botón **"Ha actuado → refuerzos"**
+    (`POST /api/unidad/registrar_accion`), y al pulsar "Turno Enemigo" la respuesta trae
+    `acciones_pendientes` para que la UI lo recuerde con un aviso.
+  - Los refuerzos se colocan como siempre: su casilla del guion, o la libre más cercana
+    (radio 3) si está ocupada.
+  La lista va en el **estado del tablero** (`eventos_por_accion`), no como un campo por
+  ficha. El primer intento se lo preguntaba a la ficha, y para eso le colgó una referencia
+  al tablero: el `deepcopy` de `guardar_snapshot` pasó a copiar el tablero entero con su
+  historial en cada snapshot y la suite se colgaba. La ficha no sabe nada de esto.
+  El botón es de **acción única**: una vez disparado sigue visible pero en gris
+  ("Refuerzos ya llamados"), para que se vea que está hecho.
+- **Los disparadores viven en la partida, no en el código**: `programar_refuerzos_por_evento`
+  solo se llama al seleccionar capítulo y al cargar el preset, así que una partida empezada
+  se queda con las condiciones que tuviera ese día. Al corregir los arqueros del Cap. 10 el
+  botón no aparecía en la sesión en curso por eso. `GET /api/estado` llama ahora a
+  `resincronizar_refuerzos_por_evento`: actualiza los `disparos` y la descripción de los
+  grupos que ya estaban, **conservando `disparado`** y sin desplegar ni mover nada. Los
+  grupos que no estaban en la partida no se añaden a mitad de mapa.
+
