@@ -19,9 +19,15 @@ casilla:
     (aliado o enemigo, NUNCA a voladores, y nunca mata: deja a 1 HP) y encarece
     el movimiento: entrar en la casilla cuesta 1 punto más (coste +1).
 
+  • Alientos de Tiki (Fusión): el dragón inicia el combate a rango 1 como una espada
+    cualquiera, pero el golpe barre un área por delante. El objetivo principal es el
+    adyacente (combate normal, con su contraataque); a los demás enemigos del área les
+    llega un único golpe. Además cada aliento deja un efecto en el suelo. Geometría
+    verificada por el jugador con un boceto; se propaga en las 4 direcciones.
+
 Los cálculos de daño no viven aquí: este módulo solo dice a QUIÉN se golpea,
-DÓNDE acaba el atacante y QUÉ casillas arden. Lo usan motor_analisis (para
-puntuar y describir la jugada) y app.py (para ejecutarla).
+DÓNDE acaba el atacante y QUÉ casillas arden, se congelan o se llenan de niebla.
+Lo usan motor_analisis (para puntuar y describir la jugada) y app.py (para ejecutarla).
 """
 from __future__ import annotations
 
@@ -29,15 +35,53 @@ from typing import Optional
 
 FUEGO_DANO_POR_FASE = 10
 FUEGO_COSTE_EXTRA = 1
+# Niebla (Terrain.xml `TID_霧`): +30 Evasión a quien esté encima, dura un turno.
+NIEBLA_AVO = 30
+
+# ── Alientos de Tiki ──────────────────────────────────────────────────────
+# Las casillas van como (avance, lado) respecto del portador: `avance` cuenta hacia el
+# objetivo (1 = la casilla adyacente que ataca) y `lado` hacia la perpendicular. Así la
+# misma tabla vale para las 4 direcciones.
+_T = [(1, 0), (2, -1), (2, 0), (2, 1)]                       # la T básica: 1 delante + 3 al fondo
+_T_LARGA = _T + [(3, -1), (3, 0), (3, 1)]                    # Flame llega una fila más lejos
+
+ALIENTOS = {
+    # sabor: (casillas de daño, efecto de suelo, casillas del efecto)
+    "hielo":  (_T,       "hielo",  _T),
+    "oscuro": (_T,       None,     []),
+    "fuego":  (_T,       "fuego",  [(1, 0)]),
+    "llama":  (_T_LARGA, "fuego",  [(1, 0), (2, 0)]),
+    "niebla": (_T,       "niebla", _T + [(1, -1), (1, 1), (2, -2), (2, 2)]),
+}
+
+# Nombre del arma → sabor. "Fire" va el último: "Flame Breath" no debe caer aquí.
+_ALIENTO_POR_NOMBRE = (
+    ("ice breath", "hielo"), ("aliento de hielo", "hielo"),
+    ("dark breath", "oscuro"), ("aliento oscuro", "oscuro"),
+    ("flame breath", "llama"), ("aliento llameante", "llama"), ("aliento de llamas", "llama"),
+    ("fog breath", "niebla"), ("aliento de niebla", "niebla"),
+    ("fire breath", "fuego"), ("aliento de fuego", "fuego"),
+)
+
+
+def sabor_aliento(nombre_arma: str) -> Optional[str]:
+    """'hielo' | 'oscuro' | 'fuego' | 'llama' | 'niebla' según el arma; None si no es un aliento."""
+    n = (nombre_arma or "").lower()
+    for clave, sabor in _ALIENTO_POR_NOMBRE:
+        if clave in n:
+            return sabor
+    return None
 
 
 def tipo_ataque_area(nombre_ataque: str) -> Optional[str]:
-    """'override' | 'blazing_lion' | None según el nombre del Ataque de Emblema."""
+    """'override' | 'blazing_lion' | 'aliento' | None según el nombre del ataque o arma."""
     n = (nombre_ataque or "").lower()
     if "override" in n or "superaci" in n:
         return "override"
     if "blazing" in n or "león ardiente" in n or "leon ardiente" in n:
         return "blazing_lion"
+    if sabor_aliento(n):
+        return "aliento"
     return None
 
 
@@ -76,6 +120,19 @@ def es_terreno_llano(terreno) -> bool:
     return not any(k in nombre for k in ("muro", "foso", "agua", "pilar", "trono", "puerta", "cofre"))
 
 
+def admite_efecto_de_suelo(terreno, efecto: str) -> bool:
+    """
+    Si el efecto de un aliento puede quedarse en la casilla. El fuego solo prende en llano
+    (igual que el de Blazing Lion, verificado); la niebla y el hielo cubren cualquier
+    casilla por la que se pueda pasar o volar, pero no un muro.
+    """
+    if terreno is None:
+        return False
+    if efecto == "fuego":
+        return es_terreno_llano(terreno)
+    return bool(getattr(terreno, "caminable", False) or getattr(terreno, "volable", False))
+
+
 def es_casilla_llegada_override(terreno, es_volador: bool = False) -> bool:
     """Casilla en la que puede acabar Override: transitable para el atacante y sin
     obstáculo. Verificado en el juego: vale una casilla de evasión (coste 2); no vale
@@ -100,13 +157,18 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
         "direccion": (dx, dy) | None,
         "objetivos": [FichaUnidad, ...],   # el principal primero
         "pos_final": (x, y) | None,     # Override: casilla de llegada del atacante
-        "casillas_fuego": [(x, y), ...] # Blazing Lion: casillas que arden
+        "casillas_fuego": [(x, y), ...],  # Blazing Lion / Fire y Flame Breath: casillas que arden
+        "sabor": str,                   # alientos: 'hielo' | 'oscuro' | 'fuego' | 'llama' | 'niebla'
+        "casillas_dano": [(x, y), ...], # alientos: el área barrida, haya o no enemigo dentro
+        "casillas_niebla": [...],       # Fog Breath
+        "casillas_hielo": [...],        # Ice Breath
       }
     Para un ataque que no es de área devuelve tipo None y valido True (no aplica).
     """
     tipo = tipo_ataque_area(nombre_ataque)
     base = {"tipo": tipo, "valido": True, "motivo": "", "direccion": None,
-            "objetivos": [objetivo] if objetivo is not None else [], "pos_final": None, "casillas_fuego": []}
+            "objetivos": [objetivo] if objetivo is not None else [], "pos_final": None, "casillas_fuego": [],
+            "sabor": "", "casillas_dano": [], "casillas_niebla": [], "casillas_hielo": []}
     if tipo is None or objetivo is None or mapa is None:
         return base
 
@@ -146,8 +208,37 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
         base.update(objetivos=objetivos, pos_final=(lx, ly))
         return base
 
-    # blazing_lion
     p = (d[1], d[0])  # perpendicular (izquierda/derecha del objetivo)
+
+    if tipo == "aliento":
+        sabor = sabor_aliento(nombre_ataque)
+        casillas_dano, efecto, casillas_efecto = ALIENTOS[sabor]
+
+        def casilla(off):
+            avance, lado = off
+            return (pos_atk[0] + d[0] * avance + p[0] * lado,
+                    pos_atk[1] + d[1] * avance + p[1] * lado)
+
+        dano = [casilla(o) for o in casillas_dano if _dentro(mapa, *casilla(o))]
+        objetivos = [objetivo]
+        for c in dano:
+            if c == pos_obj:
+                continue
+            u = _unidad_en(tablero, *c)
+            if es_enemigo(u):
+                objetivos.append(u)
+        suelo = [c for c in (casilla(o) for o in casillas_efecto)
+                 if _dentro(mapa, *c) and admite_efecto_de_suelo(_terreno(mapa, *c), efecto)]
+        base.update(sabor=sabor, objetivos=objetivos, casillas_dano=dano)
+        if efecto == "fuego":
+            base["casillas_fuego"] = suelo
+        elif efecto == "niebla":
+            base["casillas_niebla"] = suelo
+        elif efecto == "hielo":
+            base["casillas_hielo"] = suelo
+        return base
+
+    # blazing_lion
     frente = [pos_obj, (pos_obj[0] + p[0], pos_obj[1] + p[1]), (pos_obj[0] - p[0], pos_obj[1] - p[1])]
     objetivos = [objetivo]
     for (fx, fy) in frente[1:]:

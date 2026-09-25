@@ -1,0 +1,196 @@
+{
+  "_comentario": [
+    "Armas de los Emblemas de DLC que NO están en el datamine. compilar_catalogo.py las",
+    "integra en `armas` igual que hace con dlc_emblems_canon.json en `emblemas`, así que",
+    "sobreviven a una recompilación.",
+    "Stats de Tiki verificadas en juego por el jugador (Mt, Hit, Crit, Wt, Avo, Ddg).",
+    "Los alientos NO son Smash: ceden el primer golpe y no permiten seguimiento, pero no",
+    "empujan. Solo Tail Smash empuja. Alcance 1 para iniciar, como una espada.",
+    "de los wyrms (12/100/0/5), que es otra arma distinta aunque comparta nombre."
+  ],
+  "IID_DLC_TIKI_ETERNAL_CLAW": {
+    "id": "IID_DLC_TIKI_ETERNAL_CLAW",
+    "nombre": "Eternal Claw",
+    "tipo": "Especial",
+    "mt": 10,
+    "wt": 8,
+    "hit": 90,
+    "crit": 30,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": false,
+    "equip_sids": [],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Claw attack used by Emblem Tiki. Easily inflicts fatal wounds.",
+    "_estilos": null
+  },
+  "IID_DLC_TIKI_TAIL_SMASH": {
+    "id": "IID_DLC_TIKI_TAIL_SMASH",
+    "nombre": "Tail Smash",
+    "tipo": "Especial",
+    "mt": 22,
+    "wt": 13,
+    "hit": 85,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": true,
+    "equip_sids": [],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Smash attack used by Emblem Tiki. Smashes foes. Cannot follow up, or strike first if initiating combat.",
+    "_estilos": null
+  },
+  "IID_DLC_TIKI_FIRE_BREATH": {
+    "id": "IID_DLC_TIKI_FIRE_BREATH",
+    "nombre": "Fire Breath",
+    "tipo": "Especial",
+    "mt": 10,
+    "wt": 15,
+    "hit": 75,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_OVERLAY_IGNORA_DEFENSA"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "A scorching breath attack. Ignores foe's Def/Res.",
+    "_estilos": [
+      "apoyo",
+      "caballeria",
+      "encubierto",
+      "qi_adept"
+    ],
+    "cede_iniciativa": true
+  },
+  "IID_DLC_TIKI_ICE_BREATH": {
+    "id": "IID_DLC_TIKI_ICE_BREATH",
+    "nombre": "Ice Breath",
+    "tipo": "Especial",
+    "mt": 10,
+    "wt": 15,
+    "hit": 75,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_OVERLAY_MEDIA_DEFENSA"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Strikes foes in area at half Def. Freezes foes. Cannot follow up, or strike first if initiating combat.",
+    "_estilos": [
+      "acorazado"
+    ],
+    "cede_iniciativa": true
+  },
+  "IID_DLC_TIKI_FLAME_BREATH": {
+    "id": "IID_DLC_TIKI_FLAME_BREATH",
+    "nombre": "Flame Breath",
+    "tipo": "Especial",
+    "mt": 10,
+    "wt": 15,
+    "hit": 75,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_OVERLAY_MEDIA_DEFENSA",
+      "SID_OVERLAY_DANO_70"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Sets area on fire. Strikes foes at 70% damage and half Def. Cannot follow up, or strike first if initiating combat.",
+    "_estilos": [
+      "volador"
+    ],
+    "cede_iniciativa": true
+  },
+  "IID_DLC_TIKI_DARK_BREATH": {
+    "id": "IID_DLC_TIKI_DARK_BREATH",
+    "nombre": "Dark Breath",
+    "tipo": "Especial",
+    "mt": 10,
+    "wt": 15,
+    "hit": 75,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": true,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_OVERLAY_MEDIA_DEFENSA"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Magically strikes foes in area at half Res. Cannot follow up, or strike first if initiating combat.",
+    "_estilos": [
+      "mistico"
+    ],
+    "cede_iniciativa": true
+  },
+  "IID_DLC_TIKI_FOG_BREATH": {
+    "id": "IID_DLC_TIKI_FOG_BREATH",
+    "nombre": "Fog Breath",
+    "tipo": "Especial",
+    "mt": 10,
+    "wt": 15,
+    "hit": 75,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_OVERLAY_MEDIA_DEFENSA"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [
+      "dragón"
+    ],
+    "_descripcion": "Strikes foes in area at half Def. Eff: Dragon. Creates fog. Cannot follow up, or strike first if initiating combat.",
+    "_estilos": [
+      "dragon"
+    ],
+    "cede_iniciativa": true
+  }
+}

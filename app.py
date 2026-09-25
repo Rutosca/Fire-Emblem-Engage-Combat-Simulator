@@ -626,6 +626,7 @@ def exportar_partida():
         "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(tablero.refuerzos_pendientes.items())},
         "refuerzos_por_evento": [dict(e, casilla=list(e["casilla"])) for e in tablero.refuerzos_por_evento],
         "casillas_fuego": tablero.casillas_fuego_lista(),
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "fichas": fichas_vivas
     }
     return jsonify({"ok": True, "partida": estado})
@@ -671,9 +672,14 @@ def importar_partida():
 
     # Refuerzos: los pendientes guardados o, si la partida no los trae (guardados
     # antiguos), los del calendario del capítulo aún no llegados (turno > actual).
-    tablero.casillas_fuego = {(int(c["x"]), int(c["y"])): int(c.get("expira_turno", tablero.turno_actual + 1))
-                              for c in (partida.get("casillas_fuego") or []) if "x" in c and "y" in c}
-    tablero.sincronizar_fuego_mapa()
+    guardados = partida.get("terrenos_temporales")
+    if not guardados:
+        guardados = [dict(c, tipo="fuego") for c in (partida.get("casillas_fuego") or [])]
+    tablero.terrenos_temporales = {
+        (int(c["x"]), int(c["y"])): {"tipo": str(c.get("tipo") or "fuego"),
+                                     "expira": int(c.get("expira_turno", tablero.turno_actual + 1))}
+        for c in guardados if "x" in c and "y" in c}
+    tablero.sincronizar_terrenos_temporales()
     ref_guardados = partida.get("refuerzos_pendientes")
     if isinstance(ref_guardados, dict) and ref_guardados:
         tablero.programar_refuerzos({int(t): us for t, us in ref_guardados.items() if str(t).isdigit()})
@@ -851,7 +857,7 @@ def obtener_rango_movimiento():
     umock = UnidadMock(
         x=ficha.x,
         y=ficha.y,
-        mov=ficha.mov or 4,
+        mov=ficha.movimiento_disponible,
         es_volador=ficha.es_volador,
         arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
     )
@@ -865,7 +871,9 @@ def obtener_rango_movimiento():
     return jsonify({
         "ok": True,
         "nombre": nombre,
-        "mov": ficha.mov or 4,
+        "mov": ficha.movimiento_disponible,
+        "mov_total": ficha.mov or 4,
+        "congelado": bool(ficha.congelado),
         "es_volador": ficha.es_volador,
         "casillas": casillas_validas,
         # Advance (Roy): casillas a las que solo se llega avanzando 1 hacia un enemigo para atacarlo
@@ -928,7 +936,7 @@ def mover_unidad():
     umock = UnidadMock(
         x=ficha.x,
         y=ficha.y,
-        mov=ficha.mov or 4,
+        mov=ficha.movimiento_disponible,
         es_volador=ficha.es_volador,
         arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
     )
@@ -937,6 +945,8 @@ def mover_unidad():
     if (x, y) not in alcanzables:
         via_advance = _casillas_advance_de(ficha, alcanzables).get((x, y))
         if via_advance is None:
+            if ficha.congelado:
+                return jsonify({"error": f"{nombre} está congelada: no puede moverse durante su fase."}), 400
             return jsonify({"error": f"{nombre} solo puede moverse {ficha.mov or 4} casillas. La casilla ({x},{y}) está fuera de su alcance o es intransitable."}), 400
 
     tablero.guardar_snapshot()
@@ -1095,6 +1105,7 @@ def deshacer_accion():
         "turno": tablero.turno_actual,
         "fase": tablero.fase,
         "casillas_fuego": tablero.casillas_fuego_lista(),
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "objetos": tablero.objetos_como_lista(),
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
     })
@@ -1211,7 +1222,7 @@ def hablar_con_unidad():
                 tablero.historial.pop()
                 return jsonify({"error": f"La casilla ({x},{y}) está ocupada"}), 400
             analizador = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
-            umock = UnidadMock(x=f_h.x, y=f_h.y, mov=f_h.mov or 4, es_volador=f_h.es_volador, arma=ArmaMock([1]))
+            umock = UnidadMock(x=f_h.x, y=f_h.y, mov=f_h.movimiento_disponible, es_volador=f_h.es_volador, arma=ArmaMock([1]))
             setattr(umock, 'tiene_pass', pasivas.tiene_sid(f_h, 'SID_すり抜け'))
             bloqueo = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != f_h.es_aliado}
             if (x, y) not in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo):
@@ -1454,13 +1465,17 @@ def ejecutar_combate():
     es_engage_attack = bool(data.get("es_engage_attack", False) or es_engage_attack)
     engage_attack_nombre = str(data.get("engage_attack_nombre", "") or engage_attack_nombre)
 
-    # 2c. Ataques de Emblema de área (Override / Blazing Lion): resolver la geometría
-    # ANTES del combate, con todos los objetivos aún vivos. Se aplica después.
+    # 2c. Ataques de área: Ataques de Emblema (Override / Blazing Lion) y alientos de Tiki.
+    # La geometría se resuelve ANTES del combate, con todos los objetivos aún vivos, y se
+    # aplica después. Los alientos no son un Ataque de Emblema: son el arma equipada, así
+    # que el área sale de un ataque normal y no puede invalidar la jugada.
     area_engage = None
     if es_engage_attack and engage_attack_nombre and tipo_ataque_area(engage_attack_nombre):
         area_engage = resolver_ataque_area(engage_attack_nombre, (f_atk.x, f_atk.y), f_def, f_atk, tablero, _mapa)
         if not area_engage.get("valido"):
             return jsonify({"error": f"{engage_attack_nombre} no puede usarse desde ({f_atk.x}, {f_atk.y}): {area_engage.get('motivo')}"}), 400
+    elif tipo_ataque_area(getattr(f_atk.arma, 'nombre', '')) == "aliento":
+        area_engage = resolver_ataque_area(f_atk.arma.nombre, (f_atk.x, f_atk.y), f_def, f_atk, tablero, _mapa)
 
     es_arma_emblema = bool(getattr(f_atk.arma, 'es_engage', False) or "(emblema)" in getattr(f_atk.arma, 'nombre', '').lower())
     if (es_engage_attack or es_arma_emblema) and not f_atk.en_fusion:
@@ -1516,6 +1531,12 @@ def ejecutar_combate():
         hp_def_final = f_def.hp_max
         if f_def.stats:
             f_def.stats.hp = f_def.hp_max
+    # Y la del atacante, si cayó por el contraataque y llevaba una
+    if res.get("piedra_atacante_consumida"):
+        f_atk.hp_stock = max(0, getattr(f_atk, 'hp_stock', 0) - 1)
+        hp_atk_final = f_atk.hp_max
+        if f_atk.stats:
+            f_atk.stats.hp = f_atk.hp_max
 
     # Guardia en cadena: aplicar retroceso al protector
     cg_res = res.get("chain_guard", {})
@@ -1562,6 +1583,7 @@ def ejecutar_combate():
     # posiciones reales tras el movimiento de ataque.
     objetivos_extra_res = []
     fuego_encendido = []
+    congelados_area = []
     pos_final_area = None
     if area_engage is not None and hp_atk_final > 0:
         area = area_engage
@@ -1597,6 +1619,17 @@ def ejecutar_combate():
                     pos_final_area = [lx, ly]
             elif area.get("tipo") == "blazing_lion" and area.get("casillas_fuego"):
                 fuego_encendido = [list(c) for c in tablero.encender_fuego(area["casillas_fuego"])]
+            elif area.get("tipo") == "aliento":
+                # Efecto de suelo del aliento: fuego (Fire/Flame), niebla (Fog) o hielo (Ice).
+                if area.get("casillas_fuego"):
+                    fuego_encendido = [list(c) for c in tablero.encender_fuego(area["casillas_fuego"])]
+                for tipo_suelo, clave in (("niebla", "casillas_niebla"), ("hielo", "casillas_hielo")):
+                    if area.get(clave):
+                        tablero.aplicar_terreno_temporal(area[clave], tipo_suelo)
+                # Ice Breath congela a todo el que recibe el golpe: 0 de movimiento durante su fase.
+                if area.get("sabor") == "hielo":
+                    congelados_area = tablero.congelar(
+                        [u.nombre for u in (area.get("objetivos") or []) if u is not None and u.viva])
 
     # Repliegue táctico de Canter (Movimiento ágil tras combate si atacante sobrevive)
     pos_canter = data.get("pos_canter")
@@ -1682,6 +1715,10 @@ def ejecutar_combate():
         "objetivos_extra": objetivos_extra_res,
         "pos_final_area": pos_final_area,
         "casillas_fuego": tablero.casillas_fuego_lista(),
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
+        "congelados": congelados_area,
+        "area_aliento": ([list(c) for c in (area_engage.get("casillas_dano") or [])]
+                         if area_engage and area_engage.get("tipo") == "aliento" else []),
         "refuerzos_desplegados": refuerzos_evento,
         "dobles_disipados": dobles_disipados,
         "objetos": tablero.objetos_como_lista() if (objeto_ballesta or recarga) else None,
@@ -1742,12 +1779,17 @@ def ajustar_hp():
     estados_otorgados = []
     if ok and f and hp_previo is not None and int(hp) < hp_previo:
         estados_otorgados = pasivas_temporales.al_danar_aliado(tablero, f)
-    # Bajar el HP a 0 a mano es derrotar a la unidad: puede disparar refuerzos del guion
-    refuerzos = tablero.disparar_refuerzos_por_evento("muerte", f) if (ok and f and int(hp) <= 0) else []
+    # Bajar el HP a 0 a mano: si le queda una piedra resurrectora pierde esa barra y
+    # vuelve con la vida llena en vez de caer (vale para aliados, no solo para jefes).
+    piedra_gastada = bool(ok and f and int(hp) <= 0 and f.gastar_piedra_si_cae())
+    # Solo si cae de verdad puede disparar refuerzos del guion
+    refuerzos = tablero.disparar_refuerzos_por_evento("muerte", f) if (
+        ok and f and int(hp) <= 0 and not piedra_gastada) else []
     dobles_disipados = tablero.purgar_dobles_huerfanos()
     return jsonify({
         "ok": ok,
         "ficha": f.como_dict() if f else None,
+        "piedra_resurrectora_gastada": piedra_gastada,
         "dobles_disipados": dobles_disipados,
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
         "refuerzos_desplegados": refuerzos,
@@ -1865,6 +1907,7 @@ def iniciar_fase_enemigo():
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
         "casillas_fuego": tablero.casillas_fuego_lista(),
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
         "recargas_emblema": recargas,
         "objetos": tablero.objetos_como_lista(),
@@ -1883,6 +1926,7 @@ def fin_turno():
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
         "casillas_fuego": tablero.casillas_fuego_lista(),
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,
         "refuerzos_previstos": tablero.refuerzos_previstos(),
         "fichas": [f.como_dict() for f in tablero.fichas.values()],

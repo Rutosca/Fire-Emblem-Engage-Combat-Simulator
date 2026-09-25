@@ -524,7 +524,8 @@ TIMINGS_GOLPE_ESTATICO = frozenset({1, 2, 3, 4, 5, 7, 8, 10})
 _ETIQUETAS = {
     "power": "Atk", "atk": "Atk", "unit_atk": "Atk", "power_arma": "Mt", "rival_power": "Atk rival",
     "hit": "Hit", "avo": "Avo", "crit": "Crit", "ddg": "Ddg", "rival_hit": "Hit rival", "rival_avo": "Avo rival",
-    "rival_crit": "Crit rival", "as": "AS", "hp": "HP", "str": "Fue", "dex": "Des", "def": "Def", "res": "Res",
+    "rival_crit": "Crit rival", "as": "AS", "hp": "HP", "str": "Fue", "mag": "Mag", "dex": "Des",
+    "spd": "Vel", "lck": "Suerte", "bld": "Complexión", "def": "Def", "res": "Res", "curacion": "HP curados",
     "dano": "Daño", "rival_dano": "Daño rival", "terreno_avo": "Avo terreno", "rival_terreno_avo": "Avo terreno rival",
     "hit_rate": "Hit%", "crit_rate": "Crit%", "rival_hit_rate": "Hit% rival", "rival_crit_rate": "Crit% rival",
     "rival_effectividad": "efectividad rival", "rival_defensa_efectiva": "Def rival", "turno_extra": "rondas",

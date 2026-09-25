@@ -958,6 +958,15 @@ def compilar():
     print(f"Emblemas Oscuros procesados: {n_oscuros}")
 
     # Integrar Emblemas de DLC (Edelgard/3H, Tiki, Hector, Veronica, Soren, Camilla, Chrom/Robin)
+    # Armas de los Emblemas de DLC: no están en el datamine, así que se anotan a mano
+    # (json/dlc_armas_canon.json) y se integran aquí para que sobrevivan a la recompilación.
+    dlc_armas_path = os.path.join(BASE_DIR, "json", "dlc_armas_canon.json")
+    if os.path.exists(dlc_armas_path):
+        with open(dlc_armas_path, "r", encoding="utf-8") as f:
+            dlc_armas = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
+        armas.update(dlc_armas)
+        print(f"Armas de DLC integradas: {len(dlc_armas)}")
+
     dlc_canon_path = os.path.join(BASE_DIR, "json", "dlc_emblems_canon.json")
     if os.path.exists(dlc_canon_path):
         with open(dlc_canon_path, "r", encoding="utf-8") as f:

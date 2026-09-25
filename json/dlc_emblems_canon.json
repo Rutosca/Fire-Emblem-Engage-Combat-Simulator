@@ -5,10 +5,18 @@
     "ascii_name": "Edelgard",
     "link_name": "Edelgard",
     "grow_table": "GGID_EDELGARD",
-    "engrave": {"power": 1, "weight": 1, "hit": 10, "critical": 10, "avoid": 10, "secure": 0},
+    "engrave": {
+      "power": 1,
+      "weight": 1,
+      "hit": 10,
+      "critical": 10,
+      "avoid": 10,
+      "secure": 0
+    },
     "engage_items": [
       "Aymr (Edelgard)",
-      "Areadbhar (Dimitri)"
+      "Areadbhar (Dimitri)",
+      "Failnaught (Claude)"
     ],
     "engage_skills": [
       "Combat Arts"
@@ -909,7 +917,14 @@
     "ascii_name": "Tiki",
     "link_name": "Tiki",
     "grow_table": "GGID_TIKI",
-    "engrave": {"power": 2, "weight": 0, "hit": 0, "critical": 0, "avoid": -20, "secure": -20},
+    "engrave": {
+      "power": 2,
+      "weight": 0,
+      "hit": 0,
+      "critical": 0,
+      "avoid": -20,
+      "secure": -20
+    },
     "engage_items": [
       "Eternal Claw",
       "Tail Smash",
@@ -926,7 +941,10 @@
       "Starsphere",
       "Geosphere",
       "Lifesphere",
-      "Lightsphere"
+      "Lightsphere",
+      "Lifesphere+",
+      "Geosphere+",
+      "Lifesphere++"
     ],
     "bond_levels": {
       "1": {
@@ -944,31 +962,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -996,31 +1014,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1058,31 +1076,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1114,31 +1132,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1176,31 +1194,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1232,31 +1250,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1288,31 +1306,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1354,31 +1372,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1414,31 +1432,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1484,31 +1502,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1548,31 +1566,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1612,31 +1630,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1682,31 +1700,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1752,31 +1770,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1816,31 +1834,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1886,31 +1904,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -1950,31 +1968,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -2020,31 +2038,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -2090,31 +2108,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -2160,31 +2178,31 @@
         ],
         "engage_items": [
           {
-            "iid": "Eternal Claw",
+            "iid": "IID_DLC_TIKI_ETERNAL_CLAW",
             "nombre": "Eternal Claw"
           },
           {
-            "iid": "Tail Smash",
+            "iid": "IID_DLC_TIKI_TAIL_SMASH",
             "nombre": "Tail Smash"
           },
           {
-            "iid": "Fire Breath",
+            "iid": "IID_DLC_TIKI_FIRE_BREATH",
             "nombre": "Fire Breath"
           },
           {
-            "iid": "Ice Breath",
+            "iid": "IID_DLC_TIKI_ICE_BREATH",
             "nombre": "Ice Breath"
           },
           {
-            "iid": "Flame Breath",
+            "iid": "IID_DLC_TIKI_FLAME_BREATH",
             "nombre": "Flame Breath"
           },
           {
-            "iid": "Dark Breath",
+            "iid": "IID_DLC_TIKI_DARK_BREATH",
             "nombre": "Dark Breath"
           },
           {
-            "iid": "Fog Breath",
+            "iid": "IID_DLC_TIKI_FOG_BREATH",
             "nombre": "Fog Breath"
           }
         ],
@@ -2205,7 +2223,14 @@
     "ascii_name": "Hector",
     "link_name": "Hector",
     "grow_table": "GGID_HECTOR",
-    "engrave": {"power": 3, "weight": 3, "hit": 0, "critical": 0, "avoid": -30, "secure": -30},
+    "engrave": {
+      "power": 3,
+      "weight": 3,
+      "hit": 0,
+      "critical": 0,
+      "avoid": -30,
+      "secure": -30
+    },
     "engage_items": [
       "Wolf Beil",
       "Runesword"
@@ -3075,7 +3100,14 @@
     "ascii_name": "Veronica",
     "link_name": "Veronica",
     "grow_table": "GGID_VERONICA",
-    "engrave": {"power": 1, "weight": -2, "hit": -20, "critical": -20, "avoid": 20, "secure": 20},
+    "engrave": {
+      "power": 1,
+      "weight": -2,
+      "hit": -20,
+      "critical": -20,
+      "avoid": 20,
+      "secure": 20
+    },
     "engage_items": [
       "Hliðskjálf",
       "Fortify+"
@@ -3941,7 +3973,14 @@
     "ascii_name": "Soren",
     "link_name": "Soren",
     "grow_table": "GGID_SOREN",
-    "engrave": {"power": 2, "weight": 0, "hit": 0, "critical": 0, "avoid": -10, "secure": -20},
+    "engrave": {
+      "power": 2,
+      "weight": 0,
+      "hit": 0,
+      "critical": 0,
+      "avoid": -10,
+      "secure": -20
+    },
     "engage_items": [
       "Bolting",
       "Reflect"
@@ -4799,7 +4838,14 @@
     "ascii_name": "Camilla",
     "link_name": "Camilla",
     "grow_table": "GGID_CAMILLA",
-    "engrave": {"power": 1, "weight": 1, "hit": 0, "critical": 30, "avoid": -20, "secure": -20},
+    "engrave": {
+      "power": 1,
+      "weight": 1,
+      "hit": 0,
+      "critical": 30,
+      "avoid": -20,
+      "secure": -20
+    },
     "engage_items": [
       "Bolt Axe",
       "Lightning"
@@ -5665,7 +5711,14 @@
     "ascii_name": "Chrom",
     "link_name": "Chrom",
     "grow_table": "GGID_CHROM",
-    "engrave": {"power": 1, "weight": -1, "hit": 0, "critical": 0, "avoid": 20, "secure": 20},
+    "engrave": {
+      "power": 1,
+      "weight": -1,
+      "hit": 0,
+      "critical": 0,
+      "avoid": 20,
+      "secure": 20
+    },
     "engage_items": [
       "Levin Sword (Robin)",
       "Thoron (Robin)"

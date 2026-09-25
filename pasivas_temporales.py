@@ -65,6 +65,29 @@ def _pasivas_al_esperar(ficha) -> list:
     return salida
 
 
+def _curaciones_al_esperar(ficha) -> list:
+    """
+    [(sid, nombre, HP)] de las pasivas de Timing 25 que curan en vez de dar stats
+    (Lifesphere de Tiki: 回復 +20 / +30 / +40 y quita los estados alterados).
+    Si hay varias del mismo tipo (Lifesphere y Lifesphere+ a la vez) vale la mayor.
+    """
+    salida = []
+    for sid in pasivas.sids_activos(ficha):
+        info = condicion_dsl.HABILIDADES_CATALOGO.get(sid) or {}
+        if int(info.get("timing") or 0) != TIMING_AL_ESPERAR:
+            continue
+        for nombre_act, op, valor in zip(info.get("act_names") or [],
+                                         info.get("act_operations") or [],
+                                         info.get("act_values") or []):
+            if nombre_act != "回復" or op != "+":
+                continue
+            try:
+                salida.append((sid, info.get("nombre") or sid, int(float(valor))))
+            except (TypeError, ValueError):
+                pass
+    return salida
+
+
 # ── Disparadores ─────────────────────────────────────────────────────────────
 
 def al_danar_aliado(tablero, ficha_danada) -> list:
@@ -104,6 +127,19 @@ def al_esperar(tablero, ficha) -> list:
     for sid in _pasivas_al_esperar(ficha):
         for est in _otorgar(ficha, sid, tablero, "jugador", tablero.turno_actual + 1, origen="esperó"):
             otorgados.append((ficha.nombre, est))
+    # Curación al esperar (Lifesphere): cura HP y limpia los estados alterados
+    curaciones = _curaciones_al_esperar(ficha)
+    if curaciones:
+        sid, nombre, hp = max(curaciones, key=lambda c: c[2])
+        antes = ficha.hp_actual
+        ficha.sincronizar_hp(min(ficha.hp_max, ficha.hp_actual + hp))
+        ficha.nivel_veneno = 0
+        if ficha.stats:
+            setattr(ficha.stats, "nivel_veneno", 0)
+        otorgados.append((ficha.nombre, {
+            "sid": sid, "nombre": nombre, "curacion": ficha.hp_actual - antes,
+            "stat_boosts": {}, "origen": "esperó",
+        }))
     return otorgados
 
 

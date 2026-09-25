@@ -411,3 +411,143 @@ El motor evaluaba todas las pasivas de Timing "estático" con un contexto fijo
 Es un primer trozo de la Fase 3 (evaluación por golpe) y vale para cualquier otra
 habilidad con esa forma, no solo Momentum y Momentum+.
 
+## Emblema Tiki (DLC) — 2026-09-24
+
+Fuente: https://serenesforest.net/engage/emblems/tiki/ (el DLC no está en el datamine).
+Los **datos por nivel** ya estaban bien en `json/dlc_emblems_canon.json` y coinciden uno a
+uno con Serenes; lo que faltaba es que las pasivas **hicieran algo**: solo Geosphere existía
+como habilidad. Ahora están las siete sincronías más la de Fusión en `pasivas_overlay.py`,
+y se activan solas según el vínculo que elija el jugador, porque quien decide es la lista
+`synchro_skills` de cada `bond_levels` que ya aplicaba `catalogo_loader`.
+
+| Nv | Pasiva | Qué hace y cómo está modelada |
+|---|---|---|
+| 1 | Starsphere | +15 % a los crecimientos al subir de nivel. Fuera de combate: se registra para que salga en la ficha, sin acts. |
+| 3 / 16 | Geosphere / + | Def/Res **+3 / +5** al portador **y a los adyacentes**, si hay alguno. Aura Timing 20 con el **bit 23 del Flag** (`FLAG_AURA_TAMBIEN_PROPIO`), que es lo que hace que el portador también la reciba — antes no. |
+| 8 / 14 / 19 | Lifesphere / + / ++ | Al **esperar** (sin atacar ni usar objetos): cura **20 / 30 / 40** HP y limpia los estados alterados. Timing 25 con un act `回復`. |
+| 10 | Lightsphere | Al **iniciar** combate, el rival critica a la **mitad**. Act `相手の必殺率 × 0.5`, Stand 1. |
+| Fusión | Draconic Form | **+10 HP** y **+5** a Complexión y a todas las stats básicas mientras dure la Fusión. Vive en `habilidades_sids_fusion`, así que se apaga sola al terminar. `[Mystical] +5 Res extra` va como SyncSid con Condition de estilo; el `[Armored] anula daño de terreno` no es de combate y no se modela. |
+| 4/9/13/17/19 | Special Guard 1-5 | Heredables: **-1 a -5** de daño recibido. **La condición no está verificada**: el juego dice "si el rival lleva un ataque especial" y no se sabe con qué lo marca, así que de momento se aplica cuando el rival es quien ataca. Revisar si se ve en juego. |
+
+### Lo que hubo que abrir en el motor para esto
+
+- **`condicion_dsl`**: `速さ`, `幸運` y `体格` se podían LEER en las Condition pero no
+  escribir en los Act. Ahora son destinos válidos (`spd`, `lck`, `bld`). Ninguna habilidad
+  del datamine las usa como destino (comprobado), así que no movió ningún número existente.
+- **`motor_calculo`**: esos canales entran ahora por su fórmula, no como bono plano —
+  Velocidad y Complexión en la Velocidad de Ataque, Destreza y Suerte en Hit/Crit/Avo/Ddg.
+  +5 de Destreza no es +5 de Hit.
+- **Tasa de crítico multiplicable**: solo se podía *fijar* (`必殺率 =`), no reducir.
+  Lightsphere necesita multiplicarla, así que `prob_critico` aplica ahora
+  `producto('crit_rate') × producto('rival_crit_rate')` sobre la probabilidad final.
+
+### La Fusión de Tiki convierte en dragón, y qué es un "ataque especial"
+
+**Un ataque especial es un arma de tipo `Especial`** (Item.xml, **Kind 9**). El compilador
+ya las clasificaba así (`constants.TIPO_ARMA_KIND["9"] = "Especial"`) y la DSL ya traducía
+el literal `特殊`, pero nada las usaba. Son:
+
+- Los alientos de los **Corrupted Wyrm** (`JID_異形竜`) y **Phantom Dragon** (`JID_幻影竜`),
+  las tropas que ocupan **2×2** (`BmapSize = 2`). Su clase tiene `MaxWeaponLevelSpecial = S`
+  y **N en todo lo demás**: solo saben usar ataques especiales.
+- Los ataques de Sombron, el Dragon Fang de Corrin, el rayo de Alear, los cañones de fuego.
+- Y los del propio Emblema Tiki.
+
+**Cap. 11**: trae dos `PID_M011_異形竜`, cada uno con `IID_火のブレス` (Fire Breath, Mt 12,
+alcance **1-3**, mágico) e `IID_炎塊` (Fireball, Mt 7, alcance **4**), más
+`SID_必殺０_オフェンス時` (no critica al iniciar). Ojo al alcance: pegan a 1-3 y a 4.
+
+Con eso, dos cosas quedan resueltas:
+
+- **Special Guard 1-5** ya no tiene la condición a medias: es `相手の武器の種類 == 特殊`.
+  Verificado: -1 a -5 contra el aliento del wyrm, 0 contra un hacha normal. (Va en Timing 7
+  en vez del 12 del juego, que es Fase 3; al ser una resta fija el número es el mismo.)
+- **Draconic Form prohíbe las armas propias**: mientras dura la Fusión la unidad pelea como
+  dragón y solo puede usar los ataques del Emblema. Lo marca `solo_armas_emblema` en el
+  overlay y lo aplica `motor_analisis._armas_aliado`.
+
+**Pendientes de este emblema:**
+
+- De las **7 armas de Fusión de Tiki solo existe Fire Breath** en el catálogo. Eternal Claw,
+  Tail Smash, Ice/Flame/Dark/Fog Breath son exclusivas del DLC y no tienen fila en Item.xml,
+  así que no hay Mt, alcance ni efectos. Habría que anotarlas a mano en
+  `json/dlc_emblems_canon.json` cuando se tengan (Serenes solo da la descripción, no las
+  stats). Las descripciones sí dicen cosas aprovechables: varias son de área, golpean a
+  media Def/Res y no permiten seguimiento.
+- Las tropas **2×2 se tratan como una casilla**. Para el Cap. 11 habrá que decidir cómo se
+  modelan (ocupan 4 casillas, bloquean el paso y se las puede atacar desde más sitios).
+- **Divine Blessing** (Ataque de Emblema) da una **piedra resurrectora** a un aliado
+  elegido; con Marth adyacente, Divine Blessing+ además cura o recarga el medidor. El
+  análisis ya lo excluye de las opciones de ataque (no es un ataque), pero no existe como
+  comando: la herramienta ya sabe de `hp_stock`, así que sería un botón como los demás.
+
+### Piedras resurrectoras en ALIADOS (2026-09-24)
+
+`Divine Blessing`, el Ataque de Emblema de Tiki, le da una piedra a un aliado. La lógica
+existía para los jefes, pero el bando propio estaba a medias. Lo que faltaba:
+
+- **El ATACANTE no gastaba piedras.** `simular_combate` solo las miraba en el defensor, así
+  que un aliado con barra de repuesto figuraba muerto por el contraataque. Ahora hay
+  `revivir_atacante_si_procede()` en los cinco puntos donde recibe daño, y el resultado
+  expone `piedra_atacante_consumida` (que `app.py` descuenta al ejecutar el combate).
+- **El veredicto de riesgo daba por muerta a la unidad.** `atacante_muere_en_contra`
+  comparaba el daño con `atacante.hp` a secas; ahora cuenta la barra actual **más** las de
+  repuesto. Y las dos reconstrucciones de `atacante_post_combate` que simulan la fase
+  enemiga no arrastraban ni `hp_max` ni `hp_stock`: por eso la unidad "moría" igualmente
+  después. Verificado: 0 piedras → riesgo crítico 100 %; 1 → sobrevive al contraataque pero
+  cae en la fase enemiga (92 %); 2 → riesgo bajo, 0 %.
+- **Registrar el daño a mano mataba a la unidad.** En la fase enemiga el jugador apunta el
+  daño recibido con `/api/unidad/ajustar_hp`; quedarse a 0 con piedra ahora gasta una barra
+  y devuelve la vida llena (`FichaUnidad.gastar_piedra_si_cae`), y solo se dispara el evento
+  de muerte del guion cuando cae de verdad. Esto cambia también a los JEFES: a Morion hay
+  que tumbarlo dos veces para que lleguen sus refuerzos, que es lo que hace el juego.
+- **Objetivos extra y planes de kill**: `_evaluar_objetivos_extra` marcaba `muere` con
+  `hp <= 0` a secas (ahora distingue `pierde_barra`), y el plan de kill descartaba a un
+  aliado si el contraataque le bajaba de su HP actual sin contar las barras de repuesto.
+
+**Nunca caen dos barras en el mismo combate** (verdad de juego): en cuanto la unidad con
+piedras se queda a 0, el combate se para en seco — no hay seguimiento aunque el rival doble,
+ni se toca la barra siguiente. Para el defensor ya funcionaba así (`barra_resucitada` era el
+guardia de toda la secuencia); al añadir las piedras del atacante **se rompió**, porque
+`barra_atk_resucitada` no guardaba nada y el rival seguía pegando. Ahora los 14 guardias de
+la secuencia miran las dos. Los del RESULTADO (`atacante_mata`, `mata_solo_atacante`) siguen
+mirando solo la del defensor, que es lo que significan.
+
+El campo del modal ya existía y no estaba limitado a enemigos, así que no hubo que tocar la
+UI. Un aliado con piedras **no** se confunde con un jefe: `es_jefe` ya exigía `not es_aliado`.
+
+### Armas de Fusión de Tiki (2026-09-24)
+
+Stats **verificadas en juego por el jugador**. No están en el datamine, así que viven en
+`json/dlc_armas_canon.json` y `compilar_catalogo.py` las integra en `armas` igual que ya
+hacía con los Emblemas de `dlc_emblems_canon.json` (sobreviven a la recompilación).
+
+| Arma | Mt | Hit | Crit | Wt | Estilo que la usa | Efecto |
+|---|---|---|---|---|---|---|
+| Eternal Claw | 10 | 90 | **30** | 8 | todos | — (el crítico alto es el "fatal wounds") |
+| Tail Smash | **22** | 85 | 0 | 13 | todos | Smash |
+| Fire Breath | 10 | 75 | 0 | 15 | Apoyo · Caballería · Encubierto · Qi Adept | **ignora** Def/Res |
+| Ice Breath | 10 | 75 | 0 | 15 | Acorazado | media Def · congela |
+| Flame Breath | 10 | 75 | 0 | 15 | Volador | media Def · **70 % de daño** · prende el área |
+| Dark Breath | 10 | 75 | 0 | 15 | Místico | media **Res** (mágica) |
+| Fog Breath | 10 | 75 | 0 | 15 | Dragón | media Def · efectiva contra dragón · niebla |
+
+Cada unidad dispone de **tres**: las dos primeras más el aliento de su estilo, tal y como se
+ve en el juego. Lo aplica `motor_analisis._arma_permitida_por_estilo` leyendo el campo
+`_estilos` del arma. Todas menos Eternal Claw son Smash ("cannot follow up, or strike first
+if initiating combat"), que el motor ya sabía manejar.
+
+**Pendiente**: los **alcances** no están confirmados (se asume 1) y las partes de **área**
+—prender fuego, congelar, crear niebla— necesitan el módulo `ataques_area`, como Blazing
+Lion. El Fire Breath de Tiki se asume igual que sus hermanos (10/75/0/15): el
+`IID_火のブレス` del datamine (12/100/0/5) es el aliento de los **wyrms**, otra arma.
+
+### Las armas de Emblema se resolvían por nombre y cogían la genérica
+
+Al pasar las armas de Emblema por su IID salió un fallo que llevaba tiempo ahí: el análisis
+las buscaba **por nombre**, y varias comparten nombre con un arma normal. La Ridersbane de
+Sigurd (`IID_シグルド_ナイトキラー`, Mt 10 / Hit 75 / Wt 6) se resolvía a la genérica
+(`IID_ナイトキラー`, Mt 8 / Hit 70 / Wt 13): Louis pegaba 2 menos, acertaba 5 menos y cargaba
+7 de peso de más. Los cuatro golden se regeneraron por esto — **172 combates, todos de
+"Ridersbane (Emblema)"**, sin ninguno nuevo ni desaparecido.
+

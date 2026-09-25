@@ -56,6 +56,7 @@ class FichaUnidad:
     cargas_ruptura: int = 0            # Cargas de Ruptura (Break): 1 = no puede contraatacar en el siguiente combate
     hp_stock: int = 0                  # Piedras resurrectoras / barras de vida extra (jefes)
     nivel_veneno: int = 0              # Nivel de veneno (0..3): cada nivel aumenta en +1 todo daño recibido
+    congelado: bool = False            # Golpeada por Ice Breath (Tiki): 0 de movimiento durante su próxima fase
     lider_tres_casas: str = "Dimitri"  # Líder activo del brazalete Tres Casas ("Edelgard", "Dimitri", "Claude")
     ataque_emblema_usado: bool = False # True si ya ejecutó el ataque o técnica especial de Engage en esta Fusión
     chain_guard_activo: bool = True    # True si puede realizar Guardia en Cadena (Martial Monk/Master/Dancer)
@@ -72,6 +73,12 @@ class FichaUnidad:
     #   {"sid", "nombre", "stat_boosts": {str,mag,...}, "expira_fase", "expira_turno", "origen"}
     # Caduca al ENTRAR en (expira_fase, expira_turno). Ver otorgar_estado_temporal / purgar_estados_temporales.
     estados_temporales: list = field(default_factory=list)
+
+    @property
+    def movimiento_disponible(self) -> int:
+        """Casillas que la unidad puede recorrer AHORA. Congelada por Ice Breath = ninguna.
+        Se deshiela al acabar su fase (ver EstadoTablero.deshelar)."""
+        return 0 if self.congelado else int(self.mov or 4)
 
     @property
     def controlable(self) -> bool:
@@ -273,6 +280,20 @@ class FichaUnidad:
     def hp(self, val: int):
         self.sincronizar_hp(val)
 
+    def gastar_piedra_si_cae(self) -> bool:
+        """
+        Si la unidad ha quedado a 0 HP y le queda alguna piedra resurrectora, gasta una y
+        vuelve con la barra llena. Es lo que hace el juego con jefes Y con aliados (el
+        Ataque de Emblema de Tiki reparte piedras). Devuelve True si se ha gastado una.
+        """
+        if self.hp_actual > 0 or self.hp_stock <= 0:
+            return False
+        self.hp_stock -= 1
+        self.sincronizar_hp(self.hp_max)
+        if self.stats:
+            setattr(self.stats, 'hp_stock', self.hp_stock)
+        return True
+
     def sincronizar_hp(self, nuevo_hp: int):
         """Fuente única de mutación de HP: sincroniza ficha, stats y estado viva."""
         self.hp_actual = max(0, min(self.hp_max, int(nuevo_hp))) if self.hp_max > 0 else max(0, int(nuevo_hp))
@@ -313,11 +334,13 @@ class FichaUnidad:
             "cargas_ruptura": self.cargas_ruptura,
             "en_ruptura": self.cargas_ruptura > 0,
             "nivel_veneno": max(0, min(3, self.nivel_veneno)),
+            "congelado": bool(self.congelado),
             "lider_tres_casas": self.lider_tres_casas,
             "x": self.x,
             "y": self.y,
             "mov": self.mov,
             "mov_base": self.mov_base or self.mov,
+            "mov_disponible": self.movimiento_disponible,
             "es_volador": self.es_volador,
             "viva": self.viva and hp_a > 0,
             "hp_actual": hp_a,
@@ -400,43 +423,73 @@ class EstadoTablero:
         # despliegan cuando la unidad `pid` pisa `casilla`. [{grupo, pid, casilla, descripcion, unidades, disparado}]
         self.refuerzos_por_evento: list = []
         self.dificultad: str = "Extremo"   # dificultad con la que se desplegó el capítulo (refuerzos)
-        # Fuego de Blazing Lion: {(x, y): turno_en_que_se_apaga}. Prende en el turno T del
-        # jugador, quema a quien empiece su fase encima y se apaga al empezar el turno T+1.
-        self.casillas_fuego: Dict[tuple, int] = {}
+        # Terrenos que duran un turno: {(x, y): {"tipo": "fuego"|"niebla"|"hielo", "expira": T}}.
+        # Aparecen en el turno T (Blazing Lion, alientos de Tiki) y se van al empezar el T+1.
+        self.terrenos_temporales: Dict[tuple, dict] = {}
         self.quemados_ultimo: list = []   # [(nombre, daño)] del último inicio de fase
         self.curados_ultimo: list = []    # [(nombre, HP recuperados)] por terreno curativo en el último inicio de fase
 
         if auto_cargar_spawns and self.mapa:
             self.cargar_spawns_desde_mapa()
 
-    # ── Fuego temporal (Blazing Lion) ─────────────────────────────────────
+    # ── Terrenos temporales (fuego, niebla, hielo) ────────────────────────
+
+    @property
+    def casillas_fuego(self) -> dict:
+        """{(x, y): turno_en_que_se_apaga} solo del fuego. Se mantiene porque el guardado
+        de la partida y la interfaz lo llevan usando desde Blazing Lion."""
+        return {c: e["expira"] for c, e in self.terrenos_temporales.items() if e["tipo"] == "fuego"}
+
+    @casillas_fuego.setter
+    def casillas_fuego(self, valor):
+        self.terrenos_temporales = {c: e for c, e in self.terrenos_temporales.items() if e["tipo"] != "fuego"}
+        for c, expira in (valor or {}).items():
+            self.terrenos_temporales[(int(c[0]), int(c[1]))] = {"tipo": "fuego", "expira": int(expira)}
+
+    def casillas_de_tipo(self, tipo: str) -> list:
+        return sorted(c for c, e in self.terrenos_temporales.items() if e["tipo"] == tipo)
+
+    def aplicar_terreno_temporal(self, casillas, tipo: str, turnos: int = 1) -> list:
+        """Cubre `casillas` con `tipo` hasta el turno actual + `turnos`. Un efecto nuevo
+        sustituye al que hubiera en la casilla (el último aliento manda)."""
+        puestas = []
+        for c in casillas:
+            c = (int(c[0]), int(c[1]))
+            self.terrenos_temporales[c] = {"tipo": str(tipo), "expira": self.turno_actual + int(turnos)}
+            puestas.append(c)
+        self.sincronizar_terrenos_temporales()
+        return puestas
 
     def encender_fuego(self, casillas, turnos: int = 1) -> list:
         """Prende `casillas` hasta el turno actual + `turnos`. Devuelve las casillas encendidas."""
-        encendidas = []
-        for c in casillas:
-            c = (int(c[0]), int(c[1]))
-            self.casillas_fuego[c] = self.turno_actual + int(turnos)
-            encendidas.append(c)
-        self.sincronizar_fuego_mapa()
-        return encendidas
+        return self.aplicar_terreno_temporal(casillas, "fuego", turnos)
 
-    def sincronizar_fuego_mapa(self) -> None:
-        """Proyecta el estado del fuego sobre el grid del mapa."""
-        if not self.mapa or not hasattr(self.mapa, 'aplicar_fuego'):
+    def sincronizar_terrenos_temporales(self) -> None:
+        """Proyecta los terrenos temporales sobre el grid del mapa."""
+        if not self.mapa or not hasattr(self.mapa, 'aplicar_terrenos_temporales'):
             return
-        self.mapa.limpiar_fuego()
-        if self.casillas_fuego:
-            self.mapa.aplicar_fuego(list(self.casillas_fuego.keys()))
+        self.mapa.limpiar_terrenos_temporales()
+        por_tipo: Dict[str, list] = {}
+        for c, e in self.terrenos_temporales.items():
+            por_tipo.setdefault(e["tipo"], []).append(c)
+        if por_tipo:
+            self.mapa.aplicar_terrenos_temporales(por_tipo)
+
+    # Nombre antiguo, de cuando el fuego era el único terreno temporal.
+    def sincronizar_fuego_mapa(self) -> None:
+        self.sincronizar_terrenos_temporales()
+
+    def caducar_terrenos_temporales(self) -> list:
+        """Quita los terrenos cuyo turno de caducidad ya llegó. Devuelve sus casillas."""
+        caducadas = [c for c, e in self.terrenos_temporales.items() if self.turno_actual >= e["expira"]]
+        for c in caducadas:
+            self.terrenos_temporales.pop(c, None)
+        if caducadas:
+            self.sincronizar_terrenos_temporales()
+        return caducadas
 
     def apagar_fuego_caducado(self) -> list:
-        """Apaga el fuego cuyo turno de caducidad ya llegó. Devuelve las casillas apagadas."""
-        apagadas = [c for c, t in self.casillas_fuego.items() if self.turno_actual >= t]
-        for c in apagadas:
-            self.casillas_fuego.pop(c, None)
-        if apagadas:
-            self.sincronizar_fuego_mapa()
-        return apagadas
+        return self.caducar_terrenos_temporales()
 
     def quemar_unidades_en_fuego(self, es_aliado: bool) -> list:
         """
@@ -447,12 +500,13 @@ class EstadoTablero:
         """
         from ataques_area import FUEGO_DANO_POR_FASE
         quemados = []
-        if not self.casillas_fuego:
+        en_llamas = self.casillas_fuego
+        if not en_llamas:
             return quemados
         for f in self.fichas.values():
             if getattr(f, 'es_volador', False):
                 continue
-            if f.viva and bool(f.es_aliado) == bool(es_aliado) and (f.x, f.y) in self.casillas_fuego:
+            if f.viva and bool(f.es_aliado) == bool(es_aliado) and (f.x, f.y) in en_llamas:
                 nuevo = max(1, f.hp_actual - FUEGO_DANO_POR_FASE)
                 dano = f.hp_actual - nuevo
                 if dano > 0:
@@ -485,8 +539,35 @@ class EstadoTablero:
                 curados.append((f.nombre, ganado))
         return curados
 
+    def congelar(self, nombres) -> list:
+        """Congela a las unidades indicadas (Ice Breath). Devuelve las que quedaron congeladas."""
+        congeladas = []
+        for n in nombres:
+            f = self.obtener_ficha(n) if isinstance(n, str) else n
+            if f is not None and f.viva:
+                f.congelado = True
+                congeladas.append(f.nombre)
+        return congeladas
+
+    def deshelar(self, es_aliado: bool) -> list:
+        """
+        Deshiela al bando indicado. El congelamiento dura la fase de la unidad: a un
+        enemigo congelado en la fase de jugador se le pasa al acabar la fase enemiga, y a
+        un aliado congelado en la fase enemiga al acabar la suya.
+        """
+        deshelados = []
+        for f in self.fichas.values():
+            if f.congelado and bool(f.es_aliado) == bool(es_aliado):
+                f.congelado = False
+                deshelados.append(f.nombre)
+        return deshelados
+
     def casillas_fuego_lista(self) -> list:
         return [{"x": x, "y": y, "expira_turno": t} for (x, y), t in sorted(self.casillas_fuego.items())]
+
+    def terrenos_temporales_lista(self) -> list:
+        return [{"x": x, "y": y, "tipo": e["tipo"], "expira_turno": e["expira"]}
+                for (x, y), e in sorted(self.terrenos_temporales.items())]
 
     # ── Objetos de mapa (capa de objetos de Tiled) ───────────────────────
 
@@ -704,11 +785,11 @@ class EstadoTablero:
     # ── Registro y Limpieza ─────────────────────────────────────────────
 
     def limpiar(self) -> None:
-        """Elimina todas las fichas del tablero (y apaga el fuego temporal)."""
+        """Elimina todas las fichas del tablero (y borra fuego, niebla y hielo)."""
         self.fichas.clear()
-        if self.casillas_fuego:
-            self.casillas_fuego = {}
-            self.sincronizar_fuego_mapa()
+        if self.terrenos_temporales:
+            self.terrenos_temporales = {}
+            self.sincronizar_terrenos_temporales()
 
     def registrar_unidad(self, ficha: FichaUnidad, resolver_colision: bool = True) -> None:
         """
@@ -730,6 +811,8 @@ class EstadoTablero:
             ficha.ha_actuado = True
         if prev and prev.cargas_ruptura > 0 and ficha.cargas_ruptura == 0:
             ficha.cargas_ruptura = prev.cargas_ruptura
+        if prev and prev.congelado and not ficha.congelado:
+            ficha.congelado = True
         if prev and prev.nivel_veneno > 0 and ficha.nivel_veneno == 0:
             ficha.nivel_veneno = prev.nivel_veneno
             if ficha.stats:
@@ -942,7 +1025,7 @@ class EstadoTablero:
             "objetos": copy.deepcopy(self.objetos),
             "refuerzos_pendientes": copy.deepcopy(self.refuerzos_pendientes),
             "refuerzos_por_evento": copy.deepcopy(self.refuerzos_por_evento),
-            "casillas_fuego": dict(self.casillas_fuego),
+            "terrenos_temporales": copy.deepcopy(self.terrenos_temporales),
         }
         self.historial.append(snap)
         if len(self.historial) > 50:
@@ -959,9 +1042,9 @@ class EstadoTablero:
         self.objetos = snap.get("objetos", self.objetos)
         self.refuerzos_pendientes = snap.get("refuerzos_pendientes", self.refuerzos_pendientes)
         self.refuerzos_por_evento = snap.get("refuerzos_por_evento", self.refuerzos_por_evento)
-        self.casillas_fuego = dict(snap.get("casillas_fuego", {}))
+        self.terrenos_temporales = dict(snap.get("terrenos_temporales", {}))
         self.sincronizar_objetos_mapa()
-        self.sincronizar_fuego_mapa()
+        self.sincronizar_terrenos_temporales()
         return True
 
     # ── Gestión de Acciones de Turno ─────────────────────────────────────
@@ -1418,9 +1501,12 @@ class EstadoTablero:
         for f in self.fichas.values():
             f.purgar_estados_temporales("jugador", self.turno_actual)
 
-        # Fuego (Blazing Lion): quema a los aliados que empiezan el turno encima y se apaga
+        # Fuego (Blazing Lion, alientos de Tiki): quema a los aliados que empiezan el turno
+        # encima; después caducan fuego, niebla y hielo.
         self.quemados_ultimo = self.quemar_unidades_en_fuego(es_aliado=True)
-        self.apagar_fuego_caducado()
+        self.caducar_terrenos_temporales()
+        # La fase enemiga acaba de terminar: los enemigos congelados vuelven a moverse
+        self.deshelar(es_aliado=False)
         # Curación de terreno (fuertes, tronos, casillas de recuperación) para los aliados
         self.curados_ultimo = self.curar_unidades_en_terreno(es_aliado=True)
 
@@ -1435,6 +1521,8 @@ class EstadoTablero:
         self.quemados_ultimo = self.quemar_unidades_en_fuego(es_aliado=False)
         # Curación de terreno para los enemigos que empiezan su fase sobre ella
         self.curados_ultimo = self.curar_unidades_en_terreno(es_aliado=False)
+        # La fase de jugador acaba de terminar: los aliados congelados vuelven a moverse
+        self.deshelar(es_aliado=True)
         for f in self.fichas.values():
             f.chain_guard_usado = False
             if not f.es_aliado:
@@ -1464,6 +1552,7 @@ class EstadoTablero:
                                for d in (e.get("disparos") or [])])
                 for e in self.refuerzos_por_evento],
             "casillas_fuego": self.casillas_fuego_lista(),
+            "terrenos_temporales": self.terrenos_temporales_lista(),
             "eventos_por_accion": self.eventos_por_accion(),
             "aliados": [f.como_dict() for f in self.obtener_aliados()],
             "enemigos": [f.como_dict() for f in self.obtener_enemigos()],

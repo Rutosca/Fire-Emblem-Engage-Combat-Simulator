@@ -265,6 +265,14 @@ function crearToken(ficha) {
     tok.appendChild(poisonBadge);
   }
   
+  if (ficha.congelado) {
+    const iceBadge = document.createElement("span");
+    iceBadge.className = "token-ice-badge";
+    iceBadge.textContent = "❄";
+    iceBadge.title = "Congelada (Ice Breath): 0 de movimiento durante su fase";
+    tok.appendChild(iceBadge);
+  }
+
   const hpMax = ficha.hp_max || (ficha.stats ? ficha.stats.hp : 30);
   const hpActual = ficha.hp_actual !== undefined ? ficha.hp_actual : hpMax;
   const pct = ficha.pct_hp !== undefined ? ficha.pct_hp : Math.round((hpActual / hpMax) * 100);
@@ -275,6 +283,7 @@ function crearToken(ficha) {
   const es3H = (ficha.emblema_nombre && (ficha.emblema_nombre.toLowerCase().includes("edelgard") || ficha.emblema_nombre.toLowerCase().includes("tres casas") || ficha.emblema_nombre.toLowerCase().includes("three houses")));
   if (es3H && ficha.lider_tres_casas) desc += `\n[Líder 3 Casas: ${ficha.lider_tres_casas}]`;
   if (ficha.nivel_veneno > 0) desc += `\n[VENENO NIVEL ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} dmg de todo ataque]`;
+  if (ficha.congelado) desc += `\n[CONGELADA: 0 de movimiento durante su fase]`;
   if (ficha.ha_actuado) desc += `\n[HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n[RUPTURA ACTIVA: No puede contraatacar]`;
   for (const est of (ficha.estados_temporales || [])) {
@@ -352,6 +361,7 @@ function autoGuardarLocal() {
       // Refuerzos aún por llegar (el servidor los pierde al reiniciarse; se reprograman al restaurar)
       refuerzos_pendientes: state.refuerzosPendientes || null,
       casillas_fuego: state.casillasFuego || [],
+      terrenos_temporales: state.terrenosTemporales || [],
       guardadoEn: new Date().toISOString()
     };
     localStorage.setItem("engage_tracker_partida_local", JSON.stringify(estado));
@@ -376,7 +386,9 @@ async function restaurarDesdeLocalStorage() {
       state.turno = guardado.turno_actual || 1;
       state.fase = guardado.fase || "jugador";
       if (guardado.dificultad && $("select-dificultad")) $("select-dificultad").value = guardado.dificultad;
-      renderCasillasFuego(guardado.casillas_fuego || []);
+      if (Array.isArray(guardado.terrenos_temporales) && guardado.terrenos_temporales.length)
+        renderTerrenosTemporales(guardado.terrenos_temporales);
+      else renderCasillasFuego(guardado.casillas_fuego || []);
       state.eventosPorAccion = res.eventos_por_accion || [];   // del servidor
       await refrescarRefuerzosPendientes();
       actualizarBadge();
@@ -3458,7 +3470,8 @@ function aplicarMapaCargado(estado) {
   buildGrid(mapa.ancho || 24, mapa.alto || 17);
   renderObjetosMapa(mapa.objetos || []);
   renderCasillasObjetivo(mapa.casillas_objetivo || []);
-  renderCasillasFuego(estado.casillas_fuego || []);
+  if (Array.isArray(estado.terrenos_temporales)) renderTerrenosTemporales(estado.terrenos_temporales);
+  else renderCasillasFuego(estado.casillas_fuego || []);
   // Eventos del guion que dispara una unidad enemiga al actuar (botón en su ficha)
   state.eventosPorAccion = estado.eventos_por_accion || [];
   actualizarNavCapitulo(mapa);
@@ -3703,30 +3716,50 @@ function renderCasillasObjetivo(casillas) {
   }
 }
 
-// ─── Fuego (Blazing Lion) ──────────────────────────────────────────────────
+// ─── Terrenos temporales: fuego (Blazing Lion, Fire/Flame Breath), niebla (Fog
+// Breath) y hielo (Ice Breath). Todos duran un turno. ──────────────────────
 
-function renderCasillasFuego(casillas) {
-  document.querySelectorAll(".celda.fuego").forEach(c => {
-    c.classList.remove("fuego");
-    const m = c.querySelector(".fuego-marca");
-    if (m) m.remove();
-  });
+const TERRENOS_TEMPORALES = {
+  fuego:  { clase: "fuego",  titulo: t => `En llamas hasta el turno ${t}: 10 dmg a quien empiece su fase aquí, movimiento +1` },
+  niebla: { clase: "niebla", titulo: t => `Niebla hasta el turno ${t}: +30 de Evasión a quien esté encima` },
+  hielo:  { clase: "hielo",  titulo: t => `Suelo congelado hasta el turno ${t}` },
+};
+
+function renderTerrenosTemporales(casillas) {
+  for (const { clase } of Object.values(TERRENOS_TEMPORALES)) {
+    document.querySelectorAll(`.celda.${clase}`).forEach(c => {
+      c.classList.remove(clase);
+      const m = c.querySelector(`.${clase}-marca`);
+      if (m) m.remove();
+    });
+  }
   for (const c of casillas || []) {
+    const def = TERRENOS_TEMPORALES[c.tipo || "fuego"];
     const celda = $(`c-${c.x}-${c.y}`);
-    if (!celda) continue;
-    celda.classList.add("fuego");
+    if (!def || !celda) continue;
+    celda.classList.add(def.clase);
     const marca = document.createElement("div");
-    marca.className = "fuego-marca";
-    marca.title = `En llamas hasta el turno ${c.expira_turno}: 10 dmg a quien empiece su fase aquí, movimiento +1`;
+    marca.className = `${def.clase}-marca`;
+    marca.title = def.titulo(c.expira_turno);
     celda.appendChild(marca);
   }
-  state.casillasFuego = casillas || [];
+  state.terrenosTemporales = casillas || [];
+  state.casillasFuego = (casillas || []).filter(c => (c.tipo || "fuego") === "fuego");
+}
+
+// Las partidas guardadas antes de la niebla y el hielo solo traen el fuego.
+function renderCasillasFuego(casillas) {
+  renderTerrenosTemporales((casillas || []).map(c => ({ ...c, tipo: "fuego" })));
 }
 
 // Tras un combate o cambio de fase: fuego actualizado, objetivos extra y quemaduras
 function notificarEfectosArea(res) {
   if (!res) return;
-  if (Array.isArray(res.casillas_fuego)) renderCasillasFuego(res.casillas_fuego);
+  if (Array.isArray(res.terrenos_temporales)) renderTerrenosTemporales(res.terrenos_temporales);
+  else if (Array.isArray(res.casillas_fuego)) renderCasillasFuego(res.casillas_fuego);
+  if (Array.isArray(res.congelados) && res.congelados.length) {
+    mostrarToast(`❄ Congeladas: ${res.congelados.join(", ")} (0 de movimiento en su fase)`, "info");
+  }
   if (Array.isArray(res.objetivos_extra) && res.objetivos_extra.length) {
     const txt = res.objetivos_extra.map(e => `${e.nombre} (${e.daño} dmg${e.muere ? ", derrotado" : ""})`).join(", ");
     mostrarToast(`Ataque de área: también alcanza a ${txt}`, "ok");

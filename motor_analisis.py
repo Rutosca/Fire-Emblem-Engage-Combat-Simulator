@@ -396,10 +396,13 @@ def _armas_aliado(aliado):
                     b_info = e_info["bond_levels"].get(str(disp[-1]), {})
             engage_items = (b_info or {}).get("engage_items", [])
             for it in (engage_items or []):
-                item_raw = it.get("nombre") or it.get("iid") if isinstance(it, dict) else str(it)
+                # El IID manda sobre el nombre: "Fire Breath" existe dos veces (el aliento
+                # de los wyrms del datamine y el de Tiki, que son armas distintas).
+                iid_eng = it.get("iid") if isinstance(it, dict) else None
+                item_raw = (it.get("nombre") or it.get("iid")) if isinstance(it, dict) else str(it)
                 if not item_raw:
                     continue
-                a_eng = _arma_desde_item({"nombre": item_raw, "es_engage": True})
+                a_eng = _arma_desde_item({"nombre": item_raw, "id": iid_eng, "es_engage": True})
                 if a_eng and a_eng.mt > 0:
                     setattr(a_eng, 'es_engage', True)
                     if not es_fusion:
@@ -516,10 +519,46 @@ def _armas_aliado(aliado):
                         nota_atk = f"⚡ Fusión: Ataque de Emblema ({clean_name})" if not es_fusion else f"Ataque de Emblema ({clean_name})"
                         armas.append((a_eng_atk, True, nota_atk))
 
+    # Armas de Emblema restringidas por estilo de combate: de los cinco alientos de Tiki,
+    # cada unidad solo dispone del que le toca (Ice = Acorazado, Flame = Volador,
+    # Dark = Místico, Fog = Dragón, Fire = el resto). Eternal Claw y Tail Smash son de todos.
+    armas = [t for t in armas if _arma_permitida_por_estilo(aliado, t[0])]
+
+    # Transformación que prohíbe el arma propia (Draconic Form de Tiki): mientras dura la
+    # Fusión la unidad pelea como dragón y solo puede usar los ataques del Emblema.
+    if es_fusion and _solo_armas_de_emblema(aliado):
+        solo_emblema = [(a, e, n) for a, e, n in armas
+                        if e or getattr(a, 'es_engage', False) or getattr(a, 'es_engage_attack', False)]
+        if solo_emblema:
+            armas = solo_emblema
+
     if not armas and aliado.arma:
         armas.append((aliado.arma, False, ""))
 
     return armas
+
+
+def _arma_permitida_por_estilo(aliado, arma) -> bool:
+    """False si el arma solo la usan ciertos estilos de combate y este no es uno de ellos."""
+    info = (_catalogo.get("armas", {}) or {}).get(getattr(arma, "id", "") or "", None)
+    if info is None:
+        nombre = normalizar_texto(getattr(arma, "nombre", ""))
+        info = next((v for v in (_catalogo.get("armas", {}) or {}).values()
+                     if v.get("_estilos") and normalizar_texto(v.get("nombre", "")) in nombre), None)
+    estilos = (info or {}).get("_estilos")
+    if not estilos:
+        return True
+    propio = resolver_estilo_combate(getattr(aliado, "estilo_combate", "")
+                                     or getattr(getattr(aliado, "stats", None), "estilo_combate", ""))
+    return propio in estilos
+
+
+def _solo_armas_de_emblema(aliado) -> bool:
+    """True si alguna habilidad activa impide usar las armas propias (se transforma)."""
+    for sid in pasivas.sids_activos(aliado):
+        if (pasivas.HABILIDADES.get(sid) or {}).get("solo_armas_emblema"):
+            return True
+    return False
 
 
 def _armas_ballesta(aliado, tablero, mapa):
@@ -638,15 +677,18 @@ def _categoria_ataque(verd, daño_recibido):
 
 def _evaluar_objetivos_extra(aliado, arma, area, mapa, tablero=None, pos_atk=None):
     """
-    Daño de un Ataque de Emblema de área a los objetivos adicionales (todos menos el
-    principal): un golpe cada uno, Hit 100, sin contraataque. El atacante golpea a
-    todos desde su casilla de ataque, así que sus bonos de posición (Guía Divina de
-    Alear adyacente, Gente de Cuento…) valen para todos (verificado en el juego); cada
-    objetivo conserva los suyos (auras de sus aliados, terreno).
+    Daño de un ataque de área a los objetivos adicionales (todos menos el principal):
+    un golpe cada uno, sin contraataque. Los Ataques de Emblema (Override, Blazing Lion)
+    van con Hit 100; los alientos de Tiki pegan con la precisión del arma, porque son el
+    arma equipada y no un Ataque de Emblema. El atacante golpea a todos desde su casilla
+    de ataque, así que sus bonos de posición (Guía Divina de Alear adyacente, Gente de
+    Cuento…) valen para todos (verificado en el juego); cada objetivo conserva los suyos
+    (auras de sus aliados, terreno).
     Devuelve [{"nombre", "daño", "hp_tras", "muere"}, ...].
     """
     extras = []
     nom_eng = getattr(arma, 'engage_attack_nombre', '') or arma.nombre
+    es_eng = bool(getattr(arma, 'es_engage_attack', False))
     pos_atk = tuple(pos_atk) if pos_atk else (aliado.x, aliado.y)
     aliados_atk = [
         (a.stats, abs(a.x - pos_atk[0]) + abs(a.y - pos_atk[1]))
@@ -666,13 +708,17 @@ def _evaluar_objetivos_extra(aliado, arma, area, mapa, tablero=None, pos_atk=Non
                 aliado.stats, e.stats, arma, e.arma,
                 Terreno(avo=t_atk.avo, dfn=t_atk.dfn) if t_atk else Terreno(0, 0),
                 Terreno(avo=t_def.avo, dfn=t_def.dfn), distancia=1,
-                es_engage_attack=True, engage_attack_nombre=nom_eng,
+                es_engage_attack=es_eng, engage_attack_nombre=nom_eng if es_eng else "",
                 aliados_cercanos_atk=aliados_atk, aliados_cercanos_def=aliados_def,
                 pos_atk=pos_atk, pos_def=(e.x, e.y),
             )
             dmg = int(r["atacante"].get("daño_total_ronda", 0) or 0)
             hp_tras = max(0, int(getattr(e, 'hp_actual', 0) or 0) - dmg)
-            extras.append({"nombre": e.nombre, "daño": dmg, "hp_tras": hp_tras, "muere": hp_tras <= 0})
+            # Con piedras resurrectoras quedarse a 0 no es caer: se pierde una barra
+            piedras = max(0, int(getattr(e, "hp_stock", 0) or 0))
+            extras.append({"nombre": e.nombre, "daño": dmg, "hp_tras": hp_tras,
+                           "muere": hp_tras <= 0 and piedras == 0,
+                           "pierde_barra": hp_tras <= 0 and piedras > 0})
         except Exception:
             continue
     return extras
@@ -696,7 +742,10 @@ def _planificar_baja(enemigo, ops_vs_enemigo, tablero, aliados_usados=None):
             continue
         v = op.get("veredicto", {}) or {}
         ficha_a = tablero.obtener_ficha(op.get("aliado"))
+        # HP que hay que agotarle al aliado para que caiga: su barra más las de repuesto
         hp_a = int(getattr(ficha_a, "hp_actual", 0) or 0) if ficha_a else 0
+        if ficha_a is not None:
+            hp_a += max(0, _barras_vida(ficha_a) - 1) * int(getattr(ficha_a, "hp_max", 0) or 0)
         if v.get("atacante_muere_si_falla") or v.get("atacante_muere_en_contra") or int(op.get("daño_recibido", 0) or 0) >= hp_a:
             continue
         dmg = int(op.get("dano_total", 0) or 0)
@@ -1144,12 +1193,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     and tuple(pos_candidata) in alcanzables_con_fusion
                 )
 
-                # Ataques de Emblema de área (Override / Blazing Lion): objetivos extra,
-                # casilla de llegada y fuego. Si Override no puede acabar detrás del
-                # último enemigo, la jugada no existe.
+                # Ataques de área: Ataques de Emblema (Override / Blazing Lion) y alientos de
+                # Tiki. Dan objetivos extra, casilla de llegada y efecto de suelo. Si Override
+                # no puede acabar detrás del último enemigo, la jugada no existe.
                 area_info = None
                 nom_eng_cand = getattr(arma_candidata, 'engage_attack_nombre', '') if getattr(arma_candidata, 'es_engage_attack', False) else ''
-                if nom_eng_cand and tipo_ataque_area(nom_eng_cand):
+                nom_area_cand = nom_eng_cand if (nom_eng_cand and tipo_ataque_area(nom_eng_cand)) else (
+                    arma_candidata.nombre if tipo_ataque_area(getattr(arma_candidata, 'nombre', '')) == "aliento" else '')
+                if nom_area_cand:
                     # La dirección importa: probar las 4 casillas adyacentes al objetivo que el
                     # aliado pueda alcanzar y quedarse con la válida que más objetivos abarque.
                     alcanzables_a = casillas_mov_aliados.get(aliado.nombre) or set()
@@ -1159,10 +1210,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         cand = (enemigo.x + dx, enemigo.y + dy)
                         if cand != (aliado.x, aliado.y) and (cand not in alcanzables_a or cand in ocupadas_a):
                             continue
-                        a_i = resolver_ataque_area(nom_eng_cand, cand, enemigo, aliado, tablero, mapa)
+                        a_i = resolver_ataque_area(nom_area_cand, cand, enemigo, aliado, tablero, mapa)
                         if not a_i.get("valido"):
                             continue
-                        clave = (len(a_i.get("objetivos") or []), len(a_i.get("casillas_fuego") or []), 1 if list(cand) == list(pos_candidata) else 0)
+                        suelo = (len(a_i.get("casillas_fuego") or []) + len(a_i.get("casillas_niebla") or [])
+                                 + len(a_i.get("casillas_hielo") or []))
+                        clave = (len(a_i.get("objetivos") or []), suelo, 1 if list(cand) == list(pos_candidata) else 0)
                         if mejor_area_val is None or clave > mejor_area_val:
                             mejor_area_val, mejor_area_pos, area_info = clave, cand, a_i
                     if area_info is None:

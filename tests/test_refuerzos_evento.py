@@ -164,8 +164,22 @@ class TestRefuerzosPorCombateYMuerte(unittest.TestCase):
         self.assertEqual(tablero.disparar_refuerzos_por_evento("muerte", morion), [])
 
     def test_bajar_el_hp_a_cero_a_mano_tambien_dispara(self):
+        """Morion lleva piedra resurrectora: la primera vez pierde una barra y sigue vivo,
+        y solo al agotarlas de verdad caen los refuerzos."""
         morion = self._por_pid("PID_M010_異形兵_モリオン")
-        r = self.client.post("/api/unidad/ajustar_hp", json={"nombre": morion.nombre, "hp_actual": 0}).get_json()
+        self.assertEqual(morion.hp_stock, 1)
+
+        r = self.client.post("/api/unidad/ajustar_hp",
+                             json={"nombre": morion.nombre, "hp_actual": 0}).get_json()
+        self.assertTrue(r["piedra_resurrectora_gastada"])
+        self.assertEqual(r["refuerzos_desplegados"], [], "aún no ha caído")
+        morion = self._por_pid("PID_M010_異形兵_モリオン")
+        self.assertTrue(morion.viva)
+        self.assertEqual((morion.hp_actual, morion.hp_stock), (morion.hp_max, 0))
+
+        r = self.client.post("/api/unidad/ajustar_hp",
+                             json={"nombre": morion.nombre, "hp_actual": 0}).get_json()
+        self.assertFalse(r["piedra_resurrectora_gastada"])
         self.assertEqual(len(r["refuerzos_desplegados"]), 2, r)
 
     def test_combatir_con_hortensia_despliega_a_los_arqueros(self):

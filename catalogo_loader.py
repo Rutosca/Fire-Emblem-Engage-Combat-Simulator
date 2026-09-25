@@ -754,6 +754,8 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
         "rango": inferir_rango_arma(ainfo.get("nombre", base_aid), ainfo.get("tipo", "Espada"), ainfo.get("rango")),
         "es_magica": ainfo.get("es_magica", False),
         "es_smash": bool(ainfo.get("es_smash", False)),
+        # Los alientos de Tiki ceden el primer golpe y no permiten seguimiento, pero no empujan
+        "cede_iniciativa": bool(ainfo.get("cede_iniciativa", False)),
         "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
         "usos_max": ainfo.get("usos_max"),
         "sids": list(ainfo.get("equip_sids", []) or []),
@@ -791,6 +793,7 @@ def _arma_desde_item(item_dict):
             avo_bonus=parsed["avo_bonus"],
             ddg_bonus=parsed["ddg_bonus"],
             es_smash=parsed.get("es_smash", False),
+            cede_iniciativa=parsed.get("cede_iniciativa", False),
             sids=parsed.get("sids", []),
         )
     else:
@@ -818,6 +821,7 @@ def _arma_desde_item(item_dict):
             avo_bonus=int(item_dict.get("avo_bonus", 0)),
             ddg_bonus=int(item_dict.get("ddg_bonus", 0)),
             es_smash=es_smash,
+            cede_iniciativa=bool(item_dict.get("cede_iniciativa", False)),
             sids=list(item_dict.get("sids", []) or []),
         )
 
@@ -1499,6 +1503,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 "usos_max": usos_max,
                 "es_engage": es_eng,
                 "es_smash": parsed_w.get("es_smash", False),
+                "cede_iniciativa": parsed_w.get("cede_iniciativa", False),
                 "equipada": es_eq,
             }
             inventario_resuelto.append(item_dict)
@@ -1517,6 +1522,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     avo_bonus=parsed_w.get("avo_bonus", 0),
                     ddg_bonus=parsed_w.get("ddg_bonus", 0),
                     es_smash=parsed_w.get("es_smash", False),
+                    cede_iniciativa=parsed_w.get("cede_iniciativa", False),
                 )
         else:
             base_aid_k, ainfo = _buscar_en_catalogo("armas", base_aid) if base_aid else (None, None)

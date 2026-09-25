@@ -642,6 +642,7 @@ ACT_STAT_MAP = {
     "相手の回復": "rival_curacion",
     "相手のHP": "rival_hp",
     "力": "str", "魔力": "mag", "技": "dex", "守備": "def", "魔防": "res",
+    "速さ": "spd", "幸運": "lck", "体格": "bld",
     "相手の防御力": "rival_defensa_efectiva",   # Luna: -50 % de la DEF/RES que aplica a este golpe
     "相手のユニット防御力": "rival_defensa_efectiva",
     "一時変数": "tmp",
