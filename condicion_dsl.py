@@ -256,6 +256,7 @@ class ContextoCombate:
     arma_rival: object = None
     aliados_cercanos: list = field(default_factory=list)   # [(unidad, distancia), ...]
     mult_efectividad_rival: int = 1     # 相手の武器特効: multiplicador ya calculado por calcular_efectividad()
+    mult_efectividad_propia: int = 1    # 武器特効: el que aplica ESTA unidad al golpear (Keen Insight)
     habilidades_sids: list = field(default_factory=list)
     habs_lower: list = field(default_factory=list)
     ultimo_resultado: str = ""          # p.ej. "break" si este golpe acaba de romper al rival
@@ -475,6 +476,7 @@ VARIABLES = {
     "攻撃速度": lambda ctx: _velocidad_ataque(ctx.unidad, ctx.arma),
     "相手の攻撃速度": lambda ctx: _velocidad_ataque(ctx.rival, ctx.arma_rival),
     "相手の武器特効": lambda ctx: ctx.mult_efectividad_rival,
+    "武器特効": lambda ctx: ctx.mult_efectividad_propia,
     # 移動距離: casillas movidas este turno antes del combate. Se lee del contexto o,
     # si no se fijó, del propio objeto de stats (motor_analisis/app la anotan ahí).
     "移動距離": lambda ctx: int(ctx.distancia_movida or getattr(ctx.unidad, 'distancia_movida', 0) or 0),

@@ -9,7 +9,7 @@ from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
 from estado_tablero import EstadoTablero, FichaUnidad
 import pasivas
 import pasivas_temporales
-from lector_de_mapas import MapaTactico
+from lector_de_mapas import defensa_de_terreno, MapaTactico
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock, casillas_advance
 
 import os
@@ -858,7 +858,8 @@ def obtener_rango_movimiento():
         x=ficha.x,
         y=ficha.y,
         mov=ficha.movimiento_disponible,
-        es_volador=ficha.es_volador,
+        # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
+        es_volador=ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha),
         arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
     )
     casillas_mov = analizador.calcular_casillas_alcanzables(umock)
@@ -898,6 +899,7 @@ def mover_unidad():
     `accion_pendiente`: el movimiento forma parte de una acción que sigue (hablar,
     usar objeto): no marca la unidad como "ha actuado"; lo hará la acción.
     """
+    groundswell = None   # Groundswell (Camilla) solo actúa si la unidad consume su acción
     data = request.get_json(force=True)
     nombre = data.get("nombre")
     x = data.get("x")
@@ -937,7 +939,8 @@ def mover_unidad():
         x=ficha.x,
         y=ficha.y,
         mov=ficha.movimiento_disponible,
-        es_volador=ficha.es_volador,
+        # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
+        es_volador=ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha),
         arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
     )
     alcanzables = analizador.calcular_casillas_alcanzables(umock)
@@ -960,6 +963,8 @@ def mover_unidad():
         ficha.ha_actuado = not accion_pendiente
     elif tablero.fase == "enemigo" and not ficha.es_aliado:
         ficha.ha_actuado = True
+        # Groundswell (Camilla): al acabar sobre fuego, miasma o similar, lo limpia y cura 10
+        groundswell = tablero.aplicar_groundswell(ficha.nombre)
 
     return jsonify({
         "ok": True,
@@ -968,6 +973,8 @@ def mover_unidad():
         "y": y,
         "turno": tablero.turno_actual,
         "advance_desde": list(via_advance) if via_advance else None,
+        "groundswell": groundswell,
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "ficha": ficha.como_dict(),
         "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
@@ -1006,6 +1013,7 @@ def activar_escudo_vinculo():
     del primer ataque hasta el turno siguiente, con el % que corresponda a su estilo.
     Body: {"nombre": "Lucina"}.
     """
+    groundswell = None   # Groundswell (Camilla) solo actúa si la unidad consume su acción
     data = request.get_json(force=True) or {}
     nombre = str(data.get("nombre", "") or "")
     if not nombre:
@@ -1018,8 +1026,40 @@ def activar_escudo_vinculo():
     f = tablero.obtener_ficha(nombre)
     if f is not None and f.es_aliado:
         f.ha_actuado = True   # el comando consume la acción de la unidad
+        # Groundswell (Camilla): al acabar sobre fuego, miasma o similar, lo limpia y cura 10
+        groundswell = tablero.aplicar_groundswell(f.nombre)
     return jsonify({
-        "ok": True, "unidad": nombre, "protegidos": protegidos,
+        "ok": True, "unidad": nombre, "protegidos": protegidos, "groundswell": groundswell,
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
+        "fichas": [x.como_dict() for x in tablero.fichas.values()],
+    })
+
+
+@app.route("/api/unidad/vena_dragon", methods=["POST"])
+def lanzar_vena_dragon():
+    """
+    Dragon Vein (sincronía de Camilla): cubre un área con el efecto de suelo que le
+    corresponde al estilo de combate de la unidad; el estilo Dragón elige cuál.
+    Body: {"nombre": ..., "direccion": [dx, dy], "vena": "agua"?}. Gasta la acción.
+    """
+    data = request.get_json(force=True) or {}
+    nombre = str(data.get("nombre", "") or "")
+    direccion = data.get("direccion") or []
+    if not nombre or len(direccion) != 2:
+        return jsonify({"error": "Faltan 'nombre' o 'direccion'"}), 400
+    f = tablero.obtener_ficha(nombre)
+    if not f:
+        return jsonify({"error": f"Unidad '{nombre}' no encontrada"}), 404
+    tablero.guardar_snapshot()
+    vena = tablero.lanzar_vena_dragon(nombre, direccion, str(data.get("vena", "") or ""))
+    if vena is None:
+        tablero.historial.pop()
+        return jsonify({"error": f"{nombre} no puede usar Dragon Vein en esa dirección"}), 400
+    f.ha_actuado = True   # el comando consume la acción de la unidad
+    f.accion_turno = "vena_dragon"
+    return jsonify({
+        "ok": True, "vena": vena,
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "fichas": [x.como_dict() for x in tablero.fichas.values()],
     })
 
@@ -1031,6 +1071,7 @@ def invocar_dobles_unidad():
     El jugador lo usa para reflejar que el jefe (Hyacinth en el Cap. 10) ha usado el
     comando. Body: {"nombre": "Hyacinth"}.
     """
+    groundswell = None   # Groundswell (Camilla) solo actúa si la unidad consume su acción
     data = request.get_json(force=True) or {}
     nombre = str(data.get("nombre", "") or "")
     if not nombre:
@@ -1043,8 +1084,11 @@ def invocar_dobles_unidad():
     f = tablero.obtener_ficha(nombre)
     if f is not None and f.es_aliado:
         f.ha_actuado = True   # el comando consume la acción de la unidad
+        # Groundswell (Camilla): al acabar sobre fuego, miasma o similar, lo limpia y cura 10
+        groundswell = tablero.aplicar_groundswell(f.nombre)
     return jsonify({
-        "ok": True, "invocador": nombre, "dobles": dobles,
+        "ok": True, "invocador": nombre, "dobles": dobles, "groundswell": groundswell,
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "fichas": [x.como_dict() for x in tablero.fichas.values()],
     })
 
@@ -1152,6 +1196,7 @@ def usar_objeto():
     de /api/unidad/alternar_actuado, que alterna y puede des-marcar por error
     si se invoca dos veces — p.ej. al curar a dos objetivos distintos seguidos).
     """
+    groundswell = None   # Groundswell (Camilla) solo actúa si la unidad consume su acción
     data = request.get_json(force=True) or {}
     nombre = data.get("nombre")
     item_nombre = data.get("item_nombre")
@@ -1184,6 +1229,8 @@ def usar_objeto():
             setattr(f.stats, 'nivel_veneno', 0)
 
     f.ha_actuado = True
+    # Groundswell (Camilla): al acabar sobre fuego, miasma o similar, lo limpia y cura 10
+    groundswell = tablero.aplicar_groundswell(f.nombre)
     # Usar objeto/bastón no es "Esperar": pasivas como Self-Improver no deben dispararse
     f.accion_turno = "baston" if any(k in normalizar_texto(item_nombre or "") for k in ("baston", "staff", "cura", "heal", "mend", "physic")) else "objeto"
     recarga = tablero.aplicar_recarga_emblema_en_casilla(nombre)
@@ -1191,6 +1238,8 @@ def usar_objeto():
     return jsonify({
         "ok": True,
         "ficha": f.como_dict(),
+        "groundswell": groundswell,
+        "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "recarga_emblema": recarga,
         "objetos": tablero.objetos_como_lista() if recarga else None,
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
@@ -1222,7 +1271,9 @@ def hablar_con_unidad():
                 tablero.historial.pop()
                 return jsonify({"error": f"La casilla ({x},{y}) está ocupada"}), 400
             analizador = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
-            umock = UnidadMock(x=f_h.x, y=f_h.y, mov=f_h.movimiento_disponible, es_volador=f_h.es_volador, arma=ArmaMock([1]))
+            umock = UnidadMock(x=f_h.x, y=f_h.y, mov=f_h.movimiento_disponible,
+                               es_volador=f_h.es_volador or pasivas.cruza_terreno_como_volador(f_h),
+                               arma=ArmaMock([1]))
             setattr(umock, 'tiene_pass', pasivas.tiene_sid(f_h, 'SID_すり抜け'))
             bloqueo = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != f_h.es_aliado}
             if (x, y) not in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo):
@@ -1501,10 +1552,10 @@ def ejecutar_combate():
         defensor=f_def.stats,
         arma_atk=f_atk.arma,
         arma_def=f_def.arma,
-        terreno_atk=Terreno(avo=t_atk.avo, dfn=t_atk.dfn,
+        terreno_atk=Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, f_atk.es_aliado),
             curacion_turno=getattr(t_atk, 'curacion_turno', 0),
             es_antirruptura=getattr(t_atk, 'es_antirruptura', False)),
-        terreno_def=Terreno(avo=t_def.avo, dfn=t_def.dfn,
+        terreno_def=Terreno(avo=t_def.avo, dfn=defensa_de_terreno(t_def, f_def.es_aliado),
             curacion_turno=getattr(t_def, 'curacion_turno', 0),
             es_antirruptura=getattr(t_def, 'es_antirruptura', False)),
         distancia=dist_combate,
@@ -1577,6 +1628,8 @@ def ejecutar_combate():
     estados_otorgados = []
     for u_atacada in (f_def, f_atk):
         estados_otorgados += pasivas_temporales.al_danar_aliado(tablero, u_atacada)
+    # Anima Focus (Soren): el atacante le deja un lastre al objetivo hasta su próxima fase
+    estados_otorgados += pasivas_temporales.anima_focus(tablero, f_atk, f_def, f_atk.arma)
 
     # Ataques de Emblema de área (Override / Blazing Lion): objetivos extra, casilla de
     # llegada del atacante y fuego. La geometría la decide ataques_area con las
@@ -1584,6 +1637,7 @@ def ejecutar_combate():
     objetivos_extra_res = []
     fuego_encendido = []
     congelados_area = []
+    groundswell = None
     pos_final_area = None
     if area_engage is not None and hp_atk_final > 0:
         area = area_engage
@@ -1601,7 +1655,8 @@ def ejecutar_combate():
                 ]
                 r_ex = CalculadoraEngage.simular_combate(
                     f_atk.stats, e_extra.stats, f_atk.arma, e_extra.arma,
-                    Terreno(avo=t_atk.avo, dfn=t_atk.dfn), Terreno(avo=t_ex.avo, dfn=t_ex.dfn), distancia=1,
+                    Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, f_atk.es_aliado)),
+                    Terreno(avo=t_ex.avo, dfn=defensa_de_terreno(t_ex, e_extra.es_aliado)), distancia=1,
                     es_engage_attack=True, engage_attack_nombre=engage_attack_nombre,
                     aliados_cercanos_atk=aliados_cercanos_atk, aliados_cercanos_def=aliados_cercanos_ex,
                     pos_atk=(f_atk.x, f_atk.y), pos_def=(e_extra.x, e_extra.y),
@@ -1619,6 +1674,13 @@ def ejecutar_combate():
                     pos_final_area = [lx, ly]
             elif area.get("tipo") == "blazing_lion" and area.get("casillas_fuego"):
                 fuego_encendido = [list(c) for c in tablero.encender_fuego(area["casillas_fuego"])]
+            elif area.get("tipo") == "dark_inferno":
+                # "deal damage to foes on certain spaces near unit and set those spaces on
+                # fire"; en Qi Adept además deja luz curativa en las cuatro adyacentes.
+                if area.get("casillas_fuego"):
+                    fuego_encendido = [list(c) for c in tablero.encender_fuego(area["casillas_fuego"])]
+                if area.get("casillas_luz"):
+                    tablero.aplicar_terreno_temporal(area["casillas_luz"], "brillo")
             elif area.get("tipo") == "aliento":
                 # Efecto de suelo del aliento: fuego (Fire/Flame), niebla (Fog) o hielo (Ice).
                 if area.get("casillas_fuego"):
@@ -1643,6 +1705,8 @@ def ejecutar_combate():
     # Marcar atacante como que ha actuado este turno si es aliado
     if f_atk.es_aliado:
         f_atk.ha_actuado = True
+        # Groundswell (Camilla): al acabar sobre fuego, miasma o similar, lo limpia y cura 10
+        groundswell = tablero.aplicar_groundswell(f_atk.nombre)
         f_atk.accion_turno = "combate"
 
     # Registrar uso de ataque o tecnica especial de Engage (solo 1 vez por fusion)
@@ -1717,6 +1781,7 @@ def ejecutar_combate():
         "casillas_fuego": tablero.casillas_fuego_lista(),
         "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "congelados": congelados_area,
+        "groundswell": groundswell,
         "area_aliento": ([list(c) for c in (area_engage.get("casillas_dano") or [])]
                          if area_engage and area_engage.get("tipo") == "aliento" else []),
         "refuerzos_desplegados": refuerzos_evento,
@@ -1906,6 +1971,8 @@ def iniciar_fase_enemigo():
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
+        "venenos_curados": [{"unidad": n, "nivel": v} for n, v in tablero.venenos_curados_ultimo],
+        "hielo_deslizante": [{"unidad": n, "mov": m} for n, m in tablero.hielo_deslizante_ultimo],
         "casillas_fuego": tablero.casillas_fuego_lista(),
         "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
@@ -1925,6 +1992,8 @@ def fin_turno():
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
+        "venenos_curados": [{"unidad": n, "nivel": v} for n, v in tablero.venenos_curados_ultimo],
+        "hielo_deslizante": [{"unidad": n, "mov": m} for n, m in tablero.hielo_deslizante_ultimo],
         "casillas_fuego": tablero.casillas_fuego_lista(),
         "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "refuerzos_desplegados": tablero.refuerzos_desplegados_ultimo,

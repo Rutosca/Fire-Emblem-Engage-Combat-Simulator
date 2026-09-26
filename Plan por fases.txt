@@ -1,0 +1,41 @@
+Plan por fases
+
+Cada fase deja el proyecto funcionando y con red. Ninguna cambia un punto de daño sin que lo veamos.
+
+Fase 0 — Red y radiografía (no cambia comportamiento)
+
+Tests de caracterización: script que recorre todos los mapas guardados y el roster, simula todos los pares atacante/defensor/arma alcanzables y vuelca los números actuales a tests/golden/*.json. Un test compara contra ese golden. Es la red para todo lo demás: más barato y más amplio que escribir asserts a mano. Los valores que ya tienes verificados en juego (Chloé 20, Ivy 9, Momentum de Alfred…) se marcan como "verdad de juego", el resto como "comportamiento actual" (puede estar mal y lo corregiremos conscientemente).
+Script de cobertura: para los SIDs que realmente llevan las unidades de roster + dispos de todos los mapas, qué tokens de Condition y qué ActNames no entiende el DSL. Prioriza la Fase 1 por frecuencia real, no por las 804.
+Recolección completa de SIDs (recolectar_sids(unidad)), incluidas sincronías y fusión como SIDs. Quita es_sigurd. Golden en verde: las comprobaciones por nombre siguen ahí, así que no cambia nada todavía.
+
+Fase 1 — Motor genérico en paralelo (pasivas.py)
+
+Modificadores: acumulador con ~15 claves (hit, avo, crit, power, daño_infligido, daño_recibido, golpes, orden, acciones, hp, curación…), semántica =/+/- respetando priority.
+recopilar(unidad, ctx, momento): recorre todos los SIDs, resuelve cadenas give_sids sobre uno mismo (Hold Out → _効果), evalúa Condition, aplica Act*. Devuelve modificadores + lista de pasivas activas (para la UI) + lista de procs con su probabilidad.
+Ampliación del vocabulario del DSL según el script de cobertura. Por frecuencia: 武器の種類/攻撃属性/物理属性 (86 usos), variantes HP*/MaxHP*, スキル所持, 相手の生存, 武器相性, 追撃不可, スキル確率.
+Modo sombra: _stats_de_golpe llama al motor nuevo además de lo actual y registra discrepancias por par. Sin efecto en la salida. Así vemos, antes de tocar nada, dónde el datamine y el código a mano no coinciden, y decidimos caso a caso quién tiene razón.
+
+Fase 2 — Sustitución bloque a bloque en _stats_de_golpe
+
+Primero las 15 llamadas DSL existentes (mecánico: mismo patrón). Luego las 24 a mano, una por commit: borrar bloque → golden → si difiere, o el bloque viejo adivinaba (se verifica en juego y se actualiza el golden como "verdad de juego") o falta vocabulario (se amplía). Orden: de las que tienen equivalente directo en datamine (Gentility, Admiración, Geosphere, Lunar Brace, Hold Out) a las de secuencia.
+Al final de esta fase _stats_de_golpe no contiene ningún 'nombre' in h.
+
+Fase 3 — Secuencia, golpes y eventos
+
+simular_combate lee del acumulador las claves de secuencia (手番回数, 攻撃回数, 行動回数, 攻撃結果): Vantage, Alacrity, Divine Speed, seguimiento por Break, armas "brave" pasan a ser datos. Evaluación por golpe para los acts sobre ダメージ (Hold Out, Divine Speed 50 %), con ContextoCombate actualizado en cada impacto.
+estado_tablero: give_sids por evento y give_target (auras + temporales; absorbe pasivas_temporales.py), Around* post-combate, purga por fase.
+evaluar_riesgo: procs → peor caso y esperado.
+Evaluación por golpe (timings 6, 9, 11-13, 15 y el campo Action). Hoy todo se calcula una vez antes de la secuencia. Es lo que impide que Keen Insight vea la efectividad de Cataclysm y de Houses Unite, y lo que obliga a que Special Guard esté falseado en otro timing.
+Efectos posteriores al combate (timings 18 y 27, y los Around*). Aquí cae casi todo lo que llevamos aparcado: Decisive Strike, el daño devuelto de Reflect, el área de Soar en Dragón, Savage Blow, Poison Strike.
+give_target 0/2/3/4 y auras completas en el tablero.
+Acts de secuencia (手番回数, 攻撃回数, 行動回数, 攻撃結果).
+Procs en el veredicto de riesgo, como peor caso y valor esperado. Ahí es donde encaja Ignis: no para inventarse el daño, sino para avisar de "puede subir X".
+
+Fase 4 — Especiales y limpieza
+
+Registro {SID: handler} para lo que queda: Canter (motor de movimiento), Dance, Rise Above, overlay DLC (Weapon Sync). Debería caber en una pantalla.
+Eliminar aliases por nombre del motor; los tests construidos a mano pasan a usar SIDs. Documentar en notas/ el vocabulario del DSL y los códigos decodificados (give_target, priority).
+Riesgos que quiero dejar dichos
+La Fase 3 (evaluación por golpe) es la que puede desestabilizar simular_combate, que ya tiene 400 líneas de casos. El golden es lo que la hace abordable.
+Habrá pasivas donde el datamine y lo que observaste en juego no cuadren porque el vocabulario esté mal interpretado (ya lo anotaste con 手番回数 vs 総手番回数). El modo sombra las saca a la luz antes de que afecten.
+Es trabajo de varias sesiones. La Fase 0 es la única que se puede hacer de una vez sin decidir nada; las demás las iremos cerrando con tu verificación en juego.

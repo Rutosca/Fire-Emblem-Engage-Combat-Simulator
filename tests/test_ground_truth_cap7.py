@@ -533,9 +533,11 @@ class TestGroundTruthCapitulo7(CasoCapitulo7):
 
         dano_por_golpe = res["atacante"]["daño_por_golpe"]
         self.assertEqual(dano_por_golpe, 18, f"El daño de Warp Ragnarök debe ser 18, pero fue {dano_por_golpe}")
-        self.assertIn("Resonance (-1 HP, +2 Atk)", res["resultado"]["pasivas_activas"])
+        self.assertIn("Resonance (-1 HP, +2 Dmg)", res["resultado"]["pasivas_activas"])
         self.assertIn("Ragnarök Fusión (Ataque de Emblema Celica)", res["resultado"]["pasivas_activas"])
-        self.assertIn("Estilo Místico (Warp Ragnarök ×1.2 daño)", res["resultado"]["pasivas_activas"])
+        # El ×1.2 Místico ya no lo escribe motor_calculo a mano: sale del propio SID del
+        # Ataque de Emblema (SID_セリカエンゲージ技_魔法, Act "威力;*;1.2") por el camino genérico.
+        self.assertIn("Warp Ragnarok (×1.2 Dmg)", res["resultado"]["pasivas_activas"])
 
         # Sin estilo Místico (p.ej. Alear con Celica) no hay x1.2: se queda en 15
         celine.estilo_combate = "Infantería"

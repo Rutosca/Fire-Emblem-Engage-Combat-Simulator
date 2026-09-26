@@ -47,6 +47,11 @@ class Terreno:
     es_fuego: bool = False         # Terreno en llamas (Blazing Lion, Fire/Flame Breath): daño al empezar la fase y coste de movimiento +1
     es_niebla: bool = False        # Niebla (Fog Breath de Tiki): +30 Evasión a quien esté encima, dura un turno
     es_hielo: bool = False         # Suelo congelado (Ice Breath de Tiki): marca el área del congelamiento
+    terreno_temporal: str = ""     # Tipo de terreno temporal encima de la casilla (fuego, niebla, vena de dragón…)
+    # El Miasma es el único terreno que trata distinto a cada bando: -20 de Defensa a las
+    # unidades del jugador y +20 a las enemigas (Terrain.xml, PlayerDefense/EnemyDefense).
+    dfn_aliado: int = 0
+    dfn_enemigo: int = 0
     # Objetivo de mapa asociado a la casilla (independiente del terreno físico):
     #   "derrota"  → si un ENEMIGO termina su movimiento aquí, se pierde el mapa (Cap. 8: "toman tu posición")
     #   "victoria" → si un ALIADO termina aquí, se gana el mapa (mapas de "llega a X")
@@ -54,6 +59,14 @@ class Terreno:
     # sobre el terreno; el cargador la fusiona sin sobreescribir avo/dfn/etc.
     objetivo: str = ""
 
+
+
+def defensa_de_terreno(terreno, es_aliado: bool) -> int:
+    """Defensa que la casilla le da a quien esté encima, según su bando."""
+    if terreno is None:
+        return 0
+    extra = getattr(terreno, "dfn_aliado" if es_aliado else "dfn_enemigo", 0)
+    return int(getattr(terreno, "dfn", 0) or 0) + int(extra or 0)
 
 
 # Tipos (campo "Clase"/type de Tiled) de los objetos de mapa con estado, en minúsculas.
@@ -397,19 +410,20 @@ class MapaTactico:
         Pinta sobre el grid los terrenos que duran un turno, guardando antes el terreno
         base para poder devolverlo (`limpiar_terrenos_temporales`):
 
-          fuego  → Blazing Lion, Fire Breath, Flame Breath: daño al empezar la fase encima
-                   y coste de movimiento +1 (Terrain.xml `TID_炎上`: Heal -10, MoveCost 2).
-          niebla → Fog Breath: +30 Evasión a quien esté encima (`TID_霧`: Avoid 30).
-          hielo  → Ice Breath: marca el área congelada. Quien recibió el golpe se queda
-                   con 0 de movimiento durante su fase; eso vive en la ficha, no aquí.
+        Los tipos y sus números están en `ataques_area.TERRENOS_TEMPORALES`, que los saca
+        de Terrain.xml: fuego (Blazing Lion, Fire/Flame Breath, vena Mística), niebla (Fog
+        Breath) y las Venas de Dragón de Camilla (pilares, agua, miasma, enredaderas,
+        brillo, pista de hielo). El "hielo" de Ice Breath solo marca el área: lo que hace
+        es dejar a 0 el movimiento de quien recibió el golpe, y eso vive en la ficha.
 
-        `casillas_por_tipo` = {"fuego": [(x, y), ...], "niebla": [...], "hielo": [...]}.
+        `casillas_por_tipo` = {"fuego": [(x, y), ...], "niebla": [...], ...}.
         """
         import copy as _copy
-        from ataques_area import FUEGO_COSTE_EXTRA, NIEBLA_AVO
+        from ataques_area import efecto_de_terreno_temporal
         if not hasattr(self, '_terreno_base_fuego'):
             self._terreno_base_fuego = {}
         for tipo, casillas in (casillas_por_tipo or {}).items():
+            efecto = efecto_de_terreno_temporal(tipo)
             for (x, y) in casillas:
                 if not (0 <= x < self.ancho and 0 <= y < self.alto):
                     continue
@@ -417,17 +431,19 @@ class MapaTactico:
                     self._terreno_base_fuego[(x, y)] = _copy.copy(self.grid[x][y])
                 base = self._terreno_base_fuego[(x, y)]
                 t = self.grid[x][y]
-                if tipo == "fuego":
-                    t.es_fuego = True
-                    t.nombre = "Fuego"
-                    t.coste_mov = int(base.coste_mov) + FUEGO_COSTE_EXTRA
-                elif tipo == "niebla":
-                    t.es_niebla = True
-                    t.nombre = "Niebla"
-                    t.avo = int(base.avo) + NIEBLA_AVO
-                elif tipo == "hielo":
-                    t.es_hielo = True
-                    t.nombre = "Hielo"
+                t.terreno_temporal = tipo
+                t.nombre = efecto["nombre"]
+                t.avo = int(base.avo) + efecto["avo"]
+                t.dfn = int(base.dfn) + efecto["dfn"]
+                t.dfn_aliado = int(base.dfn_aliado) + efecto["defensa_aliado"]
+                t.dfn_enemigo = int(base.dfn_enemigo) + efecto["defensa_enemigo"]
+                t.curacion_turno = int(base.curacion_turno) + efecto["curacion_turno"]
+                t.coste_mov = int(base.coste_mov) + efecto["coste_extra"]
+                t.es_antirruptura = bool(base.es_antirruptura or efecto["es_antirruptura"])
+                # Marcas antiguas, las que consulta la interfaz y el daño por fase
+                t.es_fuego = (tipo == "fuego")
+                t.es_niebla = (tipo == "niebla")
+                t.es_hielo = (tipo == "hielo")
 
     def limpiar_terrenos_temporales(self, casillas=None) -> None:
         """Devuelve `casillas` (todas si None) a su terreno base."""

@@ -199,6 +199,45 @@ def bono_movimiento_fusion_potencial(unidad) -> int:
     return total
 
 
+def bono_por_efectividad(unidad) -> int:
+    """
+    Daño extra que la unidad suma cuando es ELLA quien pega con efectividad: Keen Insight
+    de Soren (+5) y Keen Insight+ (+7). El número sale del Act de la habilidad, no se
+    escribe aquí, así que sirve para cualquier otra con la misma forma.
+
+    Existe aparte porque los ataques que resuelven la efectividad golpe a golpe
+    (Cataclysm, Houses Unite) la deciden DENTRO del cálculo, cuando las pasivas ya se
+    recopilaron con la condición `武器特効 > 1` sin cumplir. Cuando llegue la evaluación
+    por golpe de la Fase 3 esto se reabsorbe.
+    """
+    total = 0
+    for sid in sids_activos(unidad):
+        info = HABILIDADES.get(sid) or {}
+        if "武器特効" not in str(info.get("condition") or ""):
+            continue
+        for nombre, op, valor in zip(info.get("act_names") or [],
+                                     info.get("act_operations") or [],
+                                     info.get("act_values") or []):
+            if nombre == "威力" and op in ("+", "-"):
+                try:
+                    total += int(float(valor)) * (1 if op == "+" else -1)
+                except (TypeError, ValueError):
+                    continue
+    return total
+
+
+def cruza_terreno_como_volador(unidad) -> bool:
+    """
+    True si alguna habilidad activa le deja moverse ignorando el terreno, como un volador:
+    Soar de Camilla ("Unit can cross terrain as if flying"). No la convierte en volador a
+    efectos de combate (sigue recibiendo la efectividad de su clase, y el fuego la quema).
+    """
+    for sid in sids_activos(unidad):
+        if (HABILIDADES.get(sid) or {}).get("cruza_como_volador"):
+            return True
+    return False
+
+
 # Advance (Roy, sincronía a vínculo 3): comando de ataque (Skill.xml Timing 21,
 # MoveSelf 1, RangeI/O 1). "Avanza 1 casilla hacia un enemigo a 2 casillas y ataca":
 # la geometría vive en motor_de_movimiento_y_amenaza.casillas_advance.
@@ -294,11 +333,15 @@ def sid_ataque_emblema_por_nombre(nombre_ataque: str) -> str:
     global _ATAQUES_EMBLEMA_POR_NOMBRE
     if _ATAQUES_EMBLEMA_POR_NOMBRE is None:
         _ATAQUES_EMBLEMA_POR_NOMBRE = _indice_ataques_emblema()
-    n = str(nombre_ataque or "").strip().lower()
+    # Sin acentos: la herramienta llama al ataque "Warp Ragnarök (Tele-Ragnarök)" y el
+    # catálogo lo tiene como "Warp Ragnarok", así que comparar en crudo no encontraba nada.
+    from catalogo_loader import normalizar_texto
+    n = normalizar_texto(str(nombre_ataque or ""))
     if not n:
         return ""
     for nombre, sid in _ATAQUES_EMBLEMA_POR_NOMBRE.items():
-        if nombre == n or nombre in n:
+        nn = normalizar_texto(nombre)
+        if nn and (nn == n or nn in n):
             return sid
     return ""
 
@@ -522,13 +565,16 @@ TIMINGS_GOLPE_ESTATICO = frozenset({1, 2, 3, 4, 5, 7, 8, 10})
 
 # Etiquetas para los textos de pasivas_activas (UI)
 _ETIQUETAS = {
-    "power": "Atk", "atk": "Atk", "unit_atk": "Atk", "power_arma": "Mt", "rival_power": "Atk rival",
+    # 威力 es el daño neto del golpe (Atk - Def), no el Atk: se etiqueta "Dmg" para que se
+    # distinga de 攻撃力 (Atk) y de ユニット攻撃力 (la estadística ofensiva de la unidad).
+    "power": "Dmg", "atk": "Atk", "unit_atk": "Atk unidad", "power_arma": "Mt", "rival_power": "Dmg rival",
     "hit": "Hit", "avo": "Avo", "crit": "Crit", "ddg": "Ddg", "rival_hit": "Hit rival", "rival_avo": "Avo rival",
     "rival_crit": "Crit rival", "as": "AS", "hp": "HP", "str": "Fue", "mag": "Mag", "dex": "Des",
     "spd": "Vel", "lck": "Suerte", "bld": "Complexión", "def": "Def", "res": "Res", "curacion": "HP curados",
     "dano": "Daño", "rival_dano": "Daño rival", "terreno_avo": "Avo terreno", "rival_terreno_avo": "Avo terreno rival",
     "hit_rate": "Hit%", "crit_rate": "Crit%", "rival_hit_rate": "Hit% rival", "rival_crit_rate": "Crit% rival",
-    "rival_effectividad": "efectividad rival", "rival_defensa_efectiva": "Def rival", "turno_extra": "rondas",
+    "rival_effectividad": "efectividad rival", "rival_defensa_efectiva": "Def/Res rival aplicada",
+    "turno_extra": "rondas",
     "rival_turno_extra": "rondas rival", "acciones": "golpes/ronda", "golpes": "golpes",
 }
 

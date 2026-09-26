@@ -3720,13 +3720,20 @@ function renderCasillasObjetivo(casillas) {
 // Breath) y hielo (Ice Breath). Todos duran un turno. ──────────────────────
 
 const TERRENOS_TEMPORALES = {
-  fuego:  { clase: "fuego",  titulo: t => `En llamas hasta el turno ${t}: 10 dmg a quien empiece su fase aquí, movimiento +1` },
-  niebla: { clase: "niebla", titulo: t => `Niebla hasta el turno ${t}: +30 de Evasión a quien esté encima` },
-  hielo:  { clase: "hielo",  titulo: t => `Suelo congelado hasta el turno ${t}` },
+  fuego:       { clase: "fuego",  icono: "",   titulo: t => `En llamas hasta el turno ${t}: 10 dmg a quien empiece su fase aquí, movimiento +1` },
+  niebla:      { clase: "niebla", icono: "",   titulo: t => `Niebla hasta el turno ${t}: +30 de Evasión a quien esté encima` },
+  hielo:       { clase: "hielo",  icono: "",   titulo: t => `Suelo congelado hasta el turno ${t}` },
+  // Venas de Dragón (Camilla): comparten estilo de casilla y se distinguen por el icono
+  pilares:     { clase: "vena", icono: "🗿", titulo: t => `Pilares de piedra hasta el turno ${t}: +3 Def/Res a quien esté encima` },
+  agua:        { clase: "vena", icono: "💧", titulo: t => `Agua hasta el turno ${t}: -30 de Evasión a quien esté encima` },
+  miasma:      { clase: "vena", icono: "💨", titulo: t => `Miasma hasta el turno ${t}: -20 Def a tus unidades, +20 a las enemigas` },
+  enredaderas: { clase: "vena", icono: "🌿", titulo: t => `Enredaderas hasta el turno ${t}: inmunidad a Ruptura` },
+  brillo:      { clase: "vena", icono: "✨",     titulo: t => `Brillo hasta el turno ${t}: +10 HP a quien empiece su fase aquí` },
+  pista_hielo: { clase: "vena", icono: "🧊", titulo: t => `Hielo hasta el turno ${t}: -30 de Evasión, y +2 de Mov a quien esté encima sin haberse movido` },
 };
 
 function renderTerrenosTemporales(casillas) {
-  for (const { clase } of Object.values(TERRENOS_TEMPORALES)) {
+  for (const clase of new Set(Object.values(TERRENOS_TEMPORALES).map(d => d.clase))) {
     document.querySelectorAll(`.celda.${clase}`).forEach(c => {
       c.classList.remove(clase);
       const m = c.querySelector(`.${clase}-marca`);
@@ -3740,6 +3747,7 @@ function renderTerrenosTemporales(casillas) {
     celda.classList.add(def.clase);
     const marca = document.createElement("div");
     marca.className = `${def.clase}-marca`;
+    if (def.icono) marca.textContent = def.icono;
     marca.title = def.titulo(c.expira_turno);
     celda.appendChild(marca);
   }
@@ -3759,6 +3767,13 @@ function notificarEfectosArea(res) {
   else if (Array.isArray(res.casillas_fuego)) renderCasillasFuego(res.casillas_fuego);
   if (Array.isArray(res.congelados) && res.congelados.length) {
     mostrarToast(`❄ Congeladas: ${res.congelados.join(", ")} (0 de movimiento en su fase)`, "info");
+  }
+  if (res.groundswell) {
+    const g = res.groundswell;
+    mostrarToast(`Groundswell: ${g.unidad} despeja ${g.terreno} y recupera ${g.curacion} HP`, "ok");
+  }
+  if (Array.isArray(res.venenos_curados) && res.venenos_curados.length) {
+    mostrarToast(`Detoxify: ${res.venenos_curados.map(v => v.unidad).join(", ")} se cura del veneno`, "ok");
   }
   if (Array.isArray(res.objetivos_extra) && res.objetivos_extra.length) {
     const txt = res.objetivos_extra.map(e => `${e.nombre} (${e.daño} dmg${e.muere ? ", derrotado" : ""})`).join(", ");

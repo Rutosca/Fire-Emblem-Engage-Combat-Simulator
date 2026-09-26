@@ -23,12 +23,49 @@ Disparos repetidos refrescan el estado sin acumularse.
 import condicion_dsl
 import pasivas
 
+SID_ANIMA_FOCUS = "SID_OVERLAY_ANIMA_FOCUS"
+# Elemento del tomo → efecto que Anima Focus (Soren) le cuelga al objetivo.
+EFECTOS_ANIMA_FOCUS = {
+    "fuego":  "SID_OVERLAY_ANIMA_FOCUS_FUEGO",
+    "trueno": "SID_OVERLAY_ANIMA_FOCUS_TRUENO",
+    "viento": "SID_OVERLAY_ANIMA_FOCUS_VIENTO",
+}
+
 SID_GET_BEHIND_ME = "SID_僕が守ります！"
 SID_SELF_IMPROVER = "SID_自己研鑽"
 SID_MEDITATION = "SID_瞑想"
 
 # Timing de Skill.xml "al esperar" (la unidad termina su acción sin atacar ni usar objetos)
 TIMING_AL_ESPERAR = 25
+
+
+def anima_focus(tablero, atacante, objetivo, arma) -> list:
+    """
+    Anima Focus (Soren, sincronía a vínculo 4): "When using tomes, unit inflicts Def-3
+    with fire, Hit-20 with thunder, or Mov-2 with wind magic for 1 turn".
+
+    El lastre se queda en el OBJETIVO hasta su siguiente fase, así que lo aprovechan
+    también los demás aliados que le peguen después, no solo quien lo puso. Se llama
+    justo después de resolver el combate. Devuelve [(nombre_unidad, estado)].
+    """
+    if not tablero or atacante is None or objetivo is None or not getattr(objetivo, "viva", False):
+        return []
+    if not _tiene_pasiva(atacante, SID_ANIMA_FOCUS):
+        return []
+    if str(getattr(arma, "tipo", "") or "").lower() not in ("tomo", "tome"):
+        return []
+    from pasivas_overlay import _elemento_del_arma
+    sid_efecto = EFECTOS_ANIMA_FOCUS.get(_elemento_del_arma(arma))
+    if not sid_efecto:
+        return []   # luz, oscuridad o un tomo sin elemento: la habilidad no dice nada
+    info = condicion_dsl.HABILIDADES_CATALOGO.get(sid_efecto) or {}
+    # "Durante 1 turno": caduca al entrar en la siguiente fase del objetivo
+    fase = "jugador" if getattr(objetivo, "es_aliado", False) else "enemigo"
+    est = objetivo.otorgar_estado_temporal(
+        sid_efecto, info.get("nombre") or "Anima Focus", dict(info.get("stat_boosts") or {}),
+        fase, int(getattr(tablero, "turno_actual", 1)) + 1,
+        origen=str(getattr(atacante, "nombre", "") or ""))
+    return [(objetivo.nombre, est)] if est else []
 
 
 def _tiene_pasiva(ficha, sid: str) -> bool:

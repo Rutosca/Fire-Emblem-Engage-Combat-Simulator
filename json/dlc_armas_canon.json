@@ -3,10 +3,13 @@
     "Armas de los Emblemas de DLC que NO están en el datamine. compilar_catalogo.py las",
     "integra en `armas` igual que hace con dlc_emblems_canon.json en `emblemas`, así que",
     "sobreviven a una recompilación.",
-    "Stats de Tiki verificadas en juego por el jugador (Mt, Hit, Crit, Wt, Avo, Ddg).",
-    "Los alientos NO son Smash: ceden el primer golpe y no permiten seguimiento, pero no",
-    "empujan. Solo Tail Smash empuja. Alcance 1 para iniciar, como una espada.",
-    "de los wyrms (12/100/0/5), que es otra arma distinta aunque comparta nombre."
+    "Stats verificadas en juego por el jugador (Mt, Hit, Crit, Wt, Avo, Ddg, Rango).",
+    "Tiki: los alientos NO son Smash: ceden el primer golpe y no permiten seguimiento, pero",
+    "no empujan. Solo Tail Smash empuja. Alcance 1 para iniciar, como una espada. Ojo con el",
+    "Fire Breath de los wyrms (12/100/0/5), que es otra arma distinta aunque comparta nombre.",
+    "Camilla: Bolt Axe y Lightning son MÁGICAS (pegan contra Res) pese a que una es hacha.",
+    "Soren: `elemento` marca el tipo de magia, que es lo que decide qué efecto aplica su",
+    "Anima Focus. Bolting no puede atacar a 1-2 casillas: su alcance empieza en 3."
   ],
   "IID_DLC_TIKI_ETERNAL_CLAW": {
     "id": "IID_DLC_TIKI_ETERNAL_CLAW",
@@ -192,5 +195,160 @@
       "dragon"
     ],
     "cede_iniciativa": true
+  },
+  "IID_DLC_CAMILLA_BOLT_AXE": {
+    "id": "IID_DLC_CAMILLA_BOLT_AXE",
+    "nombre": "Bolt Axe",
+    "tipo": "Hacha",
+    "mt": 14,
+    "wt": 9,
+    "hit": 65,
+    "crit": 0,
+    "avo": -20,
+    "ddg": 0,
+    "rango": [
+      1,
+      2
+    ],
+    "es_magica": true,
+    "es_smash": false,
+    "equip_sids": [],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Magic axe wielded by Emblem Camilla. Can strike close or at range.",
+    "_estilos": null
+  },
+  "IID_DLC_CAMILLA_LIGHTNING": {
+    "id": "IID_DLC_CAMILLA_LIGHTNING",
+    "nombre": "Lightning",
+    "tipo": "Tomo",
+    "mt": 3,
+    "wt": 10,
+    "hit": 75,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1,
+      2
+    ],
+    "es_magica": true,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_２回行動"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Magic wielded by Emblem Camilla. If user initiates combat, attacks twice.",
+    "_estilos": null
+  },
+  "IID_DLC_CAMILLA_AXE": {
+    "id": "IID_DLC_CAMILLA_AXE",
+    "nombre": "Camilla's Axe",
+    "tipo": "Hacha",
+    "mt": 19,
+    "wt": 11,
+    "hit": 80,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1
+    ],
+    "es_magica": false,
+    "es_smash": false,
+    "equip_sids": [
+      "SID_OVERLAY_CAMILLA_RES_10",
+      "SID_OVERLAY_DANO_RES_MENOS_DEF"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Axe wielded by Emblem Camilla. Grants Res+10 and deals extra damage = foe's Res-Def.",
+    "_estilos": null
+  },
+  "IID_DLC_SOREN_BOLTING": {
+    "id": "IID_DLC_SOREN_BOLTING",
+    "nombre": "Bolting",
+    "tipo": "Tomo",
+    "mt": 2,
+    "wt": 15,
+    "hit": 50,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "es_magica": true,
+    "es_smash": false,
+    "elemento": "trueno",
+    "equip_sids": [
+      "SID_追撃不可"
+    ],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Long-range thunder magic wielded by Emblem Soren. Cannot follow up.",
+    "_estilos": null
+  },
+  "IID_DLC_SOREN_REXCALIBUR": {
+    "id": "IID_DLC_SOREN_REXCALIBUR",
+    "nombre": "Rexcalibur",
+    "tipo": "Tomo",
+    "mt": 16,
+    "wt": 12,
+    "hit": 105,
+    "crit": 10,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1,
+      2
+    ],
+    "es_magica": true,
+    "es_smash": false,
+    "elemento": "viento",
+    "equip_sids": [],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [
+      "volador"
+    ],
+    "_descripcion": "Powerful wind magic wielded by Emblem Soren. Effective: Flying.",
+    "_estilos": null
+  },
+  "IID_DLC_SOREN_REFLECT": {
+    "id": "IID_DLC_SOREN_REFLECT",
+    "nombre": "Reflect",
+    "tipo": "Bastón",
+    "mt": 0,
+    "wt": 0,
+    "hit": 100,
+    "crit": 0,
+    "avo": 0,
+    "ddg": 0,
+    "rango": [
+      1,
+      2
+    ],
+    "es_magica": true,
+    "es_smash": false,
+    "elemento": null,
+    "equip_sids": [],
+    "precio": 0,
+    "usos_max": null,
+    "efectividades": [],
+    "_descripcion": "Staff of Emblem Soren. Allies within 2 spaces gain 'deals 50% of magic damage taken back to foe' for 1 turn. No apunta a nadie: cubre un radio de 2 alrededor del portador.",
+    "_estilos": null
   }
 }

@@ -123,7 +123,7 @@ ATAQUES_ENGAGE_MAP = {
     "GID_DLC_HECTOR": "Storm's Eye (Ojo de la tormenta)",
     "GID_DLC_VERONICA": "Summon Hero (Invocar Héroe de FEH)",
     "GID_DLC_SOREN": "Cataclysm (Cataclismo)",
-    "GID_DLC_CAMILLA": "Darkness (Torrente Sombrío)",
+    "GID_DLC_CAMILLA": "Dark Inferno (Infierno Oscuro)",
     "GID_DLC_CHROM": "Giga Levin Sword (Gigaespada Trueno)",
     "edelgard": "Houses Unite (Unión de Casas)",
     "three houses": "Houses Unite (Unión de Casas)",
@@ -145,7 +145,7 @@ ATAQUES_ENGAGE_MAP = {
     "hector": "Storm's Eye (Ojo de la tormenta)",
     "veronica": "Summon Hero (Invocar Héroe de FEH)",
     "soren": "Cataclysm (Cataclismo)",
-    "camilla": "Darkness (Torrente Sombrío)",
+    "camilla": "Dark Inferno (Infierno Oscuro)",
     "chrom": "Giga Levin Sword (Gigaespada Trueno)",
 }
 
@@ -192,18 +192,38 @@ ATAQUES_ENGAGE_CONFIG = {
             "nombre": "Quadruple Hit", "mt": 14, "hit": 100, "crit": 0, "wt": 8, "tipo": "Lanza", "es_magica": False, "rango": [1]
         }
     },
+    # Cataclysm (Soren): "Use to attack foes in an area with fire, thunder and wind magic
+    # at 40% damage". No usa ningún arma del inventario ni del Emblema: pega tres veces
+    # con una magia propia, una por elemento, y cada golpe es el 40 % TRUNCADO del daño
+    # que haría un ataque normal con ella. La efectividad se aplica por elemento, así que
+    # solo el golpe de viento es efectivo contra voladores.
+    #
+    # Mt 12, despejado de tres medidas del jugador con Céline (Magia 22, Mística, así que
+    # con el "[Mystical] +10% damage" del ataque: cada golpe es floor(daño * 0.40 * 1.10)):
+    #   Mage de Res 17           -> 7/7/7    (25 HP -> 4)
+    #   Lance Flier de Res 14    -> 8/8/15
+    #   el mismo con +3 de Atk   -> 10/10/16
+    # Los dos primeros golpes de las tres medidas solo los cuadra Mt 12.
+    #
+    # PENDIENTE — el GOLPE DE VIENTO sigue sin cuadrar. Con Mt 12 y la efectividad normal
+    # (Mt x3) el daño base sería 22+36-14 = 44 y el golpe saldría 19, o 21 contando el +5
+    # de Keen Insight; el jugador ve 15. Para dar 15 haría falta partir de 35-36, o sea que
+    # la efectividad sumara ~+15 en vez de +24. Los otros dos golpes y las armas normales
+    # (Elwind forjado Mt 7: 22+21-14+5 = 34, verificado) sí siguen la regla, así que es algo
+    # propio de este ataque.
     "Cataclysm": {
         "es_variable": False,
         "arma_fija": {
-            "nombre": "Cataclysm", "mt": 16, "hit": 100, "crit": 0, "wt": 6, "tipo": "Tomo", "es_magica": True, "rango": [1, 2]
+            "nombre": "Cataclysm", "mt": 12, "hit": 100, "crit": 0, "wt": 0,
+            "tipo": "Tomo", "es_magica": True, "rango": [1, 2, 3]
         }
     },
-    "Darkness": {
-        "es_variable": False,
-        "arma_fija": {
-            "nombre": "Darkness", "mt": 15, "hit": 100, "crit": 0, "wt": 8, "tipo": "Hacha", "es_magica": True, "rango": [1]
-        }
-    },
+    # Infierno Oscuro (Camilla): "Use to deal damage to foes on certain spaces near unit
+    # and set those spaces on fire. [Dragon] Increases area of effect. [Mystical] +20%
+    # damage. [Qi Adept] Adds Glow to adjacent spaces." Es un ataque de ÁREA centrado en
+    # la unidad (geometría en ataques_area.AREA_DARK_INFERNO) y obliga a usar un hacha,
+    # así que pega con el hacha equipada: no tiene arma propia.
+    "Dark Inferno": {"es_variable": True, "tipos_permitidos": ["Hacha"]},
     "Giga Levin Sword": {
         "es_variable": False,
         "arma_fija": {
@@ -651,6 +671,28 @@ def _es_nombre_arma_emblema(raw: str) -> bool:
     return bool(_NOMBRES_ARMAS_EMBLEMA_CACHE.get(normalizar_texto(limpio)))
 
 
+def to_int_seguro(valor, por_defecto: int = 0) -> int:
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return por_defecto
+
+
+def _sid_de_habilidad(valor):
+    """
+    SID de una habilidad dada por su SID o por su nombre visible. Los Emblemas de DLC no
+    traen SID (el datamine no los tiene), así que sus habilidades se buscan por nombre
+    entre las del catálogo y las del overlay (`pasivas_overlay`).
+    """
+    if not valor:
+        return None
+    texto = str(valor).strip()
+    if texto.startswith("SID_"):
+        return texto
+    from pasivas import resolver_nombre_a_sid   # diferido: pasivas importa este módulo
+    return resolver_nombre_a_sid(texto)
+
+
 def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
     """
     Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
@@ -720,9 +762,10 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
     hit_calc = base_hit + ref_mod["hit"]
     crit_calc = base_crit + ref_mod["crit"]
 
-    # Aplicar grabado
-    avo_bonus = 0
-    ddg_bonus = 0
+    # Aplicar grabado. El Avo/Ddg de partida son los del arma: casi todas llevan 0, pero
+    # el Bolt Axe de Camilla da -20 de Evasión y el grabado suma sobre eso.
+    avo_bonus = to_int_seguro(ainfo.get("avo"))
+    ddg_bonus = to_int_seguro(ainfo.get("ddg"))
     if grabado_info:
         mt_calc += grabado_info["mt"]
         wt_calc = max(0, wt_calc + grabado_info["wt"])
@@ -1153,8 +1196,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 s_nom = sk_info.get("nombre", sid) if sk_info else sid
                 if s_nom and s_nom not in sync_passives:
                     sync_passives.append(s_nom)
-                if str(sid).startswith("SID_") and sid not in sids_emblema_sync:
-                    sids_emblema_sync.append(sid)
+                sid_real = _sid_de_habilidad(sid) or _sid_de_habilidad(s_nom)
+                if sid_real and sid_real not in sids_emblema_sync:
+                    sids_emblema_sync.append(sid_real)
 
         for s_nom in sync_passives:
             if s_nom and s_nom not in habs_lista and not any(s_nom.startswith(pfx) for pfx in ["HP +", "Strength +", "Magic +", "Dexterity +", "Speed +", "Defense +", "Resistance +", "Res ", "Phy "]):
@@ -1164,8 +1208,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         destino_engage = sids_emblema_sync if engage_permanente else sids_emblema_fusion
         for sk_item in engage_items_bond or []:
             s_sid = sk_item.get("sid") if isinstance(sk_item, dict) else sk_item
-            if s_sid and str(s_sid).startswith("SID_") and s_sid not in destino_engage:
-                destino_engage.append(s_sid)
+            s_nom = sk_item.get("nombre") if isinstance(sk_item, dict) else sk_item
+            sid_real = _sid_de_habilidad(s_sid) or _sid_de_habilidad(s_nom)
+            if sid_real and sid_real not in destino_engage:
+                destino_engage.append(sid_real)
 
     # Enriquecer habilidades personales y de clase desde el catálogo compilado
     sids_solo_motor = []   # SIDs que el motor necesita pero que el juego no muestra como pasivas

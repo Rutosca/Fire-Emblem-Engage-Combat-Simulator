@@ -53,7 +53,7 @@ class TestAuras(unittest.TestCase):
         lejos = _combate(_u("Louis"), rival, aliados_cercanos_atk=[(alear, 2)])
         self.assertEqual(ady["atacante"]["daño_por_golpe"], base + 3)
         self.assertEqual(lejos["atacante"]["daño_por_golpe"], base)
-        self.assertIn("Divinely Inspiring (Damage Boost) (de Alear) (+3 Atk)", ady["atacante"]["pasivas_activas"])
+        self.assertIn("Divinely Inspiring (Damage Boost) (de Alear) (+3 Dmg)", ady["atacante"]["pasivas_activas"])
         # y el aliado adyacente recibe 1 de daño menos
         golpe = _combate(rival, _u("Louis"), HACHA, ESPADA, aliados_cercanos_def=[(alear, 1)])
         golpe_sin = _combate(rival, _u("Louis"), HACHA, ESPADA)

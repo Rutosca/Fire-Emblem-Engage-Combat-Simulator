@@ -17,7 +17,9 @@ from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo
 from catalogo_loader import (_arma_desde_item, _catalogo, normalizar_texto, info_curacion_item,
                              puede_usar_arma_de_mapa, arma_de_mapa_desde, tipo_arma_de_objeto,
                              nombre_arma_de_mapa)
-from ataques_area import resolver_ataque_area, tipo_ataque_area, FUEGO_DANO_POR_FASE
+from ataques_area import (resolver_ataque_area, tipo_ataque_area, rango_de_ataque_area,
+                          FUEGO_DANO_POR_FASE)
+from lector_de_mapas import defensa_de_terreno
 import pasivas
 
 BACKUP_CLASSES = {
@@ -475,7 +477,8 @@ def _armas_aliado(aliado):
                                 crit=0,
                                 wt=w_c.wt,
                                 tipo=w_c.tipo,
-                                rango=[1] if tipo_ataque_area(clean_name) else (w_c.rango if getattr(w_c, 'rango', None) else [1]),
+                                rango=(rango_de_ataque_area(clean_name) if tipo_ataque_area(clean_name)
+                                       else (w_c.rango if getattr(w_c, 'rango', None) else [1])),
                                 es_magica=getattr(w_c, 'es_magica', False),
                                 efectividades=list(getattr(w_c, 'efectividades', []) or []),
                                 efectivo_contra=list(getattr(w_c, 'efectivo_contra', []) or [])
@@ -706,8 +709,8 @@ def _evaluar_objetivos_extra(aliado, arma, area, mapa, tablero=None, pos_atk=Non
             ]
             r = CalculadoraEngage.simular_combate(
                 aliado.stats, e.stats, arma, e.arma,
-                Terreno(avo=t_atk.avo, dfn=t_atk.dfn) if t_atk else Terreno(0, 0),
-                Terreno(avo=t_def.avo, dfn=t_def.dfn), distancia=1,
+                Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, aliado.es_aliado)) if t_atk else Terreno(0, 0),
+                Terreno(avo=t_def.avo, dfn=defensa_de_terreno(t_def, e.es_aliado)), distancia=1,
                 es_engage_attack=es_eng, engage_attack_nombre=nom_eng if es_eng else "",
                 aliados_cercanos_atk=aliados_atk, aliados_cercanos_def=aliados_def,
                 pos_atk=pos_atk, pos_def=(e.x, e.y),
@@ -1066,11 +1069,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                             defensor=aliado.stats,
                             arma_atk=enemigo.arma,
                             arma_def=aliado.arma,
-                            terreno_def=Terreno(avo=t_def.avo, dfn=t_def.dfn,
+                            terreno_def=Terreno(avo=t_def.avo, dfn=defensa_de_terreno(t_def, enemigo.es_aliado),
                                 curacion_turno=getattr(t_def, 'curacion_turno', 0),
                                 es_antirruptura=getattr(t_def, 'es_antirruptura', False),
                                 es_recarga_emblema=getattr(t_def, 'es_recarga_emblema', False)),
-                            terreno_atk=Terreno(avo=t_atk.avo, dfn=t_atk.dfn,
+                            terreno_atk=Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, aliado.es_aliado),
                                 curacion_turno=getattr(t_atk, 'curacion_turno', 0),
                                 es_antirruptura=getattr(t_atk, 'es_antirruptura', False),
                                 es_recarga_emblema=getattr(t_atk, 'es_recarga_emblema', False)),
@@ -1200,7 +1203,16 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 nom_eng_cand = getattr(arma_candidata, 'engage_attack_nombre', '') if getattr(arma_candidata, 'es_engage_attack', False) else ''
                 nom_area_cand = nom_eng_cand if (nom_eng_cand and tipo_ataque_area(nom_eng_cand)) else (
                     arma_candidata.nombre if tipo_ataque_area(getattr(arma_candidata, 'nombre', '')) == "aliento" else '')
-                if nom_area_cand:
+                if nom_area_cand and tipo_ataque_area(nom_area_cand) == "dark_inferno":
+                    # No hay dirección: el área rodea a la unidad. Vale la casilla desde la
+                    # que ataca, siempre que el enemigo caiga dentro.
+                    area_info = resolver_ataque_area(nom_area_cand, pos_candidata, enemigo, aliado, tablero, mapa)
+                    if not area_info.get("valido"):
+                        continue
+                    dist_combate = abs(pos_candidata[0] - enemigo.x) + abs(pos_candidata[1] - enemigo.y)
+                    area_info["extras"] = _evaluar_objetivos_extra(
+                        aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)
+                elif nom_area_cand:
                     # La dirección importa: probar las 4 casillas adyacentes al objetivo que el
                     # aliado pueda alcanzar y quedarse con la válida que más objetivos abarque.
                     alcanzables_a = casillas_mov_aliados.get(aliado.nombre) or set()
@@ -1255,11 +1267,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         defensor=enemigo.stats,
                         arma_atk=arma_candidata,
                         arma_def=enemigo.arma,
-                        terreno_def=Terreno(avo=t_def.avo, dfn=t_def.dfn,
+                        terreno_def=Terreno(avo=t_def.avo, dfn=defensa_de_terreno(t_def, enemigo.es_aliado),
                             curacion_turno=getattr(t_def, 'curacion_turno', 0),
                             es_antirruptura=getattr(t_def, 'es_antirruptura', False),
                             es_recarga_emblema=getattr(t_def, 'es_recarga_emblema', False)),
-                        terreno_atk=Terreno(avo=t_atk.avo, dfn=t_atk.dfn,
+                        terreno_atk=Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, aliado.es_aliado),
                             curacion_turno=getattr(t_atk, 'curacion_turno', 0),
                             es_antirruptura=getattr(t_atk, 'es_antirruptura', False),
                             es_recarga_emblema=getattr(t_atk, 'es_recarga_emblema', False)),
@@ -1748,8 +1760,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     v = CalculadoraEngage.evaluar_riesgo(
                         atacante=a.stats, defensor=enemigo.stats,
                         arma_atk=arma, arma_def=enemigo.arma,
-                        terreno_def=Terreno(avo=t_def.avo, dfn=t_def.dfn),
-                        terreno_atk=Terreno(avo=t_atk.avo, dfn=t_atk.dfn),
+                        terreno_def=Terreno(avo=t_def.avo, dfn=defensa_de_terreno(t_def, enemigo.es_aliado)),
+                        terreno_atk=Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, aliado.es_aliado)),
                         distancia=dist_c, perfil=perfil, cronogema_usada=cronogema,
                         aliados_apoyo_backup=aliados_backup_stats,
                         pos_atk=pos, pos_def=(enemigo.x, enemigo.y)

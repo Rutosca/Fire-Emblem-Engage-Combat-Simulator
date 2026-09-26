@@ -34,6 +34,49 @@ def _en_fusion(u) -> bool:
     return bool(getattr(u, "en_fusion", False) or int(getattr(u, "turnos_fusion_restantes", 0) or 0) > 0)
 
 
+def _elemento_del_arma(arma) -> str:
+    """Elemento del tomo equipado ('fuego' / 'trueno' / 'viento'…); "" si no es tomo."""
+    if arma is None:
+        return ""
+    elem = getattr(arma, "elemento", "") or ""
+    if elem:
+        return str(elem)
+    from catalogo_loader import _catalogo, normalizar_texto
+    armas = _catalogo.get("armas", {}) or {}
+    info = armas.get(getattr(arma, "id", "") or "")
+    if info is None:
+        nom = normalizar_texto(getattr(arma, "nombre", ""))
+        info = next((v for v in armas.values()
+                     if v.get("elemento") and normalizar_texto(v.get("nombre", "")) == nom), None)
+    return str((info or {}).get("elemento") or "")
+
+
+def _con_tomo(ctx) -> bool:
+    return str(getattr(ctx.arma, "tipo", "") or "").lower() in ("tomo", "tome")
+
+
+def _flare(ctx) -> bool:
+    """Flare solo actúa atacando con tomo (y solo existe en Fusión, que es quien la da)."""
+    return _con_tomo(ctx)
+
+
+def _usando_infierno_oscuro(ctx) -> bool:
+    """True si el golpe en curso es el Ataque de Emblema Infierno Oscuro de Camilla."""
+    arma = getattr(ctx, "arma", None)
+    if arma is None or not getattr(arma, "es_engage_attack", False):
+        return False
+    nombre = str(getattr(arma, "engage_attack_nombre", "") or getattr(arma, "nombre", "")).lower()
+    return "dark inferno" in nombre or "infierno oscuro" in nombre
+
+
+def _infierno_oscuro_mistico(ctx) -> bool:
+    if not _usando_infierno_oscuro(ctx):
+        return False
+    from motor_calculo import resolver_estilo_combate
+    stats = getattr(ctx.unidad, "stats", None) or ctx.unidad
+    return resolver_estilo_combate(getattr(stats, "estilo_combate", "")) == "mistico"
+
+
 # ── Edelgard / Dimitri / Claude (Tres Casas): Weapon Sync / Weapon Sync+ ──────
 # Verificado en juego (Cap. 9, Chloé, vínculo 20 → +7 en Houses Unite y ataques normales).
 # +5 Atk (+7 con "+") al iniciar combate si el arma equipada es la del líder activo
@@ -162,6 +205,161 @@ OVERLAY = {
     "SID_OVERLAY_DANO_70": _entrada(
         "SID_OVERLAY_DANO_70", "Daño 70%",
         act_names=["威力"], act_operations=["*"], act_values=["0.7"], timing=7,
+    ),
+
+    # ═══ Soren (DLC) ═════════════════════════════════════════════════════════
+    # Nv 1 · "Use to make one chosen ally more likely to be targeted by enemies for 1
+    # turn". Es un COMANDO que cambia a quién ataca la IA; la herramienta no simula la
+    # decisión del enemigo (la toma el jugador), así que solo se declara.
+    "SID_OVERLAY_ASSIGN_DECOY": _entrada(
+        "SID_OVERLAY_ASSIGN_DECOY", "Assign Decoy", timing=21,
+    ),
+
+    # Nv 4 · "When using tomes, unit inflicts Def-3 with fire, Hit-20 with thunder, or
+    # Mov-2 with wind magic for 1 turn". El efecto NO es del golpe: es un lastre que se
+    # queda pegado al objetivo durante el turno siguiente, así que lo aprovechan también
+    # los demás aliados. Lo otorga pasivas_temporales tras el combate.
+    "SID_OVERLAY_ANIMA_FOCUS": _entrada(
+        "SID_OVERLAY_ANIMA_FOCUS", "Anima Focus", timing=1,
+    ),
+    "SID_OVERLAY_ANIMA_FOCUS_FUEGO": _entrada(
+        "SID_OVERLAY_ANIMA_FOCUS_FUEGO", "Anima Focus (fuego): Def -3",
+        act_names=["守備"], act_operations=["-"], act_values=["3"], timing=3,
+    ),
+    "SID_OVERLAY_ANIMA_FOCUS_TRUENO": _entrada(
+        "SID_OVERLAY_ANIMA_FOCUS_TRUENO", "Anima Focus (trueno): Precisión -20",
+        act_names=["命中値"], act_operations=["-"], act_values=["20"], timing=3,
+    ),
+    # El de viento no es de combate: le quita movimiento, y eso vive en la ficha.
+    "SID_OVERLAY_ANIMA_FOCUS_VIENTO": _entrada(
+        "SID_OVERLAY_ANIMA_FOCUS_VIENTO", "Anima Focus (viento): Mov -2",
+        stat_boosts={"mov": -2}, timing=1,
+    ),
+
+    # Nv 9 / 18 · "When unit deals Effective damage, deal +5 (+7) damage".
+    "SID_OVERLAY_KEEN_INSIGHT": _entrada(
+        "SID_OVERLAY_KEEN_INSIGHT", "Keen Insight",
+        condition="武器特効 > 1",
+        act_names=["威力"], act_operations=["+"], act_values=["5"], timing=7,
+    ),
+    "SID_OVERLAY_KEEN_INSIGHT_PLUS": _entrada(
+        "SID_OVERLAY_KEEN_INSIGHT_PLUS", "Keen Insight+",
+        condition="武器特効 > 1",
+        act_names=["威力"], act_operations=["+"], act_values=["7"], timing=7,
+    ),
+
+    # Efecto que reparte el báculo Reflect a los aliados a 2 casillas: "deals 50% of magic
+    # damage taken back to foe" durante 1 turno. El motor no devuelve ese daño todavía
+    # (es un efecto POSTERIOR al golpe recibido, de la Fase 3): se deja marcado en la
+    # ficha para que el análisis lo avise y el jugador anote el daño.
+    "SID_OVERLAY_REFLECT": _entrada(
+        "SID_OVERLAY_REFLECT", "Reflect (devuelve el 50 % del daño mágico)", timing=1,
+    ),
+
+    # Habilidad de Fusión · "When attacking with tomes, inflicts Res-20% on foe, and unit
+    # recovers 50% of damage dealt". El -20 % va sobre la Res que aplica a ESE golpe, así
+    # que vale para los dos golpes si la unidad dobla (verificado: Céline pasa de 28 a 30).
+    "SID_OVERLAY_FLARE": _entrada(
+        "SID_OVERLAY_FLARE", "Flare",
+        condition=_flare,
+        act_names=["相手の防御力", "回復"], act_operations=["=", "*"],
+        act_values=["相手の魔防 * 0.8", "0.5"],
+        timing=7, variantes_estilo={"mistico": "SID_OVERLAY_FLARE_魔法",
+                                    "qi_adept": "SID_OVERLAY_FLARE_気功"},
+    ),
+    # "[Mystical] Extra -10% to foe's Res": -30 % en total. Verificado con Céline contra un
+    # Lance Flier de Res 14 -> la Res que aplica queda en 9 (floor(14 * 0.7)).
+    "SID_OVERLAY_FLARE_魔法": _entrada(
+        "SID_OVERLAY_FLARE_魔法", "Flare",
+        condition=_flare,
+        act_names=["相手の防御力", "回復"], act_operations=["=", "*"],
+        act_values=["相手の魔防 * 0.7", "0.5"],
+        timing=7,
+    ),
+    # "[Qi Adept] Unit recovers 100% of damage dealt instead."
+    "SID_OVERLAY_FLARE_気功": _entrada(
+        "SID_OVERLAY_FLARE_気功", "Flare",
+        condition=_flare,
+        act_names=["相手の防御力", "回復"], act_operations=["=", "*"],
+        act_values=["相手の魔防 * 0.8", "1.0"],
+        timing=7,
+    ),
+
+    # ═══ Camilla (DLC) ═══════════════════════════════════════════════════════
+    # Sincronías. Dragon Vein, Decisive Strike y Groundswell no son modificadores de
+    # combate: son un comando y dos efectos posteriores al golpe. Se registran igual para
+    # que aparezcan en la lista de pasivas de la unidad y para que el motor las conozca.
+
+    # Dragon Vein NO va aquí: está en el datamine (SID_竜脈, con variante por estilo de
+    # combate para las ocho venas). El catálogo de venas vive en `ataques_area.VENAS_DRAGON`.
+
+    # Nv 4 / 18 · "If unit initiates combat and lands a critical, deals 5 (10) damage to
+    # foe after combat". El motor es determinista y no tira el crítico: publica su
+    # probabilidad. El daño posterior al combate es un evento por golpe (Fase 3), así que
+    # de momento la habilidad solo se declara.
+    "SID_OVERLAY_DECISIVE_STRIKE": _entrada(
+        "SID_OVERLAY_DECISIVE_STRIKE", "Decisive Strike", stand=1, timing=1,
+    ),
+    "SID_OVERLAY_DECISIVE_STRIKE_PLUS": _entrada(
+        "SID_OVERLAY_DECISIVE_STRIKE_PLUS", "Decisive Strike+", stand=1, timing=1,
+    ),
+
+    # Nv 8 · "Cures poison at start of turn". Lo aplica EstadoTablero al entrar en la fase
+    # de la unidad, no el cálculo de combate.
+    "SID_OVERLAY_DETOXIFY": _entrada(
+        "SID_OVERLAY_DETOXIFY", "Detoxify", timing=1,
+    ),
+
+    # Nv 12 · "After unit acts or waits in flames, miasma, or similar terrain effect, unit
+    # clears effect and recovers 10 HP". También lo aplica EstadoTablero: limpia el
+    # terreno temporal de su casilla y cura 10. Se lleva cualquiera, no solo los dañinos
+    # (verificado en juego con la luz curativa de Succor).
+    "SID_OVERLAY_GROUNDSWELL": _entrada(
+        "SID_OVERLAY_GROUNDSWELL", "Groundswell", timing=1,
+    ),
+
+    # Habilidad de Fusión · "Grants Mov+2. Unit can cross terrain as if flying.
+    # [Cavalry] Grants an extra Mov+2. [Flying] Grants an extra Mov+1."
+    # El Mov sale de stat_boosts, igual que Gallop de Sigurd (pasivas.bono_movimiento_fusion).
+    "SID_OVERLAY_SOAR": _entrada(
+        "SID_OVERLAY_SOAR", "Soar", timing=1, stat_boosts={"mov": 2}, cruza_como_volador=True,
+        sync_sids=["SID_OVERLAY_INFIERNO_OSCURO_MISTICO"],
+    ),
+    "SID_OVERLAY_SOAR_騎馬": _entrada(
+        "SID_OVERLAY_SOAR_騎馬", "Soar", timing=1, stat_boosts={"mov": 4}, cruza_como_volador=True,
+        sync_sids=["SID_OVERLAY_INFIERNO_OSCURO_MISTICO"],
+    ),
+    "SID_OVERLAY_SOAR_飛行": _entrada(
+        "SID_OVERLAY_SOAR_飛行", "Soar", timing=1, stat_boosts={"mov": 3}, cruza_como_volador=True,
+        sync_sids=["SID_OVERLAY_INFIERNO_OSCURO_MISTICO"],
+    ),
+    # "[Dragon] If unit initiates combat, deals damage to foes within 2 spaces equal to
+    # 10% of their max HP after combat" — daño posterior al combate: Fase 3.
+    "SID_OVERLAY_SOAR_竜族": _entrada(
+        "SID_OVERLAY_SOAR_竜族", "Soar", timing=1, stat_boosts={"mov": 2}, cruza_como_volador=True,
+        sync_sids=["SID_OVERLAY_INFIERNO_OSCURO_MISTICO"],
+    ),
+
+    # "[Mystical] +20% damage" de Infierno Oscuro: multiplica el DAÑO ya calculado por
+    # 1.2 y trunca, igual que el bono Místico de Warp Ragnarök. Ground truth: Céline con
+    # el Bolt Axe hace 28 de daño a un Lance Armor y con Infierno Oscuro hace 33.
+    "SID_OVERLAY_INFIERNO_OSCURO_MISTICO": _entrada(
+        "SID_OVERLAY_INFIERNO_OSCURO_MISTICO", "Infierno Oscuro (Místico)",
+        condition=_infierno_oscuro_mistico,
+        act_names=["威力"], act_operations=["*"], act_values=["1.2"], timing=7, oculta=True,
+    ),
+
+    # ── Efectos de las armas de Camilla (equip_sids) ─────────────────────────
+    # Camilla's Axe: "Grants Res+10 and deals extra damage = foe's Res-Def".
+    "SID_OVERLAY_CAMILLA_RES_10": _entrada(
+        "SID_OVERLAY_CAMILLA_RES_10", "Camilla's Axe: Res+10",
+        act_names=["魔防"], act_operations=["+"], act_values=["10"], timing=1,
+    ),
+    # El extra es la diferencia Res-Def del rival; si su Def es mayor, no resta nada.
+    "SID_OVERLAY_DANO_RES_MENOS_DEF": _entrada(
+        "SID_OVERLAY_DANO_RES_MENOS_DEF", "Camilla's Axe: daño extra = Res-Def del rival",
+        act_names=["威力"], act_operations=["+"],
+        act_values=["max( 相手の魔防 - 相手の守備 , 0 )"], timing=7,
     ),
 
     # Heredables por SP · "If foe is equipped with a special attack, unit takes N less

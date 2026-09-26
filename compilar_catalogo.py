@@ -13,8 +13,40 @@ import re
 from constants import JAPANESE_FALLBACK_TERMS, TIPO_ARMA_KIND, MOVE_TYPE_MAP, SID_A_EFECTIVIDAD
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATAMINE_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata")
-TRANS_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "translations")
+
+# ── De dónde salen los datos del juego ───────────────────────────────────────
+# `FE17_200` es el datamine extraído del propio juego (romfs con DLC y updates, versión
+# 2.0.0); `FE17-DOC-main` es el datamine público, anterior al DLC. Se prefiere el primero
+# y se cae al segundo si no está, de modo que el proyecto sigue compilando con cualquiera
+# de los dos. Los nombres de fichero difieren en mayúsculas (god.xml / God.xml), así que
+# `ruta_datamine` los resuelve sin importar la caja.
+CARPETAS_DATAMINE = ("FE17_200", os.path.join("FE17-DOC-main", "FE17-DOC-main"))
+
+
+def _raiz_datamine(base_dir: str) -> str:
+    for carpeta in CARPETAS_DATAMINE:
+        candidata = os.path.join(base_dir, carpeta)
+        if os.path.isdir(os.path.join(candidata, "fe_assets_gamedata")):
+            return candidata
+    return os.path.join(base_dir, CARPETAS_DATAMINE[-1])
+
+
+def ruta_datamine(*partes) -> str:
+    """Ruta dentro del datamine activo, tolerante a mayúsculas en el nombre del fichero."""
+    completa = os.path.join(DATAMINE_RAIZ, *partes)
+    if os.path.exists(completa):
+        return completa
+    carpeta, nombre = os.path.dirname(completa), os.path.basename(completa)
+    if os.path.isdir(carpeta):
+        for f in os.listdir(carpeta):
+            if f.lower() == nombre.lower():
+                return os.path.join(carpeta, f)
+    return completa
+
+
+DATAMINE_RAIZ = _raiz_datamine(BASE_DIR)
+DATAMINE_DIR = os.path.join(DATAMINE_RAIZ, "fe_assets_gamedata")
+TRANS_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "translations")   # solo en el datamine público
 
 USEN_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_message", "us", "usen", "csv")
 
@@ -245,9 +277,14 @@ ESTILOS_COMBATE = {
 }
 
 
+# Item.xml `WeaponAttr`: el elemento del tomo. Lo necesita Anima Focus (Soren), que
+# inflige un efecto distinto según se ataque con fuego, trueno o viento.
+ELEMENTO_ARMA = {1: "fuego", 2: "trueno", 3: "viento", 5: "oscuridad", 6: "luz"}
+
+
 def extraer_terrenos(trans):
     """Parsea Terrain.xml y decodifica sus flags a propiedades estructuradas."""
-    filas = parsear_xml_generico(os.path.join(DATAMINE_DIR, "Terrain.xml"))
+    filas = parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Terrain.xml"))
     terrenos = {}
     for row in filas:
         tid = row.get("Tid")
@@ -261,6 +298,13 @@ def extraer_terrenos(trans):
             "nombre": nombre,
             "avoid": to_int(row.get("Avoid")),
             "defense": to_int(row.get("Defense")),
+            # Solo el Miasma los usa (-20 / +20): perjudica a las unidades del jugador y
+            # favorece a las enemigas. La unidad de la cifra está sin confirmar, así que
+            # el motor todavía no los aplica (ver ataques_area.efecto_de_terreno_temporal).
+            "defensa_aliado": to_int(row.get("PlayerDefense")),
+            "defensa_enemigo": to_int(row.get("EnemyDefense")),
+            "avoid_aliado": to_int(row.get("PlayerAvoid")),
+            "avoid_enemigo": to_int(row.get("EnemyAvoid")),
             "heal_turno": to_int(row.get("Heal")),
             # Flag 4096 = inmunidad a Ruptura (Break) al defender en esta casilla
             "es_antirruptura": bool(flag & 4096),
@@ -269,8 +313,27 @@ def extraer_terrenos(trans):
         }
     return terrenos
 
+def _cargar_nombres_dlc() -> dict:
+    """
+    Nombres del contenido de DLC. El romfs del juego trae sus datos pero no sus textos
+    (viven en el romfs del propio DLC), así que sin esto salen etiquetas internas como
+    "Camilla BoltAxe". Solo son nombres: ningún número de combate sale de aquí.
+    """
+    ruta = os.path.join(BASE_DIR, "json", "nombres_dlc.json")
+    if not os.path.exists(ruta):
+        return {}
+    with open(ruta, "r", encoding="utf-8") as f:
+        return {k: v for k, v in json.load(f).items() if not k.startswith("_")}
+
+
+NOMBRES_DLC = _cargar_nombres_dlc()
+
+
 def limpiar_nombre(ident, name_tag, trans):
     """Obtiene un nombre legible en inglés a partir del identificador de mensaje."""
+    # 0. Contenido de DLC: el juego no trae sus textos, los ponemos nosotros
+    if ident in NOMBRES_DLC:
+        return NOMBRES_DLC[ident]
     # 1. Intentar con name_tag directo
     if name_tag and name_tag in trans:
         return trans[name_tag]
@@ -313,7 +376,7 @@ def compilar():
     print(f"Traducciones cargadas: {len(trans)}")
 
     # 1. Armas e Ítems
-    items_raw = parsear_xml_generico(os.path.join(DATAMINE_DIR, "Item.xml"))
+    items_raw = parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Item.xml"))
     armas = {}
     for it in items_raw:
         iid = it.get("Iid")
@@ -400,6 +463,9 @@ def compilar():
             "rango": rango,
             "es_magica": es_magica,
             "es_smash": es_smash,
+            # Elemento del tomo (fuego / trueno / viento…): Anima Focus de Soren aplica
+            # un efecto distinto según con cuál se ataque.
+            "elemento": ELEMENTO_ARMA.get(to_int(attr)) if tipo_str == "Tomo" else None,
             # SIDs que el arma otorga al portador (Item.xml EquipSids): SID_２回行動 (Brave:
             # dos golpes por ataque al iniciar), SID_追撃不可 (sin follow-up), SID_必中…
             "equip_sids": [x.strip() for x in equip_sids_raw.split(";") if x.strip()],
@@ -411,7 +477,7 @@ def compilar():
     print(f"Armas e ítems procesados: {len(armas)}")
 
     # 2. Clases (Jobs)
-    jobs_raw = parsear_xml_generico(os.path.join(DATAMINE_DIR, "Job.xml"))
+    jobs_raw = parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Job.xml"))
     clases = {}
     for j in jobs_raw:
         jid = j.get("Jid")
@@ -587,7 +653,7 @@ def compilar():
     print(f"Clases procesadas: {len(clases)}")
 
     # 3. Personajes (Person)
-    persons_raw = parsear_xml_generico(os.path.join(DATAMINE_DIR, "Person.xml"))
+    persons_raw = parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Person.xml"))
     personajes = {}
     for p in persons_raw:
         pid = p.get("Pid")
@@ -659,7 +725,7 @@ def compilar():
     print(f"Personajes procesados: {len(personajes)}")
 
     # 4. Habilidades (Skill)
-    skills_raw = parsear_xml_generico(os.path.join(DATAMINE_DIR, "Skill.xml"))
+    skills_raw = parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Skill.xml"))
     habilidades = {}
     for s in skills_raw:
         sid = s.get("Sid")
@@ -764,7 +830,7 @@ def compilar():
     print(f"Habilidades procesadas: {len(habilidades)}")
 
     # 5. Emblemas (God) — Extracción canónica de niveles de vínculo (1 a 20)
-    god_tree = ET.parse(os.path.join(DATAMINE_DIR, "God.xml"))
+    god_tree = ET.parse(ruta_datamine("fe_assets_gamedata", "God.xml"))
     god_sheets = god_tree.getroot().findall("Sheet")
     god_sheet_0 = god_sheets[0].find("Data").findall("Param")
     god_sheet_1 = god_sheets[1].find("Data").findall("Param")

@@ -14,7 +14,7 @@ from motor_calculo import resolver_estilo_combate
 
 # Rutas base
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATAMINE_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_gamedata")
+from compilar_catalogo import DATAMINE_DIR   # el datamine activo (FE17_200 o el público)
 DISPOS_DIR = os.path.join(DATAMINE_DIR, "dispos")
 SCRIPTS_DIR = os.path.join(BASE_DIR, "FE17-DOC-main", "FE17-DOC-main", "fe_assets_scripts")
 

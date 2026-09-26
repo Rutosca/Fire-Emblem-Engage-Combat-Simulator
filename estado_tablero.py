@@ -57,6 +57,7 @@ class FichaUnidad:
     hp_stock: int = 0                  # Piedras resurrectoras / barras de vida extra (jefes)
     nivel_veneno: int = 0              # Nivel de veneno (0..3): cada nivel aumenta en +1 todo daño recibido
     congelado: bool = False            # Golpeada por Ice Breath (Tiki): 0 de movimiento durante su próxima fase
+    mov_extra_turno: int = 0           # Mov extra mientras esté sobre hielo (vena de Camilla: +2)
     lider_tres_casas: str = "Dimitri"  # Líder activo del brazalete Tres Casas ("Edelgard", "Dimitri", "Claude")
     ataque_emblema_usado: bool = False # True si ya ejecutó el ataque o técnica especial de Engage en esta Fusión
     chain_guard_activo: bool = True    # True si puede realizar Guardia en Cadena (Martial Monk/Master/Dancer)
@@ -76,9 +77,21 @@ class FichaUnidad:
 
     @property
     def movimiento_disponible(self) -> int:
-        """Casillas que la unidad puede recorrer AHORA. Congelada por Ice Breath = ninguna.
-        Se deshiela al acabar su fase (ver EstadoTablero.deshelar)."""
-        return 0 if self.congelado else int(self.mov or 4)
+        """
+        Casillas que la unidad puede recorrer AHORA. Congelada por Ice Breath = ninguna
+        (se deshiela al acabar su fase, ver EstadoTablero.deshelar). `mov_extra_turno` es
+        el bono de la vena de hielo de Camilla: +2 mientras la unidad esté sobre una de
+        esas casillas y no se haya movido todavía. Sirve para los dos bandos y no hace
+        falta haber empezado la fase encima: si le crean el hielo debajo antes de mover,
+        ya cuenta. Llegar a una casilla de hielo no da nada, porque el movimiento se
+        calcula desde donde estaba.
+        """
+        if self.congelado:
+            return 0
+        # Estados temporales que tocan el Mov (Anima Focus de Soren con viento: -2)
+        mov_estados = sum(int((e.get("stat_boosts") or {}).get("mov", 0) or 0)
+                          for e in (self.estados_temporales or []))
+        return max(0, int(self.mov or 4) + int(self.mov_extra_turno or 0) + mov_estados)
 
     @property
     def controlable(self) -> bool:
@@ -335,6 +348,7 @@ class FichaUnidad:
             "en_ruptura": self.cargas_ruptura > 0,
             "nivel_veneno": max(0, min(3, self.nivel_veneno)),
             "congelado": bool(self.congelado),
+            "mov_extra_turno": int(self.mov_extra_turno or 0),
             "lider_tres_casas": self.lider_tres_casas,
             "x": self.x,
             "y": self.y,
@@ -427,6 +441,9 @@ class EstadoTablero:
         # Aparecen en el turno T (Blazing Lion, alientos de Tiki) y se van al empezar el T+1.
         self.terrenos_temporales: Dict[tuple, dict] = {}
         self.quemados_ultimo: list = []   # [(nombre, daño)] del último inicio de fase
+        self.venenos_curados_ultimo: list = []   # [(nombre, nivel)] curados por Detoxify
+        self.hielo_deslizante_ultimo: list = []  # [(nombre, bono)] con +2 Mov por la vena de hielo
+        self._refrescando_hielo = False
         self.curados_ultimo: list = []    # [(nombre, HP recuperados)] por terreno curativo en el último inicio de fase
 
         if auto_cargar_spawns and self.mapa:
@@ -465,7 +482,12 @@ class EstadoTablero:
         return self.aplicar_terreno_temporal(casillas, "fuego", turnos)
 
     def sincronizar_terrenos_temporales(self) -> None:
-        """Proyecta los terrenos temporales sobre el grid del mapa."""
+        """Proyecta los terrenos temporales sobre el grid del mapa y recalcula quién está
+        sobre hielo."""
+        self._sincronizar_grid_temporal()
+        self.refrescar_hielo_deslizante()
+
+    def _sincronizar_grid_temporal(self) -> None:
         if not self.mapa or not hasattr(self.mapa, 'aplicar_terrenos_temporales'):
             return
         self.mapa.limpiar_terrenos_temporales()
@@ -539,6 +561,63 @@ class EstadoTablero:
                 curados.append((f.nombre, ganado))
         return curados
 
+    SID_DETOXIFY = "SID_OVERLAY_DETOXIFY"
+    SID_GROUNDSWELL = "SID_OVERLAY_GROUNDSWELL"
+
+    def curar_venenos_detoxify(self, es_aliado: bool) -> list:
+        """Detoxify (Camilla): "Cures poison at start of turn". Devuelve [(nombre, nivel)]."""
+        import pasivas
+        curadas = []
+        for f in self.fichas.values():
+            if not f.viva or bool(f.es_aliado) != bool(es_aliado) or f.nivel_veneno <= 0:
+                continue
+            if pasivas.tiene_sid(f, self.SID_DETOXIFY):
+                curadas.append((f.nombre, f.nivel_veneno))
+                self.ajustar_nivel_veneno(f.nombre, 0)
+        return curadas
+
+    def aplicar_groundswell(self, nombre: str):
+        """
+        Groundswell (Camilla): "After unit acts or waits in flames, miasma, or similar
+        terrain effect, unit clears effect and recovers 10 HP". Se llama justo después de
+        que la unidad consuma su acción. Devuelve {"terreno", "curacion"} o None.
+
+        Absorbe CUALQUIER terreno temporal, no solo los que hacen daño: verificado en
+        juego también con la luz curativa de Succor.
+        """
+        import pasivas
+        f = self.obtener_ficha(nombre)
+        if not f or not f.viva or not pasivas.tiene_sid(f, self.SID_GROUNDSWELL):
+            return None
+        entrada = self.terrenos_temporales.get((f.x, f.y))
+        if not entrada:
+            return None
+        self.terrenos_temporales.pop((f.x, f.y), None)
+        self.sincronizar_terrenos_temporales()
+        curado = min(f.hp_max, f.hp_actual + 10) - f.hp_actual
+        if curado > 0:
+            f.sincronizar_hp(f.hp_actual + curado)
+        return {"unidad": f.nombre, "terreno": entrada["tipo"], "curacion": curado}
+
+    def refrescar_hielo_deslizante(self) -> list:
+        """
+        Vena de hielo (Camilla, [Qi Adept]): +2 de movimiento a quien esté sobre una de
+        esas casillas, de cualquier bando. No hace falta haber empezado la fase encima —
+        si se lo crean debajo antes de que se mueva, ya le cuenta. Se recalcula cada vez
+        que cambia el suelo o se mueve alguien. Devuelve [(nombre, bono)].
+        """
+        heladas = set(self.casillas_de_tipo("pista_hielo"))
+        beneficiadas = []
+        for f in self.fichas.values():
+            if not f.viva:
+                f.mov_extra_turno = 0
+                continue
+            f.mov_extra_turno = 2 if (f.x, f.y) in heladas else 0
+            if f.mov_extra_turno:
+                beneficiadas.append((f.nombre, f.mov_extra_turno))
+        self.hielo_deslizante_ultimo = beneficiadas
+        return beneficiadas
+
     def congelar(self, nombres) -> list:
         """Congela a las unidades indicadas (Ice Breath). Devuelve las que quedaron congeladas."""
         congeladas = []
@@ -548,6 +627,31 @@ class EstadoTablero:
                 f.congelado = True
                 congeladas.append(f.nombre)
         return congeladas
+
+    def lanzar_vena_dragon(self, nombre: str, direccion, vena: str = ""):
+        """
+        Dragon Vein (Camilla): cubre un área con el efecto de suelo que le toca al estilo
+        de combate del portador. El estilo Dragón elige cuál (`vena`). Devuelve
+        {"vena", "casillas"} o None si la unidad no tiene la habilidad.
+        """
+        import pasivas
+        from ataques_area import VENAS_DRAGON, casillas_de_vena, estilo_de_combate_de
+        f = self.obtener_ficha(nombre)
+        if not f or not f.viva or not pasivas.tiene_sid(f, "SID_竜脈"):
+            return None
+        estilo = estilo_de_combate_de(f)
+        elegida = vena or VENAS_DRAGON.get(estilo)
+        if not elegida or elegida not in VENAS_DRAGON.values():
+            return None
+        if estilo != "dragon" and VENAS_DRAGON.get(estilo) != elegida:
+            return None   # solo el estilo Dragón puede escoger
+        d = (int(direccion[0]), int(direccion[1]))
+        if abs(d[0]) + abs(d[1]) != 1:
+            return None
+        casillas = casillas_de_vena(elegida, (f.x, f.y), d, self.mapa)
+        self.aplicar_terreno_temporal(casillas, elegida)
+        return {"unidad": f.nombre, "vena": elegida, "direccion": list(d),
+                "casillas": [list(c) for c in casillas]}
 
     def deshelar(self, es_aliado: bool) -> list:
         """
@@ -906,6 +1010,8 @@ class EstadoTablero:
         # unidad termina su acción encima (ver aplicar_recarga_emblema_en_casilla).
         # Los refuerzos por evento sí: el guion los lanza al llegar la unidad a la casilla.
         self.refuerzos_desplegados_ultimo = self.comprobar_refuerzos_por_evento()
+        # El +2 de la vena de hielo depende de dónde está la unidad, no de la fase
+        self.refrescar_hielo_deslizante()
         return True
 
     def aplicar_recarga_emblema_en_casilla(self, nombre: str) -> Optional[dict]:
@@ -1414,6 +1520,36 @@ class EstadoTablero:
 
     # ── Bonded Shield (SID_絆盾, habilidad de Fusión de Lucina) ──────────
 
+    SID_REFLECT = "SID_OVERLAY_REFLECT"
+    RADIO_REFLECT = 2
+
+    def activar_reflejo(self, nombre_unidad: str):
+        """
+        Reflect (báculo de Soren): los aliados a 2 casillas o menos del portador devuelven
+        el 50 % del daño mágico que reciban, durante 1 turno. No apunta a nadie: es un
+        radio alrededor de quien lo usa, y le incluye a él.
+        Devuelve (lista de nombres, motivo de error o "").
+        """
+        f = self.fichas.get(nombre_unidad)
+        if f is None or not f.viva:
+            return [], f"'{nombre_unidad}' no está en el tablero"
+        if not any("reflect" in str(it.get("nombre") or it.get("arma") or "").lower()
+                   for it in (f.inventario or [])):
+            return [], f"{f.nombre} no lleva el báculo Reflect"
+        fase = "jugador" if f.es_aliado else "enemigo"
+        cubiertos = []
+        for c in self.fichas.values():
+            if not c.viva or c.es_aliado != f.es_aliado:
+                continue
+            if abs(c.x - f.x) + abs(c.y - f.y) > self.RADIO_REFLECT:
+                continue
+            c.otorgar_estado_temporal(
+                sid=self.SID_REFLECT, nombre="Reflect (devuelve el 50 % del daño mágico)",
+                stat_boosts={}, expira_fase=fase, expira_turno=self.turno_actual + 1,
+                origen=f.nombre)
+            cubiertos.append(c.nombre)
+        return cubiertos, ""
+
     def activar_escudo_vinculo(self, nombre_unidad: str):
         """
         Bonded Shield: anula el primer ataque contra los aliados ADYACENTES hasta el
@@ -1507,6 +1643,9 @@ class EstadoTablero:
         self.caducar_terrenos_temporales()
         # La fase enemiga acaba de terminar: los enemigos congelados vuelven a moverse
         self.deshelar(es_aliado=False)
+        # Detoxify (Camilla): cura el veneno al empezar la fase de la unidad
+        self.venenos_curados_ultimo = self.curar_venenos_detoxify(es_aliado=True)
+        self.refrescar_hielo_deslizante()
         # Curación de terreno (fuertes, tronos, casillas de recuperación) para los aliados
         self.curados_ultimo = self.curar_unidades_en_terreno(es_aliado=True)
 
@@ -1523,6 +1662,8 @@ class EstadoTablero:
         self.curados_ultimo = self.curar_unidades_en_terreno(es_aliado=False)
         # La fase de jugador acaba de terminar: los aliados congelados vuelven a moverse
         self.deshelar(es_aliado=True)
+        self.venenos_curados_ultimo = self.curar_venenos_detoxify(es_aliado=False)
+        self.refrescar_hielo_deslizante()
         for f in self.fichas.values():
             f.chain_guard_usado = False
             if not f.es_aliado:

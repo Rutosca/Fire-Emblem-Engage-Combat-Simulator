@@ -829,12 +829,27 @@ class CalculadoraEngage:
                                      and not getattr(arma, 'es_ballesta', False))
 
         # ── Contextos de la DSL (uno por bando) ─────────────────────────────
+        # Ataque de Emblema en curso: su SID (con la variante del estilo de combate) cuenta
+        # como habilidad activa durante el golpe. Así los bonos de estilo que el datamine
+        # cuelga de cada ataque —el ×1.2 Místico de Warp Ragnarök y los suyos— los aplica
+        # el motor genérico, sin un `if` con el nombre del ataque.
+        sids_del_ataque = []
+        if es_engage_attack:
+            sid_eng = pasivas.sid_ataque_emblema_por_nombre(engage_attack_nombre)
+            if sid_eng:
+                variante = pasivas.variante_por_estilo(
+                    sid_eng, getattr(atacante, 'estilo_combate', '') or '')
+                # Solo la variante de estilo: la fila base describe el ataque (nº de golpes,
+                # fracción de daño), que se resuelve aparte en la secuencia.
+                if variante != sid_eng:
+                    sids_del_ataque.append(variante)
+
         ctx_atk = condicion_dsl.ContextoCombate(
             unidad=atacante, rival=defensor, es_iniciador=es_iniciador,
             arma=arma, arma_rival=arma_def,
             terreno_propio=terreno_propio_atk, terreno_rival=terreno_efectivo_def,
             aliados_cercanos=aliados_cercanos_atk or [],
-            habilidades_sids=pasivas.sids_activos(atacante) + list(getattr(arma, 'sids', None) or []),
+            habilidades_sids=pasivas.sids_activos(atacante) + list(getattr(arma, 'sids', None) or []) + sids_del_ataque,
             turno_actual=1, turno_total=int(ronda or 0), rondas_rival=1 if rival_contraataca else 0,
             rol="atacante" if es_iniciador else "defensor", rol_rival="defensor" if es_iniciador else "atacante",
             chain_attacks=int(chain_attacks or 0),
@@ -853,6 +868,9 @@ class CalculadoraEngage:
         # defensor pueda reaccionar (Stalwart: 相手の武器特効 > 1 → = 2).
         mult_mt_efectividad, desc_efectividad = cls.calcular_efectividad(arma, defensor)
         ctx_def.mult_efectividad_rival = mult_mt_efectividad
+        # El atacante también necesita saberlo: Keen Insight (Soren) suma daño cuando es
+        # ÉL quien pega con efectividad.
+        ctx_atk.mult_efectividad_propia = mult_mt_efectividad
 
         mods_atk = pasivas.recopilar_combate(atacante, ctx_atk, aliados_cercanos_atk)
         mods_def = pasivas.recopilar_combate(defensor, ctx_def, aliados_cercanos_def)
@@ -917,6 +935,7 @@ class CalculadoraEngage:
         # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────
         eng_nom_norm = normalizar_texto(engage_attack_nombre) if engage_attack_nombre else ""
         es_houses_unite = es_engage_attack and any(t in eng_nom_norm for t in ('houses unite', 'union tres casas', 'union de casas'))
+        es_cataclysm = es_engage_attack and any(t in eng_nom_norm for t in ('cataclysm', 'cataclismo'))
         # Ojo: "ragnarok" a secas es el nombre del TOMO de Celica (IID_セリカ_ライナロック),
         # un arma de Emblema que se usa en ataques normales. Solo el nombre completo del
         # Ataque de Emblema activa su ×1.2 Místico y su "ataca a RES sin contraataque".
@@ -965,19 +984,6 @@ class CalculadoraEngage:
         mult_dano = mods_atk.producto('power', T) * mods_def.producto('rival_power', T)
         if daño > 0 and mult_dano != 1:
             daño = math.floor(daño * mult_dano)
-
-        # Bono de estilo Místico en Warp Ragnarök (SID_セリカエンゲージ技_魔法: Act "威力;*;1.2"):
-        # multiplica el DAÑO (威力) por 1.2, truncando. Ground truth: Céline (Mística,
-        # Mag 16 + Mt 15 + Resonancia 2) vs Hortensia (Res 18) = 15 → 18 en el juego.
-        if es_warp_ragnarok and estilo_atk_canon == 'mistico' and daño > 0:
-            info_wr_mistico = condicion_dsl.HABILIDADES_CATALOGO.get('SID_セリカエンゲージ技_魔法')
-            mult_wr = 1.2
-            if info_wr_mistico:
-                acumulador_wr = {'power': daño}
-                condicion_dsl.aplicar_acts(info_wr_mistico, acumulador_wr)
-                mult_wr = acumulador_wr.get('power', daño) / daño if daño else 1.2
-            daño = math.floor(daño * mult_wr)
-            pasivas_activas.append(f"Estilo Místico (Warp Ragnarök ×{mult_wr:g} daño)")
 
         # ── Ataques de Emblema: Unión Tres Casas (Houses Unite) y Lodestar Rush ───────────────
         # Houses Unite (Edelgard / Tres Casas): tri-ataque con las reliquias del datamine
@@ -1029,6 +1035,55 @@ class CalculadoraEngage:
                 f"Unión Tres Casas (Tri-ataque Aymr/Areadbhar/Failnaught: {d1}, {d2}, {d3} dmg = {daño} dmg){extra}")
             if estilo_atk_canon == 'qi_adept':
                 pasivas_activas.append("Unión Tres Casas: rompe al objetivo (estilo Qi Adept)")
+        elif es_cataclysm:
+            # Cataclysm (Soren): "attack foes in an area with fire, thunder and wind magic
+            # at 40% damage". Tres golpes con la misma magia propia del ataque, uno por
+            # elemento; cada uno es el daño normal truncado al 40 %. Lo único que cambia
+            # entre ellos es el elemento, y eso solo se nota en la efectividad: el de
+            # viento es efectivo contra voladores (como Wind/Elwind/Excalibur).
+            # Verificado con Céline: un Axe Fighter recibe 11/11/11 y un Lance Flier 8/8/15.
+            # Mt del golpe de viento cuando el objetivo es volador. NO es el x3 de las armas
+            # normales (que daría 36 y un golpe de 19 donde el juego enseña 15): medido con
+            # Céline (Magia 22, Mística, con Keen Insight) contra un Lance Flier de Res 14,
+            # que hace 15, y 16 con +3 de ataque. Eso acota el aporte a 22-23; se toma 22.
+            # La regla de fondo se desconoce, el número está medido.
+            #
+            # SIN EXPLICAR: Citrinne (Magia 18, sin Keen Insight) hace 8/8/12 contra ese
+            # mismo volador. Los 8/8 son los mismos que los de Céline pese a 4 puntos de
+            # Magia de diferencia, y no hay ningún Mt que cuadre las dos unidades a la vez
+            # (Céline pide 11-12, Citrinne 15-16). O Citrinne lleva algo que le suma ~4 de
+            # ataque, o Cataclysm no usa la Magia como creemos. Se resuelve viendo cuánto
+            # daño le hace Citrinne a ese volador con un tomo normal.
+            MT_VIENTO_EFECTIVO = 22
+            # "[Mystical] +10% damage": mismo patrón que los bonos de estilo de Houses Unite,
+            # sobre el golpe ya reducido al 40 %.
+            fraccion_cat = 0.40 * (1.10 if estilo_atk_canon == 'mistico' else 1.0)
+            stat_defensiva_cat = defensor.resistencia + mods_def.suma('res', T)
+            bono_atk = atk_base - (stat_ofensiva + mt_efectivo)
+            hits, detalles = [], []
+            bono_efectividad = pasivas.bono_por_efectividad(atacante)
+            for elemento, efectivo in (("fuego", []), ("trueno", []), ("viento", ["volador"])):
+                arma_elem = Arma(nombre=f"{arma.nombre} ({elemento})", mt=arma.mt, wt=arma.wt,
+                                 hit=arma.hit, crit=arma.crit, tipo=arma.tipo, rango=list(arma.rango),
+                                 es_magica=True, efectividades=list(efectivo))
+                mult_e, _d = _con_resistencias(*cls.calcular_efectividad(arma_elem, defensor))
+                es_efectivo = mult_e > 1
+                mt_e = MT_VIENTO_EFECTIVO if es_efectivo else arma.mt
+                dano_normal = max(0, math.floor(stat_ofensiva + bono_atk + mt_e - stat_defensiva_cat))
+                # Keen Insight y compañía suman al daño base, antes del reparto (verificado
+                # comparando a Céline, que la tiene, con Citrinne, que no).
+                if es_efectivo and dano_normal > 0:
+                    dano_normal += bono_efectividad
+                if dano_normal > 0 and mult_dano != 1:
+                    dano_normal = math.floor(dano_normal * mult_dano)
+                golpe = math.floor(dano_normal * fraccion_cat)
+                hits.append(golpe)
+                detalles.append(f"{elemento} {golpe}" + (" (efectivo)" if es_efectivo else ""))
+            daño = sum(hits)
+            houses_unite_hits = list(hits)
+            pct_cat = int(round(fraccion_cat * 100))
+            pasivas_activas.append(
+                f"Cataclismo (tres magias al {pct_cat} %: {', '.join(detalles)} = {daño} dmg)")
         elif forma_multigolpe:
             # Ataque de Emblema de varios golpes a fracción del daño (Skill.xml:
             # `攻撃回数 = N` + SID_ダメージNN％). Lodestar Rush 7 golpes al 30 % (Apoyo 8,
@@ -1138,6 +1193,9 @@ class CalculadoraEngage:
             "as_atk": as_atk,
             "as_def": as_def,
             "daño": daño,
+            # Robo de vida: la habilidad multiplica 回復 por la fracción del daño que
+            # recupera el atacante (Flare de Soren, ×0.5). 1.0 = no cura nada.
+            "drenaje": (lambda f: 0.0 if f == 1.0 else max(0.0, f))(mods_atk.producto('curacion', T)),
             "daño_critico": daño * 3,
             "precision": 100 if es_engage_attack else precision,
             "prob_critico": 0 if es_engage_attack else prob_critico,
@@ -1396,6 +1454,7 @@ class CalculadoraEngage:
             dano_aplicado_ultimo = min(max(0, daño), max(0, hp_def))
             hp_def -= daño
             registrar(actor, tipo, dano_aplicado_ultimo, hp_def)
+            curar_al_atacante(actor, dano_aplicado_ultimo)
             if hp_def <= 0 and piedras_res > 0:
                 piedras_res -= 1
                 barra_resucitada = True
@@ -1416,6 +1475,27 @@ class CalculadoraEngage:
             secuencia.append({"actor": atacante.nombre, "tipo": "piedra_resurrectora",
                               "daño": 0, "hp_objetivo_tras": hp_atk})
             return True
+
+        # Drenaje de vida: fracción del daño infligido que el atacante recupera (Flare de
+        # Soren: "unit recovers 50% of damage dealt"). Se cura golpe a golpe y no pasa del
+        # HP máximo; importa porque puede ser lo que le permita aguantar el contraataque.
+        drenaje_atk = float(stats_atk.get("drenaje", 0.0) or 0.0)
+        hp_atk_max_drenaje = int(getattr(atacante, 'hp_max', 0) or getattr(atacante, 'hp', 0) or 0)
+        curado_total_atk = 0
+
+        def curar_al_atacante(actor, daño_hecho):
+            """Robo de vida del atacante tras conectar un golpe."""
+            nonlocal hp_atk, curado_total_atk
+            if drenaje_atk <= 0 or actor != atacante.nombre or daño_hecho <= 0:
+                return
+            if hp_atk <= 0 or hp_atk >= hp_atk_max_drenaje:
+                return
+            curado = min(math.floor(daño_hecho * drenaje_atk), hp_atk_max_drenaje - hp_atk)
+            if curado > 0:
+                hp_atk += curado
+                curado_total_atk += curado
+                secuencia.append({"actor": atacante.nombre, "tipo": "drenaje",
+                                  "daño": -curado, "hp_objetivo_tras": hp_atk})
 
         # 1. Chain Attacks de aliados de apoyo (Backup)
         chain_attacks_info = []
@@ -1712,6 +1792,7 @@ class CalculadoraEngage:
                 "chain_attacks": chain_attacks_info,
                 "puede_canter": stats_atk.get("tiene_canter", False),
                 "recoil_hp": recoil,
+                "hp_drenado": curado_total_atk,
                 "aplica_veneno": aplica_veneno,
                 "nivel_veneno_defensor_post": veneno_def_post,
                 "secuencia": secuencia,

@@ -367,14 +367,14 @@ class TestArmasDeFusionDeTiki(unittest.TestCase):
                 u.stats, muro.stats, a, muro.arma, Terreno(), Terreno(), 1)["atacante"]["pasivas_activas"]
 
         # Media Def (24 -> 12) en Ice / Flame / Fog; media Res (8 -> 4) en Dark
-        self.assertIn("Media defensa (Def rival = 12)", pasivas_de("General", "Ice Breath"))
-        self.assertIn("Media defensa (Def rival = 4)", pasivas_de("Sage", "Dark Breath"))
-        self.assertIn("Media defensa (Def rival = 12)", pasivas_de("Divine Dragon", "Fog Breath"))
+        self.assertIn("Media defensa (Def/Res rival aplicada = 12)", pasivas_de("General", "Ice Breath"))
+        self.assertIn("Media defensa (Def/Res rival aplicada = 4)", pasivas_de("Sage", "Dark Breath"))
+        self.assertIn("Media defensa (Def/Res rival aplicada = 12)", pasivas_de("Divine Dragon", "Fog Breath"))
         # Fire Breath ignora la defensa del todo
-        self.assertIn("Ignora la defensa (Def rival = 0)", pasivas_de("Swordmaster", "Fire Breath"))
+        self.assertIn("Ignora la defensa (Def/Res rival aplicada = 0)", pasivas_de("Swordmaster", "Fire Breath"))
         # Flame Breath además pega al 70 %
         flame = pasivas_de("Griffin Knight", "Flame Breath")
-        self.assertIn("Media defensa (Def rival = 12)", flame)
+        self.assertIn("Media defensa (Def/Res rival aplicada = 12)", flame)
         self.assertTrue([p for p in flame if "70" in p], flame)
 
     def test_fog_breath_es_efectiva_contra_dragones(self):
