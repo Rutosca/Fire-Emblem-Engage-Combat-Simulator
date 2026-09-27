@@ -21,6 +21,7 @@ El juego aplica la variante del estilo de la unidad si existe; aquí se hace la
 misma sustitución en `sids_activos`.
 """
 
+import functools
 import math
 from dataclasses import dataclass, field
 from typing import Iterable, Optional
@@ -76,9 +77,13 @@ def _construir_indice_nombres() -> dict:
 _INDICE_NOMBRES = _construir_indice_nombres()
 
 
+_SUFIJOS_VARIANTE = tuple(SUFIJO_ESTILO.values()) + (_SUFIJO_HEREDADA.lstrip("_"),)
+
+
+@functools.lru_cache(maxsize=None)
 def _sufijo_de(sid: str) -> str:
     """Sufijo tras el último '_' si es una variante (estilo / heredada); '' si es el SID base."""
-    for suf in list(SUFIJO_ESTILO.values()) + [_SUFIJO_HEREDADA.lstrip("_")]:
+    for suf in _SUFIJOS_VARIANTE:
         if sid.endswith("_" + suf):
             return suf
     return ""
@@ -97,7 +102,13 @@ def resolver_nombre_a_sid(nombre: str, estilo_combate: str = "", heredada: Optio
     """
     if not nombre:
         return None
-    nombre = str(nombre).strip()
+    return _resolver_nombre_a_sid(str(nombre).strip(), bool(heredada))
+
+
+# Cacheado: el índice y el catálogo no cambian tras importar el módulo (se vacía al
+# final, después de que pasivas_overlay registre sus pseudo-SIDs).
+@functools.lru_cache(maxsize=None)
+def _resolver_nombre_a_sid(nombre: str, heredada: bool) -> Optional[str]:
     if nombre.startswith("SID_"):
         return nombre if nombre in HABILIDADES else None
     candidatos = _INDICE_NOMBRES.get(nombre.lower())
@@ -117,7 +128,11 @@ def resolver_nombre_a_sid(nombre: str, estilo_combate: str = "", heredada: Optio
 def variante_por_estilo(sid: str, estilo_combate) -> str:
     """SID de la variante de estilo si el datamine la define; si no, el propio SID."""
     from motor_calculo import resolver_estilo_combate   # import diferido: motor_calculo importa este módulo
-    canon = resolver_estilo_combate(estilo_combate)
+    return _variante_por_estilo(sid, resolver_estilo_combate(estilo_combate))
+
+
+@functools.lru_cache(maxsize=None)
+def _variante_por_estilo(sid: str, canon: str) -> str:
     declarada = ((HABILIDADES.get(sid) or {}).get("variantes_estilo") or {}).get(canon)
     if declarada and declarada in HABILIDADES:
         return declarada
@@ -878,16 +893,22 @@ def efectos_recibidos(unidad, aliados_cercanos, ctx_unidad=None) -> list:
     salida = []
     aliados = [(u, int(d)) for u, d in (aliados_cercanos or []) if u is not unidad]
     nombre_propio = str(getattr(unidad, "nombre", "") or "")
+    sids_de = {}   # id(unidad) -> sids_activos, calculados una sola vez por llamada
+
+    def _sids(u):
+        if id(u) not in sids_de:
+            sids_de[id(u)] = sids_activos(u)
+        return sids_de[id(u)]
 
     def _ctx(dador, receptor, dist):
         return condicion_dsl.ContextoCombate(
             unidad=dador, rival=receptor, es_iniciador=True,
             aliados_cercanos=_alrededor_de(dador, receptor, dist, aliados) if dador is not receptor else aliados,
-            habilidades_sids=sids_activos(dador),
+            habilidades_sids=list(_sids(dador)),
         )
 
     for dador, d in aliados:
-        for sid in sids_activos(dador):
+        for sid in _sids(dador):
             info = HABILIDADES.get(sid)
             if not _es_aura(info):
                 continue
@@ -896,7 +917,7 @@ def efectos_recibidos(unidad, aliados_cercanos, ctx_unidad=None) -> list:
                 continue
             if _condicion_cumplida(info, _ctx(dador, unidad, d)):
                 salida += [(h, str(getattr(dador, "nombre", "") or "")) for h in info["give_sids"]]
-    for sid in sids_activos(unidad):
+    for sid in _sids(unidad):
         info = HABILIDADES.get(sid)
         if not _es_aura(info):
             continue
@@ -954,3 +975,5 @@ def recopilar_combate(unidad, ctx, aliados_cercanos=None) -> Modificadores:
 # que pueda usar las utilidades de este módulo.
 import pasivas_overlay  # noqa: E402,F401
 _INDICE_NOMBRES = _construir_indice_nombres()
+_resolver_nombre_a_sid.cache_clear()
+_variante_por_estilo.cache_clear()

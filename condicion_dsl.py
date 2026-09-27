@@ -27,6 +27,7 @@ Antes del combate (cuando se evalúan las pasivas de Timing 3) valen 1 / 0 / 1-0
 import os
 import re
 import json
+import functools
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -227,6 +228,9 @@ class _Parser:
         raise ValueError(f"Token inesperado en Condition: {kind!r} {val!r}")
 
 
+# Cacheado: las Condition del catálogo se repiten en cada combate y el AST es de solo
+# lectura (_eval nunca lo modifica). Los errores de parseo no se cachean.
+@functools.lru_cache(maxsize=4096)
 def _parsear(cond: str):
     cond = (cond or "").strip()
     if not cond:

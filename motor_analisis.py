@@ -91,6 +91,11 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
             continue
         if not c.stats or not c.arma:
             continue
+        # Primero el alcance (barato): descarta la mayoría antes de mirar sus habilidades
+        dist_c = abs(c.x - defensor_ficha.x) + abs(c.y - defensor_ficha.y)
+        r_c = c.arma.rango if (c.arma and c.arma.rango) else [1]
+        if dist_c not in r_c:
+            continue
         # Dobles de Call Doubles (SID_残像): "自分のみチェインアタック可能な残像" — solo
         # encadenan cuando ataca quien los invocó, no con el resto del ejército.
         invocador = str(getattr(c, "invocador", "") or "")
@@ -100,10 +105,7 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
         # Dual Strike (SID_絆の力, sincronía de Lucina) permite encadenar sin ser de Apoyo
         elif not es_unidad_backup(c) and not pasivas.permite_chain_attack(c):
             continue
-        dist_c = abs(c.x - defensor_ficha.x) + abs(c.y - defensor_ficha.y)
-        r_c = c.arma.rango if (c.arma and c.arma.rango) else [1]
-        if dist_c in r_c:
-            apoyos.append(c)
+        apoyos.append(c)
     return apoyos
 
 def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, analizador=None, casillas_alcanzables_precalc=None, zonas_amenaza_enemigos=None, detalle=None):

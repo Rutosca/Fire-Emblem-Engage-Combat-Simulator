@@ -4,6 +4,7 @@ Motor matemático determinista que replica las fórmulas exactas de Fire Emblem:
 """
 
 import copy
+import functools
 import math
 import unicodedata
 from dataclasses import dataclass, field
@@ -33,7 +34,12 @@ def resolver_estilo_combate(valor) -> str:
     encode('ASCII','ignore') y borraría los caracteres japoneses); los alias
     EN/ES se comparan sin acentos/mayúsculas.
     """
-    raw = str(valor or "")
+    return _resolver_estilo_raw(str(valor or ""))
+
+
+@functools.lru_cache(maxsize=None)
+def _resolver_estilo_raw(raw: str) -> str:
+    # Cacheado: se llama >1M veces por mapa con apenas media docena de valores distintos.
     for canon, aliases in ESTILOS_COMBATE_ALIASES.items():
         if any(a in raw for a in aliases if _es_texto_japones(a)):
             return canon
