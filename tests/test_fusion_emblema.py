@@ -330,10 +330,12 @@ class TestFusionEmblema(unittest.TestCase):
         # En cambio Perceptive y Break Defenses son pasivas de sincronía legítimas
         self.assertTrue(any("perceptive" in h for h in habs_nombres), "Perceptive debe estar en pasivas")
 
-    def test_api_catalogo_emblemas_devuelve_los_21(self):
+    def test_api_catalogo_emblemas_devuelve_todos(self):
         """
-        Verifica que el endpoint /api/catalogo/emblemas devuelva los 21 Emblemas
-        (Base + DLC) con sus tablas de 20 niveles y la regla Lv20 max_energia=5.
+        Desde la 2.0.0 los Emblemas salen del datamine del juego, DLC incluido, así que
+        son 24 y no 21: el brazalete de las Tres Casas son tres Emblemas de verdad
+        (Edelgard, Dimitri y Claude, cada uno con su arma favorita) y Chrom y Robin van
+        por separado. Cada uno con sus 20 niveles y la regla de Lv20 max_energia=5.
         """
         client = app.test_client()
         res = client.get("/api/catalogo/emblemas")
@@ -341,7 +343,11 @@ class TestFusionEmblema(unittest.TestCase):
         data = res.get_json()
         self.assertTrue(data.get("ok"))
         emblemas = data.get("emblemas", {})
-        self.assertEqual(len(emblemas), 21, "Deben estar presentes los 21 Emblemas (14 base + 7 DLC)")
+        self.assertEqual(len(emblemas), 24, "14 base + los del DLC, contando los tres líderes por separado")
+        for gid in ("GID_エーデルガルト", "GID_ディミトリ", "GID_クロード", "GID_チキ",
+                    "GID_セネリオ", "GID_カミラ", "GID_ヘクトル", "GID_ヴェロニカ",
+                    "GID_クロム", "GID_ルフレ"):
+            self.assertIn(gid, emblemas, gid)
 
         for eid, einfo in emblemas.items():
             b_levels = einfo.get("bond_levels", {})
@@ -349,17 +355,21 @@ class TestFusionEmblema(unittest.TestCase):
             self.assertEqual(b_levels["19"]["max_energia_emblema"], 6, f"Emblema {eid} a Lv 19 debe tener max 6")
             self.assertEqual(b_levels["20"]["max_energia_emblema"], 5, f"Emblema {eid} a Lv 20 debe tener max 5")
 
-    def test_edelgard_carga_houses_unite(self):
-        """Verifica que el Emblema Edelgard cargue correctamente su ataque Houses Unite."""
+    def test_los_tres_lideres_con_su_arma_favorita(self):
+        """
+        Cada líder es un Emblema con su `GoodWeapon` (God.xml), que es lo que mira Weapon
+        Sync: Edelgard hacha, Dimitri lanza, Claude arco.
+        """
         client = app.test_client()
         res = client.get("/api/catalogo/emblemas")
         self.assertEqual(res.status_code, 200)
-        data = res.get_json()
-        self.assertTrue(data.get("ok"))
-        emblemas = data.get("emblemas", {})
-        self.assertIn("GID_DLC_EDELGARD", emblemas)
-        ed = emblemas["GID_DLC_EDELGARD"]
-        self.assertEqual(ed.get("engage_attack"), "Houses Unite (Unión de Casas)")
+        emblemas = res.get_json().get("emblemas", {})
+        for gid, nombre, arma in (("GID_エーデルガルト", "Edelgard", "Hacha"),
+                                  ("GID_ディミトリ", "Dimitri", "Lanza"),
+                                  ("GID_クロード", "Claude", "Arco")):
+            self.assertIn(gid, emblemas)
+            self.assertEqual(emblemas[gid].get("nombre"), nombre)
+            self.assertEqual(emblemas[gid].get("arma_favorita"), arma, nombre)
 
     def test_armas_de_emblema_usables_en_fusion(self):
         """Verifica que al fusionar, las armas desbloqueadas del Emblema sean utilizables."""
@@ -396,7 +406,7 @@ class TestFusionEmblema(unittest.TestCase):
         Al cargar, las armas de Emblema desaparecen y se equipa un arma normal."""
         from motor_analisis import _armas_aliado
         chloe = resolver_unidad_con_catalogo({
-            "nombre": "Chloé", "x": 1, "y": 1, "es_aliado": True, "emblema_nombre": "Edelgard / Dimitri / Claude",
+            "nombre": "Chloé", "x": 1, "y": 1, "es_aliado": True, "emblema_nombre": "Edelgard",
             "nivel_vinculo": 20, "en_fusion": False, "energia_emblema": 0,
             "inventario": [{"nombre": "Javelin", "equipada": False}, {"nombre": "Poción"},
                            {"nombre": "Aymr (Emblema)", "es_engage": True}, {"nombre": "Failnaught (Emblema)", "es_engage": True, "equipada": True}],
@@ -412,7 +422,7 @@ class TestFusionEmblema(unittest.TestCase):
 
     def test_terminar_fusion_purga_armas_de_emblema_y_reequipa(self):
         chloe = resolver_unidad_con_catalogo({
-            "nombre": "Chloé", "x": 1, "y": 1, "es_aliado": True, "emblema_nombre": "Edelgard / Dimitri / Claude",
+            "nombre": "Chloé", "x": 1, "y": 1, "es_aliado": True, "emblema_nombre": "Edelgard",
             "nivel_vinculo": 20, "en_fusion": True, "turnos_fusion": 1,
             "inventario": [{"nombre": "Poción"}, {"nombre": "Javelin", "equipada": False}, {"nombre": "Iron Lance"}],
         })

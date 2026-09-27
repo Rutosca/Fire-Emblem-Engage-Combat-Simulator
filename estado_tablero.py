@@ -561,8 +561,8 @@ class EstadoTablero:
                 curados.append((f.nombre, ganado))
         return curados
 
-    SID_DETOXIFY = "SID_OVERLAY_DETOXIFY"
-    SID_GROUNDSWELL = "SID_OVERLAY_GROUNDSWELL"
+    SID_DETOXIFY = "SID_デトックス"
+    SID_GROUNDSWELL = "SID_地脈吸収"
 
     def curar_venenos_detoxify(self, es_aliado: bool) -> list:
         """Detoxify (Camilla): "Cures poison at start of turn". Devuelve [(nombre, nivel)]."""
@@ -1520,7 +1520,7 @@ class EstadoTablero:
 
     # ── Bonded Shield (SID_絆盾, habilidad de Fusión de Lucina) ──────────
 
-    SID_REFLECT = "SID_OVERLAY_REFLECT"
+    SID_REFLECT = "SID_マジックシールド"
     RADIO_REFLECT = 2
 
     def activar_reflejo(self, nombre_unidad: str):

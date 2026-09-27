@@ -38,8 +38,10 @@ class TestResolverNombre(unittest.TestCase):
     def test_sid_directo_y_desconocidos(self):
         self.assertEqual(pasivas.resolver_nombre_a_sid("SID_見切り"), "SID_見切り")
         self.assertIsNone(pasivas.resolver_nombre_a_sid("SID_inventado"))
-        self.assertEqual(pasivas.resolver_nombre_a_sid("Weapon Sync"), "SID_OVERLAY_WEAPON_SYNC")   # DLC: overlay a mano
-        self.assertIsNone(pasivas.resolver_nombre_a_sid("Gambit"))   # DLC sin overlay todavía
+        # Desde la 2.0.0 las habilidades del DLC salen del datamine con su SID real
+        self.assertEqual(pasivas.resolver_nombre_a_sid("Weapon Sync"), "SID_武器シンクロ")
+        self.assertEqual(pasivas.resolver_nombre_a_sid("Gambit"), "SID_計略")
+        self.assertIsNone(pasivas.resolver_nombre_a_sid("Habilidad que no existe"))
         self.assertIsNone(pasivas.resolver_nombre_a_sid(""))
 
     def test_variantes_de_estilo_no_se_eligen_por_nombre(self):

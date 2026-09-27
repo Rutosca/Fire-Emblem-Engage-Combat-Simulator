@@ -1348,6 +1348,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     # SID del Ataque de Emblema (God.xml EngageAttack): pasivas.forma_ataque_emblema lo
     # lee para saber cuántos golpes da y a qué fracción de daño (Astra Storm, Lodestar…).
     setattr(stats_obj, 'sid_ataque_emblema', (emblema_info or {}).get("engage_attack", "") or "")
+    # Arma favorita del Emblema equipado (God.xml GoodWeapon): la mira Weapon Sync
+    setattr(stats_obj, 'arma_favorita_emblema', (emblema_info or {}).get("arma_favorita", "") or "")
     genero_val = int(data.get("genero", 0) or (p_info.get("genero", p_info.get("gender", 0)) if p_info else 0) or 0)
     setattr(stats_obj, 'genero', genero_val)
     if not getattr(stats_obj, 'clase_nombre', ''):
@@ -1410,6 +1412,22 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             armas_engage_a_anadir = [it.get("iid") or it.get("nombre") if isinstance(it, dict) else it for it in b_items]
         else:
             armas_engage_a_anadir = []
+
+        # Armas que el Emblema solo le da a cierto estilo de combate. Byleth reparte una
+        # Reliquia distinta a cada estilo (Blutgang a Apoyo, Aymr a Dragón…) y Tiki un
+        # aliento distinto (Ice al Acorazado, Fog al Dragón…). Está en God.xml, en una
+        # columna por estilo; antes se ignoraba y Byleth se quedaba sin ninguna.
+        por_estilo = (bond_data or {}).get("engage_items_por_estilo") or {}
+        if not por_estilo and emblema_info and "bond_levels" in emblema_info:
+            disp_e = sorted([int(k) for k in emblema_info["bond_levels"] if k.isdigit() and int(k) <= nivel_vinculo])
+            if disp_e:
+                por_estilo = emblema_info["bond_levels"][str(disp_e[-1])].get("engage_items_por_estilo") or {}
+        if por_estilo:
+            mias = por_estilo.get(resolver_estilo_combate(estilo_combate)) or []
+            for it in mias:
+                iid = it.get("iid") or it.get("nombre") if isinstance(it, dict) else it
+                if iid and iid not in armas_engage_a_anadir:
+                    armas_engage_a_anadir.append(iid)
 
         if bond_data and "engage_skills" in bond_data:
             skills_engage_a_anadir = [sk.get("nombre") or sk.get("sid") if isinstance(sk, dict) else sk for sk in bond_data["engage_skills"]]

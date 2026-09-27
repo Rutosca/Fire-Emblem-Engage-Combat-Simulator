@@ -23,12 +23,12 @@ Disparos repetidos refrescan el estado sin acumularse.
 import condicion_dsl
 import pasivas
 
-SID_ANIMA_FOCUS = "SID_OVERLAY_ANIMA_FOCUS"
+SID_ANIMA_FOCUS = "SID_理魔法＋"
 # Elemento del tomo → efecto que Anima Focus (Soren) le cuelga al objetivo.
 EFECTOS_ANIMA_FOCUS = {
-    "fuego":  "SID_OVERLAY_ANIMA_FOCUS_FUEGO",
-    "trueno": "SID_OVERLAY_ANIMA_FOCUS_TRUENO",
-    "viento": "SID_OVERLAY_ANIMA_FOCUS_VIENTO",
+    "fuego":  "SID_理魔法＋_FUEGO",
+    "trueno": "SID_理魔法＋_TRUENO",
+    "viento": "SID_理魔法＋_VIENTO",
 }
 
 SID_GET_BEHIND_ME = "SID_僕が守ります！"

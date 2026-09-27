@@ -86,5 +86,7 @@
   "_emblemas": "Los nombres de los Emblemas sí salen del juego; solo el de las Tres Casas necesita retoque",
   "GID_エーデルガルト": "Edelgard",
   "GID_ディミトリ": "Dimitri",
-  "GID_クロード": "Claude"
+  "GID_クロード": "Claude",
+  "GID_セネリオ": "Soren",
+  "GID_ルフレ": "Robin"
 }

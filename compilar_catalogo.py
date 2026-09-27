@@ -837,6 +837,21 @@ def compilar():
 
     # Mapeo de niveles por tabla de crecimiento (Ggid)
     current_ggid = None
+    # God.xml da las armas de Emblema en `EngageItems` (para todos) y, además, en una
+    # columna por estilo de combate. El nombre de la columna es el del estilo en japonés:
+    # 連携 Apoyo, 騎馬 Caballería, 隠密 Encubierto, 重装 Acorazado, 飛行 Volador,
+    # 魔法 Místico, 気功 Qi Adept, 竜族 Dragón.
+    COLUMNAS_POR_ESTILO = {
+        "EngageCooperations": "apoyo",
+        "EngageHorses": "caballeria",
+        "EngageCoverts": "encubierto",
+        "EngageHeavys": "acorazado",
+        "EngageFlys": "volador",
+        "EngageMagics": "mistico",
+        "EngagePranas": "qi_adept",
+        "EngageDragons": "dragon",
+    }
+
     levels_by_ggid = {}
     for r in god_sheet_1:
         ggid = r.attrib.get("Ggid", "").strip()
@@ -855,13 +870,24 @@ def compilar():
         inh_skills = [s.strip() for s in r.attrib.get("InheritanceSkills", "").split(";") if s.strip()]
         eng_skills = [s.strip() for s in r.attrib.get("EngageSkills", "").split(";") if s.strip()]
         eng_items = [s.strip() for s in r.attrib.get("EngageItems", "").split(";") if s.strip()]
+        eng_por_estilo = {}
+        for columna, estilo in COLUMNAS_POR_ESTILO.items():
+            iids = [s.strip() for s in r.attrib.get(columna, "").split(";") if s.strip()]
+            if iids:
+                eng_por_estilo[estilo] = iids
 
         levels_by_ggid[current_ggid][lvl] = {
             "synchro_skills": sync_skills,
             "inheritance_skills": inh_skills,
             "engage_skills": eng_skills,
-            "engage_items": eng_items
+            "engage_items": eng_items,
+            "engage_items_por_estilo": eng_por_estilo,
         }
+
+    # God.xml `GoodWeapon`: el tipo de arma favorito del Emblema, que es lo que mira
+    # Weapon Sync. Usa la misma numeración que el Kind de Item.xml.
+    ARMA_FAVORITA = {1: "Espada", 2: "Lanza", 3: "Hacha", 4: "Arco",
+                     5: "Daga", 6: "Tomo", 7: "Bastón", 8: "Artes", 9: "Especial"}
 
     emblemas = {}
 
@@ -879,7 +905,9 @@ def compilar():
 
         mid = g.attrib.get("Mid", "")
         ascii_name = g.attrib.get("AsciiName", "")
-        nombre = trans.get(mid) or ascii_name or limpiar_nombre(gid, g.attrib.get("Name"), trans)
+        # El nombre del DLC manda sobre el AsciiName, que es la romanización japonesa
+        # (GID_セネリオ sale como "Senerio" y GID_ルフレ como "Reflet").
+        nombre = NOMBRES_DLC.get(gid) or trans.get(mid) or ascii_name or limpiar_nombre(gid, g.attrib.get("Name"), trans)
         if not nombre or nombre.startswith("GID_") or nombre == "???":
             continue
         if ascii_name:
@@ -892,16 +920,27 @@ def compilar():
         active_stats = {s: 0 for s in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld", "mov"]}
         active_passives = {}
         active_items = []
+        active_items_estilo = {}      # {estilo: [{"iid", "nombre"}, ...]}
         active_engage_skills = []
 
         for l in range(1, 21):
-            lvl_data = raw_levels.get(l, {"synchro_skills": [], "inheritance_skills": [], "engage_skills": [], "engage_items": []})
+            lvl_data = raw_levels.get(l, {"synchro_skills": [], "inheritance_skills": [],
+                                          "engage_skills": [], "engage_items": [],
+                                          "engage_items_por_estilo": {}})
 
             # Armas Engage desbloqueadas en este nivel o previos
             for iid in lvl_data["engage_items"]:
                 if iid not in [it["iid"] for it in active_items]:
                     it_nom = armas.get(iid, {}).get("nombre") or trans.get(f"MIID_{iid}") or trans.get(iid) or iid
                     active_items.append({"iid": iid, "nombre": it_nom})
+
+            # Armas que solo recibe cierto estilo de combate (Byleth, Tiki)
+            for estilo, iids in (lvl_data.get("engage_items_por_estilo") or {}).items():
+                lista = active_items_estilo.setdefault(estilo, [])
+                for iid in iids:
+                    if iid not in [it["iid"] for it in lista]:
+                        it_nom = armas.get(iid, {}).get("nombre") or trans.get(f"MIID_{iid}") or trans.get(iid) or iid
+                        lista.append({"iid": iid, "nombre": it_nom})
 
             # Habilidades Engage desbloqueadas
             for sid in lvl_data["engage_skills"]:
@@ -938,6 +977,7 @@ def compilar():
                 "stat_boosts": dict(cur_boosts),
                 "synchro_skills": list(active_passives.values()),
                 "engage_items": list(active_items),
+                "engage_items_por_estilo": {e: list(v) for e, v in active_items_estilo.items()},
                 "engage_skills": list(active_engage_skills),
                 "inheritance_skills": inh_at_level,
                 "max_energia_emblema": 5 if l >= 20 else 6
@@ -964,6 +1004,7 @@ def compilar():
             "ascii_name": ascii_name,
             "link_name": g.attrib.get("LinkName", ""),
             "grow_table": gt,
+            "arma_favorita": ARMA_FAVORITA.get(to_int(g.attrib.get("GoodWeapon")), ""),
             "engage_attack": g.attrib.get("EngageAttack", ""),
             "engrave": engrave_data,
             "engage_items": [it["iid"] for it in fb10.get("engage_items", [])],
@@ -1023,25 +1064,13 @@ def compilar():
         n_oscuros += 1
     print(f"Emblemas Oscuros procesados: {n_oscuros}")
 
-    # Integrar Emblemas de DLC (Edelgard/3H, Tiki, Hector, Veronica, Soren, Camilla, Chrom/Robin)
-    # Armas de los Emblemas de DLC: no están en el datamine, así que se anotan a mano
-    # (json/dlc_armas_canon.json) y se integran aquí para que sobrevivan a la recompilación.
-    dlc_armas_path = os.path.join(BASE_DIR, "json", "dlc_armas_canon.json")
-    if os.path.exists(dlc_armas_path):
-        with open(dlc_armas_path, "r", encoding="utf-8") as f:
-            dlc_armas = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
-        armas.update(dlc_armas)
-        print(f"Armas de DLC integradas: {len(dlc_armas)}")
-
-    dlc_canon_path = os.path.join(BASE_DIR, "json", "dlc_emblems_canon.json")
-    if os.path.exists(dlc_canon_path):
-        with open(dlc_canon_path, "r", encoding="utf-8") as f:
-            dlc_data = json.load(f)
-        for dlc_gid, dlc_info in dlc_data.items():
-            emblemas[dlc_gid] = dlc_info
-        print(f"Emblemas DLC integrados: {len(dlc_data)}")
-
-    print(f"Total Emblemas procesados (Base + DLC): {len(emblemas)}")
+    # Los Emblemas de DLC ya NO se integran a mano. Hasta la 2.0.0 se anotaban en
+    # json/dlc_armas_canon.json y json/dlc_emblems_canon.json, con stats sacadas de webs
+    # y de capturas de partida; ahora salen de God.xml / Item.xml / Skill.xml como
+    # cualquier otro, porque el datamine se extrae del propio juego con el DLC dentro.
+    # Lo único que sigue a mano son sus NOMBRES (json/nombres_dlc.json), porque los textos
+    # del DLC viven en un romfs aparte.
+    print(f"Total Emblemas procesados: {len(emblemas)}")
 
     # 6. Terrenos (Terrain.xml) y reglas de Estilo de Combate
     terrenos = extraer_terrenos(trans)

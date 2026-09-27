@@ -364,6 +364,27 @@ def _stat(u, attr):
     return (getattr(u, attr, 0) or 0) if u is not None else 0
 
 
+def _arma_favorita_emblema(unidad) -> str:
+    """
+    Arma favorita del Emblema equipado (God.xml `GoodWeapon`), que es lo que mira Weapon
+    Sync. El brazalete de las Tres Casas son en realidad TRES Emblemas —Edelgard con
+    hacha, Dimitri con lanza y Claude con arco— y el jugador alterna el líder activo, así
+    que hay que mirar cuál está puesto ahora y no el que trajera la unidad al crearse.
+    """
+    stats = getattr(unidad, "stats", None) or unidad
+    lider = str(getattr(unidad, "lider_tres_casas", "") or getattr(stats, "lider_tres_casas", "") or "").strip()
+    propia = str(getattr(unidad, "arma_favorita_emblema", "")
+                 or getattr(stats, "arma_favorita_emblema", "") or "")
+    if not lider:
+        return propia
+    from catalogo_loader import _catalogo, normalizar_texto
+    lider_n = normalizar_texto(lider)
+    for e in (_catalogo.get("emblemas", {}) or {}).values():
+        if normalizar_texto(e.get("nombre", "")) == lider_n and e.get("arma_favorita"):
+            return str(e["arma_favorita"])
+    return propia
+
+
 def _tipo_arma(arma):
     tipo = getattr(arma, 'tipo', '') if arma is not None else ''
     return 'Tomo' if tipo in ('Tomo', 'Tome') else tipo
@@ -452,6 +473,12 @@ VARIABLES = {
     "相手の防御力": lambda ctx: _defensa_efectiva(ctx.rival, ctx.arma),
     # Armas y atributos
     "武器の種類": lambda ctx: _tipo_arma(ctx.arma),
+    # "durante la Fusión". Faltaba, y al no reconocerse se evaluaba como el propio texto,
+    # que es verdadero: cualquier condición con `エンゲージ中 || ...` se cumplía siempre.
+    "エンゲージ中": lambda ctx: bool(
+        getattr(ctx.unidad, "en_fusion", False)
+        or int(getattr(ctx.unidad, "turnos_fusion_restantes", 0) or 0) > 0),
+    "紋章士の得意武器": lambda ctx: _arma_favorita_emblema(ctx.unidad),
     "相手の武器の種類": lambda ctx: _tipo_arma(ctx.arma_rival),
     "攻撃属性": lambda ctx: _atributo_ataque(ctx.arma),
     "相手の攻撃属性": lambda ctx: _atributo_ataque(ctx.arma_rival),
