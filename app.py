@@ -488,39 +488,28 @@ def buscar_catalogo():
                     continue
                 vistos.add(dedup_key)
 
-                # Si es un objeto consumible con usos múltiples (ej: Poción de 3 usos), ofrecer desglose
-                usos_max = item.get("usos_max")
-                if cat == "armas" and usos_max and usos_max > 1:
-                    for u in range(usos_max, 0, -1):
-                        resultados.append({
-                            "categoria": cat,
-                            "id": key,
-                            "nombre": f"{display_nombre} ({u})",
-                            "nombre_base": display_nombre,
-                            "usos": u,
-                            "usos_max": usos_max,
-                            "datos": item
-                        })
-                else:
-                    resultados.append({
-                        "categoria": cat,
-                        "id": key,
-                        "nombre": display_nombre,
-                        "datos": item
-                    })
+                # Una sola entrada por objeto: los usos (restantes / máximo) se ponen en la
+                # ranura del inventario, así que ya no se ofrece "Poción (3)", "(2)", "(1)".
+                # La etiqueta del desplegable indica los usos máximos (datos.usos_max).
+                resultados.append({
+                    "categoria": cat,
+                    "id": key,
+                    "nombre": display_nombre,
+                    "datos": item
+                })
 
-                    # Sugerir variantes de forja (+1..+5) y grabado si la búsqueda encaja
-                    if cat == "armas" and item.get("tipo") in {'Espada', 'Hacha', 'Lanza', 'Artes', 'Arco', 'Tomo', 'Daga'}:
-                        if "+" in q or any(k in q_norm for k in GRABADOS_EMBLEMA):
-                            parsed_exact = parsear_arma_string(q)
-                            if parsed_exact and parsed_exact["nombre_base"] == display_nombre:
-                                resultados.insert(0, {
-                                    "categoria": cat,
-                                    "id": key,
-                                    "nombre": parsed_exact["nombre"],
-                                    "nombre_base": display_nombre,
-                                    "datos": parsed_exact
-                                })
+                # Sugerir variantes de forja (+1..+5) y grabado si la búsqueda encaja
+                if cat == "armas" and item.get("tipo") in {'Espada', 'Hacha', 'Lanza', 'Artes', 'Arco', 'Tomo', 'Daga'}:
+                    if "+" in q or any(k in q_norm for k in GRABADOS_EMBLEMA):
+                        parsed_exact = parsear_arma_string(q)
+                        if parsed_exact and parsed_exact["nombre_base"] == display_nombre:
+                            resultados.insert(0, {
+                                "categoria": cat,
+                                "id": key,
+                                "nombre": parsed_exact["nombre"],
+                                "nombre_base": display_nombre,
+                                "datos": parsed_exact
+                            })
 
                 if len(resultados) >= 40:
                     break

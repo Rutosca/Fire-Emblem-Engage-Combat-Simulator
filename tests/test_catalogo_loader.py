@@ -72,6 +72,23 @@ class TestArmasDelDLC(unittest.TestCase):
             r = c.get("/api/catalogo/buscar", query_string={"tipo": "armas", "q": q}).get_json()
             self.assertEqual([x["nombre"] for x in r["resultados"]], esperado, q)
 
+    def test_los_objetos_con_usos_salen_una_sola_vez(self):
+        """Los usos restantes/máximos se ponen en la ranura del inventario: ya no se
+        ofrece "Poción (3)", "(2)", "(1)"; los usos máximos van en los datos."""
+        from app import app
+        r = app.test_client().get("/api/catalogo/buscar", query_string={"tipo": "armas", "q": "poci"}).get_json()
+        nombres = [x["nombre"] for x in r["resultados"]]
+        self.assertTrue(nombres)
+        self.assertFalse([n for n in nombres if n.rstrip().endswith(")")], nombres)
+        self.assertEqual(len(nombres), len(set(nombres)))
+        self.assertTrue(all(x["datos"].get("usos_max") for x in r["resultados"]))
+
+    def test_una_partida_antigua_con_usos_entre_parentesis_se_sigue_leyendo(self):
+        f = resolver_unidad_con_catalogo({"nombre": "Prueba", "es_aliado": True, "clase_nombre": "Sword Fighter",
+                                          "nivel": 10, "inventario": ["Iron Sword", "Poción (2)"]})
+        pocion = next(i for i in f.inventario if "Poción" in str(i.get("nombre", "")))
+        self.assertEqual((pocion["nombre"], pocion["usos"]), ("Poción", 2))
+
 
 class TestAtaqueDeEmblemaEnElModal(unittest.TestCase):
     """El catálogo guarda en `engage_attack` el SID (lo usa el motor); al modal le llega el

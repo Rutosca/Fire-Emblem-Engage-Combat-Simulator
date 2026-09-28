@@ -1285,10 +1285,14 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   limpiarChips("chips-pasivas");
 
   if (esAliado) {
-    const eInfo = buscarEmblemaInfo("Marth");
-    if (eInfo && eInfo.synchro_skills) {
-      eInfo.synchro_skills.forEach(s => addChip("chips-pasivas", s));
-    }
+    // Marth por defecto: las de sincronía de su vínculo 1, por su nombre. `synchro_skills`
+    // del catálogo son SIDs (SID_見切り…) y salían en japonés; además son las mismas que el
+    // modal quita al cambiar de Emblema (sincronizarEmblemaModal usa el vínculo).
+    const bond = obtenerDatosVinculoEmblema(buscarEmblemaInfo("Marth"), 1);
+    (bond && bond.synchro_skills || []).forEach(sk => {
+      const nom = typeof sk === "object" ? (sk.nombre || sk.sid) : sk;
+      if (nom) addChip("chips-pasivas", nom);
+    });
   }
 
   recalcularCombatStats();
