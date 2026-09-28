@@ -1281,6 +1281,18 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                         nombre_clase = _catalogo.get("habilidades", {}).get(sid_clase, {}).get("nombre")
                         habs_lista = [h for h in habs_lista if h not in (sid_clase, nombre_clase)]
 
+        # Stalwart / Veteran / Veteran+ ocupan la misma casilla del enemigo y cada
+        # dificultad pone una (M007 Rosado: Stalwart en Difícil, Veteran+ en Extremo).
+        # Las versiones antiguas sumaban las listas de Difícil y Extremo y guardaban
+        # las dos; se queda solo la más fuerte.
+        if not es_aliado:
+            escalera = ("SID_特効耐性", "SID_熟練者", "SID_熟練者＋")
+            presentes = [i for i, sid in enumerate(escalera)
+                         if sid in habs_lista or _catalogo.get("habilidades", {}).get(sid, {}).get("nombre") in habs_lista]
+            for sid in escalera[:max(presentes)] if presentes else ():
+                nombre_sid = _catalogo.get("habilidades", {}).get(sid, {}).get("nombre")
+                habs_lista = [h for h in habs_lista if h not in (sid, nombre_sid)]
+
     # Los SID se conservan internamente en los XML, pero la UI debe mostrar
     # el nombre traducido. Si existe traducción, no expongas el identificador
     # japonés como una segunda pasiva duplicada.

@@ -101,6 +101,12 @@ class TestPartidaSnapshot(unittest.TestCase):
         self.assertIsNotNone(goldmary, "Goldmary debe existir en el tablero")
         self.assertEqual((goldmary.x, goldmary.y), (18, 9))
 
+        # La partida la guardó una versión antigua que les puso la habilidad de clase
+        # sin exigir el Nv 5 (Triangle Adept, Certain Blow) y sumó las pasivas de
+        # Difícil y Extremo (Stalwart + Veteran+). En Extremo solo llevan Veteran+.
+        self.assertEqual(list(rosado.habilidades), ["Stunning Smile", "Veteran+"])
+        self.assertEqual(list(goldmary.habilidades), ["Disarming Sigh", "Veteran+"])
+
         # 6. Turno y fase
         self.assertEqual(tablero.turno_actual, 10)
         self.assertEqual(tablero.fase, "jugador")

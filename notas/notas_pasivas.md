@@ -192,6 +192,15 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
       LearningSkill y la LunaticSkill de su clase por debajo del nivel de habilidad de clase,
       salvo que las lleven como propias (Person.xml). Golden `cap7_turno10` regenerado: 10
       combates de Rosado sin Certain Blow (+40 Hit).
+      La misma partida traía Stalwart **y** Veteran+ en Rosado (y Stalwart en Hortensia): esa
+      versión sumaba las pasivas de Difícil y de Extremo. Stalwart / Veteran / Veteran+ ocupan
+      la misma casilla y cada dificultad pone una (dispos M007/M010: Rosado Stalwart en Difícil,
+      Veteran+ en Extremo; confirmado por el usuario). El cargador deja a los enemigos solo la
+      más fuerte. Golden regenerado: 7 combates, solo cambia la etiqueta (Veteran+ ya anulaba la
+      efectividad antes que Stalwart, así que ningún número varía).
+      Triangle Adept sí existe en el juego (Heroes enemigos en Extremo, Nv 5+); Immobilized
+      (`SID_立往生`) se deja sin efecto a propósito: esas unidades acaban moviéndose si tienen
+      a alguien al alcance, así que sus zonas de peligro con movimiento completo son correctas.
     - **Auras sobre rivales** (Timing 20 / Target 1: Racket of Solm y la personal de Timerra,
       Crit −5 a 1-3): `efectos_recibidos(..., rivales_cercanos)`; `simular_combate` pasa el rival
       del combate y los aliados del rival a su distancia de la casilla desde la que se pelea
