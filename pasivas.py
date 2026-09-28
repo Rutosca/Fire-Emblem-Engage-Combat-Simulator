@@ -245,19 +245,47 @@ def bono_por_efectividad(unidad) -> int:
     por golpe de la Fase 3 esto se reabsorbe.
     """
     total = 0
-    for sid in sids_activos(unidad):
+    for sid in _resolver_prioridades(sids_activos(unidad)):
         info = HABILIDADES.get(sid) or {}
-        if "武器特効" not in str(info.get("condition") or ""):
+        # Datamine: "攻撃結果( 特効 )" (Keen Insight, SID_慧眼); overlay antiguo: "武器特効 > 1"
+        if "特効" not in str(info.get("condition") or ""):
             continue
         for nombre, op, valor in zip(info.get("act_names") or [],
                                      info.get("act_operations") or [],
                                      info.get("act_values") or []):
-            if nombre == "威力" and op in ("+", "-"):
+            if nombre in ("威力", "相手のダメージ") and op in ("+", "-"):
                 try:
                     total += int(float(valor)) * (1 if op == "+" else -1)
                 except (TypeError, ValueError):
                     continue
     return total
+
+
+# Acts que cambian el daño de los golpes propios y timings que el juego evalúa golpe a
+# golpe (9 tras la tirada … 13 Break Defenses; 10 = modificador de daño)
+_ACTS_DANO_PROPIO = ("攻撃力", "威力", "相手のダメージ")
+_TIMINGS_POR_GOLPE = frozenset({9, 10, 11, 12, 13})
+
+
+def depende_del_hp_propio(sids) -> bool:
+    """
+    True si alguna de estas habilidades cambia el daño de los golpes PROPIOS según el HP
+    actual de la unidad, evaluado golpe a golpe: Reprisal / Reprisal+ (Verónica,
+    SID_血讐: Timing 10, "攻撃力 + (MaxHP − HP) × 0.3"). Tras recibir un contraataque, su
+    siguiente golpe pega más; motor_calculo recalcula entonces ese golpe con el HP del
+    momento. Mira también las inactivas al empezar (a HP lleno Reprisal no se cumple).
+    """
+    for sid in sids or ():
+        info = HABILIDADES.get(sid) or {}
+        if int(info.get("timing") or 0) not in _TIMINGS_POR_GOLPE or int(info.get("action") or 0) == 2:
+            continue
+        if not any(n in _ACTS_DANO_PROPIO for n in (info.get("act_names") or [])):
+            continue
+        texto = str(info.get("condition") or "") + " " + " ".join(map(str, info.get("act_values") or []))
+        # HP / MaxHP propios (no los del rival)
+        if "HP" in texto.replace("相手のMaxHP", "").replace("相手のHP", ""):
+            return True
+    return False
 
 
 def cruza_terreno_como_volador(unidad) -> bool:
@@ -267,7 +295,9 @@ def cruza_terreno_como_volador(unidad) -> bool:
     efectos de combate (sigue recibiendo la efectividad de su clase, y el fuego la quema).
     """
     for sid in sids_activos(unidad):
-        if (HABILIDADES.get(sid) or {}).get("cruza_como_volador"):
+        info = HABILIDADES.get(sid) or {}
+        # Skill.xml Flag bit 49: solo lo lleva Soar (SID_天駆 y sus variantes de estilo)
+        if int(info.get("flag") or 0) & FLAG_CRUZA_COMO_VOLADOR or info.get("cruza_como_volador"):
             return True
     return False
 
@@ -577,6 +607,8 @@ TARGET_ALIADOS = 2
 # Bit 23 del Flag: el portador también recibe el efecto cuando algún aliado cumple
 # la condición ("grants Avo+10 to both of them": Crimson Cheer, Alabaster Duty, Verdant Faith).
 FLAG_AURA_TAMBIEN_PROPIO = 1 << 23
+# Skill.xml Flag bit 49: "Unit can cross terrain as if flying" (Soar de Camilla, único SID que lo lleva)
+FLAG_CRUZA_COMO_VOLADOR = 1 << 49
 
 # Claves del acumulador que son modificadores numéricos de combate. Cualquier
 # otra clave de ACT_STAT_MAP se acumula igual pero el motor la ignora hasta que

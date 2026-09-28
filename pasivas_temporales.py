@@ -69,8 +69,12 @@ def anima_focus(tablero, atacante, objetivo, arma) -> list:
     # "Durante 1 turno": caduca al entrar en la siguiente fase del objetivo
     fase = "jugador" if getattr(objetivo, "es_aliado", False) else "enemigo"
     elemento = next(e for e, s in EFECTOS_ANIMA_FOCUS.items() if s == sid_efecto)
+    boosts = dict(info.get("stat_boosts") or {})
+    # Verificado en juego (2026-09-28): el Mov-2 del viento NO se aplica — el enemigo sigue
+    # con su movimiento normal aunque el texto y el datamine lo digan. El Def-3 del fuego sí.
+    boosts.pop("mov", None)
     est = objetivo.otorgar_estado_temporal(
-        sid_efecto, f"Anima Focus ({elemento})", dict(info.get("stat_boosts") or {}),
+        sid_efecto, f"Anima Focus ({elemento})", boosts,
         fase, int(getattr(tablero, "turno_actual", 1)) + 1,
         origen=str(getattr(atacante, "nombre", "") or ""))
     return [(objetivo.nombre, est)] if est else []

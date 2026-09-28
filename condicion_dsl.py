@@ -551,6 +551,10 @@ LITERALS = {
 }
 
 FUNCTIONS = {
+    # comp(x, a, b, c): a si x < 0, b si x == 0, c si x > 0. Solo lo usa Vajra-Mushti
+    # (SID_攻撃属性弱点変化): "comp(相手の守備 - 相手の魔防, 物理属性, 攻撃属性, 魔法属性)",
+    # es decir, pega a la más baja de Def/Res del rival.
+    "comp": lambda ctx, x, a, b, c: a if x < 0 else (b if x == 0 else c),
     "min": lambda ctx, *args: min(args),
     "max": lambda ctx, *args: max(args),
     "int": lambda ctx, v: int(float(v)),
@@ -558,7 +562,10 @@ FUNCTIONS = {
     "スキル確率": lambda ctx, prob: _proc(ctx, prob),
     "相手のスキル所持": lambda ctx, frag: _rival_tiene_habilidad(ctx, str(frag)),
     "スキル所持": lambda ctx, frag: _tiene_habilidad(ctx, str(frag)),
-    "攻撃結果": lambda ctx, resultado: str(resultado) == ctx.ultimo_resultado,
+    # 攻撃結果(特効): el golpe en curso es efectivo (Keen Insight). Se sabe antes de
+    # golpear (Item.xml), así que no espera a `ultimo_resultado` como ブレイク.
+    "攻撃結果": lambda ctx, resultado: (ctx.mult_efectividad_propia > 1) if str(resultado).strip() == "特効"
+                                        else str(resultado) == ctx.ultimo_resultado,
     "相手の個人判定": lambda ctx, nombre_jp: _rival_es_personaje(ctx, str(nombre_jp)),
     "周囲の隣接男女数": lambda ctx, n, g1, g2: _contar_pares_adyacentes_genero(ctx, int(n), int(g1), int(g2)),
     "周囲の性別数": lambda ctx, n, g: _contar_genero_alrededor(ctx, int(n), int(g)),
@@ -674,6 +681,8 @@ ACT_STAT_MAP = {
     "回復": "curacion",
     "相手の回復": "rival_curacion",
     "相手のHP": "rival_hp",
+    "相手の魔防": "rival_res",          # Res del rival que aplica a ESTE golpe (Flare: × 0.8 / 0.7)
+    "相手の守備": "rival_def",
     "力": "str", "魔力": "mag", "技": "dex", "守備": "def", "魔防": "res",
     "速さ": "spd", "幸運": "lck", "体格": "bld",
     "相手の防御力": "rival_defensa_efectiva",   # Luna: -50 % de la DEF/RES que aplica a este golpe
@@ -711,7 +720,15 @@ def leer_acts(info_habilidad: dict, ctx: ContextoCombate = None):
         if not clave:
             continue
         if clave in ACTS_TEXTO:
-            resultado.append((clave, op, LITERALS.get(str(val), str(val))))
+            texto = str(val)
+            if "(" in texto and ctx is not None:
+                # Expresión que da un literal (Vajra-Mushti: comp(...) -> 物理属性 / 魔法属性)
+                try:
+                    resultado.append((clave, op, str(_eval(_parsear(texto), ctx))))
+                    continue
+                except Exception:
+                    pass
+            resultado.append((clave, op, LITERALS.get(texto, texto)))
             continue
         try:
             valor = float(val)

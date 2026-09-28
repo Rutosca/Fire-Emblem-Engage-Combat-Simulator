@@ -124,20 +124,51 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
     (`SID_理魔法＋_炎/雷/風_効果`); antes apuntaba a pseudo-SIDs del overlay borrados y otorgaba
     estados vacíos. Los estados temporales del defensor salen ahora en `pasivas_activas` como
     "X del defensor (…)" (antes solo los del atacante: un Def -3 en el objetivo no se veía).
-- **Pendiente para la Fase 3b** (apuntado el 2026-09-28, tras la 3a):
-  - **Peligrosidad de las amenazas enemigas.** Hoy el análisis calcula `amenazas_inminentes`
-    (combate de peor caso de cada enemigo que alcanza a cada aliado) pero **nunca lo añade a
-    los resultados** (código muerto); lo único que pesa son las zonas de peligro, que cuentan
-    enemigos (-80 por zona) sin mirar el daño. Objetivo: no es lo mismo que Louis esté al
-    alcance de 3 Lance Fighters que no le hacen nada, que Céline, o que Louis ante 2 magos
-    que lo revientan. Ponderar cada zona por el daño esperado / letalidad del combate real y
-    mostrar las amenazas serias (a quién, cuánto daño, si es letal, suma de varios enemigos).
-  - **Reprisal / Reprisal+ (Verónica, `SID_血讐` / `SID_血讐＋`)**: Atk + floor((MaxHP − HP) ×
-    0.3 / 0.5) en cada golpe **propio** (Timing 10, Action 1), con Condition de que el bono sea
-    ≥ 1. Varía a mitad de combate: tras recibir un contraataque su siguiente golpe pega más.
-    Exige la evaluación por golpe con el HP actualizado. Cuidado especial (pedido por el usuario).
-  - Auras de combate sobre rivales (Timing 20 / Target 1: Racket of Solm, Timerra) y auras
-    por estado del tablero (calcular `efectos_recibidos` una vez por combate, no por golpe).
+- **Fase 3b — evaluación por golpe y peligro real** (hecha, 2026-09-28)
+  - **Timing 12 sobre el daño infligido** (`相手のダメージ` + / ×, golpes propios, camino normal):
+    Keen Insight / + (+5/+7 si el golpe es efectivo; `攻撃結果(特効)` se sabe antes de golpear),
+    Camilla's Axe (+ max(Res − Def del rival, 0)), Infierno Oscuro Místico (× 1.2), aliento
+    volador de Tiki (× 0.7). Los "=" (Mercy, Bane, Lethality…) y las fracciones de los Ataques
+    de Emblema de varios golpes siguen por su camino. Cataclysm suma Keen Insight antes del reparto.
+  - **Flare**: `相手の魔防` / `相手の守備` en el vocabulario (× 0.8, × 0.7 Místico, truncado).
+  - **Soar**: Flag bit 49 (`FLAG_CRUZA_COMO_VOLADOR`, solo lo lleva Soar).
+  - **Ataque de Emblema sin nombre inglés** (DLC: "CamillaEngageAtk"): se usa el
+    `sid_ataque_emblema` de la unidad (God.xml) para sus variantes de estilo.
+  - **Reprisal / Reprisal+**: `pasivas.depende_del_hp_propio` marca los golpes cuyo daño depende
+    del HP propio (Timing 9-13, acts de daño); `simular_combate.daño_golpe` recalcula cada golpe
+    con el HP del momento (atacando: el follow-up tras el contraataque; defendiendo: ya el
+    contraataque). `daño_por_golpe` publica el primero; totales y secuencia, los reales.
+  - **Bonos del arma equipada** (Item.xml `Enhance.*`, armas Kind 1-9): `enhance` en el catálogo
+    y en `Arma`; `CalculadoraEngage._con_enhance` los suma al pelear. 35 armas: Camilla's Axe
+    Res+10, Binding Blade Def/Res+5, Mulagir Vel+5, Ragnell/Armads Def+5, Light Brand Lck+10…
+    y **Shielding Art Def+5** (verificado en juego con los Martial Monk del Cap. 10: golden del
+    Cap. 10 regenerado, 218 combates, todos por esto). Las demás Artes: Brave, Flashing Fist
+    (Vel+5 al atacar, +5 daño recibido) ya iban por SID.
+  - **Vajra-Mushti**: `攻撃属性 = comp(相手の守備 - 相手の魔防, 物理属性, 攻撃属性, 魔法属性)` — pega a
+    la más baja de Def/Res. Nueva función `comp` de la DSL; los acts de texto con expresión se
+    evalúan; el motor lee `textos["atributo"]` (antes se recogía y no se usaba).
+  - **Anima Focus**: el Mov-2 del viento NO se aplica en el juego (verificado por el jugador:
+    el enemigo conserva su movimiento). Se otorga el estado sin tocar el Mov; el Def-3 del
+    fuego y el Hit-20 del trueno sí.
+  - **Peligro real de las amenazas** (`motor_analisis.peligro_de_enemigo` / `exposicion_en`):
+    cada par (enemigo, aliado) pesa por su peor combate real contra ese aliado (inofensivo 5,
+    daño 20-180 según % de HP, letal 300; +200 si entre varios lo matan). Lo usan la casilla de
+    ataque, la retirada Canter, la penalización del score (en "amenazas equivalentes") y el
+    filtro de "5+ enemigos" (solo cuentan los que hacen daño). El panel muestra el daño que le
+    pueden hacer en la casilla final. Avisos `peligro_aliado` (máx. 3) para quien moriría o
+    perdería la mitad del HP quedándose donde está; no salen si un plan gana el mapa este turno.
+  - **Fallos silenciosos corregidos**: el filtro de suicidio ("no renta una baja si al turno
+    siguiente muere") **nunca saltaba** — `calcular_peor_caso_amenaza` sin `calc` da siempre 0
+    de daño; ahora usa el peligro real. Las jugadas contra el jefe letales quedan ocultas
+    (-1000, antes -50 y se mostraban) salvo que las use el asalto; si derrotar al jefe gana el
+    mapa, se conservan para él. El plan de baja conjunta prueba casillas alternativas cuando
+    dos aliados eligen la misma (el asalto de 3 pasos a Hortensia no se formaba). Zonas de
+    peligro y movimiento con `movimiento_disponible` (congelados, hielo de Camilla). El aviso
+    de "Avance Seguro" comprueba de verdad las zonas (2D: mapas horizontales y verticales) en
+    vez de afirmar "ningún enemigo alcanza" y dar una "columna X" segura. Quitado el cálculo
+    muerto de `amenazas_inminentes` (el panel es solo del jugador desde 00380d7) y `expo_txt`.
+  - Pendiente: auras de combate sobre rivales (Timing 20 / Target 1: Racket of Solm, Timerra)
+    y auras por estado del tablero (calcular `efectos_recibidos` una vez por combate).
 - **Fase 3 — secuencia y eventos**: acts de secuencia (`手番回数`, `攻撃回数`,
   `行動回数`, `攻撃結果`) en `simular_combate`; evaluación por golpe (`timing` 6-12,
   `action` 1/2) para `ダメージ` (Hold Out, Divine Speed 50 %); `give_target` 0/2/3/4 y

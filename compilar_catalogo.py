@@ -470,6 +470,16 @@ def compilar():
             # dos golpes por ataque al iniciar), SID_追撃不可 (sin follow-up), SID_必中…
             "equip_sids": [x.strip() for x in equip_sids_raw.split(";") if x.strip()],
             "precio": to_int(it.get("Price")),
+            # Bonos de stats mientras el arma está equipada (Item.xml Enhance.*): armas de
+            # Emblema como Camilla's Axe (Res+10), Binding Blade (Def/Res+5), Mulagir (Vel+5).
+            # Solo armas (Kind 1-9): en los consumibles (Kind 10) es el bono permanente.
+            "enhance": ({k: v for k, v in (
+                ("str", to_int(it.get("Enhance.Str"))), ("mag", to_int(it.get("Enhance.Magic"))),
+                ("dex", to_int(it.get("Enhance.Tech"))), ("spd", to_int(it.get("Enhance.Quick"))),
+                ("def", to_int(it.get("Enhance.Def"))), ("res", to_int(it.get("Enhance.Mdef"))),
+                ("lck", to_int(it.get("Enhance.Luck"))), ("bld", to_int(it.get("Enhance.Phys"))),
+                ("hp", to_int(it.get("Enhance.Hp"))), ("mov", to_int(it.get("Enhance.Move")))) if v}
+                if kind_code in ("1", "2", "3", "4", "5", "6", "7", "8", "9") else {}),
             "usos_max": usos_max,
             "efectividades": efectividades,  # e.g. ["volador"], ["acorazado", "caballería"]
         }

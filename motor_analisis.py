@@ -101,7 +101,8 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
         apoyos.append(c)
     return apoyos
 
-def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, analizador=None, casillas_alcanzables_precalc=None, zonas_amenaza_enemigos=None, detalle=None):
+def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, analizador=None, casillas_alcanzables_precalc=None, zonas_amenaza_enemigos=None, detalle=None,
+                                exposicion=None):
     """
     Encuentra la mejor casilla (x, y) libre a la que puede moverse el aliado para atacar al enemigo con el arma dada.
     Con Advance (SID_踏み込み) también se consideran las casillas adyacentes al enemigo a las
@@ -114,7 +115,9 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
        - Se puede transitar a través de aliados vivos.
        - La casilla de destino final no puede estar ocupada por ninguna otra unidad viva (aliada ni enemiga).
     3. Exposición a líneas de peligro enemigas (Danger Zone):
-       - Penaliza casillas que queden dentro del rango de ataque de otros enemigos vivos (-80 pts por cada enemigo que alcanza la casilla).
+       - Penaliza casillas que queden dentro del rango de ataque de otros enemigos vivos. Con
+         `exposicion(pos)` (el análisis la pasa) cada enemigo pesa según su daño real a esta
+         unidad (ver exposicion_en); sin ella, -80 por cada enemigo que alcanza la casilla.
     4. Bonificaciones defensivas de terreno (DFN*15 + AVO) y menor distancia recorrida.
     5. Si NO existe ninguna casilla física libre y alcanzable -> devuelve None (no puede atacar este turno).
     """
@@ -150,11 +153,12 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
         alto = mapa.alto
         es_volador = getattr(aliado, 'es_volador', False)
 
+        mov_aliado = getattr(aliado, 'movimiento_disponible', aliado.mov)   # congelado = 0
         if analizador is not None:
             u_mock = UnidadMock(
                 x=aliado.x,
                 y=aliado.y,
-                mov=aliado.mov,
+                mov=mov_aliado,
                 es_volador=es_volador,
                 arma=ArmaMock(rango=r_arma)
             )
@@ -164,8 +168,8 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
                 casillas_bloqueadas=enemigos_bloqueo
             )
         else:
-            cola = deque([(aliado.x, aliado.y, aliado.mov)])
-            visitados = {(aliado.x, aliado.y): aliado.mov}
+            cola = deque([(aliado.x, aliado.y, mov_aliado)])
+            visitados = {(aliado.x, aliado.y): mov_aliado}
             direcciones = [(0, 1), (1, 0), (0, -1), (-1, 0)]
             while cola:
                 cx, cy, mov_restante = cola.popleft()
@@ -207,7 +211,9 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
 
             # Evaluación de exposición a otros enemigos (Líneas de peligro de Engage)
             penalizacion_amenazas = 0
-            if zonas_amenaza_enemigos:
+            if exposicion is not None:
+                penalizacion_amenazas = exposicion((nx, ny))
+            elif zonas_amenaza_enemigos:
                 amenazas_externas = sum(
                     1 for e_nom, zona in zonas_amenaza_enemigos.items()
                     if e_nom != enemigo.nombre and (nx, ny) in zona
@@ -222,8 +228,12 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
     if mejores:
         mejores.sort(key=lambda x: x[0], reverse=True)
         mejor = mejores[0][1]
-        if isinstance(detalle, dict) and tuple(mejor) in advance:
-            detalle["advance_desde"] = list(advance[tuple(mejor)])
+        if isinstance(detalle, dict):
+            if tuple(mejor) in advance:
+                detalle["advance_desde"] = list(advance[tuple(mejor)])
+            # Siguientes mejores casillas (sin Advance): el plan de baja conjunta las usa
+            # cuando dos aliados eligen la misma casilla para atacar al mismo objetivo
+            detalle["alternativas"] = [p for _, p in mejores[1:] if tuple(p) not in advance][:6]
         return mejor
 
     return None
@@ -241,11 +251,13 @@ def alcance_canter(ficha) -> int:
 
 def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_enemigos,
                               objetivo_nombre=None, objetivo_derrotado=False,
-                              posicion_inicial=None, analizador=None, permitir_sin_repliegue=False):
+                              posicion_inicial=None, analizador=None, permitir_sin_repliegue=False,
+                              exposicion=None):
     """Propone una retirada Canter solo si reduce amenazas tras el combate.
 
     El presupuesto es el movimiento que realmente quedó después de llegar a la
-    casilla de ataque, no una distancia fija.
+    casilla de ataque, no una distancia fija. Con `exposicion(pos, excluir)` (el análisis
+    la pasa) decide por el peligro real de cada enemigo; sin ella, contando enemigos.
     """
     if not unidad_tiene_canter(aliado):
         return None
@@ -264,7 +276,8 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
         (f.x, f.y) for f in tablero.obtener_enemigos()
         if f.viva and f.nombre != aliado.nombre
     }
-    mock_inicio = UnidadMock(inicio[0], inicio[1], aliado.mov, aliado.es_volador, ArmaMock([1]))
+    mock_inicio = UnidadMock(inicio[0], inicio[1], getattr(aliado, 'movimiento_disponible', aliado.mov),
+                             aliado.es_volador, ArmaMock([1]))
     setattr(mock_inicio, 'tiene_pass', pasivas.tiene_sid(aliado, 'SID_すり抜け'))
     restantes_inicio = analizador.calcular_movimiento_restante(mock_inicio, enemigos_bloqueo)
     restante = restantes_inicio.get(tuple(pos_ataque))
@@ -297,18 +310,24 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
     def contar_amenazas(pos):
         return sum(1 for zona in zonas.values() if pos in zona)
 
+    excluir = {objetivo_nombre} if (objetivo_derrotado and objetivo_nombre) else set()
+
+    def peso_amenazas(pos):
+        return exposicion(pos, excluir) if exposicion is not None else contar_amenazas(pos)
+
     amenazas_ataque = contar_amenazas(tuple(pos_ataque))
+    peso_ataque = peso_amenazas(tuple(pos_ataque))
     candidatas = [pos for pos in restantes_canter if pos not in ocupadas and pos != tuple(pos_ataque)]
     if not candidatas:
         return None
     candidatas.sort(key=lambda pos: (
-        contar_amenazas(pos),
+        peso_amenazas(pos),
         -(getattr(mapa.grid[pos[0]][pos[1]], 'dfn', 0) * 15 + getattr(mapa.grid[pos[0]][pos[1]], 'avo', 0)),
         -restantes_canter[pos]
     ))
     mejor = candidatas[0]
     amenazas_final = contar_amenazas(mejor)
-    if amenazas_final >= amenazas_ataque and not permitir_sin_repliegue:
+    if peso_amenazas(mejor) >= peso_ataque and not permitir_sin_repliegue:
         return None
     return {
         'pos_canter': [mejor[0], mejor[1]],
@@ -475,7 +494,8 @@ def _armas_aliado(aliado):
                                        else (w_c.rango if getattr(w_c, 'rango', None) else [1])),
                                 es_magica=getattr(w_c, 'es_magica', False),
                                 efectividades=list(getattr(w_c, 'efectividades', []) or []),
-                                efectivo_contra=list(getattr(w_c, 'efectivo_contra', []) or [])
+                                efectivo_contra=list(getattr(w_c, 'efectivo_contra', []) or []),
+                                enhance=dict(getattr(w_c, 'enhance', None) or {}),
                             )
                             # El alcance lo fija el SID del ataque (Astra Storm 1-10, 1-20 en
                             # Encubierto): se asigna después de construir el Arma porque
@@ -752,17 +772,27 @@ def _planificar_baja(enemigo, ops_vs_enemigo, tablero, aliados_usados=None):
         if prev is None or dmg > prev[0]:
             mejor_por_aliado[op["aliado"]] = (dmg, op)
     orden = sorted(mejor_por_aliado.values(), key=lambda t: (-t[0], t[1].get("daño_recibido", 0)))
-    acumulado, plan, pos_usadas = 0, [], set()
+    acumulado, plan, pos_usadas, reubicar = 0, [], set(), {}
     for dmg, op in orden:
         pos = tuple(op.get("pos_sugerida") or ())
         if pos and pos in pos_usadas:
-            continue
+            # Otro aliado ya ataca desde esa casilla: probar sus siguientes mejores casillas
+            alternativa = next((tuple(p) for p in (op.get("pos_alternativas") or []) if tuple(p) not in pos_usadas), None)
+            if alternativa is None:
+                continue
+            reubicar[id(op)] = (op, pos, alternativa)
+            pos = alternativa
         plan.append((dmg, op))
         pos_usadas.add(pos)
         acumulado += dmg
         if acumulado >= hp_total:
             break
     if plan and acumulado >= hp_total:
+        # Solo si el plan sale se mueve a cada aliado reubicado a su casilla alternativa
+        for op, antes, despues in reubicar.values():
+            op["pos_sugerida"] = list(despues)
+            op["recomendacion"] = op.get("recomendacion", "").replace(
+                f"Mover a ({antes[0]},{antes[1]})", f"Mover a ({despues[0]},{despues[1]})")
         return plan, acumulado, hp_total
     return None
 
@@ -930,6 +960,76 @@ def obtener_protector_chain_guard(objetivo, tablero):
     return None
 
 
+# ── Peligrosidad de las amenazas (Fase 3b) ────────────────────────────────────
+# Antes cada enemigo que alcanzaba una casilla contaba lo mismo, hiciera 0 de daño o
+# matara. Ahora cada par (enemigo, aliado) pesa según su peor combate real contra ESE
+# aliado: 3 Lance Fighters que no le hacen nada a Louis apenas cuentan; 2 magos que lo
+# revientan cuentan mucho. La CPU no es tonta: si puede matar a alguien, lo hará.
+PESO_AMENAZA_DESCONOCIDA = 80    # sin combate simulable: el peso de siempre (1 amenaza)
+PESO_AMENAZA_INOFENSIVA = 5      # le alcanza pero no le hace daño
+PESO_AMENAZA_LETAL = 300         # le mata él solo
+EXTRA_LETAL_COMBINADA = 200      # ninguno le mata solo, pero entre todos sí
+
+
+def _peso_amenaza(daño: int, hp: int, letal: bool) -> int:
+    if letal:
+        return PESO_AMENAZA_LETAL
+    if daño <= 0:
+        return PESO_AMENAZA_INOFENSIVA
+    return int(20 + 160 * min(1.0, daño / max(1, hp)))
+
+
+def _hp_de(ficha) -> int:
+    return int(getattr(ficha, 'hp_actual', 0) or getattr(getattr(ficha, 'stats', None), 'hp', 0) or 0)
+
+
+def peligro_de_enemigo(enemigo, aliado) -> dict:
+    """
+    {"daño", "letal", "peso"} del peor combate que `enemigo` puede iniciar contra `aliado`
+    (cualquier distancia de su arma, terreno llano, con el contraataque del aliado y sus
+    pasivas). "daño" None si no se puede simular (se usa el peso de siempre).
+    """
+    hp = _hp_de(aliado)
+    peor = None
+    if enemigo is not None and getattr(enemigo, 'stats', None) and getattr(enemigo, 'arma', None) and getattr(aliado, 'stats', None):
+        for dist in sorted(set(enemigo.arma.rango or [1])):
+            try:
+                r = CalculadoraEngage.simular_combate(enemigo.stats, aliado.stats, enemigo.arma, aliado.arma,
+                                                      Terreno(), Terreno(), dist)
+            except Exception:
+                continue
+            d = max(0, hp - int(r["resultado"].get("hp_defensor_final", hp)))
+            peor = d if peor is None else max(peor, d)
+    if peor is None:
+        return {"daño": None, "letal": False, "peso": PESO_AMENAZA_DESCONOCIDA}
+    letal = hp > 0 and peor >= hp
+    return {"daño": peor, "letal": letal, "peso": _peso_amenaza(peor, hp, letal)}
+
+
+def exposicion_en(pos, aliado, zonas, peligro, excluir=()) -> dict:
+    """
+    Lo que le espera a `aliado` si acaba el turno en `pos`: {"peso", "daño", "enemigos",
+    "letal"}. `peligro(e_nom, aliado)` da el peligro de cada par (cacheado por el análisis).
+    El peso suma el de cada enemigo que alcanza la casilla, más un extra si entre todos lo
+    matan aunque ninguno pueda solo.
+    """
+    pos = tuple(pos)
+    peso, daño, enemigos, alguno_letal = 0, 0, [], False
+    for e_nom, zona in (zonas or {}).items():
+        if e_nom in excluir or pos not in zona:
+            continue
+        p = peligro(e_nom, aliado)
+        peso += p["peso"]
+        daño += p["daño"] or 0
+        alguno_letal = alguno_letal or p["letal"]
+        enemigos.append(e_nom)
+    hp = _hp_de(aliado)
+    letal_combinada = (not alguno_letal) and hp > 0 and daño >= hp
+    if letal_combinada:
+        peso += EXTRA_LETAL_COMBINADA
+    return {"peso": peso, "daño": daño, "enemigos": enemigos, "letal": alguno_letal or letal_combinada}
+
+
 def actua_por_su_cuenta(ficha) -> bool:
     """False para los dobles de Call Doubles (Lyn): no se mueven ni atacan en la fase de su
     bando (verificado en juego); solo encadenan con su invocador y hacen de señuelo."""
@@ -988,10 +1088,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     casillas_mov_fusion = {}
     for a in aliados_activos:
         tiene_pass = pasivas.tiene_sid(a, 'SID_すり抜け')
+        # movimiento_disponible, no `mov`: congelada (Ice Breath) = 0, hielo de Camilla +2
         u_mock = UnidadMock(
             x=a.x,
             y=a.y,
-            mov=a.mov,
+            mov=a.movimiento_disponible,
             es_volador=a.es_volador,
             arma=ArmaMock(rango=[1])
         )
@@ -1002,7 +1103,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         )
         bono_mov = pasivas.bono_movimiento_fusion_potencial(a) if puede_fusionar(a) else 0
         if bono_mov > 0:
-            u_fus = UnidadMock(x=a.x, y=a.y, mov=a.mov + bono_mov, es_volador=a.es_volador, arma=ArmaMock(rango=[1]))
+            u_fus = UnidadMock(x=a.x, y=a.y, mov=a.movimiento_disponible + bono_mov, es_volador=a.es_volador, arma=ArmaMock(rango=[1]))
             setattr(u_fus, 'tiene_pass', tiene_pass)
             casillas_mov_fusion[a.nombre] = analizador.calcular_casillas_alcanzables(
                 u_fus, casillas_bloqueadas=enemigos_bloqueo)
@@ -1013,10 +1114,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     alto_m = mapa.alto
     for e in enemigos_que_actuan:
         r_arma = e.arma.rango if (e.arma and e.arma.rango) else [1]
+        # Un enemigo congelado en esta fase sigue congelado en la suya (se deshiela al acabarla)
         u_mock = UnidadMock(
             x=e.x,
             y=e.y,
-            mov=e.mov,
+            mov=e.movimiento_disponible,
             es_volador=e.es_volador,
             arma=ArmaMock(rango=r_arma)
         )
@@ -1034,113 +1136,27 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                             amenaza_e.add((ax, ay))
         zonas_amenaza_enemigos[e.nombre] = amenaza_e
 
-    amenazas_inminentes = []
+    # Peligro real de cada par (enemigo, aliado), calculado solo cuando hace falta
+    _peligro_pares = {}
+
+    def peligro(e_nom, aliado_p):
+        clave = (e_nom, aliado_p.nombre)
+        if clave not in _peligro_pares:
+            _peligro_pares[clave] = peligro_de_enemigo(tablero.obtener_ficha(e_nom), aliado_p)
+        return _peligro_pares[clave]
+
+    def exposicion(pos, aliado_p, excluir=()):
+        return exposicion_en(pos, aliado_p, zonas_amenaza_enemigos, peligro, excluir)
+
     oportunidades_jugador = []
     distancias_frente = []
 
-    # ── 1. Evaluar amenazas enemigas sobre aliados ────────────────────────
+    # ── 1. Distancias al frente ───────────────────────────────────────────
+    # (Las amenazas por par enemigo/aliado se calculan a demanda con `peligro`; el panel es
+    # solo para el jugador desde 00380d7, así que aquí ya no se simula cada amenaza.)
     for enemigo in enemigos_que_actuan:
-        rango_max_enemigo = max(enemigo.arma.rango) if enemigo.arma.rango else 1
-        alcance_enemigo = enemigo.mov + rango_max_enemigo
-
         for aliado in aliados_activos:
-            dist = abs(aliado.x - enemigo.x) + abs(aliado.y - enemigo.y)
-            distancias_frente.append((dist, enemigo, aliado))
-
-            if dist <= alcance_enemigo + 1:
-                try:
-                    contexto = ContextoMapaEnemigo(
-                        analizador=analizador,
-                        ficha_enemigo=enemigo,
-                        pos_jugador=(aliado.x, aliado.y),
-                        ficha_jugador=aliado,
-                    )
-                    peor_caso = analizador.calcular_peor_caso_amenaza(
-                        enemigo, (aliado.x, aliado.y), aliado,
-                        casillas_movimiento_precalc=casillas_mov_enemigos.get(enemigo.nombre)
-                    )
-
-                    if peor_caso and (peor_caso.get("puede_atacar", False) or peor_caso.get("enemigo_alcanza", False)):
-                        dist_combate = peor_caso.get("distancia_ataque", 1)
-                        t_def = mapa.grid[aliado.x][aliado.y]
-                        t_atk = mapa.grid[enemigo.x][enemigo.y]
-
-                        apoyos_enemigos = obtener_aliados_backup(enemigo, aliado, tablero=tablero)
-                        aliados_backup_stats = [e_sup.stats for e_sup in apoyos_enemigos]
-
-                        veredicto = CalculadoraEngage.evaluar_riesgo(
-                            atacante=enemigo.stats,
-                            defensor=aliado.stats,
-                            arma_atk=enemigo.arma,
-                            arma_def=aliado.arma,
-                            terreno_def=Terreno(avo=t_def.avo, dfn=defensa_de_terreno(t_def, enemigo.es_aliado),
-                                curacion_turno=getattr(t_def, 'curacion_turno', 0),
-                                es_antirruptura=getattr(t_def, 'es_antirruptura', False),
-                                es_recarga_emblema=getattr(t_def, 'es_recarga_emblema', False)),
-                            terreno_atk=Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, aliado.es_aliado),
-                                curacion_turno=getattr(t_atk, 'curacion_turno', 0),
-                                es_antirruptura=getattr(t_atk, 'es_antirruptura', False),
-                                es_recarga_emblema=getattr(t_atk, 'es_recarga_emblema', False)),
-                            distancia=dist_combate,
-                            perfil=perfil,
-                            cronogema_usada=cronogema,
-                            contexto_mapa=contexto,
-                            defensor_en_ruptura=(getattr(aliado, 'cargas_ruptura', 0) > 0),
-                            aliados_apoyo_backup=aliados_backup_stats,
-                            chain_guard_protector=obtener_protector_chain_guard(aliado, tablero),
-                        )
-
-                        mult_eff, desc_eff = CalculadoraEngage.calcular_efectividad(enemigo.arma, aliado.stats)
-                        eff_tag = f" [{desc_eff}]" if desc_eff else ""
-                        if enemigo.arma.es_magica and aliado.stats.tipo_movimiento == 'acorazado':
-                            eff_tag += " [Magia penetra Armadura]"
-
-                        verd = veredicto["veredicto"]
-                        combate_e = veredicto.get("combate", {})
-                        atk_e = combate_e.get("atacante", {})
-                        res_e = combate_e.get("resultado", {})
-                        hp_aliado_tras = res_e.get("hp_defensor_final", aliado.stats.hp)
-
-                        chain_attacks_e = res_e.get("chain_attacks", [])
-                        chain_e_txt = ""
-                        if chain_attacks_e:
-                            chain_parts_e = [
-                                f"La unidad {ca['nombre']} puede realizar ataque en cadena contra {aliado.nombre} haciendo {ca['daño']} de daño (80% Hit)."
-                                for ca in chain_attacks_e
-                            ]
-                            chain_e_txt = "Chain Attack enemigo: " + " ".join(chain_parts_e) + " Y luego el ataque del enemigo. "
-
-                        jugador_contra = peor_caso.get("jugador_puede_contra", False)
-                        if jugador_contra:
-                            contra_tag = f" | {aliado.nombre} contraataca"
-                        else:
-                            r_ali = aliado.arma.rango if (aliado.arma and aliado.arma.rango) else [1]
-                            contra_tag = f" | {aliado.nombre} no contraataca a dist. {dist_combate} (arma rango {r_ali})"
-
-                        rec_texto = (
-                            f"AMENAZA: {chain_e_txt}{enemigo.nombre} -> {aliado.nombre}{eff_tag} | "
-                            f"Daño: {atk_e.get('daño_total_ronda', '?')} ({atk_e.get('golpes_en_ronda','?')}x{atk_e.get('daño_por_golpe','?')}) | "
-                            f"Hit: {atk_e.get('precision','?')}% | "
-                            f"{aliado.nombre} quedaría en {hp_aliado_tras}/{aliado.stats.hp} HP.{contra_tag} "
-                        )
-                        if verd.get("kill_seguro") or hp_aliado_tras <= 0:
-                            rec_texto += f"LETAL — mueve a {aliado.nombre} fuera de alcance o interpón otra unidad."
-                        elif hp_aliado_tras <= aliado.stats.hp * 0.3:
-                            rec_texto += f"CRÍTICO — {aliado.nombre} quedaría muy débil. Considera retroceder o usar Rescatar."
-
-                        amenazas_inminentes.append({
-                            "tipo_analisis": "amenaza_enemiga",
-                            "aliado": aliado.nombre,
-                            "enemigo": enemigo.nombre,
-                            "arma_recomendada": enemigo.arma.nombre if (enemigo.arma and hasattr(enemigo.arma, 'nombre')) else "",
-                            "pos_sugerida": peor_caso.get("pos_optima") if peor_caso else None,
-                            "distancia_combate": dist_combate,
-                            "veredicto": verd,
-                            "chain_attacks": chain_attacks_e,
-                            "recomendacion": rec_texto,
-                        })
-                except Exception as e_am:
-                    _registrar_error_analisis(enemigo.nombre, aliado.nombre, "amenaza", e_am)
+            distancias_frente.append((abs(aliado.x - enemigo.x) + abs(aliado.y - enemigo.y), enemigo, aliado))
 
     # ── 2. Evaluar oportunidades de ataque del jugador (multi-arma) ───────
     for aliado in aliados_activos:
@@ -1160,6 +1176,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             mejor_pos = None
             mejor_area = None
             mejor_advance = None
+            mejor_alternativas = []
             mejor_fusion_mov = False
             mejor_score = -10**9   # centinela: también se aceptan scores negativos (plan de jefe)
 
@@ -1168,13 +1185,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 is_tele_candidata = "ragnarok" in (arma_candidata.nombre or "").lower() or getattr(arma_candidata, 'engage_attack_nombre', '').lower().startswith('warp')
                 pos_forzada = getattr(arma_candidata, 'pos_forzada', None)
                 advance_desde = None
+                alternativas_pos = []
                 if pos_forzada is not None:
                     # Ballesta: se dispara desde su propia casilla (si se puede llegar a ella)
                     if not _pos_forzada_alcanzable(aliado, pos_forzada, casillas_mov_aliados.get(aliado.nombre), tablero):
                         continue
                     pos_candidata = pos_forzada
                 else:
-                    mov_util = aliado.mov + (mov_extra_fusion and pasivas.bono_movimiento_fusion_potencial(aliado) or 0)
+                    mov_util = aliado.movimiento_disponible + (mov_extra_fusion and pasivas.bono_movimiento_fusion_potencial(aliado) or 0)
                     alcance = (10 if is_tele_candidata else mov_util) + rango_max
                     if dist > alcance:
                         continue
@@ -1185,8 +1203,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         mapa=mapa, tablero=tablero, analizador=analizador,
                         casillas_alcanzables_precalc=(alcanzables_con_fusion or alcanzables_normales) if not is_tele_candidata else None,
                         zonas_amenaza_enemigos=zonas_amenaza_enemigos, detalle=detalle_pos,
+                        exposicion=lambda p, _a=aliado, _e=enemigo: exposicion(p, _a, {_e.nombre})["peso"],
                     )
                     advance_desde = detalle_pos.get("advance_desde")
+                    alternativas_pos = detalle_pos.get("alternativas", [])
                 if pos_candidata is None:
                     continue
 
@@ -1400,10 +1420,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
 
                     # Preferir casillas más seguras (con menos amenazas enemigas tras atacar)
                     pos_cand_tuple = (pos_candidata[0], pos_candidata[1])
-                    amenazas_candidata = sum(
-                        1 for e_nom, zona in zonas_amenaza_enemigos.items()
-                        if e_nom != enemigo.nombre and pos_cand_tuple in zona
-                    )
+                    # "Amenazas equivalentes": cada enemigo pesa según su daño real a este
+                    # aliado (1 = una amenaza normal; uno inofensivo ~0; uno letal ~3.75)
+                    amenazas_candidata = (exposicion(pos_cand_tuple, aliado, {enemigo.nombre})["peso"]
+                                          / PESO_AMENAZA_DESCONOCIDA)
                     # Capping y racionalización: la exposición guía la elección de casilla,
                     # pero jamás debe hundir un ataque viable no-suicida en -1680 pts
                     penalizacion_amenazas = min(120, amenazas_candidata * 25)
@@ -1427,6 +1447,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         mejor_pos = pos_candidata
                         mejor_area = area_info
                         mejor_advance = advance_desde
+                        mejor_alternativas = alternativas_pos
                         mejor_fusion_mov = fusion_por_movimiento
 
                 except Exception as e_op:
@@ -1540,7 +1561,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 aliado, enemigo, mejor_arma,
                 mapa=mapa, tablero=tablero, analizador=analizador,
                 casillas_alcanzables_precalc=casillas_mov_aliados.get(aliado.nombre),
-                zonas_amenaza_enemigos=zonas_amenaza_enemigos
+                zonas_amenaza_enemigos=zonas_amenaza_enemigos,
+                exposicion=lambda p, _a=aliado, _e=enemigo: exposicion(p, _a, {_e.nombre})["peso"],
             )
             if pos_sug is None:
                 continue
@@ -1568,6 +1590,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 objetivo_nombre=enemigo.nombre,
                 objetivo_derrotado=verd.get("kill_seguro", False),
                 analizador=analizador,
+                exposicion=lambda p, excl, _a=aliado: exposicion(p, _a, excl)["peso"],
             )
             pos_canter = canter["pos_canter"] if canter else None
             if canter:
@@ -1579,7 +1602,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             # Prioridad Maddening: evitar ataques suicidas.
             # Se evalúa el HP restante real del aliado tras el combate (hp_atk_fin)
             # contra el daño acumulado de todos los enemigos que alcanzan la casilla final.
-            amenazas_finales = canter.get("amenazas_final", len(amenazas_en_destino)) if canter else len(amenazas_en_destino)
+            # Solo cuentan los enemigos que le hacen daño: 5 que no le arañan no son un peligro
+            excl_final = {enemigo.nombre} if verd.get("kill_seguro") else set()
+            expo_final = exposicion(tuple(pos_canter) if pos_canter else tuple(pos_sug), aliado, excl_final)
+            amenazas_finales = sum(1 for e_nom in expo_final["enemigos"] if peligro(e_nom, aliado)["daño"] != 0)
             if amenazas_finales >= 5 and not es_jefe_e and not termina_mapa:
                 continue
 
@@ -1607,7 +1633,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         casillas_movimiento_precalc=casillas_mov_enemigos.get(e_nom)
                     )
                     if peor_pos and (peor_pos.get("puede_atacar") or peor_pos.get("enemigo_alcanza")):
-                        dano_amenaza = int(peor_pos.get("daño_proyectado", 0) or 0)
+                        # calcular_peor_caso_amenaza sin `calc` solo mira si llega (su
+                        # daño_proyectado es siempre 0: por eso este filtro nunca saltaba).
+                        # El daño es el del peor combate real de ese enemigo contra este aliado.
+                        dano_amenaza = int(peligro(e_nom, aliado)["daño"] or 0)
                         dano_acumulado_amenazas += dano_amenaza
                         if e_nom != enemigo.nombre:
                             dano_amenazas_sin_objetivo += dano_amenaza
@@ -1621,21 +1650,15 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 letal_solo_por_objetivo = False
                 mejor_score = max(mejor_score, 90000)
                 bonus_txt = " | GANA EL MAPA: cumple la condición de victoria, no hay fase enemiga" + bonus_txt
-            if amenaza_letal and not letal_solo_por_objetivo:
+            # Si derrotar al jefe gana el mapa, un ataque letal contra él puede formar parte de
+            # un asalto que lo mate ESTE turno (sin fase enemiga): se conserva para el planificador.
+            jefe_gana_mapa = es_jefe_e and condicion_victoria == "jefe"
+            if amenaza_letal and not (letal_solo_por_objetivo or jefe_gana_mapa):
                 continue
-            if letal_solo_por_objetivo:
-                # Contra un jefe: el peligro viene del propio jefe. Si el plan de asalto lo
-                # mata este turno, esa amenaza desaparece; se conserva la jugada oculta
-                # (score negativo) para que el planificador pueda usarla.
-                mejor_score = min(mejor_score, -50)
-
-            if len(amenazas_en_destino) == 0:
-                expo_txt = " | Casilla segura (0 amenazas enemigas)"
-            elif len(amenazas_en_destino) == 1:
-                expo_txt = f" | Al alcance de 1 enemigo ({amenazas_en_destino[0]})"
-            else:
-                nombres_e = ", ".join(amenazas_en_destino[:2])
-                expo_txt = f" | Al alcance de {len(amenazas_en_destino)} enemigos ({nombres_e})"
+            if amenaza_letal:
+                # Jugada oculta (bajo el umbral de -600 del panel): solo aparece si el plan de
+                # asalto al jefe la usa, que le sube el score. Antes era -50 y se mostraba.
+                mejor_score = min(mejor_score, -1000)
 
             pos_txt = f"Mover a ({pos_sug[0]},{pos_sug[1]}) · " if (pos_sug[0] != aliado.x or pos_sug[1] != aliado.y) else "En rango directo · "
             if mejor_advance:
@@ -1686,6 +1709,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 "es_engage_attack": bool(getattr(mejor_arma, 'es_engage_attack', False)),
                 "engage_attack_nombre": getattr(mejor_arma, 'engage_attack_nombre', ''),
                 "pos_sugerida": pos_sug,
+                "pos_alternativas": [] if mejor_area else list(mejor_alternativas),
                 "advance_desde": mejor_advance,
                 "pos_canter": pos_canter,
                 "veredicto": verd,
@@ -1697,6 +1721,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 "daño_recibido": daño_recibido_final,
                 "amenazas_en_destino": amenazas_en_destino,
                 "num_amenazas_destino": len(amenazas_en_destino),
+                # Peligro real de la casilla donde acaba el turno (con el HP tras el combate):
+                # daño que le pueden hacer entre todos y si le matarían
+                "daño_amenazas_destino": expo_final["daño"],
+                "amenaza_letal_destino": bool(hp_atk_fin > 0 and expo_final["daño"] >= hp_atk_fin),
                 "recomendacion": rec_texto,
                 "categoria": _categoria_ataque(verd, daño_recibido_final),
             })
@@ -1738,14 +1766,15 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         continue
                     pos = pos_forzada_c
                 else:
-                    alcance_c = (10 if is_tele_c else a.mov) + rango_max
+                    alcance_c = (10 if is_tele_c else a.movimiento_disponible) + rango_max
                     if abs(a.x - enemigo.x) + abs(a.y - enemigo.y) > alcance_c:
                         continue
                     pos = encontrar_pos_ataque_optima(
                         a, enemigo, arma,
                         mapa=mapa, tablero=tablero, analizador=analizador,
                         casillas_alcanzables_precalc=casillas_mov_aliados.get(a.nombre) if not is_tele_c else None,
-                        zonas_amenaza_enemigos=zonas_amenaza_enemigos
+                        zonas_amenaza_enemigos=zonas_amenaza_enemigos,
+                        exposicion=lambda p, _a=a, _e=enemigo: exposicion(p, _a, {_e.nombre})["peso"],
                     )
                 if not pos:
                     continue
@@ -2254,29 +2283,71 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     if acciones_objetivo:
         resultados = acciones_objetivo + resultados
 
-    # Fallback: zona segura
+    # Amenazas serias sobre las casillas ACTUALES de los aliados que aún no han actuado
+    # (en fase de jugador): quien se quede donde está y pueda morir, o perder la mitad del
+    # HP, en la fase enemiga. Suma el peor combate de cada enemigo que le alcanza.
+    amenazas_serias = []
+    # Si hay un plan que gana el mapa este turno (asalto al jefe con "derrotar al jefe", o
+    # una baja que cumple la victoria), no hay fase enemiga: los avisos no aplican
+    gana_mapa_este_turno = (bool(plan_jefe) and condicion_victoria == "jefe") or any(
+        int(op.get("score_tactico", 0) or 0) >= 90000 for op in oportunidades_jugador)
+    if getattr(tablero, "fase", "jugador") == "jugador" and not gana_mapa_este_turno:
+        for a in aliados_activos:
+            hp_a = _hp_de(a)
+            expo = exposicion((a.x, a.y), a)
+            if hp_a <= 0 or not expo["enemigos"] or not (expo["letal"] or expo["daño"] * 2 >= hp_a):
+                continue
+            detalle = sorted(((peligro(e, a)["daño"] or 0, e) for e in expo["enemigos"]), reverse=True)
+            partes = [f"{e} {d}" for d, e in detalle if d > 0]
+            letal = expo["letal"]
+            amenazas_serias.append({
+                "tipo_analisis": "peligro_aliado",
+                "aliado": a.nombre,
+                "enemigo": detalle[0][1],
+                "amenazas": [e for _, e in detalle],
+                "daño_amenazas": expo["daño"],
+                "veredicto": {
+                    "nivel_riesgo": "critico" if letal else "alto",
+                    "motivos": [f"Le alcanzan {len(expo['enemigos'])} enemigo(s): " + ", ".join(partes)
+                                + f" = hasta {expo['daño']} de daño contra {hp_a} HP."],
+                },
+                "recomendacion": (
+                    (f"LETAL si {a.nombre} se queda en ({a.x},{a.y}): " if letal
+                     else f"{a.nombre} perdería más de la mitad del HP en ({a.x},{a.y}): ")
+                    + "muévelo fuera de alcance, interpón a otra unidad o acaba antes con quien más daño hace ("
+                    + detalle[0][1] + ")."
+                ),
+            })
+        amenazas_serias.sort(key=lambda x: (x["veredicto"]["nivel_riesgo"] != "critico", -x["daño_amenazas"]))
+    resultados += amenazas_serias[:3]
+
+    # Fallback: zona segura. Se comprueba de verdad sobre las zonas de peligro (en 2D: vale
+    # para mapas horizontales y verticales), no se da por hecho.
     if not resultados and distancias_frente:
+        expuestos = [a for a in aliados_activos
+                     if any((a.x, a.y) in zona for zona in zonas_amenaza_enemigos.values())]
         distancias_frente.sort(key=lambda x: x[0])
         dist_min, e_cercano, a_cercano = distancias_frente[0]
-        alcance_e = e_cercano.mov + (max(e_cercano.arma.rango) if e_cercano.arma else 1)
-        col_segura = e_cercano.x - alcance_e - 1
+        alcance_e = e_cercano.movimiento_disponible + (max(e_cercano.arma.rango) if e_cercano.arma else 1)
+        if expuestos:
+            motivos = [f"Al alcance de algún enemigo, pero sin peligro serio: {', '.join(a.nombre for a in expuestos)}."]
+            recomendacion = ("Sin jugadas de ataque que valgan la pena este turno. Las unidades al alcance de "
+                             "algún enemigo no corren peligro serio; revisa la zona de peligro antes de avanzar.")
+        else:
+            motivos = [f"Frente seguro: ningún enemigo alcanza a tus unidades en sus casillas actuales "
+                       f"(distancia mínima: {dist_min} casillas)."]
+            recomendacion = (f"ZONA SEGURA: puedes avanzar. {e_cercano.nombre} en ({e_cercano.x},{e_cercano.y}) "
+                             f"alcanza {alcance_e} casillas (movimiento + arma): quédate fuera de esa distancia "
+                             f"o de su zona de peligro para no recibir su ataque este turno.")
+        motivos.append(f"Enemigo más próximo: {e_cercano.nombre} en ({e_cercano.x}, {e_cercano.y}), alcance {alcance_e} casillas.")
 
         resultados.append({
             "tipo_analisis": "vanguardia_segura",
             "aliado": a_cercano.nombre,
             "enemigo": e_cercano.nombre,
             "distancia_combate": dist_min,
-            "veredicto": {
-                "nivel_riesgo": "bajo",
-                "motivos": [
-                    f"Frente seguro: ningún enemigo alcanza este turno (distancia mínima: {dist_min} casillas).",
-                    f"Enemigo más próximo: {e_cercano.nombre} en ({e_cercano.x}, {e_cercano.y}), alcance {alcance_e} casillas.",
-                ]
-            },
-            "recomendacion": (
-                f"ZONA SEGURA: Puedes avanzar. No te expongas más allá de la columna X={max(0, col_segura)} "
-                f"para no entrar en rango de {e_cercano.nombre} este turno."
-            )
+            "veredicto": {"nivel_riesgo": "bajo", "motivos": motivos},
+            "recomendacion": recomendacion,
         })
 
     return {"turno": tablero.turno_actual, "total_analizados": len(resultados), "resultados": resultados}

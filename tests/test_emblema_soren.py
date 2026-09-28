@@ -256,21 +256,23 @@ class TestAnimaFocus(unittest.TestCase):
         self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_雷_効果"))
         self.assertEqual(hit_del_rival(), antes - 20)
 
-    def test_viento_quita_movimiento(self):
+    def test_viento_no_quita_movimiento(self):
+        """El texto dice Mov-2, pero en el juego el enemigo conserva su movimiento
+        (verificado por el jugador): el estado se marca, sin tocar el Mov."""
         base = self.rival.movimiento_disponible
         self.assertTrue(self._atacar_con("Wind"))
         self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_風_効果"))
-        self.assertEqual(self.rival.movimiento_disponible, base - 2)
+        self.assertEqual(self.rival.movimiento_disponible, base)
 
     def test_caduca_en_la_siguiente_fase_del_objetivo(self):
-        self._atacar_con("Wind")
-        base = int(self.rival.mov)
-        self.assertEqual(self.rival.movimiento_disponible, base - 2)
+        self._atacar_con("Elfire")
+        efecto = "SID_理魔法＋_炎_効果"
+        self.assertTrue(self.rival.tiene_estado_temporal(efecto))
         tablero.iniciar_fase_enemigo()
-        self.assertEqual(self.rival.movimiento_disponible, base - 2, "dura toda su fase")
+        self.assertTrue(self.rival.tiene_estado_temporal(efecto), "dura toda su fase")
         tablero.avanzar_turno()
         tablero.iniciar_fase_enemigo()
-        self.assertEqual(self.rival.movimiento_disponible, base)
+        self.assertFalse(self.rival.tiene_estado_temporal(efecto))
 
     def test_sin_tomo_no_hace_nada(self):
         celine = _soren(vinculo=20, tomo="Steel Sword", clase_nombre="Hero")

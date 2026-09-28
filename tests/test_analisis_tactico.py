@@ -420,25 +420,44 @@ class TestAnalisisTactico(unittest.TestCase):
         Verifica que en combates con alta densidad de enemigos (como Hortensia en Cap 7),
         los ataques seguros al jefe no sean descartados por penalización excesiva de zonas de peligro.
         """
+        # Chloé aguanta la fase enemiga y Hortensia está a punto de caer (1 HP, sin piedras):
+        # rematar al jefe en plena zona de peligro no debe descartarse por la penalización.
+        # (El panel da una jugada por aliado: con el jefe entero, otra puede valer más.)
+        res = self._chloe_contra_hortensia({"hp": 70, "fuerza": 11, "velocidad": 14, "defensa": 30, "resistencia": 30},
+                                           hp_jefe=1)
+        ataques = [r for r in res["resultados"] if r.get("enemigo") == self.hortensia.nombre]
+        self.assertTrue(len(ataques) > 0, "Debe haber al menos un ataque viable recomendado contra Hortensia")
+
+    def test_ataque_a_jefe_suicida_no_se_recomienda(self):
+        """
+        La otra cara (Fase 3b): con la Chloé frágil del Cap. 7 (24 HP) rodeada de ~20
+        enemigos, Goldmary o un Axe Cavalier la matan en la fase enemiga. Una baja no
+        compensa perder a la unidad al turno siguiente: la jugada no se recomienda (si
+        la condición no es derrotar al jefe, no hay asalto que gane el mapa y la salve).
+        """
+        res = self._chloe_contra_hortensia({"hp": 24, "fuerza": 11, "velocidad": 14, "defensa": 7, "resistencia": 10})
+        self.assertFalse([r for r in res["resultados"]
+                          if r.get("enemigo") == self.hortensia.nombre and r.get("aliado") == "Chloé"])
+
+    def _chloe_contra_hortensia(self, stats, hp_jefe=None):
+        """Cap. 7 desplegado, Hortensia en (18,8) y Chloé pegada a ella, en plena zona de peligro."""
         from motor_analisis import analizar_situacion_tactica
         from app import _desplegar_capitulo
         _desplegar_capitulo("M007", "Extremo")
-        hortensia = [e for e in tablero.obtener_enemigos() if "hortensia" in e.nombre.lower()][0]
-        hortensia.x, hortensia.y = 18, 8
-
-        # Desplegar aliado que alcance a Hortensia en zona densa de peligro
+        self.hortensia = [e for e in tablero.obtener_enemigos() if "hortensia" in e.nombre.lower()][0]
+        self.hortensia.x, self.hortensia.y = 18, 8
+        if hp_jefe is not None:
+            self.hortensia.sincronizar_hp(hp_jefe)
+            self.hortensia.hp_stock = 0
         chloe = resolver_unidad_con_catalogo({
             "nombre": "Chloé", "x": 17, "y": 8, "es_aliado": True,
             "clase_nombre": "Lance Flier", "nivel": 7,
             "mov": 5, "es_volador": True,
             "inventario": [{"nombre": "Javelin"}, {"nombre": "Slim Lance"}],
-            "stats": {"hp": 24, "fuerza": 11, "velocidad": 14, "defensa": 7, "resistencia": 10}
+            "stats": stats,
         })
         tablero.registrar_unidad(chloe)
-
-        res = analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
-        ataques = [r for r in res["resultados"] if r.get("enemigo") == hortensia.nombre]
-        self.assertTrue(len(ataques) > 0, "Debe haber al menos un ataque viable recomendado contra Hortensia")
+        return analizar_situacion_tactica(tablero, _mapa, perfil="seguro")
 
     def test_kill_en_solitario_prioritario_sobre_combos(self):
         """

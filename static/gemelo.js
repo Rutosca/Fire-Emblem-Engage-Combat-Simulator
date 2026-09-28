@@ -2926,6 +2926,8 @@ function renderResultado(container, r) {
     headerText = `⚔️ ${r.aliado} → ${r.enemigo} (Preparar Baja)`;
   } else if (r.tipo_analisis === "vanguardia_segura") {
     headerText = `🛡️ Avance Seguro`;
+  } else if (r.tipo_analisis === "peligro_aliado") {
+    headerText = `⚠️ ${r.aliado} en peligro (${(r.amenazas || []).length} enemigo${(r.amenazas || []).length === 1 ? "" : "s"})`;
   } else if (r.tipo_analisis === "objetivo_victoria") {
     headerText = `🏁 ${r.aliado} → Casilla de victoria`;
   } else if (r.plan_jefe) {
@@ -3011,23 +3013,39 @@ function renderResultado(container, r) {
   if (r.tipo_analisis === "oportunidad_jugador" && r.num_amenazas_destino !== undefined) {
     const dangerBox = document.createElement("div");
     dangerBox.style.cssText = "display:inline-flex;align-items:center;gap:6px;margin:3px 0 6px 0;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;";
+    // Peligro real (Fase 3b): daño que le pueden hacer entre todos los que alcanzan la casilla
+    const dañoAm = r["daño_amenazas_destino"];
+    const txtDaño = (dañoAm === undefined || dañoAm === null) ? ""
+      : (r.amenaza_letal_destino ? ` — LETAL: hasta ${dañoAm} de daño` : (dañoAm > 0 ? ` — hasta ${dañoAm} de daño` : " — no le hacen daño"));
     if (r.num_amenazas_destino === 0) {
       dangerBox.style.background = "rgba(40, 167, 69, 0.18)";
       dangerBox.style.border = "1px solid #28a745";
       dangerBox.style.color = "#a3e635";
       dangerBox.innerHTML = `Casilla 100% segura (0 enemigos alcanzan esta casilla tras atacar)`;
+    } else if (dañoAm === 0) {
+      // Le alcanzan, pero ninguno le hace daño: no es un peligro real
+      dangerBox.style.background = "rgba(40, 167, 69, 0.18)";
+      dangerBox.style.border = "1px solid #28a745";
+      dangerBox.style.color = "#a3e635";
+      dangerBox.innerHTML = `Al alcance de ${r.num_amenazas_destino} enemigo${r.num_amenazas_destino === 1 ? "" : "s"}${txtDaño}`;
+    } else if (r.amenaza_letal_destino) {
+      dangerBox.style.background = "rgba(220, 53, 69, 0.22)";
+      dangerBox.style.border = "1px solid #dc3545";
+      dangerBox.style.color = "#f87171";
+      const listaL = (r.amenazas_en_destino || []).slice(0, 3).join(", ");
+      dangerBox.innerHTML = `Al alcance de ${r.num_amenazas_destino} enemigo${r.num_amenazas_destino === 1 ? "" : "s"} (${listaL})${txtDaño}`;
     } else if (r.num_amenazas_destino === 1) {
       dangerBox.style.background = "rgba(255, 193, 7, 0.18)";
       dangerBox.style.border = "1px solid #ffc107";
       dangerBox.style.color = "#fde047";
       const nomE = (r.amenazas_en_destino && r.amenazas_en_destino[0]) || "1 enemigo";
-      dangerBox.innerHTML = `Al alcance de 1 enemigo tras atacar: ${nomE}`;
+      dangerBox.innerHTML = `Al alcance de 1 enemigo tras atacar: ${nomE}${txtDaño}`;
     } else {
       dangerBox.style.background = "rgba(220, 53, 69, 0.22)";
       dangerBox.style.border = "1px solid #dc3545";
       dangerBox.style.color = "#f87171";
       const listaE = (r.amenazas_en_destino || []).slice(0, 3).join(", ");
-      dangerBox.innerHTML = `Al alcance de ${r.num_amenazas_destino} enemigos tras atacar (${listaE})`;
+      dangerBox.innerHTML = `Al alcance de ${r.num_amenazas_destino} enemigos tras atacar (${listaE})${txtDaño}`;
     }
     card.appendChild(dangerBox);
   }

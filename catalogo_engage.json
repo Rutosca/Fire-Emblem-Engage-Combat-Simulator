@@ -18,6 +18,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -39,6 +40,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -60,6 +62,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -81,6 +84,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -102,6 +106,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -123,6 +128,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -144,6 +150,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -167,6 +174,7 @@
         "SID_鎧特効"
       ],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "acorazado"
@@ -190,6 +198,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -212,6 +221,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -233,6 +243,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -256,6 +267,7 @@
         "SID_竜特効"
       ],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -281,6 +293,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -304,6 +317,7 @@
         "SID_撃破時エンゲージカウント＋１"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -325,6 +339,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -347,6 +362,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -368,6 +384,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -391,6 +408,7 @@
         "SID_スマッシュ"
       ],
       "precio": 1500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -414,6 +432,7 @@
         "SID_スマッシュ"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -437,6 +456,7 @@
         "SID_スマッシュ"
       ],
       "precio": 6000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -460,6 +480,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -483,6 +504,7 @@
         "SID_フォルクヴァング武器スキル"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -504,6 +526,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -527,6 +550,7 @@
         "SID_リベラシオン改"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -550,6 +574,7 @@
         "SID_リベラシオン改_ノーマル"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -571,6 +596,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -592,6 +618,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -613,6 +640,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -634,6 +662,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -656,6 +685,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1800,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -679,6 +709,7 @@
         "SID_馬特効"
       ],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería"
@@ -702,6 +733,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -724,6 +756,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -746,6 +779,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -769,6 +803,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -791,6 +826,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -814,6 +850,7 @@
         "SID_スマッシュ"
       ],
       "precio": 1500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -837,6 +874,7 @@
         "SID_スマッシュ"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -860,6 +898,7 @@
         "SID_スマッシュ"
       ],
       "precio": 6000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -883,6 +922,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -904,6 +944,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -927,6 +968,7 @@
         "SID_フェンサリル武器スキル"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -948,6 +990,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -969,6 +1012,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -990,6 +1034,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1011,6 +1056,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1032,6 +1078,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1054,6 +1101,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1800,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1077,6 +1125,7 @@
         "SID_鎧特効"
       ],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "acorazado"
@@ -1102,6 +1151,7 @@
         "SID_馬特効"
       ],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería"
@@ -1125,6 +1175,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1147,6 +1198,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1170,6 +1222,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1191,6 +1244,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1214,6 +1268,7 @@
         "SID_スマッシュ"
       ],
       "precio": 1500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1237,6 +1292,7 @@
         "SID_スマッシュ"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1260,6 +1316,7 @@
         "SID_スマッシュ"
       ],
       "precio": 6000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1284,6 +1341,7 @@
         "SID_飛行特効"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1309,6 +1367,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1330,6 +1389,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1351,6 +1411,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1374,6 +1435,7 @@
         "SID_ノーアトゥーン武器スキル"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1395,6 +1457,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1418,6 +1481,7 @@
         "SID_飛行特効"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1443,6 +1507,7 @@
         "SID_飛行特効"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1468,6 +1533,7 @@
         "SID_飛行特効"
       ],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1493,6 +1559,7 @@
         "SID_飛行特効"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1519,6 +1586,7 @@
         "SID_飛行特効"
       ],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1544,6 +1612,7 @@
         "SID_飛行特効"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1569,6 +1638,7 @@
         "SID_飛行特効"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1595,6 +1665,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1620,6 +1691,7 @@
         "SID_飛行特効"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -1643,6 +1715,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1665,6 +1738,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1687,6 +1761,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1709,6 +1784,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1731,6 +1807,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1752,6 +1829,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1773,6 +1851,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1794,6 +1873,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1816,6 +1896,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1838,6 +1919,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1861,6 +1943,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1883,6 +1966,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1906,6 +1990,7 @@
         "SID_必中"
       ],
       "precio": 1500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1930,6 +2015,7 @@
         "SID_業火発動可能"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1957,6 +2043,7 @@
         "SID_ダイムサンダ発動可能"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -1982,6 +2069,7 @@
         "SID_旋風発動可能"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -2007,6 +2095,7 @@
         "SID_必中"
       ],
       "precio": 2500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2031,6 +2120,7 @@
         "SID_業火発動可能"
       ],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2057,6 +2147,7 @@
         "SID_轟雷発動可能"
       ],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2081,6 +2172,7 @@
         "SID_飛行特効"
       ],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -2107,6 +2199,7 @@
         "SID_業火発動可能"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2133,6 +2226,7 @@
         "SID_轟雷発動可能"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2158,6 +2252,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2183,6 +2278,7 @@
         "SID_ギガスカリバー発動可能"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -2209,6 +2305,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -2235,6 +2332,7 @@
         "SID_２回行動"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2260,6 +2358,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2285,6 +2384,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2307,6 +2407,7 @@
       "elemento": "oscuridad",
       "equip_sids": [],
       "precio": 8000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2328,6 +2429,7 @@
       "elemento": "oscuridad",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2350,6 +2452,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2371,6 +2474,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 25,
       "efectividades": []
     },
@@ -2392,6 +2496,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": 20,
       "efectividades": []
     },
@@ -2417,6 +2522,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": 10,
       "efectividades": []
     },
@@ -2447,6 +2553,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": 10,
       "efectividades": []
     },
@@ -2468,6 +2575,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": 10,
       "efectividades": []
     },
@@ -2493,6 +2601,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2516,6 +2625,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 10,
       "efectividades": []
     },
@@ -2537,6 +2647,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2558,6 +2669,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1200,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2586,6 +2698,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2611,6 +2724,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -2637,6 +2751,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -2658,6 +2773,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2684,6 +2800,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1500,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2719,6 +2836,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -2745,6 +2863,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1500,
+      "enhance": {},
       "usos_max": 5,
       "efectividades": []
     },
@@ -2780,6 +2899,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -2808,6 +2928,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 10,
       "efectividades": []
     },
@@ -2838,6 +2959,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1200,
+      "enhance": {},
       "usos_max": 10,
       "efectividades": []
     },
@@ -2868,6 +2990,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -2903,6 +3026,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -3178,6 +3302,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 6000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3199,6 +3324,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 20,
       "efectividades": []
     },
@@ -3222,6 +3348,7 @@
         "SID_気功"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3246,6 +3373,7 @@
         "SID_２回行動"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3270,6 +3398,7 @@
         "SID_２回行動"
       ],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3294,6 +3423,7 @@
         "SID_２回行動"
       ],
       "precio": 4000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3317,6 +3447,9 @@
         "SID_気功"
       ],
       "precio": 2500,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -3343,6 +3476,7 @@
         "SID_被ダメージ＋５"
       ],
       "precio": 6000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3367,6 +3501,7 @@
         "SID_２回行動"
       ],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3388,6 +3523,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3414,6 +3550,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3438,6 +3575,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3461,6 +3599,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3484,6 +3623,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3510,6 +3650,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3534,6 +3675,7 @@
         "SID_命中１００"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3555,6 +3697,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3579,6 +3722,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3604,6 +3748,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 5000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3629,6 +3774,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3654,6 +3800,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería"
@@ -3681,6 +3828,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -3706,6 +3854,7 @@
         "SID_相手の防御力半減"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3730,6 +3879,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3755,6 +3905,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3778,6 +3929,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3806,6 +3958,7 @@
         "SID_命中１００"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3830,6 +3983,7 @@
         "SID_命中１００"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3855,6 +4009,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3876,6 +4031,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3905,6 +4061,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 250,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3934,6 +4091,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 250,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3964,6 +4122,7 @@
         "SID_弾_フリーズ付与"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -3994,6 +4153,7 @@
         "SID_弾_サイレス付与"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4024,6 +4184,7 @@
         "SID_弾_ブレイク付与"
       ],
       "precio": 300,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4054,6 +4215,7 @@
         "SID_弾_毒付与"
       ],
       "precio": 300,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4084,6 +4246,7 @@
         "SID_飛行特効"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -4116,6 +4279,7 @@
         "SID_鎧特効"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "acorazado"
@@ -4148,6 +4312,7 @@
         "SID_馬特効"
       ],
       "precio": 600,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería"
@@ -4180,6 +4345,7 @@
         "SID_竜特効"
       ],
       "precio": 600,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -4212,6 +4378,7 @@
         "SID_異形特効"
       ],
       "precio": 600,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -4243,6 +4410,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4272,6 +4440,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4303,6 +4472,7 @@
         "SID_ブレス"
       ],
       "precio": 700,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4326,6 +4496,7 @@
         "SID_牙呪"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4351,6 +4522,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4377,6 +4549,7 @@
         "SID_異形飛竜_瘴気配置"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4401,6 +4574,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4428,6 +4602,7 @@
         "SID_異形飛竜_瘴気配置"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4449,6 +4624,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4470,6 +4646,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4491,6 +4668,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -4512,6 +4690,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -4533,6 +4712,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -4554,6 +4734,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 800,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -4575,6 +4756,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -4596,6 +4778,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 3,
       "efectividades": []
     },
@@ -4617,6 +4800,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4638,6 +4822,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4659,6 +4844,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4680,6 +4866,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4701,6 +4888,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4722,6 +4910,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4743,6 +4932,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4764,6 +4954,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4785,6 +4976,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4806,6 +4998,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4827,6 +5020,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4848,6 +5042,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4869,6 +5064,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4890,6 +5086,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4911,6 +5108,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4932,6 +5130,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4953,6 +5152,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4974,6 +5174,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -4995,6 +5196,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5016,6 +5218,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5037,6 +5240,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5058,6 +5262,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5079,6 +5284,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 40000,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5100,6 +5306,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 90000,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5121,6 +5328,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -5142,6 +5350,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -5163,6 +5372,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -5184,6 +5394,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5205,6 +5416,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5226,6 +5438,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5247,6 +5460,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5268,6 +5482,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5289,6 +5504,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5310,6 +5526,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5331,6 +5548,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5352,6 +5570,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5373,6 +5592,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5394,6 +5614,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5415,6 +5636,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5436,6 +5658,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5457,6 +5680,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5478,6 +5702,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5499,6 +5724,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5520,6 +5746,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5541,6 +5768,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5562,6 +5790,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5583,6 +5812,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5604,6 +5834,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5625,6 +5856,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5646,6 +5878,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5667,6 +5900,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5688,6 +5922,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5709,6 +5944,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5730,6 +5966,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5751,6 +5988,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5772,6 +6010,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5793,6 +6032,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5814,6 +6054,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5835,6 +6076,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5856,6 +6098,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5877,6 +6120,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5898,6 +6142,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5919,6 +6164,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5940,6 +6186,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5961,6 +6208,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -5982,6 +6230,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6003,6 +6252,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6024,6 +6274,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 50,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6045,6 +6296,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6066,6 +6318,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6087,6 +6340,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6108,6 +6362,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6129,6 +6384,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6150,6 +6406,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6171,6 +6428,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6192,6 +6450,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6213,6 +6472,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6234,6 +6494,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6255,6 +6516,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6276,6 +6538,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6297,6 +6560,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6318,6 +6582,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6339,6 +6604,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6360,6 +6626,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -6381,6 +6648,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6402,6 +6670,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 50,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6423,6 +6692,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6444,6 +6714,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6465,6 +6736,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6486,6 +6758,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6507,6 +6780,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6528,6 +6802,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6549,6 +6824,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6570,6 +6846,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6591,6 +6868,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6612,6 +6890,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6633,6 +6912,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6654,6 +6934,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 700,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6675,6 +6956,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 800,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6696,6 +6978,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 900,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6717,6 +7000,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6738,6 +7022,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6759,6 +7044,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1200,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6780,6 +7066,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1300,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6801,6 +7088,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1400,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6822,6 +7110,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1500,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6843,6 +7132,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1600,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6864,6 +7154,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1700,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6885,6 +7176,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1800,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6906,6 +7198,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1900,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6927,6 +7220,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6948,6 +7242,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6969,6 +7264,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -6990,6 +7286,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 7000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -7011,6 +7308,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -7032,6 +7330,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -7053,6 +7352,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 50000,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -7074,6 +7374,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7095,6 +7396,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7116,6 +7418,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7137,6 +7440,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7158,6 +7462,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7179,6 +7484,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7200,6 +7506,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7221,6 +7528,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7242,6 +7550,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7263,6 +7572,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7284,6 +7594,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7305,6 +7616,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7326,6 +7638,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7347,6 +7660,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7368,6 +7682,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7389,6 +7704,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7410,6 +7726,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7431,6 +7748,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7452,6 +7770,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7473,6 +7792,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7494,6 +7814,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7515,6 +7836,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7536,6 +7858,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7557,6 +7880,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7578,6 +7902,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7599,6 +7924,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7620,6 +7946,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7641,6 +7968,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7662,6 +7990,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7683,6 +8012,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7704,6 +8034,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7725,6 +8056,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7746,6 +8078,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7767,6 +8100,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7788,6 +8122,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7809,6 +8144,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7830,6 +8166,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7851,6 +8188,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7872,6 +8210,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7893,6 +8232,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7914,6 +8254,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7935,6 +8276,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7956,6 +8298,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7977,6 +8320,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -7998,6 +8342,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8019,6 +8364,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8040,6 +8386,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8061,6 +8408,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8082,6 +8430,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8103,6 +8452,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8124,6 +8474,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8145,6 +8496,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8166,6 +8518,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8187,6 +8540,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8208,6 +8562,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8229,6 +8584,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8250,6 +8606,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8271,6 +8628,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 350,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8292,6 +8650,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8313,6 +8672,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8334,6 +8694,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8355,6 +8716,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8376,6 +8738,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 40,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8397,6 +8760,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 700,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8418,6 +8782,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 700,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8439,6 +8804,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8460,6 +8826,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8481,6 +8848,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 350,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8502,6 +8870,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8523,6 +8892,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8544,6 +8914,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8565,6 +8936,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8586,6 +8958,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8607,6 +8980,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8628,6 +9002,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 80,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8649,6 +9024,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8670,6 +9046,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8691,6 +9068,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8712,6 +9090,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8733,6 +9112,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8754,6 +9134,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 800,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -8778,6 +9159,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -8805,6 +9187,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -8831,6 +9214,7 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -8854,6 +9238,7 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -8877,6 +9262,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -8902,6 +9288,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -8927,6 +9314,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -8952,6 +9340,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería"
@@ -8977,6 +9366,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería"
@@ -9002,6 +9392,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9025,6 +9416,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9046,6 +9438,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "res": 5
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -9067,6 +9462,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9091,6 +9487,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -9117,6 +9514,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -9140,6 +9538,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9161,6 +9560,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9183,6 +9583,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9205,6 +9606,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9227,6 +9629,7 @@
       "elemento": "luz",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9249,6 +9652,7 @@
       "elemento": "luz",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9273,6 +9677,7 @@
         "SID_リザイア"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9297,6 +9702,7 @@
         "SID_リザイア"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9322,6 +9728,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -9350,6 +9757,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -9628,6 +10036,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -9903,6 +10312,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10178,6 +10588,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10199,6 +10610,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10220,6 +10632,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10243,6 +10656,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -10268,6 +10682,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -10292,6 +10707,10 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "def": 5,
+        "res": 5
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -10314,6 +10733,10 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "def": 5,
+        "res": 5
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -10335,6 +10758,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10356,6 +10780,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10377,6 +10802,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10398,6 +10824,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10422,6 +10849,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10446,6 +10874,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10470,6 +10899,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10492,6 +10922,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "lck": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -10514,6 +10947,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "lck": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -10538,6 +10974,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -10562,6 +10999,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10589,6 +11027,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10616,6 +11055,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10643,6 +11083,9 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 5
+      },
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -10669,6 +11112,9 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 5
+      },
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -10694,6 +11140,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -10719,6 +11166,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -10744,6 +11192,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -10769,6 +11218,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -10794,6 +11244,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -10820,6 +11271,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10847,6 +11299,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10874,6 +11327,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10901,6 +11355,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -10928,6 +11383,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 5
+      },
       "usos_max": null,
       "efectividades": [
         "volador",
@@ -10955,6 +11413,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 5
+      },
       "usos_max": null,
       "efectividades": [
         "volador",
@@ -10982,6 +11443,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "acorazado"
@@ -11008,6 +11470,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "acorazado"
@@ -11031,6 +11494,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "res": 3
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -11052,6 +11518,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "res": 3
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -11074,6 +11543,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -11096,6 +11568,9 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -11120,6 +11595,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -11146,6 +11622,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón",
@@ -11173,6 +11650,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón",
@@ -11200,6 +11678,7 @@
         "SID_威力上昇速さ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -11226,6 +11705,7 @@
         "SID_威力上昇速さ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -11251,6 +11731,7 @@
         "SID_オフェンス時武器攻撃力上昇"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11272,6 +11753,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -11298,6 +11780,7 @@
         "SID_オフェンス回避＋２０"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón",
@@ -11322,6 +11805,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -11343,6 +11827,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": 1,
       "efectividades": []
     },
@@ -11368,6 +11853,7 @@
         "SID_攻撃属性弱点変化"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11393,6 +11879,7 @@
         "SID_攻撃属性弱点変化"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11418,6 +11905,7 @@
         "SID_威力上昇魔力"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -11445,6 +11933,7 @@
         "SID_威力上昇魔力"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -11472,6 +11961,7 @@
         "SID_威力上昇魔力"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -11495,6 +11985,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11517,6 +12008,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11538,6 +12030,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11559,6 +12052,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11580,6 +12074,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11601,6 +12096,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11622,6 +12118,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11643,6 +12140,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11664,6 +12162,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11688,6 +12187,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -11715,6 +12215,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -11742,6 +12243,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -11768,6 +12270,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -11793,6 +12296,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -11818,6 +12322,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -11843,6 +12348,9 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {
+        "str": 5
+      },
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -11868,6 +12376,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -11893,6 +12402,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "monstruo"
@@ -11918,6 +12428,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11941,6 +12452,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11964,6 +12476,7 @@
         "SID_撃破時周囲エンゲージカウント＋１"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -11987,6 +12500,7 @@
         "SID_撃破時周囲エンゲージカウント＋１"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12008,6 +12522,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12029,6 +12544,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12050,6 +12566,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12071,6 +12588,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12092,6 +12610,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12113,6 +12632,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12134,6 +12654,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12155,6 +12676,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12176,6 +12698,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12197,6 +12720,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12218,6 +12742,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12239,6 +12764,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12260,6 +12786,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12281,6 +12808,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12305,6 +12833,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -12331,6 +12860,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -12357,6 +12887,7 @@
         "SID_三級長_アラドヴァル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12381,6 +12912,7 @@
         "SID_三級長_アラドヴァル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12407,6 +12939,7 @@
         "SID_オフェンス回避＋２０"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón",
@@ -12436,6 +12969,7 @@
         "SID_オフェンス回避＋２０"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón",
@@ -12460,6 +12994,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12481,6 +13016,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12502,6 +13038,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12523,6 +13060,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12544,6 +13082,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12565,6 +13104,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12586,6 +13126,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12607,6 +13148,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12630,6 +13172,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12653,6 +13196,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12676,6 +13220,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12699,6 +13244,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12722,6 +13268,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12745,6 +13292,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12768,6 +13316,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12791,6 +13340,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12815,6 +13365,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12840,6 +13391,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -12866,6 +13418,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12890,6 +13443,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12914,6 +13468,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12938,6 +13493,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12962,6 +13518,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -12987,6 +13544,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13014,6 +13572,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13041,6 +13600,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13068,6 +13628,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13095,6 +13656,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13118,6 +13680,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13139,6 +13702,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13160,6 +13724,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13181,6 +13746,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13202,6 +13768,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13223,6 +13790,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13244,6 +13812,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13265,6 +13834,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13289,6 +13859,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13316,6 +13887,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13343,6 +13915,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13370,6 +13943,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13397,6 +13971,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13424,6 +13999,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13451,6 +14027,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13478,6 +14055,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13505,6 +14083,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -13532,6 +14111,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13556,6 +14136,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13580,6 +14161,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13604,6 +14186,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13628,6 +14211,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13652,6 +14236,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13676,6 +14261,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13699,6 +14285,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13724,6 +14313,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13749,6 +14341,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13774,6 +14369,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13799,6 +14397,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13824,6 +14425,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13849,6 +14453,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13874,6 +14481,9 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {
+        "def": 5
+      },
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -13900,6 +14510,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13924,6 +14535,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13948,6 +14560,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13972,6 +14585,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -13996,6 +14610,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14020,6 +14635,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14047,6 +14663,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14074,6 +14691,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14098,6 +14716,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14122,6 +14741,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14146,6 +14766,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14170,6 +14791,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14194,6 +14816,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14218,6 +14841,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14242,6 +14866,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14263,6 +14888,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14284,6 +14910,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14305,6 +14932,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14326,6 +14954,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14347,6 +14976,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14377,6 +15007,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14407,6 +15038,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14437,6 +15069,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14467,6 +15100,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14492,6 +15126,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14514,6 +15149,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14536,6 +15172,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14560,6 +15197,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14586,6 +15224,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14612,6 +15251,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14638,6 +15278,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14664,6 +15305,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14691,6 +15333,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14716,6 +15359,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14739,6 +15383,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14764,6 +15409,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -14789,6 +15435,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14812,6 +15459,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14834,6 +15482,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14856,6 +15505,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14878,6 +15528,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14900,6 +15551,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14924,6 +15576,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14948,6 +15601,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14972,6 +15626,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -14995,6 +15650,9 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15018,6 +15676,9 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15041,6 +15702,9 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15064,6 +15728,9 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15087,6 +15754,9 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "enhance": {
+        "res": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15109,6 +15779,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15131,6 +15802,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15153,6 +15825,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15175,6 +15848,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15197,6 +15871,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15219,6 +15894,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15241,6 +15917,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15263,6 +15940,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15285,6 +15963,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15308,6 +15987,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -15333,6 +16013,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -15358,6 +16039,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -15383,6 +16065,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -15408,6 +16091,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -15432,6 +16116,10 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "res": 2,
+        "lck": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15454,6 +16142,10 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {
+        "res": 4,
+        "lck": 10
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15477,6 +16169,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón"
@@ -15503,6 +16196,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -15530,6 +16224,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -15557,6 +16252,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "dragón",
@@ -15584,6 +16280,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15606,6 +16303,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15629,6 +16327,9 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 2
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15653,6 +16354,9 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 2
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15677,6 +16381,9 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 4
+      },
       "usos_max": null,
       "efectividades": []
     },
@@ -15698,6 +16405,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15719,6 +16427,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15743,6 +16452,9 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 2
+      },
       "usos_max": null,
       "efectividades": [
         "caballería",
@@ -15769,6 +16481,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -15794,6 +16507,9 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "enhance": {
+        "spd": 2
+      },
       "usos_max": null,
       "efectividades": [
         "volador"
@@ -15821,6 +16537,7 @@
         "SID_攻撃属性弱点変化"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15845,6 +16562,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15867,6 +16585,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15888,6 +16607,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15909,6 +16629,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15930,6 +16651,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15951,6 +16673,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15972,6 +16695,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -15993,6 +16717,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16014,6 +16739,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16035,6 +16761,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16056,6 +16783,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16077,6 +16805,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16098,6 +16827,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16119,6 +16849,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16140,6 +16871,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16161,6 +16893,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16182,6 +16915,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     },
@@ -16203,6 +16937,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "enhance": {},
       "usos_max": null,
       "efectividades": []
     }

@@ -802,6 +802,7 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
         "efectividades": ainfo.get("efectividades", ["volador"] if ainfo.get("tipo") == "Arco" else []),
         "usos_max": ainfo.get("usos_max"),
         "sids": list(ainfo.get("equip_sids", []) or []),
+        "enhance": dict(ainfo.get("enhance") or {}),
     }
 
 def _arma_desde_item(item_dict):
@@ -838,6 +839,7 @@ def _arma_desde_item(item_dict):
             es_smash=parsed.get("es_smash", False),
             cede_iniciativa=parsed.get("cede_iniciativa", False),
             sids=parsed.get("sids", []),
+            enhance=dict(parsed.get("enhance") or {}),
         )
     else:
         tipo_raw = item_dict.get("tipo", "Espada")
@@ -866,6 +868,7 @@ def _arma_desde_item(item_dict):
             es_smash=es_smash,
             cede_iniciativa=bool(item_dict.get("cede_iniciativa", False)),
             sids=list(item_dict.get("sids", []) or []),
+            enhance=dict(item_dict.get("enhance") or {}),
         )
 
     if arma_obj:
@@ -1581,6 +1584,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     ddg_bonus=parsed_w.get("ddg_bonus", 0),
                     es_smash=parsed_w.get("es_smash", False),
                     cede_iniciativa=parsed_w.get("cede_iniciativa", False),
+                    enhance=dict(parsed_w.get("enhance") or {}),
                 )
         else:
             base_aid_k, ainfo = _buscar_en_catalogo("armas", base_aid) if base_aid else (None, None)
@@ -1625,6 +1629,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     "es_engage": es_eng,
                     "equipada": es_eq,
                     "sids": list(ainfo.get("equip_sids", []) or []),
+                    "enhance": dict(ainfo.get("enhance") or {}),
                 }
                 inventario_resuelto.append(item_dict)
 
@@ -1641,6 +1646,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                         efectividades=ainfo.get("efectividades", []),
                         es_smash=es_smash_val,
                         sids=list(ainfo.get("equip_sids", []) or []),
+                        enhance=dict(ainfo.get("enhance") or {}),
                     )
             else:
                 raw_tipo = item.get("tipo") if isinstance(item, dict) else None
