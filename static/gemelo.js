@@ -1264,6 +1264,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   renderizarArmasFusionModal(null);
 
   $("f-emblema").value = esAliado ? "Marth" : "";
+  ponerTipoEmblemaPorDefecto(esAliado);
   if ($("f-boosts-fusion")) $("f-boosts-fusion").value = "";
   establecerLiderTresCasas("Dimitri");
   actualizarSelectorLiderTresCasas();
@@ -1322,7 +1323,7 @@ function rellenarFormularioDesdeFicha(ficha) {
   if ($("f-boosts-fusion")) $("f-boosts-fusion").value = formatearBoostsFusion(ficha.boosts_fusion);
   state.potenciadoresModal = Array.isArray(ficha.potenciadores_usados) ? [...ficha.potenciadores_usados] : [];
   state.armaEmblemaEquipadaTemporal = null;
-  state.prevEmblemaModal = ficha.emblema_nombre || "";
+  state.prevEmblemaModal = ficha.emblema_oscuro ? "" : (ficha.emblema_nombre || "");
   $("f-x").value = ficha.x;
   $("f-y").value = ficha.y;
   $("label-pos-x").textContent = ficha.x;
@@ -1425,13 +1426,18 @@ function rellenarFormularioDesdeFicha(ficha) {
     $("inv-equip-0").checked = true;
   }
 
-  $("f-emblema").value = ficha.emblema_nombre || "";
+  // Un Emblema Oscuro se escribe por su Emblema base ("Marth") con el tipo en "Oscuro"
+  $("f-emblema").value = ficha.emblema_oscuro ? (ficha.emblema_base || (ficha.emblema_nombre || "").replace(/\s*\(Oscuro\)$/i, "")) : (ficha.emblema_nombre || "");
+  if ($("f-emblema-tipo")) {
+    $("f-emblema-tipo").value = ficha.emblema_oscuro ? "oscuro" : (ficha.emblema_nombre ? "normal" : (ficha.es_aliado ? "normal" : "oscuro"));
+  }
+  actualizarVisibilidadEmblema();
   const nivV = ficha.nivel_vinculo || 1;
   if ($("f-nivel-vinculo")) {
     $("f-nivel-vinculo").value = nivV;
     actualizarTooltipNivelVinculo(nivV);
   }
-  state.prevEmblemaModal = ficha.emblema_nombre || "";
+  state.prevEmblemaModal = ficha.emblema_oscuro ? "" : (ficha.emblema_nombre || "");
   state.prevNivelVinculoModal = nivV;
   establecerLiderTresCasas(ficha.lider_tres_casas || "Dimitri");
   actualizarSelectorLiderTresCasas();
@@ -1729,8 +1735,35 @@ async function actualizarAvisoFusion() {
   });
 }
 
-function sincronizarEmblemaModal() {
+// Tipo de emblema del modal. "normal": el Emblema de siempre (vínculo, medidor, Fusión y
+// sus bonos, que el modal suma a las stats). "oscuro": la versión corrupta del capítulo,
+// siempre fusionada; sus stats, armas y habilidades las pone el servidor.
+function tipoEmblemaModal() {
+  return $("f-emblema-tipo") ? $("f-emblema-tipo").value : "normal";
+}
+
+// Emblema cuyos bonos de vínculo gestiona el modal: ninguno si el tipo es Oscuro
+function emblemaNormalEfectivo() {
   const val = $("f-emblema") ? $("f-emblema").value.trim() : "";
+  return tipoEmblemaModal() === "oscuro" ? "" : val;
+}
+
+function actualizarVisibilidadEmblema() {
+  const esAliado = $("f-bando-aliado") && $("f-bando-aliado").checked;
+  const oscuro = tipoEmblemaModal() === "oscuro";
+  // Los enemigos no tienen vínculo; un Emblema Oscuro tampoco (ni medidor ni Fusión)
+  if ($("col-nivel-vinculo")) $("col-nivel-vinculo").classList.toggle("hidden", !esAliado || oscuro);
+  if ($("bloque-fusion-normal")) $("bloque-fusion-normal").classList.toggle("hidden", oscuro);
+}
+
+// Por defecto: enemigos con Oscuro, aliados con Normal (el aliado puede cambiarlo)
+function ponerTipoEmblemaPorDefecto(esAliado) {
+  if ($("f-emblema-tipo")) $("f-emblema-tipo").value = esAliado ? "normal" : "oscuro";
+  actualizarVisibilidadEmblema();
+}
+
+function sincronizarEmblemaModal() {
+  const val = emblemaNormalEfectivo();
   const nivelVal = $("f-nivel-vinculo") ? Math.max(1, Math.min(20, parseInt($("f-nivel-vinculo").value || 1, 10))) : 1;
   const tieneEmblema = val.length > 0;
 
@@ -1821,7 +1854,9 @@ function construirPayloadDesdeModal(fichaExistente) {
   const hpMax = parseInt($("f-hp-max").value, 10);
   const claseNombre = $("f-clase").value.trim();
   const emblemaNombre = $("f-emblema").value.trim();
-  let enFusion = $("f-fusion").checked && !!emblemaNombre;
+  const emblemaTipo = tipoEmblemaModal();
+  // Un Emblema Oscuro está siempre fusionado a su manera: no usa la Fusión del medidor
+  let enFusion = $("f-fusion").checked && !!emblemaNombre && emblemaTipo !== "oscuro";
 
   const nivelVinculo = $("f-nivel-vinculo") ? (parseInt($("f-nivel-vinculo").value, 10) || 1) : 1;
   const str = parseInt($("f-stat-str").value, 10) || 0;
@@ -1932,6 +1967,7 @@ function construirPayloadDesdeModal(fichaExistente) {
     clase_nombre: claseNombre,
     arma_nombre: armaEquipadaNombre,
     emblema_nombre: emblemaNombre,
+    emblema_tipo: emblemaNombre ? emblemaTipo : "",
     energia_emblema: energiaEmblema,
     max_energia_emblema: maxEnergia,
     en_fusion: enFusion,
@@ -2308,10 +2344,20 @@ function initModalEvents() {
   // Toggle de radio buttons para mostrar/ocultar sección extra de aliado
   $("f-bando-aliado").addEventListener("change", () => {
     $("seccion-aliado-extra").classList.remove("hidden");
+    ponerTipoEmblemaPorDefecto(true);
+    sincronizarEmblemaModal();
   });
   $("f-bando-enemigo").addEventListener("change", () => {
     $("seccion-aliado-extra").classList.add("hidden");
+    ponerTipoEmblemaPorDefecto(false);
+    sincronizarEmblemaModal();
   });
+  if ($("f-emblema-tipo")) {
+    $("f-emblema-tipo").addEventListener("change", () => {
+      actualizarVisibilidadEmblema();
+      sincronizarEmblemaModal();
+    });
+  }
 
   // Habilitar checkbox de fusión, auto-aplicar pasivas y modificadores del Emblema
   $("f-emblema").addEventListener("input", sincronizarEmblemaModal);

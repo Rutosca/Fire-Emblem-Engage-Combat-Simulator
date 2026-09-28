@@ -512,6 +512,28 @@
         <datalist id="list-armas"></datalist>
       </div>
 
+      <!-- Emblema (aliados y enemigos). Tipo: Normal = el Emblema de siempre (vínculo,
+           medidor y Fusión); Oscuro = el anillo corrupto de ese capítulo, siempre fusionado,
+           sin vínculo ni medidor (los enemigos; los aliados en capítulos como el 22). -->
+      <div class="form-cols" id="fila-emblema" style="align-items: flex-end; margin-bottom: 6px;">
+        <div class="form-row flex-2">
+          <label for="f-emblema">Emblema Equipado (Opcional):</label>
+          <input type="text" id="f-emblema" list="list-emblemas" placeholder="Ej: Marth, Edelgard, Tiki, Hector, Byleth..." autocomplete="off">
+          <datalist id="list-emblemas"></datalist>
+        </div>
+        <div class="form-row flex-1">
+          <label for="f-emblema-tipo" title="Normal: vínculo, medidor y Fusión. Oscuro: la versión corrupta del capítulo, siempre fusionada, sin vínculo ni medidor.">Tipo:</label>
+          <select id="f-emblema-tipo">
+            <option value="normal">Normal</option>
+            <option value="oscuro">Oscuro</option>
+          </select>
+        </div>
+        <div class="form-row flex-1" id="col-nivel-vinculo">
+          <label for="f-nivel-vinculo" title="Nivel >= 11 otorga +1 turno de Fusión (4 turnos). Nivel 20 reduce el medidor de recarga de 6 a 5 cargas.">Nivel Vínculo:</label>
+          <input type="number" id="f-nivel-vinculo" min="1" max="20" value="1" placeholder="1..20">
+        </div>
+      </div>
+
       <!-- Sección exclusiva para Aliados -->
       <div id="seccion-aliado-extra">
         <div id="seccion-lider-tres-casas" class="lider-tres-casas hidden" aria-live="polite">
@@ -523,19 +545,9 @@
           </div>
           <p>Sincronía Armamentística solo se aplica al arma del líder activo.</p>
         </div>
-        <!-- Emblema y Fusión -->
-        <div class="form-cols" style="align-items: flex-end; margin-bottom: 6px;">
-          <div class="form-row flex-2">
-            <label for="f-emblema">Emblema Equipado (Opcional):</label>
-            <input type="text" id="f-emblema" list="list-emblemas" placeholder="Ej: Marth, Edelgard, Tiki, Hector, Byleth..." autocomplete="off">
-            <datalist id="list-emblemas"></datalist>
-          </div>
-          <div class="form-row flex-1">
-            <label for="f-nivel-vinculo" title="Nivel >= 11 otorga +1 turno de Fusión (4 turnos). Nivel 20 reduce el medidor de recarga de 6 a 5 cargas.">Nivel Vínculo:</label>
-            <input type="number" id="f-nivel-vinculo" min="1" max="20" value="1" placeholder="1..20">
-          </div>
-        </div>
 
+        <!-- Solo con Emblema Normal: el Oscuro está siempre fusionado (sin medidor ni Fusión) -->
+        <div id="bloque-fusion-normal">
         <!-- Medidor de Energía de Emblema (Recarga 0/6) y Activar Fusión -->
         <div class="form-cols" style="align-items: center; margin-bottom: 8px; background: rgba(0, 229, 255, 0.05); padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(0, 229, 255, 0.2);">
           <div class="form-row flex-2" style="margin-bottom: 0;">
@@ -571,6 +583,7 @@
             <span class="armas-fusion-hint">Disponibles por nivel de vínculo. Haz clic en una para equiparla como arma activa de combate.</span>
           </div>
           <div class="armas-fusion-grid" id="armas-fusion-grid"></div>
+        </div>
         </div>
 
         <!-- Habilidades Pasivas -->

@@ -110,6 +110,17 @@ class FichaUnidad:
         except Exception:
             return False
 
+    def _emblema_base(self) -> str:
+        """Nombre del Emblema sin el "(Oscuro)": el que se escribe en el modal."""
+        if not self.emblema_id:
+            return ""
+        try:
+            from catalogo_loader import _catalogo
+            info = (_catalogo.get("emblemas", {}) or {}).get(self.emblema_id) or {}
+        except Exception:
+            info = {}
+        return str(info.get("emblema_base") or self.emblema_nombre or "").strip()
+
     def _puede_escudo_vinculo(self) -> bool:
         """True si la unidad tiene Bonded Shield (SID_絆盾) activo."""
         try:
@@ -382,6 +393,9 @@ class FichaUnidad:
             "nivel": self.nivel,
             "emblema_id": self.emblema_id,
             "emblema_nombre": self.emblema_nombre,
+            # Tipo de emblema del modal: la versión oscura se muestra por su Emblema base
+            "emblema_oscuro": bool(getattr(self, "emblema_oscuro", False)),
+            "emblema_base": self._emblema_base(),
             "habilidades": self.habilidades,
             "inventario": self.inventario,
             "potenciadores_usados": self.potenciadores_usados,

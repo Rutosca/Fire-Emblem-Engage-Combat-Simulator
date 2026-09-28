@@ -890,6 +890,118 @@ def _capitulo_de_tablero(tablero) -> str:
     return f"M{int(m.group(1)):03d}" if m else ""
 
 
+_CLAVES_STAT_PAYLOAD = {
+    "hp": ("hp", "hp_max"), "str": ("fuerza", "str"), "mag": ("magia", "mag"), "dex": ("destreza", "dex"),
+    "spd": ("velocidad", "spd"), "def": ("defensa", "def"), "res": ("resistencia", "res"),
+    "lck": ("suerte", "lck"), "bld": ("complexion", "bld"),
+}
+
+
+def _transicion_emblema_oscuro(data: dict, gid_previo: str, gid_nuevo: str) -> dict:
+    """
+    El modal guarda las stats, las habilidades y el inventario tal como se ven, ya con lo
+    que aporta el Emblema Oscuro que llevaba la unidad. Si el anillo oscuro cambia (se
+    pone, se quita o se cambia por otro), se resta lo del viejo y se suma lo del nuevo:
+    sus bonos de stats (los del vínculo 1, que es el suyo), sus habilidades y sus armas,
+    que entran equipadas y al frente del inventario, como las pone el dispos.
+    Los Emblemas normales no pasan por aquí: sus bonos de vínculo los lleva el modal.
+    """
+    if gid_previo == gid_nuevo:
+        return data
+    emblemas = _catalogo.get("emblemas", {}) or {}
+    viejo = emblemas.get(gid_previo) if gid_previo else None
+    nuevo = emblemas.get(gid_nuevo) if gid_nuevo else None
+    viejo = viejo if viejo and viejo.get("es_oscuro") else None
+    nuevo = nuevo if nuevo and nuevo.get("es_oscuro") else None
+    if not viejo and not nuevo:
+        return data
+    data = dict(data)
+
+    def _v1(info):
+        return (info.get("bond_levels") or {}).get("1") or {}
+
+    def _iids(info):
+        items = _v1(info).get("engage_items") or [{"iid": i} for i in info.get("engage_items") or []]
+        return [it.get("iid") if isinstance(it, dict) else it for it in items]
+
+    def _nombres_armas(info):
+        return {normalizar_texto((_catalogo.get("armas", {}).get(i, {}) or {}).get("nombre", i)) for i in _iids(info)}
+
+    # 1. Stats
+    delta = {}
+    for info, signo in ((viejo, -1), (nuevo, 1)):
+        for k, v in ((_v1(info).get("stat_boosts") or {}).items() if info else ()):
+            delta[k] = delta.get(k, 0) + signo * int(v)
+    stats = dict(data.get("stats") or {})
+    for k, v in delta.items():
+        for clave in _CLAVES_STAT_PAYLOAD.get(k, ()):
+            if stats.get(clave) is not None:
+                stats[clave] = int(stats[clave]) + v
+    data["stats"] = stats
+    if delta.get("hp"):
+        for clave in ("hp_max", "hp_actual"):
+            if data.get(clave) is not None:
+                data[clave] = max(1, int(data[clave]) + delta["hp"])
+
+    # 2. Habilidades del anillo viejo
+    if viejo:
+        suyas = set()
+        for sk in (_v1(viejo).get("synchro_skills") or []) + (_v1(viejo).get("engage_skills") or []):
+            if isinstance(sk, dict):
+                suyas.update(x for x in (sk.get("nombre"), sk.get("sid")) if x)
+        data["habilidades"] = [h for h in (data.get("habilidades") or []) if h not in suyas]
+
+    # 3. Armas: fuera las del viejo, las del nuevo al frente y equipadas
+    inv = [dict(it) if isinstance(it, dict) else {"nombre": str(it)} for it in (data.get("inventario") or [])]
+
+    def _nombre_base(it):
+        n = str(it.get("nombre") or it.get("arma") or "")
+        return normalizar_texto(n.replace("(Emblema)", "").strip())
+
+    if viejo:
+        ids_v, noms_v = set(_iids(viejo)), _nombres_armas(viejo)
+        inv = [it for it in inv if str(it.get("id", "")) not in ids_v and _nombre_base(it) not in noms_v]
+    if nuevo:
+        ids_n, noms_n = _iids(nuevo), _nombres_armas(nuevo)
+        inv = [it for it in inv if str(it.get("id", "")) not in ids_n and _nombre_base(it) not in noms_n]
+        for it in inv:
+            it["equipada"] = False
+        armas = []
+        for n, iid in enumerate(ids_n):
+            nom = (_catalogo.get("armas", {}).get(iid, {}) or {}).get("nombre", iid)
+            armas.append({"id": iid, "nombre": nom, "arma": nom, "equipada": n == 0, "es_drop": False})
+        inv = armas + inv
+    if inv and not any(it.get("equipada") for it in inv):
+        inv[0]["equipada"] = True
+    data["inventario"] = inv
+    equipada = next((it for it in inv if it.get("equipada")), None)
+    if equipada:
+        data["arma_nombre"] = equipada.get("nombre") or equipada.get("arma")
+    return data
+
+
+def _emblema_oscuro_de(nombre: str, capitulo: str):
+    """
+    (gid, info) de la versión oscura del Emblema `nombre` ("Marth", "Lyn"…): la del capítulo
+    activo; si ese capítulo no tiene, la más reciente anterior (Cap. 22 → la de Marth del 21)
+    y, si no hay ninguna anterior, la primera que exista. ("", None) si no tiene versión oscura.
+    """
+    n = normalizar_texto(nombre)
+    oscuros = [(eid, ed) for eid, ed in (_catalogo.get("emblemas", {}) or {}).items()
+               if ed.get("es_oscuro") and n in (normalizar_texto(ed.get("emblema_base", "")),
+                                                normalizar_texto(ed.get("nombre", "")))]
+    if not oscuros:
+        return "", None
+    exacto = next(((eid, ed) for eid, ed in oscuros if capitulo and ed.get("capitulo") == capitulo), None)
+    if exacto:
+        return exacto
+    anteriores = sorted((ed.get("capitulo") or "", eid, ed) for eid, ed in oscuros
+                        if capitulo and ed.get("capitulo") and ed.get("capitulo") < capitulo)
+    if anteriores:
+        return anteriores[-1][1], anteriores[-1][2]
+    return oscuros[0]
+
+
 def resolver_unidad_con_catalogo(data, tablero=None):
     """
     Toma los datos enviados desde la UI (o Tiled) y resuelve stats, clase, arma e inventario
@@ -952,12 +1064,28 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     emblema_id = data.get("emblema_id", "")
     emblema_info = _catalogo.get("emblemas", {}).get(emblema_id) if emblema_id else None
 
+    # Tipo de emblema elegido en el modal: "normal" (el Emblema de siempre, con vínculo,
+    # medidor y Fusión) u "oscuro" (el anillo corrupto: siempre fusionado, con las stats,
+    # armas y habilidades de la versión oscura de ese capítulo; sin vínculo ni medidor).
+    # Sin tipo (partidas guardadas, dispos) se resuelve como siempre, por nombre.
+    tipo_emblema = str(data.get("emblema_tipo") or "").strip().lower()
+    nombre_emblema = str(data.get("emblema_nombre") or "").strip()
+    if nombre_emblema.lower().endswith("(oscuro)"):
+        nombre_emblema = nombre_emblema[:-len("(oscuro)")].strip()
+        tipo_emblema = tipo_emblema or "oscuro"
+    if emblema_info and tipo_emblema in ("normal", "oscuro") and bool(emblema_info.get("es_oscuro")) != (tipo_emblema == "oscuro"):
+        emblema_id, emblema_info = "", None   # el id heredado es del otro tipo: manda lo elegido
+    if not emblema_info and nombre_emblema and tipo_emblema == "oscuro":
+        emblema_id, emblema_info = _emblema_oscuro_de(nombre_emblema, _capitulo_de_tablero(tablero))
+
     # Si no viene por ID, buscar por nombre
-    if not emblema_info and data.get("emblema_nombre"):
-        en_raw = data.get("emblema_nombre", "").strip()
+    if not emblema_info and data.get("emblema_nombre") and tipo_emblema != "oscuro":
+        en_raw = nombre_emblema if tipo_emblema == "normal" else data.get("emblema_nombre", "").strip()
         en_norm = normalizar_texto(en_raw)
         por_nombre, candidatos, parciales = [], [], []
         for eid, edata in _catalogo.get("emblemas", {}).items():
+            if tipo_emblema == "normal" and edata.get("es_oscuro"):
+                continue
             nom = normalizar_texto(edata.get("nombre", ""))
             ascii_n = normalizar_texto(edata.get("ascii_name", ""))
             link_n = normalizar_texto(edata.get("link_name", ""))
@@ -977,6 +1105,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             cap = _capitulo_de_tablero(tablero)
             emblema_id, emblema_info = next(((eid, ed) for eid, ed in candidatos if cap and ed.get("capitulo") == cap),
                                             candidatos[0])
+
+    # Poner, quitar o cambiar un anillo oscuro desde el modal (stats explícitas)
+    if unidad_previa is not None and isinstance(data.get("stats"), dict):
+        data = _transicion_emblema_oscuro(data, getattr(unidad_previa, "emblema_id", "") or "", emblema_id or "")
 
     es_sigurd = bool(emblema_info and ("siglud" in str(emblema_id).lower() or "sigurd" in str(emblema_info.get("nombre", "")).lower())) or ("sigurd" in str(data.get("emblema_nombre", "")).lower())
     tiene_botas = any("bota" in str(p).lower() for p in data.get("potenciadores_usados", []))
