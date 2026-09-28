@@ -15,6 +15,8 @@ import sys
 import json
 import unittest
 
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "golden"))
 
@@ -22,6 +24,8 @@ import escenarios as E  # noqa: E402
 from generar_golden import ruta_golden  # noqa: E402
 
 MAX_DIFERENCIAS_MOSTRADAS = 25
+
+pytestmark = pytest.mark.golden
 
 
 def _diferencias(esperado: dict, obtenido: dict) -> list:

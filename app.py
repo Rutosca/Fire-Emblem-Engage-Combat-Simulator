@@ -555,7 +555,7 @@ def guardar_unidad():
     if pid_edit and pid_edit in cargador_dispos.pids_jefe(f"M{_capitulo_sesion():03d}") and not data.get("es_aliado", False):
         data["es_jefe"] = True
 
-    ficha = resolver_unidad_con_catalogo(data)
+    ficha = resolver_unidad_con_catalogo(data, tablero=tablero)
     tablero.registrar_unidad(ficha)
 
     # Editar la vida a la baja de un aliado en fase enemiga == "ha sido atacado" (ver ajustar_hp)
@@ -605,7 +605,7 @@ def desplegar_escuadron():
 
     # Registrar cada aliado del escuadrón
     for s_data in squad:
-        f_res = resolver_unidad_con_catalogo(s_data)
+        f_res = resolver_unidad_con_catalogo(s_data, tablero=tablero)
         tablero.registrar_unidad(f_res, resolver_colision=True)
 
     return jsonify({
@@ -666,7 +666,7 @@ def importar_partida():
         # El jefe lo marca el dispos (bit 16 del Flag), aunque el guardado venga de antes
         if f_data.get("pid") in jefes_cap and not f_data.get("es_aliado", False):
             f_data["es_jefe"] = True
-        f_res = resolver_unidad_con_catalogo(f_data)
+        f_res = resolver_unidad_con_catalogo(f_data, tablero=tablero)
         if f_res.viva and f_res.hp_actual > 0:
             tablero.registrar_unidad(f_res)
 
@@ -763,7 +763,7 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
         }
 
     for u in unidades_dispos:
-        ficha = resolver_unidad_con_catalogo(u)
+        ficha = resolver_unidad_con_catalogo(u, tablero=tablero)
         tablero.registrar_unidad(ficha)
 
     # Refuerzos del capítulo (calendario del .lua + grupos del dispos filtrados por dificultad)
@@ -1480,7 +1480,7 @@ def ejecutar_combate():
 
     # Si no se pasó pos_destino y la unidad no está en rango desde su casilla actual:
     if dist not in r_arma and not pos_destino:
-        pos_sug = encontrar_pos_ataque_optima(f_atk, f_def, f_atk.arma)
+        pos_sug = encontrar_pos_ataque_optima(f_atk, f_def, f_atk.arma, tablero=tablero)
         if pos_sug is not None and pos_sug != [f_atk.x, f_atk.y]:
             tablero.mover_unidad(nombre_atk, pos_sug[0], pos_sug[1])
             dist = abs(f_atk.x - f_def.x) + abs(f_atk.y - f_def.y)
@@ -1875,7 +1875,7 @@ def ajustar_nivel():
     tablero.guardar_snapshot()
     f_dict = f.como_dict()
     f_dict["nivel"] = nuevo_nivel
-    nueva_ficha = resolver_unidad_con_catalogo(f_dict)
+    nueva_ficha = resolver_unidad_con_catalogo(f_dict, tablero=tablero)
     tablero.registrar_unidad(nueva_ficha)
     return jsonify({
         "ok": True,
@@ -1930,7 +1930,7 @@ def resolver_unidad_preview():
     payload["clase_nombre"] = clase_nombre
     payload["nivel"] = nivel
 
-    ficha = resolver_unidad_con_catalogo(payload)
+    ficha = resolver_unidad_con_catalogo(payload, tablero=tablero)
     f_dict = ficha.como_dict()
 
     return jsonify({

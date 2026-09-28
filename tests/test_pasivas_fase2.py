@@ -271,7 +271,7 @@ class TestAdvanceEnTablero(unittest.TestCase):
         tablero.registrar_unidad(ene)
         self.assertTrue(pasivas.tiene_advance(alfred))
         detalle = {}
-        pos = encontrar_pos_ataque_optima(alfred, ene, alfred.arma, detalle=detalle)
+        pos = encontrar_pos_ataque_optima(alfred, ene, alfred.arma, tablero=tablero, detalle=detalle)
         self.assertIsNotNone(pos)
         self.assertEqual(abs(pos[0] - ene.x) + abs(pos[1] - ene.y), 1)
         self.assertIsNotNone(detalle["advance_desde"])

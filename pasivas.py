@@ -974,6 +974,20 @@ def recopilar_combate(unidad, ctx, aliados_cercanos=None) -> Modificadores:
 # registra pseudo-SIDs con el mismo esquema del catálogo. Se importa al final para
 # que pueda usar las utilidades de este módulo.
 import pasivas_overlay  # noqa: E402,F401
-_INDICE_NOMBRES = _construir_indice_nombres()
-_resolver_nombre_a_sid.cache_clear()
-_variante_por_estilo.cache_clear()
+
+
+def invalidar_caches() -> None:
+    """
+    Rehace el índice de nombres y vacía las cachés que dependen de HABILIDADES.
+    Llamarla SIEMPRE tras añadir o cambiar habilidades del catálogo en caliente
+    (pseudo-SIDs, overlays nuevos); sin ella, resolver_nombre_a_sid y
+    variante_por_estilo pueden devolver resultados de antes del cambio.
+    Los estados de la partida (temporales, Fusión…) no están cacheados.
+    """
+    global _INDICE_NOMBRES
+    _INDICE_NOMBRES = _construir_indice_nombres()
+    _resolver_nombre_a_sid.cache_clear()
+    _variante_por_estilo.cache_clear()
+
+
+invalidar_caches()   # tras registrar pasivas_overlay

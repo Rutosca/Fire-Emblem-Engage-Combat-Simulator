@@ -59,14 +59,7 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
       - Viva y distinta del atacante y del defensor.
     """
     if tablero is None:
-        import sys
-        if '__main__' in sys.modules and hasattr(sys.modules['__main__'], 'tablero'):
-            tablero = sys.modules['__main__'].tablero
-        elif 'app' in sys.modules and hasattr(sys.modules['app'], 'tablero'):
-            tablero = sys.modules['app'].tablero
-        else:
-            from app import tablero as _tab
-            tablero = _tab
+        raise ValueError("obtener_aliados_backup necesita el tablero de la partida")
 
     if atacante_ficha.es_aliado:
         companeros = tablero.obtener_aliados()
@@ -126,8 +119,7 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
     5. Si NO existe ninguna casilla física libre y alcanzable -> devuelve None (no puede atacar este turno).
     """
     if tablero is None:
-        from app import tablero as _tab
-        tablero = _tab
+        raise ValueError("encontrar_pos_ataque_optima necesita el tablero de la partida")
     if mapa is None:
         mapa = tablero.mapa
 

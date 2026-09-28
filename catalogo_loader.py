@@ -896,14 +896,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     p_offset_diff = data.get("p_offset", {})
 
     # Preservar el estado de acción del turno (ha_actuado) y ruptura si la unidad ya está en el tablero
+    # `tablero`: el de la partida en la que se registra la unidad (sin tablero, no se preserva nada)
     unidad_previa = None
-    if tablero is None:
-        try:
-            import app as _app_mod
-            tablero = getattr(_app_mod, 'tablero', None)
-        except Exception:
-            tablero = None
-
     if tablero and hasattr(tablero, 'fichas'):
         unidad_previa = tablero.fichas.get(nombre)
 

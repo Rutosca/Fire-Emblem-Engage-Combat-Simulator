@@ -54,7 +54,7 @@ class TestAnalisisTactico(unittest.TestCase):
 
         # 2. Verificar aliados de apoyo detectados
         # Lapis en (6,5) está adyacente a Lance Fighter en (6,6) (distancia 1, dentro de rango [1] de Iron Sword)
-        apoyos = obtener_aliados_backup(alear, ene)
+        apoyos = obtener_aliados_backup(alear, ene, tablero=tablero)
         self.assertEqual(len(apoyos), 1)
         self.assertEqual(apoyos[0].nombre, "Lapis")
 
@@ -599,7 +599,8 @@ class TestAnalisisTactico(unittest.TestCase):
         self.assertTrue(ivy.es_jefe and _es_jefe(ivy))
         self.assertFalse(any(_es_jefe(e) for e in tablero.obtener_enemigos() if e.nombre != "Ivy"))
         editada = resolver_unidad_con_catalogo({"nombre": "Ivy", "x": ivy.x, "y": ivy.y, "es_aliado": False, "hp_stock": 0,
-                                                "clase_nombre": ivy.clase_nombre, "nivel": ivy.nivel})
+                                                "clase_nombre": ivy.clase_nombre, "nivel": ivy.nivel},
+                                               tablero=tablero)
         tablero.registrar_unidad(editada)
         self.assertEqual(editada.hp_stock, 0)
         self.assertTrue(_es_jefe(tablero.obtener_ficha("Ivy")))

@@ -54,6 +54,22 @@ class TestResolverNombre(unittest.TestCase):
         self.assertEqual(base, "SID_幸運＋２")
         self.assertEqual(her, "SID_幸運＋２_継承用")
 
+    def test_invalidar_caches_ve_habilidades_registradas_en_caliente(self):
+        """Tras registrar un SID en caliente, invalidar_caches() lo hace visible (nombre y variante)."""
+        sid, var = "SID_TEST_CALIENTE", "SID_TEST_CALIENTE_竜族"
+        self.assertIsNone(pasivas.resolver_nombre_a_sid("Habilidad En Caliente"))
+        self.assertEqual(pasivas.variante_por_estilo(sid, "竜族スタイル"), sid)
+        pasivas.HABILIDADES[sid] = {"nombre": "Habilidad En Caliente"}
+        pasivas.HABILIDADES[var] = {"nombre": "Habilidad En Caliente"}
+        try:
+            pasivas.invalidar_caches()
+            self.assertEqual(pasivas.resolver_nombre_a_sid("Habilidad En Caliente"), sid)
+            self.assertEqual(pasivas.variante_por_estilo(sid, "竜族スタイル"), var)
+        finally:
+            del pasivas.HABILIDADES[sid], pasivas.HABILIDADES[var]
+            pasivas.invalidar_caches()
+        self.assertIsNone(pasivas.resolver_nombre_a_sid("Habilidad En Caliente"))
+
 
 class TestSidsActivos(unittest.TestCase):
 

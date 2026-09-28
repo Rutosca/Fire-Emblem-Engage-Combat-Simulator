@@ -46,7 +46,7 @@ class TestMovimientoPosicion(unittest.TestCase):
         # Desde (2,2) con mov 1 y rango 1:
         # Casilla alcanzable (2,3) está ocupada por TestAlly2.
         # Por tanto, TestAlly1 NO tiene casilla física libre para atacar a TestEnemy.
-        pos_sug = encontrar_pos_ataque_optima(a1, ene, a1.arma)
+        pos_sug = encontrar_pos_ataque_optima(a1, ene, a1.arma, tablero=tablero)
         self.assertIsNone(pos_sug, "Debe ser None porque la única casilla alcanzable (2,3) está ocupada")
 
         # Probar endpoint API /api/combate/ejecutar intentando atacar forzadamente
@@ -99,7 +99,7 @@ class TestMovimientoPosicion(unittest.TestCase):
         })
         tablero.registrar_unidad(obj)
 
-        pos_sug = encontrar_pos_ataque_optima(a, obj, a.arma)
+        pos_sug = encontrar_pos_ataque_optima(a, obj, a.arma, tablero=tablero)
         if pos_sug is not None:
             self.assertNotEqual(pos_sug, [1, 0], "Jamás puede pisar o atacar desde la casilla del enemigo bloqueador")
 

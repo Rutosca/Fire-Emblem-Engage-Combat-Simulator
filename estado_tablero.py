@@ -1385,7 +1385,7 @@ class EstadoTablero:
             while datos["nombre"] in self.fichas:
                 datos["nombre"] = f"{base} #{n}"
                 n += 1
-            ficha = resolver_unidad_con_catalogo(datos)
+            ficha = resolver_unidad_con_catalogo(datos, tablero=self)
             ficha.es_refuerzo = True
             self.registrar_unidad(ficha, resolver_colision=False)
             ocupadas.add((ficha.x, ficha.y))
