@@ -124,6 +124,20 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
     (`SID_理魔法＋_炎/雷/風_効果`); antes apuntaba a pseudo-SIDs del overlay borrados y otorgaba
     estados vacíos. Los estados temporales del defensor salen ahora en `pasivas_activas` como
     "X del defensor (…)" (antes solo los del atacante: un Def -3 en el objetivo no se veía).
+- **Pendiente para la Fase 3b** (apuntado el 2026-09-28, tras la 3a):
+  - **Peligrosidad de las amenazas enemigas.** Hoy el análisis calcula `amenazas_inminentes`
+    (combate de peor caso de cada enemigo que alcanza a cada aliado) pero **nunca lo añade a
+    los resultados** (código muerto); lo único que pesa son las zonas de peligro, que cuentan
+    enemigos (-80 por zona) sin mirar el daño. Objetivo: no es lo mismo que Louis esté al
+    alcance de 3 Lance Fighters que no le hacen nada, que Céline, o que Louis ante 2 magos
+    que lo revientan. Ponderar cada zona por el daño esperado / letalidad del combate real y
+    mostrar las amenazas serias (a quién, cuánto daño, si es letal, suma de varios enemigos).
+  - **Reprisal / Reprisal+ (Verónica, `SID_血讐` / `SID_血讐＋`)**: Atk + floor((MaxHP − HP) ×
+    0.3 / 0.5) en cada golpe **propio** (Timing 10, Action 1), con Condition de que el bono sea
+    ≥ 1. Varía a mitad de combate: tras recibir un contraataque su siguiente golpe pega más.
+    Exige la evaluación por golpe con el HP actualizado. Cuidado especial (pedido por el usuario).
+  - Auras de combate sobre rivales (Timing 20 / Target 1: Racket of Solm, Timerra) y auras
+    por estado del tablero (calcular `efectos_recibidos` una vez por combate, no por golpe).
 - **Fase 3 — secuencia y eventos**: acts de secuencia (`手番回数`, `攻撃回数`,
   `行動回数`, `攻撃結果`) en `simular_combate`; evaluación por golpe (`timing` 6-12,
   `action` 1/2) para `ダメージ` (Hold Out, Divine Speed 50 %); `give_target` 0/2/3/4 y
@@ -274,6 +288,13 @@ Oscuro (`GID_M010_敵リン`).
   (x-1, y-1) con la misma regla: si no hay hueco ahí, no aparece
   (`EstadoTablero.CASILLAS_DOBLES`). Llevan siempre la Mani Katti de los dobles; el daño
   de su Chain Attack es el 10 % del HP máximo del objetivo, como cualquier Chain Attack.
+  **Contraatacan** con la Mani Katti si los atacan (verificado en juego).
+  **Estado entre turnos** (verificado en juego): los dobles que sobreviven a la fase
+  enemiga siguen en el tablero y se pueden desvanecer a voluntad (Disipar dobles); con
+  alguno vivo no se puede volver a invocar, y si no queda ninguno sí. Un aliado **solo tiene
+  Call Doubles mientras dura la Fusión con Lyn**: al acabarla (`avanzar_turno`) sus dobles se
+  desvanecen (`purgar_dobles_huerfanos`, también si el invocador cae). **Hyacinth** es la
+  excepción: Emblema Oscuro, no se fusiona y conserva los dobles hasta caer.
   En el tablero: `EstadoTablero.invocar_dobles` / `disipar_dobles` /
   `purgar_dobles_huerfanos` (se disipan solos al caer el invocador), endpoints
   `POST /api/unidad/invocar_dobles` y `/api/unidad/disipar_dobles`, y botón

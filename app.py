@@ -563,6 +563,8 @@ def guardar_unidad():
 
     ficha = resolver_unidad_con_catalogo(data, tablero=tablero)
     tablero.registrar_unidad(ficha)
+    # Si el invocador cae (HP a 0 desde el modal), sus dobles se desvanecen
+    dobles_disipados = tablero.purgar_dobles_huerfanos()
 
     # Editar la vida a la baja de un aliado en fase enemiga == "ha sido atacado" (ver ajustar_hp)
     estados_otorgados = []
@@ -575,6 +577,7 @@ def guardar_unidad():
         "ok": True,
         "ficha": ficha.como_dict(),
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
+        "dobles_disipados": dobles_disipados,
     })
 
 # El escuadrón y el roster de aliados viven en el localStorage del navegador (ver gemelo.js).
@@ -2016,6 +2019,7 @@ def fin_turno():
     return jsonify({
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
         "estados_otorgados": [{"unidad": n, **e} for n, e in tablero.estados_inicio_fase_ultimo],
+        "dobles_disipados": tablero.dobles_disipados_ultimo,
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
         "venenos_curados": [{"unidad": n, "nivel": v} for n, v in tablero.venenos_curados_ultimo],

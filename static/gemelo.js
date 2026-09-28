@@ -179,6 +179,12 @@ function describirStatBoosts(boosts) {
     .join(", ");
 }
 
+// Dobles de Call Doubles que se desvanecen (se acabó la Fusión con Lyn)
+function notificarDoblesDisipados(nombres) {
+  if (nombres && nombres.length)
+    mostrarToast(`Se desvanecen ${nombres.length} doble${nombres.length === 1 ? "" : "s"}: se acabó la Fusión con Lyn`, "info");
+}
+
 // Avisa de los buffs temporales otorgados por pasivas (Self-Improver, ¡Ponte detrás de mí!, ...)
 function notificarEstadosOtorgados(res) {
   for (const e of (res && res.estados_otorgados) || []) {
@@ -1971,11 +1977,14 @@ async function guardarUnidadDesdeModal() {
     autoGuardarLocal();
     cerrarModal();
     mostrarToast(`Unidad '${nombre}' guardada con éxito.`, "ok");
-    if (res.estados_otorgados && res.estados_otorgados.length) {
-      // Otras fichas (p.ej. Alcryst) pueden haber recibido un buff: refrescar el tablero completo
+    const disipados = res.dobles_disipados || [];
+    if ((res.estados_otorgados && res.estados_otorgados.length) || disipados.length) {
+      // Otras fichas pueden haber cambiado (un buff a Alcryst, dobles que se desvanecen
+      // al quitar la Fusión con Lyn): refrescar el tablero completo
       const est = await api("/api/estado", "GET");
       if (est && est.fichas) actualizarTokens(est.fichas);
       notificarEstadosOtorgados(res);
+      notificarDoblesDisipados(disipados);
     }
   } else {
     mostrarToast(`Error: ${res.error || "No se pudo guardar"}`, "error");
@@ -2691,6 +2700,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
     notificarRefuerzos(res);
     notificarEfectosArea(res);
     notificarEstadosOtorgados(res);   // pasivas de inicio de fase (Geosphere, Fortify Def…)
+    notificarDoblesDisipados(res && res.dobles_disipados);
     refrescarRefuerzosPendientes();
     setTimeout(lanzarAnalisis, 350);
   }

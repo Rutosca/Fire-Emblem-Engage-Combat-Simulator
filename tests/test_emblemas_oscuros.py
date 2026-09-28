@@ -281,6 +281,130 @@ class TestCallDoublesEnElTablero(unittest.TestCase):
                          "un doble no recibe recomendaciones")
 
 
+class TestEstadoDeLosDoblesDeUnAliado(unittest.TestCase):
+    """
+    Aliado fusionado con Lyn (verificado en juego): tiene Call Doubles mientras dure la
+    Fusión; los dobles que sobreviven a la fase enemiga siguen en el tablero y se pueden
+    desvanecer a voluntad; si no queda ninguno se puede volver a invocar; al acabar la
+    Fusión se desvanecen. Contraatacan con la Mani Katti.
+    """
+
+    def setUp(self):
+        from estado_tablero import EstadoTablero
+        from catalogo_loader import resolver_unidad_con_catalogo
+        self.resolver = resolver_unidad_con_catalogo
+        self.t = EstadoTablero(mapa=None, auto_cargar_spawns=False)
+        self.t.turno_actual, self.t.fase = 1, "jugador"
+        self.chloe = self._chloe(turnos_fusion=3)
+        self.t.registrar_unidad(self.chloe)
+
+    def _chloe(self, turnos_fusion):
+        return self.resolver({
+            "nombre": "Chloé", "x": 5, "y": 5, "es_aliado": True, "clase_nombre": "Griffin Knight",
+            "nivel": 10, "emblema_nombre": "Lyn", "nivel_vinculo": 5, "arma_nombre": "Iron Lance",
+            "en_fusion": turnos_fusion > 0, "turnos_fusion": turnos_fusion}, tablero=self.t)
+
+    def _dobles(self):
+        return [f for f in self.t.fichas.values() if f.invocador == "Chloé" and f.viva]
+
+    def _pasar_turno(self):
+        self.t.iniciar_fase_enemigo()
+        self.t.avanzar_turno()
+
+    def test_sin_fusion_no_hay_call_doubles(self):
+        self.t.fichas.clear()
+        self.t.registrar_unidad(self._chloe(turnos_fusion=0))
+        self.assertIsNone(pasivas.call_doubles(self.t.obtener_ficha("Chloé")))
+        self.assertTrue(self.t.invocar_dobles("Chloé")[1])
+
+    def test_los_supervivientes_siguen_y_se_pueden_desvanecer(self):
+        self.assertEqual(len(self.t.invocar_dobles("Chloé")[0]), 4)
+        for d in self._dobles()[:2]:          # caen 2 en la fase enemiga
+            self.t.registrar_muerte(d.nombre)
+        self._pasar_turno()
+        self.assertEqual(len(self._dobles()), 2, "los 2 supervivientes siguen en el tablero")
+        self.assertEqual(self.t.dobles_disipados_ultimo, [])
+        self.assertIn("ya tiene 2", self.t.invocar_dobles("Chloé")[1])
+        self.assertEqual(len(self.t.disipar_dobles("Chloé")), 2)
+        self.assertEqual(self._dobles(), [])
+
+    def test_si_no_sobrevive_ninguno_se_puede_volver_a_invocar(self):
+        self.t.invocar_dobles("Chloé")
+        for d in self._dobles():
+            self.t.registrar_muerte(d.nombre)
+        self._pasar_turno()
+        nuevos, error = self.t.invocar_dobles("Chloé")
+        self.assertEqual(error, "")
+        self.assertEqual(len(nuevos), 4)
+
+    def test_al_acabar_la_fusion_se_desvanecen(self):
+        self.t.registrar_unidad(self._chloe(turnos_fusion=1))
+        self.t.invocar_dobles("Chloé")
+        self.assertEqual(len(self._dobles()), 4)
+        self._pasar_turno()                    # la Fusión llega a 0
+        self.assertFalse(self.t.obtener_ficha("Chloé").en_fusion)
+        self.assertEqual(self._dobles(), [])
+        self.assertEqual(len(self.t.dobles_disipados_ultimo), 4)
+
+    def test_si_el_invocador_cae_desde_el_modal_se_desvanecen(self):
+        from app import app, tablero
+        tablero.limpiar()
+        datos = {"nombre": "Chloé", "x": 5, "y": 5, "es_aliado": True, "clase_nombre": "Griffin Knight",
+                 "nivel": 10, "emblema_nombre": "Lyn", "nivel_vinculo": 5, "arma_nombre": "Iron Lance",
+                 "en_fusion": True, "turnos_fusion": 3}
+        tablero.registrar_unidad(self.resolver(dict(datos), tablero=tablero))
+        cliente = app.test_client()
+        self.assertEqual(cliente.post("/api/unidad/invocar_dobles", json={"nombre": "Chloé"}).status_code, 200)
+        res = cliente.post("/api/unidad/guardar", json=dict(datos, hp_actual=0)).get_json()
+        self.assertEqual(len(res["dobles_disipados"]), 4)
+        self.assertFalse([f for f in tablero.fichas.values() if f.invocador == "Chloé"])
+
+    def test_la_fusion_no_se_puede_quitar_desde_el_modal(self):
+        """Una vez fusionada, la Fusión dura los turnos del contador: desmarcarla en el modal
+        no la quita (verificado en juego), así que los dobles siguen."""
+        from app import app, tablero
+        tablero.limpiar()
+        datos = {"nombre": "Chloé", "x": 5, "y": 5, "es_aliado": True, "clase_nombre": "Griffin Knight",
+                 "nivel": 10, "emblema_nombre": "Lyn", "nivel_vinculo": 5, "arma_nombre": "Iron Lance",
+                 "en_fusion": True, "turnos_fusion": 3}
+        tablero.registrar_unidad(self.resolver(dict(datos), tablero=tablero))
+        cliente = app.test_client()
+        cliente.post("/api/unidad/invocar_dobles", json={"nombre": "Chloé"})
+        res = cliente.post("/api/unidad/guardar", json=dict(datos, en_fusion=False, turnos_fusion=0)).get_json()
+        chloe = tablero.obtener_ficha("Chloé")
+        self.assertTrue(chloe.en_fusion)
+        self.assertEqual(chloe.turnos_fusion, 3)
+        self.assertEqual(res["dobles_disipados"], [])
+        self.assertEqual(len([f for f in tablero.fichas.values() if f.invocador == "Chloé" and f.viva]), 4)
+
+    def test_hyacinth_conserva_los_dobles_entre_turnos(self):
+        """Emblema Oscuro: no se fusiona, así que no hay Fusión que acabe."""
+        from app import app, tablero
+        cliente = app.test_client()
+        cliente.post("/api/mapa/seleccionar", json={"capitulo": 10})
+        cliente.post("/api/preset/actual", json={})
+        tablero.fase = "jugador"
+        cliente.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        antes = len([f for f in tablero.fichas.values() if f.invocador == "Hyacinth"])
+        tablero.iniciar_fase_enemigo()
+        tablero.avanzar_turno()
+        self.assertEqual(len([f for f in tablero.fichas.values() if f.invocador == "Hyacinth"]), antes)
+        cliente.post("/api/mapa/seleccionar", json={"capitulo": 7})
+
+    def test_contraatacan_con_la_mani_katti(self):
+        from motor_calculo import CalculadoraEngage, Terreno
+        self.t.invocar_dobles("Chloé")
+        doble = self._dobles()[0]
+        bandido = self.resolver({"nombre": "Bandido", "x": 7, "y": 5, "es_aliado": False,
+                                 "clase_nombre": "Fighter", "nivel": 5, "arma_nombre": "Iron Axe"},
+                                tablero=self.t)
+        r = CalculadoraEngage.simular_combate(bandido.stats, doble.stats, bandido.arma, doble.arma,
+                                              Terreno(), Terreno(), 1)
+        self.assertEqual(doble.arma.nombre, "Mani Katti")
+        self.assertTrue(r["defensor"]["puede_contraatacar"])
+        self.assertGreater(r["defensor"]["daño_por_golpe"], 0)
+
+
 class TestAstraStormDeAliado(unittest.TestCase):
     """Cuando Lyn esté entre los aliados: dispara el arco equipado 5 veces al 30 %."""
 

@@ -442,6 +442,7 @@ class EstadoTablero:
         self.terrenos_temporales: Dict[tuple, dict] = {}
         self.quemados_ultimo: list = []   # [(nombre, daño)] del último inicio de fase
         self.estados_inicio_fase_ultimo: list = []   # [(nombre, estado)] de Geosphere, Fortify Def… (Timing 27)
+        self.dobles_disipados_ultimo: list = []      # dobles que se desvanecieron al acabar una Fusión con Lyn
         # False mientras el jugador coloca la formación del turno 1; empezar_batalla() dispara
         # el inicio de la primera fase de jugador (las fases siguientes lo hacen solas)
         self.batalla_iniciada: bool = False
@@ -1472,25 +1473,28 @@ class EstadoTablero:
     def disipar_dobles(self, nombre_invocador: str) -> list:
         """Quita del tablero los dobles de `nombre_invocador` (el juego los disipa al
         morir quien los invocó, al acabar la Fusión o con el comando Dispel Doubles).
-        Devuelve los nombres retirados."""
-        fuera = [d.nombre for d in list(self.fichas.values()) if d.invocador == nombre_invocador]
-        for n in fuera:
-            self.fichas.pop(n, None)
-        return fuera
+        Se quitan también los que ya cayeron. Devuelve los nombres de los que seguían vivos."""
+        fuera = [d for d in list(self.fichas.values()) if d.invocador == nombre_invocador]
+        for d in fuera:
+            self.fichas.pop(d.nombre, None)
+        return [d.nombre for d in fuera if d.viva]
 
     def purgar_dobles_huerfanos(self) -> list:
-        """Retira los dobles cuyo invocador ya no está vivo en el tablero: en el juego
-        los residuos se disipan al caer quien los creó. Devuelve los nombres retirados."""
+        """Retira los dobles cuyo invocador ya no puede tenerlos: ha caído, o ya no tiene
+        Call Doubles activo porque se le acabó la Fusión con Lyn (un Emblema Oscuro como
+        el de Hyacinth no se fusiona y los conserva). Los dobles supervivientes siguen en
+        el tablero entre turnos. Devuelve los nombres retirados."""
+        import pasivas
         fuera = []
         for d in list(self.fichas.values()):
             if not d.invocador:
                 continue
             jefe = self.fichas.get(d.invocador)
-            if jefe is None or not jefe.viva:
-                fuera.append(d.nombre)
-        for n in fuera:
-            self.fichas.pop(n, None)
-        return fuera
+            if jefe is None or not jefe.viva or pasivas.call_doubles(jefe) is None:
+                fuera.append(d)
+        for d in fuera:
+            self.fichas.pop(d.nombre, None)
+        return [d.nombre for d in fuera if d.viva]
 
     # Casillas fijas de cada doble, en orden: las cuatro en cruz y, el 5.º (estilo Dragón),
     # siempre la diagonal superior izquierda (y crece hacia abajo en el tablero)
@@ -1661,6 +1665,8 @@ class EstadoTablero:
                     f.stats.en_fusion = f.en_fusion
                     f.stats.energia_emblema = f.energia_emblema
                     f.stats.ataque_emblema_usado = f.ataque_emblema_usado
+        # Sin Fusión con Lyn no hay Call Doubles: sus dobles se desvanecen
+        self.dobles_disipados_ultimo = self.purgar_dobles_huerfanos()
 
         # Buffs temporales que caducan al entrar en la fase de jugador (p.ej. Self-Improver)
         for f in self.fichas.values():
