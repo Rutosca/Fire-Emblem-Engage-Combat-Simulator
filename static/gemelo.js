@@ -841,8 +841,9 @@ function buscarEmblemaInfo(nombre) {
     }
   }
 
-  // 3. Garantizar engage_attack si el objeto no lo traía
-  if (match && !match.engage_attack) {
+  // 3. Garantizar engage_attack si el objeto no lo traía. El catálogo compilado trae el SID
+  // (SID_マルスエンゲージ技), no el nombre: sin esto, al fusionar salía un chip en japonés.
+  if (match && (!match.engage_attack || String(match.engage_attack).startsWith("SID_"))) {
     for (const [k, v] of Object.entries(EMBLEMAS_DATA)) {
       if (n === k || n.includes(k) || k.includes(n) || (match.nombre && match.nombre.toLowerCase().includes(k))) {
         if (v.engage_attack) {

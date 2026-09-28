@@ -54,5 +54,44 @@ class TestCatalogoLoader(unittest.TestCase):
             self.assertIsNotNone(segunda.get("grabado"), f"{emblema}: el grabado debe sobrevivir al reparsear el nombre ya formateado")
             self.assertEqual(primera["avo_bonus"], segunda["avo_bonus"], f"{emblema}: el bono debe mantenerse igual tras el reparseo")
 
+class TestArmasDelDLC(unittest.TestCase):
+    """El juego base no trae los textos del DLC: sus nombres van en json/nombres_dlc.json."""
+
+    def test_armas_personales_del_fell_xenologue(self):
+        """Nel (Représailles, MIID_Trahison) y Rafal (Revanche, MIID_Levanche)."""
+        for nombre, tipo, mt in (("Représailles", "Lanza", 13), ("Represailles", "Lanza", 13), ("Revanche", "Hacha", 10)):
+            f = resolver_unidad_con_catalogo({"nombre": "Prueba", "es_aliado": True, "clase_nombre": "Lance Fighter",
+                                              "nivel": 10, "inventario": [{"nombre": nombre, "equipada": True}]})
+            self.assertEqual((f.arma.nombre, f.arma.tipo, f.arma.mt), (nombre.replace("Represailles", "Représailles"), tipo, mt))
+
+    def test_la_busqueda_del_modal_no_repite_armas(self):
+        """Lo escrito a medias ("Repr") se interpretaba además como arma y salía dos veces."""
+        from app import app
+        c = app.test_client()
+        for q, esperado in (("Repr", ["Représailles"]), ("iron s", ["Iron Sword"])):
+            r = c.get("/api/catalogo/buscar", query_string={"tipo": "armas", "q": q}).get_json()
+            self.assertEqual([x["nombre"] for x in r["resultados"]], esperado, q)
+
+
+class TestAtaqueDeEmblemaEnElModal(unittest.TestCase):
+    """El catálogo guarda en `engage_attack` el SID (lo usa el motor); al modal le llega el
+    nombre, que es el chip que añade al fusionar. Antes salía SID_マルスエンゲージ技."""
+
+    def test_todos_los_emblemas_llegan_con_nombre_legible(self):
+        from app import app
+        emblemas = app.test_client().get("/api/catalogo/emblemas").get_json()["emblemas"]
+        for gid, e in emblemas.items():
+            self.assertFalse(e["engage_attack"].startswith("SID_"), (gid, e["engage_attack"]))
+            self.assertTrue(e["engage_attack_sid"].startswith("SID_"), gid)
+        por_nombre = {e["nombre"]: e["engage_attack"] for e in emblemas.values()}
+        self.assertEqual(por_nombre["Marth"], "Lodestar Rush (Acometida estelar)")
+        self.assertEqual(por_nombre["Dimitri"], "Houses Unite (Unión de Casas)")
+        self.assertEqual(por_nombre["Robin"], "Giga Levin Sword (Gigaespada Trueno)")
+
+    def test_el_motor_sigue_teniendo_el_sid(self):
+        from catalogo_loader import _catalogo
+        self.assertEqual(_catalogo["emblemas"]["GID_マルス"]["engage_attack"], "SID_マルスエンゲージ技")
+
+
 if __name__ == "__main__":
     unittest.main()

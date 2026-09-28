@@ -928,7 +928,7 @@
     },
     "IID_トライゾン": {
       "id": "IID_トライゾン",
-      "nombre": "Trahison",
+      "nombre": "Représailles",
       "tipo": "Lanza",
       "mt": 13,
       "wt": 9,
@@ -1373,7 +1373,7 @@
     },
     "IID_ルヴァンシュ": {
       "id": "IID_ルヴァンシュ",
-      "nombre": "Levanche",
+      "nombre": "Revanche",
       "tipo": "Hacha",
       "mt": 10,
       "wt": 12,
@@ -1395,7 +1395,7 @@
     },
     "IID_ルヴァンシュ_E005": {
       "id": "IID_ルヴァンシュ_E005",
-      "nombre": "Levanche",
+      "nombre": "Revanche",
       "tipo": "Hacha",
       "mt": 10,
       "wt": 12,

@@ -191,7 +191,12 @@ def obtener_catalogo_emblemas():
     Devuelve los Emblemas equipables (14 base + DLC) con sus 20 niveles de vínculo.
     Los Emblemas Oscuros de jefe (es_oscuro) se excluyen: los asigna el preset del capítulo.
     """
-    return jsonify({"ok": True, "emblemas": {k: v for k, v in _catalogo.get("emblemas", {}).items() if not v.get("es_oscuro")}})
+    from catalogo_loader import nombre_ataque_engage
+    # `engage_attack` del catálogo es el SID (lo usa el motor); el modal lo pone como chip al
+    # fusionar, así que aquí va el nombre legible y el SID aparte
+    return jsonify({"ok": True, "emblemas": {
+        k: dict(v, engage_attack=nombre_ataque_engage(k, v), engage_attack_sid=v.get("engage_attack", ""))
+        for k, v in _catalogo.get("emblemas", {}).items() if not v.get("es_oscuro")}})
 
 
 @app.route("/api/mapa/capitulos", methods=["GET"])
@@ -523,7 +528,8 @@ def buscar_catalogo():
     # Si la búsqueda es directamente un arma con + o grabado (ej: 'Libération+2 (Marth)')
     if (tipo == "todos" or tipo == "armas") and not any(r["nombre"] == q for r in resultados):
         parsed_q = parsear_arma_string(q)
-        if parsed_q:
+        # Solo si aporta algo: "Repr" se interpreta como Représailles, que ya está en la lista
+        if parsed_q and not any(r["nombre"] == parsed_q["nombre"] for r in resultados):
             resultados.insert(0, {
                 "categoria": "armas",
                 "id": parsed_q["id"],

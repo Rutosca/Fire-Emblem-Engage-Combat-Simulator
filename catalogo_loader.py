@@ -149,6 +149,32 @@ ATAQUES_ENGAGE_MAP = {
     "chrom": "Giga Levin Sword (Gigaespada Trueno)",
 }
 
+def nombre_ataque_engage(gid: str, info: dict) -> str:
+    """
+    Nombre legible del Ataque de Emblema ("Lodestar Rush (Acometida estelar)"). El catálogo
+    guarda en `engage_attack` su SID (SID_マルスエンゲージ技), que es lo que usa el motor; la
+    interfaz necesita el nombre. Por GID, por nombre del Emblema, por el SID que comparte con
+    otro (Robin usa el de Chrom; Dimitri y Claude, el de Tres Casas) o, si no, el del catálogo.
+    """
+    info = info or {}
+    sid = str(info.get("engage_attack") or "")
+    if not sid.startswith("SID_"):
+        return sid
+    nombre = ATAQUES_ENGAGE_MAP.get(gid)
+    if not nombre:
+        nom = normalizar_texto(info.get("nombre", ""))
+        nombre = next((v for k, v in ATAQUES_ENGAGE_MAP.items() if not k.startswith("GID_") and normalizar_texto(k) == nom), None)
+    if not nombre:
+        for otro_gid, otro in (_catalogo.get("emblemas", {}) or {}).items():
+            if otro_gid != gid and otro.get("engage_attack") == sid and not otro.get("es_oscuro"):
+                nom_o = normalizar_texto(otro.get("nombre", ""))
+                nombre = ATAQUES_ENGAGE_MAP.get(otro_gid) or next(
+                    (v for k, v in ATAQUES_ENGAGE_MAP.items() if not k.startswith("GID_") and normalizar_texto(k) == nom_o), None)
+                if nombre:
+                    break
+    return nombre or ((_catalogo.get("habilidades", {}) or {}).get(sid, {}) or {}).get("nombre") or sid
+
+
 # =============================================================================
 # Configuración Canónica de Ataques de Emblema (Fijos vs Variables)
 # =============================================================================
