@@ -930,6 +930,12 @@ def obtener_protector_chain_guard(objetivo, tablero):
     return None
 
 
+def actua_por_su_cuenta(ficha) -> bool:
+    """False para los dobles de Call Doubles (Lyn): no se mueven ni atacan en la fase de su
+    bando (verificado en juego); solo encadenan con su invocador y hacen de señuelo."""
+    return not getattr(ficha, "invocador", "")
+
+
 def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, condicion_victoria=""):
     """
     Análisis táctico determinista completo de la situación actual del tablero:
@@ -954,8 +960,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     ]
     analizador = AnalizadorAmenaza(grid_adapted, mapa.ancho, mapa.alto)
 
-    aliados_activos = [a for a in tablero.obtener_aliados() if a.stats and a.arma and a.viva and not a.ha_actuado]
+    # Los dobles de Call Doubles no actúan: ni reciben recomendaciones ni amenazan (sin
+    # zona de peligro); siguen siendo objetivos (matarlos corta los Chain Attack del invocador)
+    aliados_activos = [a for a in tablero.obtener_aliados() if a.stats and a.arma and a.viva and not a.ha_actuado
+                       and actua_por_su_cuenta(a)]
     enemigos_activos = [e for e in tablero.obtener_enemigos() if e.stats and e.arma and e.viva]
+    enemigos_que_actuan = [e for e in enemigos_activos if actua_por_su_cuenta(e)]
 
     for a in aliados_activos:
         if a.stats:
@@ -1001,7 +1011,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     zonas_amenaza_enemigos = {}
     ancho_m = mapa.ancho
     alto_m = mapa.alto
-    for e in enemigos_activos:
+    for e in enemigos_que_actuan:
         r_arma = e.arma.rango if (e.arma and e.arma.rango) else [1]
         u_mock = UnidadMock(
             x=e.x,
@@ -1029,7 +1039,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     distancias_frente = []
 
     # ── 1. Evaluar amenazas enemigas sobre aliados ────────────────────────
-    for enemigo in enemigos_activos:
+    for enemigo in enemigos_que_actuan:
         rango_max_enemigo = max(enemigo.arma.rango) if enemigo.arma.rango else 1
         alcance_enemigo = enemigo.mov + rango_max_enemigo
 

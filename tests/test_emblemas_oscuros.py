@@ -120,12 +120,15 @@ class TestCallDoublesEnElTablero(unittest.TestCase):
         r = self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
         self.assertEqual(r.status_code, 200, r.get_json())
         dobles = self._dobles()
-        self.assertEqual(len(dobles), 4)
+        # Hyacinth empieza en el borde superior (8,0): la casilla de arriba no existe, así
+        # que salen 3 dobles, no 4 (el juego no recoloca el que falta en una diagonal)
+        self.assertEqual((self.hyacinth.x, self.hyacinth.y), (8, 0))
+        self.assertEqual(len(dobles), 3)
         h = self.hyacinth
         for d in dobles:
             self.assertEqual((d.hp_actual, d.hp_max), (1, 1))
             self.assertEqual(d.es_aliado, h.es_aliado)
-            self.assertEqual(abs(d.x - h.x) + abs(d.y - h.y) <= 2, True)
+            self.assertEqual(abs(d.x - h.x) + abs(d.y - h.y), 1, "solo en cruz, nunca en diagonal")
             # Mismas stats que el invocador (Params.xml: multiplicador 1)
             for stat in ("fuerza", "magia", "destreza", "velocidad", "defensa", "resistencia"):
                 self.assertEqual(getattr(d.stats, stat), getattr(h.stats, stat), stat)
@@ -137,7 +140,7 @@ class TestCallDoublesEnElTablero(unittest.TestCase):
         self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
         r = self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
         self.assertEqual(r.status_code, 400)
-        self.assertEqual(len(self._dobles()), 4)
+        self.assertEqual(len(self._dobles()), 3)
 
     def test_sin_la_habilidad_no_hay_dobles(self):
         r = self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hortensia"})
@@ -161,7 +164,7 @@ class TestCallDoublesEnElTablero(unittest.TestCase):
     def test_se_disipan_al_caer_el_invocador(self):
         self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
         r = self.client.post("/api/muerte", json={"nombre": "Hyacinth"})
-        self.assertEqual(len(r.get_json()["dobles_disipados"]), 4)
+        self.assertEqual(len(r.get_json()["dobles_disipados"]), 3)
         self.assertEqual(self._dobles(), [])
 
     def test_comando_de_disipar(self):
@@ -172,6 +175,110 @@ class TestCallDoublesEnElTablero(unittest.TestCase):
         # Y se pueden volver a invocar
         self.assertEqual(self.client.post("/api/unidad/invocar_dobles",
                                           json={"nombre": "Hyacinth"}).status_code, 200)
+
+    def _mover_hyacinth_a_casilla_abierta(self, con_diagonal=False):
+        """Una casilla con las cuatro de la cruz (y la diagonal superior izquierda, si se
+        pide) transitables y libres, para contar exacto. Devuelve esas casillas."""
+        h, ocupadas = self.hyacinth, {(f.x, f.y) for f in tablero.fichas.values() if f.viva}
+        cruz = [(1, 0), (-1, 0), (0, 1), (0, -1)] + ([(-1, -1)] if con_diagonal else [])
+        for x in range(tablero.mapa.ancho):
+            for y in range(tablero.mapa.alto):
+                casillas = [(x, y)] + [(x + dx, y + dy) for dx, dy in cruz]
+                if all(tablero._casilla_transitable(cx, cy) and (cx, cy) not in ocupadas for cx, cy in casillas):
+                    h.x, h.y = x, y
+                    return [(x + dx, y + dy) for dx, dy in cruz]
+        self.fail("no hay ninguna casilla abierta en el mapa")
+
+    def test_con_la_cruz_libre_salen_cuatro(self):
+        self._mover_hyacinth_a_casilla_abierta()
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        self.assertEqual(len(self._dobles()), 4)
+
+    def test_una_unidad_en_la_cruz_quita_ese_doble(self):
+        cruz = self._mover_hyacinth_a_casilla_abierta()
+        estorbo = next(f for f in tablero.obtener_enemigos() if f.nombre != "Hyacinth" and f.viva)
+        estorbo.x, estorbo.y = cruz[0]
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        dobles = self._dobles()
+        self.assertEqual(len(dobles), 3)
+        self.assertNotIn(cruz[0], [(d.x, d.y) for d in dobles])
+        self.assertTrue(all(abs(d.x - self.hyacinth.x) + abs(d.y - self.hyacinth.y) == 1 for d in dobles))
+
+    def _estilo_dragon(self):
+        self.hyacinth.stats.estilo_combate = "竜族スタイル"
+        self.assertEqual(pasivas.call_doubles(self.hyacinth)["copias"], 5)
+
+    def test_en_estilo_dragon_el_quinto_sale_arriba_a_la_izquierda(self):
+        self._estilo_dragon()
+        self._mover_hyacinth_a_casilla_abierta(con_diagonal=True)
+        h = self.hyacinth
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        casillas = sorted((d.x - h.x, d.y - h.y) for d in self._dobles())
+        self.assertEqual(casillas, sorted([(1, 0), (-1, 0), (0, 1), (0, -1), (-1, -1)]))
+
+    def test_en_estilo_dragon_sin_hueco_arriba_a_la_izquierda_salen_cuatro(self):
+        self._estilo_dragon()
+        casillas = self._mover_hyacinth_a_casilla_abierta(con_diagonal=True)
+        estorbo = next(f for f in tablero.obtener_enemigos() if f.nombre != "Hyacinth" and f.viva)
+        estorbo.x, estorbo.y = casillas[-1]   # la diagonal superior izquierda
+        h = self.hyacinth
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        casillas_dobles = sorted((d.x - h.x, d.y - h.y) for d in self._dobles())
+        self.assertEqual(casillas_dobles, sorted([(1, 0), (-1, 0), (0, 1), (0, -1)]),
+                         "no se recoloca en otra diagonal")
+
+    def test_los_dobles_aliados_no_esperan_al_cerrar_la_fase(self):
+        """Sin turno propio: al cerrar la fase de jugador no 'esperan' (ni pasivas de
+        esperar ni pozo de Emblema)."""
+        import pasivas_temporales
+        aliado = next(a for a in tablero.obtener_aliados() if a.arma)
+        aliado.stats.habilidades = list(getattr(aliado.stats, "habilidades", None) or []) + ["Call Doubles"]
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": aliado.nombre})
+        dobles = [f for f in tablero.fichas.values() if f.invocador == aliado.nombre]
+        self.assertTrue(dobles)
+        llamados = []
+        original = pasivas_temporales.al_esperar
+        pasivas_temporales.al_esperar = lambda t, f: llamados.append(f.nombre) or []
+        try:
+            pasivas_temporales.al_terminar_fase_jugador(tablero)
+        finally:
+            pasivas_temporales.al_esperar = original
+        self.assertTrue(llamados, "los aliados normales sí esperan")
+        self.assertFalse(set(llamados) & {d.nombre for d in dobles})
+
+    def test_los_dobles_no_se_mueven(self):
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        for d in self._dobles():
+            self.assertEqual(d.movimiento_disponible, 0)
+        r = self.client.get("/api/unidad/rango_movimiento", query_string={"nombre": self._dobles()[0].nombre})
+        self.assertEqual(r.get_json().get("mov"), 0)
+
+    def test_el_analisis_no_los_trata_como_amenaza(self):
+        """No atacan por su cuenta: sin zona de peligro (la que penaliza las casillas de
+        ataque de los aliados). Siguen siendo objetivos."""
+        from motor_analisis import actua_por_su_cuenta
+        self.client.post("/api/unidad/invocar_dobles", json={"nombre": "Hyacinth"})
+        self.assertTrue(actua_por_su_cuenta(self.hyacinth))
+        self.assertTrue(all(not actua_por_su_cuenta(d) for d in self._dobles()))
+
+    def test_los_dobles_aliados_no_reciben_recomendaciones(self):
+        """Dobles de un aliado pegados a un enemigo: el análisis no les propone atacar."""
+        from motor_analisis import analizar_situacion_tactica
+        aliado = next(a for a in tablero.obtener_aliados() if a.arma)
+        aliado.stats.habilidades = list(getattr(aliado.stats, "habilidades", None) or []) + ["Call Doubles"]
+        cruz = self._mover_hyacinth_a_casilla_abierta()   # cruz libre alrededor de esa casilla
+        centro = (self.hyacinth.x, self.hyacinth.y)
+        aliado.x, aliado.y = centro
+        # Hyacinth, justo detrás del doble que saldrá en cruz[0]: el doble queda pegado a él
+        self.hyacinth.x, self.hyacinth.y = 2 * cruz[0][0] - centro[0], 2 * cruz[0][1] - centro[1]
+        r = self.client.post("/api/unidad/invocar_dobles", json={"nombre": aliado.nombre})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        dobles = [f for f in tablero.fichas.values() if f.invocador == aliado.nombre]
+        self.assertTrue(dobles)
+        res = analizar_situacion_tactica(tablero, tablero.mapa, "seguro")
+        nombres = {d.nombre for d in dobles}
+        self.assertFalse([x for x in res["resultados"] if x.get("aliado") in nombres],
+                         "un doble no recibe recomendaciones")
 
 
 class TestAstraStormDeAliado(unittest.TestCase):

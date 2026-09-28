@@ -1078,7 +1078,7 @@ def lanzar_vena_dragon():
 @app.route("/api/unidad/invocar_dobles", methods=["POST"])
 def invocar_dobles_unidad():
     """
-    Call Doubles (SID_残像, Emblema de Lyn): rodea a la unidad de copias suyas con 1 HP.
+    Call Doubles (SID_残像, Emblema de Lyn): copias con 1 HP en las casillas en cruz libres.
     El jugador lo usa para reflejar que el jefe (Hyacinth en el Cap. 10) ha usado el
     comando. Body: {"nombre": "Hyacinth"}.
     """
@@ -1984,9 +1984,9 @@ def iniciar_fase_enemigo():
     if tablero.fase == "jugador":
         # Cerrar la fase de jugador: quien no actuó, esperó (dispara Self-Improver, etc.)
         estados_otorgados = pasivas_temporales.al_terminar_fase_jugador(tablero)
-        # ...y si esperó sobre un pozo de Emblema, lo usa
+        # ...y si esperó sobre un pozo de Emblema, lo usa (los dobles no tienen turno)
         for f in list(tablero.fichas.values()):
-            if f.viva and f.es_aliado and not f.accion_turno:
+            if f.viva and f.es_aliado and not f.accion_turno and not f.invocador:
                 r = tablero.aplicar_recarga_emblema_en_casilla(f.nombre)
                 if r:
                     recargas.append(r)

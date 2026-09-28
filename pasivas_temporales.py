@@ -258,6 +258,7 @@ def al_terminar_fase_jugador(tablero) -> list:
     """
     otorgados = []
     for f in tablero.fichas.values():
-        if f.viva and f.es_aliado and not f.accion_turno:
+        # Los dobles de Call Doubles no tienen turno: no "esperan"
+        if f.viva and f.es_aliado and not f.accion_turno and not f.invocador:
             otorgados += al_esperar(tablero, f)
     return otorgados

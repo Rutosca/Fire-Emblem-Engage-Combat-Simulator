@@ -86,8 +86,8 @@ class FichaUnidad:
         ya cuenta. Llegar a una casilla de hielo no da nada, porque el movimiento se
         calcula desde donde estaba.
         """
-        if self.congelado:
-            return 0
+        if self.congelado or self.invocador:
+            return 0   # congelada, o doble de Call Doubles (no se mueve: solo encadena y hace de señuelo)
         # Estados temporales que tocan el Mov (Anima Focus de Soren con viento: -2)
         mov_estados = sum(int((e.get("stat_boosts") or {}).get("mov", 0) or 0)
                           for e in (self.estados_temporales or []))
@@ -1402,10 +1402,13 @@ class EstadoTablero:
 
     def invocar_dobles(self, nombre_invocador: str):
         """
-        Ejecuta el comando Call Doubles: rodea a la unidad de copias suyas con 1 HP
-        (VisionCount del datamine: 4, 5 en estilo Dragón), con el resto de stats
-        idénticas y la Mani Katti de los dobles equipada. Solo hacen Chain Attack
-        cuando ataca quien las invocó y no dan experiencia.
+        Ejecuta el comando Call Doubles: coloca copias de la unidad con 1 HP en las cuatro
+        casillas en cruz (VisionCount 4) y, en estilo Dragón (VisionCount 5), también en la
+        diagonal superior izquierda. Si una está ocupada o no es transitable, ese doble no
+        aparece (pueden salir 4, 3, 2 o 1; verificado en juego).
+        Mismas stats que el invocador y la Mani Katti de los dobles equipada. No se mueven
+        ni atacan por su cuenta: solo hacen Chain Attack cuando ataca quien los invocó (y
+        sirven de señuelo), y no dan experiencia.
         Devuelve (fichas desplegadas como_dict, motivo de error o "").
         """
         import pasivas
@@ -1459,6 +1462,7 @@ class EstadoTablero:
                 "dificultad": f.dificultad,
             }, tablero=self)
             doble.invocador = f.nombre
+            doble.mov = 0
             doble.es_jefe = False
             doble.hp_stock = 0
             self.registrar_unidad(doble, resolver_colision=False)
@@ -1488,14 +1492,17 @@ class EstadoTablero:
             self.fichas.pop(n, None)
         return fuera
 
+    # Casillas fijas de cada doble, en orden: las cuatro en cruz y, el 5.º (estilo Dragón),
+    # siempre la diagonal superior izquierda (y crece hacia abajo en el tablero)
+    CASILLAS_DOBLES = [(1, 0), (-1, 0), (0, 1), (0, -1), (-1, -1)]
+
     def _casillas_para_dobles(self, ficha, cuantas: int) -> list:
-        """Casillas donde caben los dobles: las adyacentes en cruz primero (el juego lo
-        describe como rodearse) y, si faltan, las diagonales."""
+        """Casillas donde aparecen los dobles: la casilla fija de cada uno (CASILLAS_DOBLES,
+        las `cuantas` primeras). Si está ocupada (unidad), fuera del mapa o no es transitable
+        (muro…), ese doble no se invoca: el juego no lo recoloca en otra (verificado en juego)."""
         ocupadas = {(u.x, u.y) for u in self.fichas.values() if u.viva}
-        cruz = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        diagonales = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         salida = []
-        for dx, dy in cruz + diagonales:
+        for dx, dy in self.CASILLAS_DOBLES[:cuantas]:
             if len(salida) >= cuantas:
                 break
             x, y = ficha.x + dx, ficha.y + dy

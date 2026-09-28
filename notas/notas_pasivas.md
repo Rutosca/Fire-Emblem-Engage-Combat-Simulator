@@ -264,6 +264,16 @@ Oscuro (`GID_M010_敵リン`).
   El texto japonés ("自分のみチェインアタック可能な残像") aclara que **solo hacen Chain
   Attack cuando ataca quien los invocó**, no con el resto del ejército — por eso
   `obtener_aliados_backup` los filtra por `invocador` en vez de tratarlos como Backup.
+  **Verificado en juego (2026-09-28)**: aparecen **solo en las cuatro casillas en cruz**; si
+  una está ocupada, fuera del mapa o no es transitable, ese doble no sale (3, 2, 1…), nunca
+  se recoloca en diagonal. **No se mueven ni atacan por su cuenta**: `movimiento_disponible`
+  0 y `motor_analisis.actua_por_su_cuenta` los saca de las zonas de peligro y de las
+  recomendaciones; siguen siendo objetivos (matar uno corta un Chain Attack). Tampoco
+  "esperan" al cerrar la fase (ni pasivas de Timing 25 ni pozo de Emblema). El **5.º doble
+  del estilo Dragón** (VisionCount 5) sale **siempre en la diagonal superior izquierda**
+  (x-1, y-1) con la misma regla: si no hay hueco ahí, no aparece
+  (`EstadoTablero.CASILLAS_DOBLES`). Llevan siempre la Mani Katti de los dobles; el daño
+  de su Chain Attack es el 10 % del HP máximo del objetivo, como cualquier Chain Attack.
   En el tablero: `EstadoTablero.invocar_dobles` / `disipar_dobles` /
   `purgar_dobles_huerfanos` (se disipan solos al caer el invocador), endpoints
   `POST /api/unidad/invocar_dobles` y `/api/unidad/disipar_dobles`, y botón

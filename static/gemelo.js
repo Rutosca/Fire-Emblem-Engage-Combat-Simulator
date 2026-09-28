@@ -1465,8 +1465,9 @@ function abrirModalEdicion(ficha) {
 }
 
 // ─── Call Doubles (Emblema de Lyn) ─────────────────────────────────────────
-// El jugador refleja el comando del jefe: aparecen 4 dobles (5 en estilo Dragón)
-// con 1 HP en las casillas de alrededor. Solo encadenan ataques con quien los invocó.
+// El jugador refleja el comando del jefe: aparece un doble con 1 HP en cada casilla en
+// cruz libre (0-4; si una está ocupada o es un muro, ese doble no sale). No se mueven ni
+// atacan solos: solo encadenan ataques con quien los invocó.
 function actualizarBotonDobles(ficha) {
   const btn = $("btn-modal-dobles");
   if (!btn) return;
