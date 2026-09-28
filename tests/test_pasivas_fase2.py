@@ -203,15 +203,106 @@ class TestOverlayDLC(unittest.TestCase):
         # solo al iniciar
         self.assertEqual(_combate(rival, plus, HACHA, LANZA)["defensor"]["daño_por_golpe"], _combate(rival, _u("Chloé"), HACHA, LANZA)["defensor"]["daño_por_golpe"])
 
-    def test_geosphere_aura_de_def_res(self):
-        tiki = _u("Portador", habilidades=["Geosphere"], pos=(3, 3))
-        rival = _u("Rival", fuerza=20)
-        con = _combate(rival, _u("Aliado"), HACHA, ESPADA, aliados_cercanos_def=[(tiki, 1)])
-        sin = _combate(rival, _u("Aliado"), HACHA, ESPADA)
-        self.assertEqual(con["atacante"]["daño_por_golpe"], sin["atacante"]["daño_por_golpe"] - 3)
-        con_m = _combate(_u("Mago", magia=20), _u("Aliado"), TOMO, ESPADA, aliados_cercanos_def=[(tiki, 1)])
-        sin_m = _combate(_u("Mago", magia=20), _u("Aliado"), TOMO, ESPADA)
-        self.assertEqual(con_m["atacante"]["daño_por_golpe"], sin_m["atacante"]["daño_por_golpe"] - 3)
+
+
+class TestInicioDeFase(unittest.TestCase):
+    """
+    Pasivas de inicio de fase (Skill.xml Timing 27 + GiveTarget 3), vía
+    pasivas_temporales.al_empezar_fase desde EstadoTablero.avanzar_turno.
+    Geosphere (Tiki, datamine SID_地玉の加護): "At start of player phase, if there are
+    allies adjacent to unit, grants Def/Res+3 to unit and those allies for 1 turn".
+    Antes era un aura de combate (Timing 20) del overlay; el datamine la define así.
+    """
+
+    def _tablero(self, *unidades):
+        from estado_tablero import EstadoTablero
+        from catalogo_loader import resolver_unidad_con_catalogo
+        t = EstadoTablero(mapa=None, auto_cargar_spawns=False)
+        t.turno_actual, t.fase = 1, "enemigo"
+        for nombre, pos, es_aliado, habs in unidades:
+            t.registrar_unidad(resolver_unidad_con_catalogo({
+                "nombre": nombre, "x": pos[0], "y": pos[1], "es_aliado": es_aliado, "arma_nombre": "Iron Sword",
+                "habilidades": habs, "stats": {"hp": 40, "defensa": 5, "resistencia": 3}}, tablero=t))
+        return t
+
+    def _dano(self, t, nombre, arma):
+        rival = _u("Rival", fuerza=20, magia=20)
+        return _combate(rival, t.obtener_ficha(nombre).stats, arma, ESPADA)["atacante"]["daño_por_golpe"]
+
+    def test_geosphere_def_res_al_portador_y_adyacentes(self):
+        t = self._tablero(("Portador", (3, 3), True, ["Geosphere"]), ("Aliado", (3, 4), True, []),
+                          ("Lejano", (8, 8), True, []), ("Bandido", (3, 2), False, []))
+        antes = {n: (self._dano(t, n, HACHA), self._dano(t, n, TOMO)) for n in ("Portador", "Aliado", "Lejano")}
+        t.avanzar_turno()
+        recibidos = sorted(n for n, _ in t.estados_inicio_fase_ultimo)
+        self.assertEqual(recibidos, ["Aliado", "Portador"], "ni el lejano ni el enemigo adyacente la reciben")
+        for n in ("Portador", "Aliado"):
+            self.assertEqual(self._dano(t, n, HACHA), antes[n][0] - 3)
+            self.assertEqual(self._dano(t, n, TOMO), antes[n][1] - 3)
+        self.assertEqual(self._dano(t, "Lejano", HACHA), antes["Lejano"][0])
+
+    def test_geosphere_dura_un_turno_y_exige_aliado_adyacente(self):
+        t = self._tablero(("Portador", (3, 3), True, ["Geosphere"]), ("Aliado", (3, 4), True, []))
+        t.avanzar_turno()
+        self.assertTrue(t.obtener_ficha("Aliado").tiene_estado_temporal("SID_地玉の加護_効果"))
+        t.iniciar_fase_enemigo()   # cubre la fase enemiga
+        self.assertTrue(t.obtener_ficha("Aliado").tiene_estado_temporal("SID_地玉の加護_効果"))
+        t.mover_unidad("Aliado", 8, 8)
+        t.avanzar_turno()          # nueva fase de jugador: caduca y ya no hay adyacentes
+        self.assertFalse(t.obtener_ficha("Aliado").tiene_estado_temporal("SID_地玉の加護_効果"))
+        self.assertFalse(t.obtener_ficha("Portador").tiene_estado_temporal("SID_地玉の加護_効果"))
+
+    def test_geosphere_plus_da_5_y_no_se_suma_a_geosphere(self):
+        """Con las dos versiones (el kit de Tiki trae Geosphere; Geosphere+ a vínculo 16) vale solo la mayor."""
+        t = self._tablero(("Portador", (3, 3), True, ["Geosphere", "Geosphere+"]), ("Aliado", (4, 3), True, []),
+                          ("Otro", (5, 3), True, ["Geosphere"]))
+        antes = self._dano(t, "Aliado", HACHA)
+        t.avanzar_turno()
+        self.assertEqual(self._dano(t, "Aliado", HACHA), antes - 5)
+        self.assertEqual([e["sid"] for e in t.obtener_ficha("Aliado").estados_temporales], ["SID_地玉の加護＋_効果"])
+
+    def test_fortify_def_solo_a_los_adyacentes(self):
+        """Anillo de Sharena (SID_絆の指輪_シャロン, RangeI 1): Def+2 a los adyacentes, no al portador."""
+        t = self._tablero(("Portador", (3, 3), True, ["Fortify Def"]), ("Aliado", (3, 4), True, []))
+        antes = {n: self._dano(t, n, HACHA) for n in ("Portador", "Aliado")}
+        t.avanzar_turno()
+        self.assertEqual(self._dano(t, "Aliado", HACHA), antes["Aliado"] - 2)
+        self.assertEqual(self._dano(t, "Portador", HACHA), antes["Portador"])
+
+    def test_empezar_batalla_dispara_el_turno_1_una_sola_vez(self):
+        t = self._tablero(("Portador", (3, 3), True, ["Geosphere"]), ("Aliado", (3, 4), True, []))
+        t.fase = "jugador"
+        self.assertFalse(t.batalla_iniciada)
+        self.assertEqual(sorted(n for n, _ in t.empezar_batalla()), ["Aliado", "Portador"])
+        self.assertTrue(t.batalla_iniciada)
+        self.assertEqual(t.empezar_batalla(), [], "no se repite")
+        t.deshacer()
+        self.assertFalse(t.batalla_iniciada, "la Cronogema lo deshace")
+        self.assertFalse(t.obtener_ficha("Aliado").tiene_estado_temporal("SID_地玉の加護_効果"))
+
+    def test_avanzar_turno_da_la_batalla_por_empezada(self):
+        t = self._tablero(("Portador", (3, 3), True, []))
+        t.avanzar_turno()
+        self.assertTrue(t.batalla_iniciada)
+        self.assertEqual(t.empezar_batalla(), [])
+
+    def test_endpoint_empezar_batalla(self):
+        from app import app, tablero
+        tablero.limpiar()
+        tablero.turno_actual, tablero.fase, tablero.batalla_iniciada = 1, "jugador", False
+        cliente = app.test_client()
+        res = cliente.post("/api/batalla/empezar", json={})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers.get("X-Engage-Batalla"), "1")
+        self.assertEqual(cliente.post("/api/batalla/empezar", json={}).status_code, 409)
+        exportada = cliente.get("/api/partida/exportar").get_json()["partida"]
+        self.assertTrue(exportada["batalla_iniciada"])
+
+    def test_los_enemigos_disparan_las_suyas_al_empezar_su_fase(self):
+        t = self._tablero(("Portador", (3, 3), False, ["Geosphere"]), ("Escolta", (3, 4), False, []))
+        t.fase = "jugador"
+        t.iniciar_fase_enemigo()
+        self.assertEqual(sorted(n for n, _ in t.estados_inicio_fase_ultimo), ["Escolta", "Portador"])
 
 
 class _T:

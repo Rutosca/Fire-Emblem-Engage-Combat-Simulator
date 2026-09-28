@@ -163,29 +163,48 @@ def sids_activos(unidad, incluir_variantes_estilo: bool = True) -> list:
     (se usa su `.stats` si existe).
     """
     stats = getattr(unidad, "stats", None) or unidad
-    sids = list(getattr(stats, "habilidades_sids", None) or [])
     en_fusion = bool(getattr(stats, "en_fusion", False) or int(getattr(stats, "turnos_fusion_restantes", 0) or 0) > 0
                      or getattr(unidad, "en_fusion", False))
-    lista_fusion = list(getattr(stats, "habilidades_sids_fusion", None) or [])
-    solo_fusion = set(lista_fusion)
-    # Nombres visibles (datos a mano, tests, roster sin pasar por catalogo_loader) → SID.
-    # Las de Fusión guardadas por nombre ("Divine Speed") solo cuentan en Fusión.
-    for nombre in (getattr(stats, "habilidades", None) or []):
-        sid = resolver_nombre_a_sid(str(nombre))
-        if sid and (en_fusion or sid not in solo_fusion):
-            sids.append(sid)
-    if en_fusion:
-        sids += lista_fusion
+    estados = []
     for estado in (getattr(stats, "estados_temporales", None) or getattr(unidad, "estados_temporales", None) or []):
         sid_est = estado.get("sid") if isinstance(estado, dict) else getattr(estado, "sid", None)
         if sid_est:
-            sids.append(sid_est)
+            estados.append(sid_est)
     estilo = getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", "")
+    # El resultado depende solo de estas entradas (y del catálogo, ver invalidar_caches):
+    # se cachea por ellas. Se llama cientos de miles de veces por mapa (auras, Chain Attack).
+    try:
+        return list(_sids_activos_de(
+            tuple(getattr(stats, "habilidades_sids", None) or ()),
+            tuple(str(n) for n in (getattr(stats, "habilidades", None) or ())),
+            tuple(getattr(stats, "habilidades_sids_fusion", None) or ()),
+            en_fusion, tuple(estados), str(estilo or ""), bool(incluir_variantes_estilo)))
+    except TypeError:   # algún SID no hashable (datos a mano raros): sin caché
+        return list(_sids_activos_de.__wrapped__(
+            list(getattr(stats, "habilidades_sids", None) or []),
+            [str(n) for n in (getattr(stats, "habilidades", None) or [])],
+            list(getattr(stats, "habilidades_sids_fusion", None) or []),
+            en_fusion, estados, str(estilo or ""), bool(incluir_variantes_estilo)))
+
+
+@functools.lru_cache(maxsize=4096)
+def _sids_activos_de(base, nombres, lista_fusion, en_fusion, estados, estilo, incluir_variantes_estilo) -> tuple:
+    sids = list(base)
+    solo_fusion = set(lista_fusion)
+    # Nombres visibles (datos a mano, tests, roster sin pasar por catalogo_loader) → SID.
+    # Las de Fusión guardadas por nombre ("Divine Speed") solo cuentan en Fusión.
+    for nombre in nombres:
+        sid = resolver_nombre_a_sid(nombre)
+        if sid and (en_fusion or sid not in solo_fusion):
+            sids.append(sid)
+    if en_fusion:
+        sids += list(lista_fusion)
+    sids += list(estados)
     if incluir_variantes_estilo:
         sids = [variante_por_estilo(s, estilo) for s in sids]
     from motor_calculo import resolver_estilo_combate   # import diferido (ver variante_por_estilo)
     sids += [s for s in SIDS_ESTILO.get(resolver_estilo_combate(estilo), []) if s in HABILIDADES]
-    return _dedup(sids)
+    return tuple(_dedup(sids))
 
 
 def bono_movimiento_fusion(unidad) -> int:
@@ -988,6 +1007,7 @@ def invalidar_caches() -> None:
     _INDICE_NOMBRES = _construir_indice_nombres()
     _resolver_nombre_a_sid.cache_clear()
     _variante_por_estilo.cache_clear()
+    _sids_activos_de.cache_clear()
 
 
 invalidar_caches()   # tras registrar pasivas_overlay

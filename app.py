@@ -59,6 +59,11 @@ _BOOT_ID = _uuid.uuid4().hex
 @app.after_request
 def _marcar_arranque(resp):
     resp.headers["X-Engage-Boot"] = _BOOT_ID
+    # Si la batalla ya empezó (el cliente muestra u oculta el botón "Empezar batalla")
+    try:
+        resp.headers["X-Engage-Batalla"] = "1" if tablero.batalla_iniciada else "0"
+    except Exception:
+        pass
     return resp
 
 # =============================================================================
@@ -222,6 +227,7 @@ def seleccionar_mapa():
     tablero.historial.clear()
     tablero.turno_actual = 1
     tablero.fase = "jugador"
+    tablero.batalla_iniciada = False
     tablero.inicializar_objetos_mapa()
     tablero.programar_refuerzos({})
     tablero.programar_refuerzos_por_evento([])
@@ -621,6 +627,7 @@ def exportar_partida():
     estado = {
         "turno_actual": tablero.turno_actual,
         "fase": tablero.fase,
+        "batalla_iniciada": tablero.batalla_iniciada,
         "capitulo": _capitulo_sesion(),
         "dificultad": tablero.dificultad,
         "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(tablero.refuerzos_pendientes.items())},
@@ -644,6 +651,9 @@ def importar_partida():
     tablero.limpiar()
     tablero.turno_actual = int(partida.get("turno_actual", 1))
     tablero.fase = partida.get("fase", "jugador")
+    # Guardados de antes del botón "Empezar batalla": empezada si ya pasó del turno 1 de jugador
+    tablero.batalla_iniciada = bool(partida.get(
+        "batalla_iniciada", tablero.turno_actual > 1 or tablero.fase != "jugador"))
     if partida.get("dificultad"):
         tablero.dificultad = str(partida["dificultad"])
     else:
@@ -748,6 +758,7 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
     tablero.fichas.clear()
     tablero.turno_actual = 1
     tablero.fase = "jugador"
+    tablero.batalla_iniciada = False
     tablero.dificultad = dificultad
     tablero.inicializar_objetos_mapa()   # pozos, ballestas y destructibles vuelven al estado inicial
 
@@ -1952,6 +1963,19 @@ def resolver_unidad_preview():
 # API — Turnos
 # =============================================================================
 
+@app.route("/api/batalla/empezar", methods=["POST"])
+def empezar_batalla():
+    """Turno 1: el jugador ha colocado la formación. Dispara el inicio de la primera fase."""
+    if tablero.batalla_iniciada or tablero.turno_actual != 1 or tablero.fase != "jugador":
+        return jsonify({"ok": False, "error": "La batalla ya ha empezado"}), 409
+    estados_otorgados = tablero.empezar_batalla()
+    return jsonify({
+        "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
+        "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
+        "fichas": [f.como_dict() for f in tablero.fichas.values()],
+    })
+
+
 @app.route("/api/turno/inicio_fase_enemigo", methods=["POST"])
 def iniciar_fase_enemigo():
     """Marca que el jugador está arrastrando fichas del turno enemigo."""
@@ -1967,6 +1991,7 @@ def iniciar_fase_enemigo():
                 if r:
                     recargas.append(r)
     tablero.iniciar_fase_enemigo()
+    estados_otorgados += tablero.estados_inicio_fase_ultimo
     return jsonify({
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
@@ -1990,6 +2015,7 @@ def fin_turno():
     tablero.avanzar_turno()
     return jsonify({
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
+        "estados_otorgados": [{"unidad": n, **e} for n, e in tablero.estados_inicio_fase_ultimo],
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],
         "venenos_curados": [{"unidad": n, "nivel": v} for n, v in tablero.venenos_curados_ultimo],
@@ -2067,6 +2093,7 @@ def reset():
         tablero.fichas.clear()
         tablero.turno_actual = 1
         tablero.fase = "jugador"
+        tablero.batalla_iniciada = False
         num = tablero.cargar_spawns_desde_mapa()
         nombre_cap = getattr(_mapa, "filepath", "Mapa Tiled").split("/")[-1].split("\\")[-1]
         fichas_result = [f.como_dict() for f in tablero.fichas.values()]

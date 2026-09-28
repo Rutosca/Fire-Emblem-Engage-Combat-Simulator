@@ -236,22 +236,30 @@ class TestAnimaFocus(unittest.TestCase):
 
     def test_fuego_baja_la_defensa(self):
         self.assertTrue(self._atacar_con("Elfire"))
-        self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_FUEGO"))
+        self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_炎_効果"))
         celine = _soren()
         armas = _armas(celine)
         r = CalculadoraEngage.simular_combate(
             celine.stats, self.rival.stats, armas["Elfire"], None, Terreno(), Terreno(), 2)
-        self.assertIn("Anima Focus (fuego): Def -3", str(r["defensor"]["pasivas_activas"])
+        self.assertIn("Anima Focus (fuego) del defensor (-3 Defensa)", str(r["defensor"]["pasivas_activas"])
                       + str(r["atacante"]["pasivas_activas"]))
 
     def test_trueno_baja_la_precision(self):
+        celine = _soren()
+        arma_celine = _armas(celine)["Elfire"]
+        def hit_del_rival():
+            r = CalculadoraEngage.simular_combate(
+                self.rival.stats, celine.stats, self.rival.arma, arma_celine, Terreno(), Terreno(), 1)
+            return r["atacante"]["precision"]
+        antes = hit_del_rival()
         self.assertTrue(self._atacar_con("Thunder"))
-        self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_TRUENO"))
+        self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_雷_効果"))
+        self.assertEqual(hit_del_rival(), antes - 20)
 
     def test_viento_quita_movimiento(self):
         base = self.rival.movimiento_disponible
         self.assertTrue(self._atacar_con("Wind"))
-        self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_VIENTO"))
+        self.assertTrue(self.rival.tiene_estado_temporal("SID_理魔法＋_風_効果"))
         self.assertEqual(self.rival.movimiento_disponible, base - 2)
 
     def test_caduca_en_la_siguiente_fase_del_objetivo(self):

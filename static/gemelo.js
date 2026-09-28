@@ -48,6 +48,11 @@ async function api(path, method = "GET", body = null) {
       }
       state.serverBoot = boot;
     }
+    const batalla = r.headers.get("X-Engage-Batalla");
+    if (batalla !== null) {
+      state.batallaIniciada = batalla === "1";
+      actualizarBotonBatalla();
+    }
     const ct = r.headers.get("content-type") || "";
     if (ct.includes("application/json")) {
       return await r.json();
@@ -177,7 +182,8 @@ function describirStatBoosts(boosts) {
 // Avisa de los buffs temporales otorgados por pasivas (Self-Improver, ¡Ponte detrás de mí!, ...)
 function notificarEstadosOtorgados(res) {
   for (const e of (res && res.estados_otorgados) || []) {
-    mostrarToast(`${e.unidad}: ${e.nombre} (${describirStatBoosts(e.stat_boosts)}) — ${e.origen}`, "ok");
+    const boosts = describirStatBoosts(e.stat_boosts);
+    mostrarToast(`${e.unidad}: ${e.nombre}${boosts ? ` (${boosts})` : ""} — ${e.origen}`, "ok");
   }
 }
 
@@ -362,6 +368,7 @@ function autoGuardarLocal() {
       refuerzos_pendientes: state.refuerzosPendientes || null,
       casillas_fuego: state.casillasFuego || [],
       terrenos_temporales: state.terrenosTemporales || [],
+      batalla_iniciada: !!state.batallaIniciada,
       guardadoEn: new Date().toISOString()
     };
     localStorage.setItem("engage_tracker_partida_local", JSON.stringify(estado));
@@ -2682,8 +2689,23 @@ $("btn-turno-fin").addEventListener("click", async () => {
     mostrarToast(`Turno ${state.turno} — Fase del jugador`, "ok");
     notificarRefuerzos(res);
     notificarEfectosArea(res);
+    notificarEstadosOtorgados(res);   // pasivas de inicio de fase (Geosphere, Fortify Def…)
     refrescarRefuerzosPendientes();
     setTimeout(lanzarAnalisis, 350);
+  }
+});
+
+$("btn-empezar-batalla").addEventListener("click", async () => {
+  const res = await api("/api/batalla/empezar", "POST", {});
+  if (res && res.ok) {
+    if (res.fichas) actualizarTokens(res.fichas);
+    actualizarBotonBatalla();
+    mostrarToast("¡Comienza la batalla! Turno 1 — Fase del jugador", "ok");
+    notificarEstadosOtorgados(res);
+    autoGuardarLocal();
+    setTimeout(lanzarAnalisis, 250);
+  } else {
+    mostrarToast(`No se pudo empezar: ${(res && res.error) || "error"}`, "error");
   }
 });
 
@@ -3150,6 +3172,15 @@ function renderResultado(container, r) {
 function actualizarBadge() {
   const faseLabel = state.fase === "jugador" ? "Fase Jugador" : "Fase Enemigo";
   $("turno-badge").innerHTML = `Turno <span>${state.turno}</span> · ${faseLabel}`;
+  actualizarBotonBatalla();
+}
+
+// "Empezar batalla" solo existe en el turno 1, fase de jugador, antes de empezar
+function actualizarBotonBatalla() {
+  const btn = $("btn-empezar-batalla");
+  if (!btn) return;
+  const visible = state.turno === 1 && state.fase === "jugador" && !state.batallaIniciada;
+  btn.classList.toggle("hidden", !visible);
 }
 
 function mostrarToast(msg, tipo = "info") {

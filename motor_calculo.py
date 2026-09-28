@@ -752,8 +752,9 @@ class CalculadoraEngage:
                 setattr(u, campo, getattr(u, campo, 0) + int(v))
                 partes.append(f"{'+' if int(v) > 0 else ''}{int(v)} {campo.capitalize()}")
             if partes:
-                descs.append(f"{est.get('nombre', est.get('sid', 'Estado temporal'))} ({', '.join(partes)})")
-        u._desc_estados_temporales = descs
+                descs.append((est.get('nombre', est.get('sid', 'Estado temporal')), ', '.join(partes)))
+        u._desc_estados_temporales = [f"{n} ({p})" for n, p in descs]
+        u._desc_estados_temporales_rival = [f"{n} del defensor ({p})" for n, p in descs]
         return u
 
     @staticmethod
@@ -936,6 +937,9 @@ class CalculadoraEngage:
         # Estados temporales (¡Ponte detrás de mí!, Self-Improver, ...): sus stat_boosts
         # ya vienen sumados en `atacante` (simular_combate → _con_estados_temporales)
         for desc in getattr(atacante, '_desc_estados_temporales', []) or []:
+            pasivas_activas.append(desc)
+        # ...y los del defensor (Anima Focus: Def -3 en quien recibe el golpe), como sus pasivas
+        for desc in getattr(defensor, '_desc_estados_temporales_rival', []) or []:
             pasivas_activas.append(desc)
 
         # ── Ataques de Emblema (Engage Attacks) ──────────────────────────────

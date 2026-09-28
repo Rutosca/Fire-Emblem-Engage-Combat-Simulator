@@ -12,8 +12,8 @@ verificadas en juego, siempre con comentario del porqué.
 |---|---|
 | `condicion_dsl.py` | intérprete de la DSL de Skill.xml (VARIABLES / FUNCTIONS / LITERALS / ACT_STAT_MAP). Ampliar vocabulario aquí. |
 | `pasivas.py` | motor de habilidades: `sids_activos(unidad)` (recolección: personales, clase, sincronía, Fusión, estados, nombres → SID, variantes de estilo, SIDs de estilo), `efectos_recibidos` (auras Timing 20), `expandir_sync` (SyncSids), `recopilar_combate(unidad, ctx, aliados)` → `Modificadores` (sumas / multiplicadores / asignaciones por act, activas con timing, procs, ignoradas). `motor_calculo._stats_de_golpe` solo suma lo que devuelve. |
-| `pasivas_overlay.py` | pseudo-SIDs escritos a mano con el esquema del catálogo: Emblemas DLC (Weapon Sync/+, Geosphere/+). `condition` puede ser una función Python. |
-| `pasivas_temporales.py` | disparadores de give_sids "de 1 turno" (al esperar, aliado dañado); se integrará en `pasivas.py` (Fase 3). |
+| `pasivas_overlay.py` | pseudo-SIDs escritos a mano con el esquema del catálogo: Weapon Sync/+ y Special Guard (el resto del DLC ya viene del datamine FE17_200). `condition` puede ser una función Python. |
+| `pasivas_temporales.py` | disparadores de give_sids "de 1 turno": al esperar (Timing 25), aliado dañado, Anima Focus e inicio de fase (Timing 27, `al_empezar_fase`, llamado por `EstadoTablero.avanzar_turno` / `iniciar_fase_enemigo`). |
 | `tests/golden/` | red de seguridad: escenarios reales + golden de todos los combates. |
 | `tests/test_golden_combates.py` | compara el motor actual contra el golden; falla listando cada combate que cambia. |
 | `tests/golden/cobertura_pasivas.py` | informe `notas/cobertura_pasivas.md`: qué entiende la DSL y qué vocabulario falta, por frecuencia real. |
@@ -103,6 +103,27 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
     (la UI las pinta en naranja), `/api/mover` las acepta, y `encontrar_pos_ataque_optima`
     las considera (a igualdad prefiere una casilla normal) anotando `advance_desde` en la
     recomendación ("Mover a (P) y ADVANCE a (Q)").
+- **Fase 3a — auras e inicio de fase** (hecha, 2026-09-28)
+  - `pasivas_temporales.al_empezar_fase(tablero, es_aliado)`: Timing 27 con GiveTarget 1 (uno
+    mismo: Folkvangr, Nóatún) y 3 (alrededor, RangeI..RangeO; RangeI 0 incluye al portador:
+    Geosphere, Fortify Def). Condition evaluada con los aliados del bando (周囲の味方数). Los
+    efectos Debuff (BadState 512, categoría SID_弱体化: Fensalir) van a los **rivales**. Dura
+    "1 turno" (Life 1 / Cycle 2) = hasta la siguiente fase del mismo bando. Entre versiones de
+    una familia solo vale la de mayor Priority, también desde portadores distintos. Las armas
+    cuentan (EquipSids). La UI avisa con un toast al empezar cada fase.
+  - `pasivas.sids_activos` cacheado por sus entradas (SIDs, nombres, Fusión, estados, estilo).
+  - Pendiente: auras de combate sobre **rivales** (Timing 20 / Target 1: Racket of Solm, la
+    personal de Timerra; necesitan las posiciones de los rivales en el combate → con la 3b);
+    Self-Destruct / Curious Dance / Fell Spirit (Timing 27 sin give_sids: acciones).
+  - Turno 1: botón **Empezar batalla** (`POST /api/batalla/empezar` → `EstadoTablero.empezar_batalla`).
+    Solo en turno 1 / fase de jugador y una vez; dispara el inicio de la primera fase cuando el
+    jugador ya colocó la formación. `batalla_iniciada` viaja en export/import, localStorage y la
+    Cronogema; la cabecera `X-Engage-Batalla` le dice al cliente si mostrar el botón. Avanzar de
+    fase la da por empezada. Guardados antiguos: empezada si ya no es turno 1 de jugador.
+  - Anima Focus: `EFECTOS_ANIMA_FOCUS` apunta ya a los SIDs del datamine
+    (`SID_理魔法＋_炎/雷/風_効果`); antes apuntaba a pseudo-SIDs del overlay borrados y otorgaba
+    estados vacíos. Los estados temporales del defensor salen ahora en `pasivas_activas` como
+    "X del defensor (…)" (antes solo los del atacante: un Def -3 en el objetivo no se veía).
 - **Fase 3 — secuencia y eventos**: acts de secuencia (`手番回数`, `攻撃回数`,
   `行動回数`, `攻撃結果`) en `simular_combate`; evaluación por golpe (`timing` 6-12,
   `action` 1/2) para `ダメージ` (Hold Out, Divine Speed 50 %); `give_target` 0/2/3/4 y
@@ -117,7 +138,7 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
 |---|---|---|
 | `Stand` | 0 / 1 / 2 | siempre / solo cuando la unidad **inicia** el combate (Perceptive, "Blow", Poison Strike) / solo cuando **defiende** ("Stance", Vantage, Engage Attack Guard). `recopilar` ya lo aplica. |
 | `Action` | 0 / 1 / 2 | cualquier golpe / golpe **propio** (Hit0, DamageReduction On Attack) / golpe **recibido** (Poison, DamageNullify On Defense). Fase 3. |
-| `Timing` | 0-27 | fase en que se evalúa: 1 boosts permanentes, 2 velocidad de ataque, 3 Hit/Avo/Crit, 4 inicio de combate (Divine Speed, Hold Out, Echo), 5 orden/forecast (Perceptive, Resonance, Vantage), 6 secuencia por golpe (Counter 50 %, Lodestar Rush), 7 daño (Momentum, Hit100), 8 procs (Ignis, Luna), 9 tras tirada (Divine Pulse), 10 modificador de daño (Poison, Magic 50 %), 11 tras impacto (Break, Hobble), 12 reducción de daño (Mercy, DamageNullify), 13 Break Defenses, 15 Alacrity, 17 exp/oro, 18 post-combate (Seal, Savage Blow, Poison Strike), 19 aliado atacado (Get Behind Me), 20 aura (Divinely Inspiring, Solar Brace), 21 tras actuar (Echo, Advance, Run Through), 22 comandos de mover aliados, 23 Dragon Vein, 24 Instruct, 25 al esperar (Self-Improver), 27 post-combate en área (Self-Destruct, Curious Dance). |
+| `Timing` | 0-27 | fase en que se evalúa: 1 boosts permanentes, 2 velocidad de ataque, 3 Hit/Avo/Crit, 4 inicio de combate (Divine Speed, Hold Out, Echo), 5 orden/forecast (Perceptive, Resonance, Vantage), 6 secuencia por golpe (Counter 50 %, Lodestar Rush), 7 daño (Momentum, Hit100), 8 procs (Ignis, Luna), 9 tras tirada (Divine Pulse), 10 modificador de daño (Poison, Magic 50 %), 11 tras impacto (Break, Hobble), 12 reducción de daño (Mercy, DamageNullify), 13 Break Defenses, 15 Alacrity, 17 exp/oro, 18 post-combate (Seal, Savage Blow, Poison Strike), 19 aliado atacado (Get Behind Me), 20 aura (Divinely Inspiring, Solar Brace), 21 tras actuar (Echo, Advance, Run Through), 22 comandos de mover aliados, 23 Dragon Vein, 24 Instruct, 25 al esperar (Self-Improver), 27 **inicio de la fase de la unidad** (Geosphere, Fortify Def, Folkvangr/Nóatún, Self-Destruct, Curious Dance; corregido el 2026-09-28: antes se leía como "post-combate en área"). |
 | `GiveTarget` | 0 / 1 / 2 / 3 / 4 | 0 depende de la habilidad (rival golpeado en Seal…, aliados adyacentes en Divinely Inspiring, uno mismo en Self-Improver), 1 uno mismo (cadenas de efecto propias), 2 aliados en cadena (All for One), 3 alrededor (Dreadful Aura, Attuned), 4 objetivo del comando (Special Dance). Solo 1 está resuelto. |
 | `Priority` | 0-10 | entre versiones + de la misma familia aplica la mayor (Hold Out 1-4, Vantage 1-3). |
 | `Life` / `Cycle` | turnos | duración de estados otorgados (Seal (Effect) 6, Silence 1…). |
@@ -423,7 +444,7 @@ y se activan solas según el vínculo que elija el jugador, porque quien decide 
 | Nv | Pasiva | Qué hace y cómo está modelada |
 |---|---|---|
 | 1 | Starsphere | +15 % a los crecimientos al subir de nivel. Fuera de combate: se registra para que salga en la ficha, sin acts. |
-| 3 / 16 | Geosphere / + | Def/Res **+3 / +5** al portador **y a los adyacentes**, si hay alguno. Aura Timing 20 con el **bit 23 del Flag** (`FLAG_AURA_TAMBIEN_PROPIO`), que es lo que hace que el portador también la reciba — antes no. |
+| 3 / 16 | Geosphere / + | Def/Res **+3 / +5** al portador **y a los adyacentes**, si hay alguno. **Desde el datamine FE17_200** (SID_地玉の加護, 2026-09-28) es **Timing 27 + GiveTarget 3** (RangeI 0 = también el portador): se otorga **al empezar la fase** como estado de 1 turno (hasta la siguiente fase del mismo bando), no es un aura de combate. Geosphere y Geosphere+ no se suman (Priority). |
 | 8 / 14 / 19 | Lifesphere / + / ++ | Al **esperar** (sin atacar ni usar objetos): cura **20 / 30 / 40** HP y limpia los estados alterados. Timing 25 con un act `回復`. |
 | 10 | Lightsphere | Al **iniciar** combate, el rival critica a la **mitad**. Act `相手の必殺率 × 0.5`, Stand 1. |
 | Fusión | Draconic Form | **+10 HP** y **+5** a Complexión y a todas las stats básicas mientras dure la Fusión. Vive en `habilidades_sids_fusion`, así que se apaga sola al terminar. `[Mystical] +5 Res extra` va como SyncSid con Condition de estilo; el `[Armored] anula daño de terreno` no es de combate y no se modela. |

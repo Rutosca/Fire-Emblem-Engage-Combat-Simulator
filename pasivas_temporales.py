@@ -24,11 +24,12 @@ import condicion_dsl
 import pasivas
 
 SID_ANIMA_FOCUS = "SID_理魔法＋"
-# Elemento del tomo → efecto que Anima Focus (Soren) le cuelga al objetivo.
+# Elemento del tomo → efecto que Anima Focus (Soren) le cuelga al objetivo (datamine:
+# Debuffs de 1 turno; fuego Def -3 y viento Mov -2 en stat_boosts, trueno act 命中値 -20).
 EFECTOS_ANIMA_FOCUS = {
-    "fuego":  "SID_理魔法＋_FUEGO",
-    "trueno": "SID_理魔法＋_TRUENO",
-    "viento": "SID_理魔法＋_VIENTO",
+    "fuego":  "SID_理魔法＋_炎_効果",
+    "trueno": "SID_理魔法＋_雷_効果",
+    "viento": "SID_理魔法＋_風_効果",
 }
 
 SID_GET_BEHIND_ME = "SID_僕が守ります！"
@@ -37,6 +38,12 @@ SID_MEDITATION = "SID_瞑想"
 
 # Timing de Skill.xml "al esperar" (la unidad termina su acción sin atacar ni usar objetos)
 TIMING_AL_ESPERAR = 25
+# Timing de Skill.xml "al empezar la fase de la unidad" (Geosphere, Fortify Def, Folkvangr…)
+TIMING_INICIO_FASE = 27
+# GiveTarget: 1 = uno mismo, 3 = alrededor (RangeI 0 incluye al portador)
+GIVE_UNO_MISMO, GIVE_ALREDEDOR = 1, 3
+# BadState 512 = categoría "Debuff" (SID_弱体化, Seal, Leg Strike…): el efecto va a los rivales
+BAD_STATE_DEBUFF = 512
 
 
 def anima_focus(tablero, atacante, objetivo, arma) -> list:
@@ -61,8 +68,9 @@ def anima_focus(tablero, atacante, objetivo, arma) -> list:
     info = condicion_dsl.HABILIDADES_CATALOGO.get(sid_efecto) or {}
     # "Durante 1 turno": caduca al entrar en la siguiente fase del objetivo
     fase = "jugador" if getattr(objetivo, "es_aliado", False) else "enemigo"
+    elemento = next(e for e, s in EFECTOS_ANIMA_FOCUS.items() if s == sid_efecto)
     est = objetivo.otorgar_estado_temporal(
-        sid_efecto, info.get("nombre") or "Anima Focus", dict(info.get("stat_boosts") or {}),
+        sid_efecto, f"Anima Focus ({elemento})", dict(info.get("stat_boosts") or {}),
         fase, int(getattr(tablero, "turno_actual", 1)) + 1,
         origen=str(getattr(atacante, "nombre", "") or ""))
     return [(objetivo.nombre, est)] if est else []
@@ -178,6 +186,69 @@ def al_esperar(tablero, ficha) -> list:
             "stat_boosts": {}, "origen": "esperó",
         }))
     return otorgados
+
+
+def al_empezar_fase(tablero, es_aliado: bool) -> list:
+    """
+    Evento: empieza la fase de un bando (Skill.xml Timing 27). Cada portador vivo cuya
+    Condition se cumple (周囲の味方数 > 0 = "si tiene aliados adyacentes") otorga sus
+    give_sids como estado temporal:
+      - GiveTarget 1: a sí mismo (Folkvangr / Nóatún con HP bajo).
+      - GiveTarget 3: a las unidades a distancia RangeI..RangeO; RangeI 0 incluye al
+        portador (Geosphere: "grants Def/Res+3 to unit and those allies"). Van a los
+        aliados, o a los rivales si el efecto es un Debuff (BadState 512: Fensalir).
+    "For 1 turn" (Life 1 / Cycle 2, como Self-Improver): dura hasta el inicio de la
+    siguiente fase del mismo bando. Las armas cuentan (sus EquipSids). Entre versiones
+    de una familia (Geosphere / Geosphere+) solo vale la de mayor Priority, también si
+    llegan de portadores distintos. Devuelve [(nombre_unidad, estado)].
+    """
+    fase = "jugador" if es_aliado else "enemigo"
+    turno = int(getattr(tablero, "turno_actual", 1))
+    vivas = [f for f in tablero.fichas.values() if f.viva and f.stats]
+    mejor = {}   # (receptor, familia) -> (priority, orden, receptor, info, sid, efectos, portador)
+    for portador in [f for f in vivas if f.es_aliado == es_aliado]:
+        # Los verdes pendientes de unión no comparten auras con el ejército (ni al revés)
+        aliados = [f for f in vivas if f is not portador and f.es_aliado == es_aliado
+                   and f.union_pendiente == portador.union_pendiente]
+        rivales = [f for f in vivas if f.es_aliado != es_aliado]
+        sids = pasivas.sids_activos(portador) + [s for s in (getattr(portador.arma, "sids", None) or []) if s]
+        for sid in pasivas._resolver_prioridades(list(dict.fromkeys(sids))):
+            info = condicion_dsl.HABILIDADES_CATALOGO.get(sid) or {}
+            gt = int(info.get("give_target") or 0)
+            if int(info.get("timing") or 0) != TIMING_INICIO_FASE or not info.get("give_sids")                     or gt not in (GIVE_UNO_MISMO, GIVE_ALREDEDOR):
+                continue
+            ctx = condicion_dsl.ContextoCombate(
+                unidad=portador.stats, rival=portador.stats, es_iniciador=True,
+                aliados_cercanos=[(f.stats, _distancia(portador, f)) for f in aliados],
+                habilidades_sids=list(sids), arma=portador.arma)
+            if not pasivas._condicion_cumplida(info, ctx):
+                continue
+            efectos = [(h, condicion_dsl.HABILIDADES_CATALOGO.get(h) or {}) for h in info["give_sids"]]
+            if gt == GIVE_UNO_MISMO:
+                receptores = [portador]
+            else:
+                ri, ro = pasivas._rango_aura(info)
+                es_debuff = all(int(ef.get("bad_state") or 0) & BAD_STATE_DEBUFF for _, ef in efectos)
+                candidatos = rivales if es_debuff else aliados
+                receptores = ([portador] if ri == 0 and not es_debuff else []) +                              [f for f in candidatos if max(ri, 1) <= _distancia(portador, f) <= ro]
+            prio = int(info.get("priority") or 0)
+            for receptor in receptores:
+                clave = (receptor.nombre, pasivas._familia(sid, info))
+                if clave not in mejor or prio > mejor[clave][0]:
+                    mejor[clave] = (prio, len(mejor), receptor, info, sid, efectos, portador)
+    otorgados = []
+    for _, _, receptor, info, sid, efectos, portador in sorted(mejor.values(), key=lambda m: m[1]):
+        for sid_ef, ef in efectos:
+            est = receptor.otorgar_estado_temporal(
+                sid_ef, info.get("nombre") or sid, dict(ef.get("stat_boosts") or {}),
+                fase, turno + 1, origen=portador.nombre)
+            if est:
+                otorgados.append((receptor.nombre, est))
+    return otorgados
+
+
+def _distancia(a, b) -> int:
+    return abs(a.x - b.x) + abs(a.y - b.y)
 
 
 def al_terminar_fase_jugador(tablero) -> list:

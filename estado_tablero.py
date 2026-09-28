@@ -441,6 +441,10 @@ class EstadoTablero:
         # Aparecen en el turno T (Blazing Lion, alientos de Tiki) y se van al empezar el T+1.
         self.terrenos_temporales: Dict[tuple, dict] = {}
         self.quemados_ultimo: list = []   # [(nombre, daño)] del último inicio de fase
+        self.estados_inicio_fase_ultimo: list = []   # [(nombre, estado)] de Geosphere, Fortify Def… (Timing 27)
+        # False mientras el jugador coloca la formación del turno 1; empezar_batalla() dispara
+        # el inicio de la primera fase de jugador (las fases siguientes lo hacen solas)
+        self.batalla_iniciada: bool = False
         self.venenos_curados_ultimo: list = []   # [(nombre, nivel)] curados por Detoxify
         self.hielo_deslizante_ultimo: list = []  # [(nombre, bono)] con +2 Mov por la vena de hielo
         self._refrescando_hielo = False
@@ -1127,6 +1131,7 @@ class EstadoTablero:
         snap = {
             "turno": self.turno_actual,
             "fase": self.fase,
+            "batalla_iniciada": self.batalla_iniciada,
             "fichas": copy.deepcopy(self.fichas),
             "objetos": copy.deepcopy(self.objetos),
             "refuerzos_pendientes": copy.deepcopy(self.refuerzos_pendientes),
@@ -1144,6 +1149,7 @@ class EstadoTablero:
         snap = self.historial.pop()
         self.turno_actual = snap["turno"]
         self.fase = snap["fase"]
+        self.batalla_iniciada = snap.get("batalla_iniciada", self.batalla_iniciada)
         self.fichas = snap["fichas"]
         self.objetos = snap.get("objetos", self.objetos)
         self.refuerzos_pendientes = snap.get("refuerzos_pendientes", self.refuerzos_pendientes)
@@ -1611,6 +1617,21 @@ class EstadoTablero:
 
     # ── Turno ────────────────────────────────────────────────────────────
 
+    def empezar_batalla(self) -> list:
+        """
+        El jugador ha colocado la formación: empieza la primera fase de jugador. Dispara
+        las pasivas de inicio de fase (Timing 27: Geosphere, Fortify Def…) que en los
+        turnos siguientes dispara avanzar_turno. Solo una vez, en el turno 1 y en fase de
+        jugador. Devuelve [(nombre, estado)] otorgados.
+        """
+        if self.batalla_iniciada or self.turno_actual != 1 or self.fase != "jugador":
+            return []
+        self.guardar_snapshot()
+        self.batalla_iniciada = True
+        import pasivas_temporales
+        self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=True)
+        return self.estados_inicio_fase_ultimo
+
     def avanzar_turno(self) -> None:
         """
         Registra el fin del turno enemigo y prepara el siguiente turno del jugador.
@@ -1619,6 +1640,7 @@ class EstadoTablero:
         self.guardar_snapshot()
         self.turno_actual += 1
         self.fase = "jugador"
+        self.batalla_iniciada = True
         self.reiniciar_acciones_turno()
 
         # Decremento canonico de turnos de Fusion de Emblema para aliados
@@ -1636,6 +1658,9 @@ class EstadoTablero:
         # Buffs temporales que caducan al entrar en la fase de jugador (p.ej. Self-Improver)
         for f in self.fichas.values():
             f.purgar_estados_temporales("jugador", self.turno_actual)
+        # Pasivas de inicio de fase (Timing 27: Geosphere, Fortify Def…), ya con los viejos purgados
+        import pasivas_temporales
+        self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=True)
 
         # Fuego (Blazing Lion, alientos de Tiki): quema a los aliados que empiezan el turno
         # encima; después caducan fuego, niebla y hielo.
@@ -1656,6 +1681,7 @@ class EstadoTablero:
         """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""
         self.guardar_snapshot()
         self.fase = "enemigo"
+        self.batalla_iniciada = True
         # Fuego (Blazing Lion): quema a los enemigos que empiezan su fase encima
         self.quemados_ultimo = self.quemar_unidades_en_fuego(es_aliado=False)
         # Curación de terreno para los enemigos que empiezan su fase sobre ella
@@ -1670,6 +1696,8 @@ class EstadoTablero:
                 f.cargas_ruptura = 0
             # Buffs temporales que caducan al entrar en la fase enemiga (p.ej. ¡Ponte detrás de mí!)
             f.purgar_estados_temporales("enemigo", self.turno_actual)
+        import pasivas_temporales
+        self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=False)
 
     # ── Serialización ────────────────────────────────────────────────────
 
@@ -1682,6 +1710,7 @@ class EstadoTablero:
             "turno": self.turno_actual,
             "turno_actual": self.turno_actual,
             "fase": self.fase,
+            "batalla_iniciada": self.batalla_iniciada,
             "dificultad": self.dificultad,
             "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(self.refuerzos_pendientes.items())},
             # `casilla` es None en los eventos que no se disparan al pisar una casilla

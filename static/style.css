@@ -1206,6 +1206,16 @@ button:disabled { opacity: .4; cursor: not-allowed; filter: none; }
   padding: 6px 8px;
   height: 32px;
 }
+#btn-empezar-batalla {
+  grid-column: 1 / -1;
+  background: rgba(240, 192, 64, 0.16);
+  color: var(--gold);
+  border: 1px solid rgba(240, 192, 64, 0.55);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 6px 8px;
+  height: 34px;
+}
 #btn-reactivar, .btn-reactivar {
   background: rgba(82, 192, 122, 0.12);
   color: var(--green);
