@@ -228,6 +228,26 @@ class TestRefuerzosPorCombateYMuerte(unittest.TestCase):
         estado2 = self.client.get("/api/estado").get_json()
         self.assertTrue(estado2["eventos_por_accion"][0]["disparado"])
 
+    def test_el_preset_y_el_reinicio_traen_el_boton(self):
+        """El botón solo aparecía al recargar la página: /api/preset/actual y /api/reset
+        no devolvían la lista y el cliente se quedaba con la del mapa vacío (o con la de
+        antes del reinicio, ya disparada)."""
+        tablero.fichas.clear()
+        r = self.client.post("/api/preset/actual", json={"dificultad": "Extremo"}).get_json()
+        self.assertEqual([(e["nombre"], e["disparado"]) for e in r["eventos_por_accion"]], [("Hortensia", False)])
+        self.client.post("/api/unidad/registrar_accion", json={"nombre": "Hortensia"})
+        # En un mapa de Tiled el reinicio vacía el tablero: el botón debe irse, no quedarse
+        # en gris con el estado de antes; y el siguiente preset lo trae otra vez sin disparar.
+        r = self.client.post("/api/reset", json={}).get_json()
+        self.assertEqual(r["eventos_por_accion"], [])
+        r = self.client.post("/api/preset/actual", json={"dificultad": "Extremo"}).get_json()
+        self.assertEqual([(e["nombre"], e["disparado"]) for e in r["eventos_por_accion"]], [("Hortensia", False)])
+
+    def test_morion_sale_con_su_nombre(self):
+        """PID_M010_異形兵_モリオン lleva 兵 como la tropa, pero el juego lo llama
+        "Corrupted Morion" (MPID_MorphMorion), no "Hero (8,0)"."""
+        self.assertEqual(self._por_pid("PID_M010_異形兵_モリオン").nombre, "Corrupted Morion")
+
     def test_una_partida_empezada_se_pone_al_dia_con_los_disparadores_nuevos(self):
         """Los disparadores se guardan en la partida al cargar el capítulo. Si se corrige
         una condición después, una partida ya empezada se quedaría con la antigua: al pedir

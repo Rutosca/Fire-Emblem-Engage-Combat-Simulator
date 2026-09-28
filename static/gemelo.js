@@ -86,12 +86,22 @@ const CLASES_TERRENO = {
   "Pozo":         "t-recarga",
 };
 
+// "evasion + agua": el agua va ENCIMA del terreno de base (Cap. 11). La casilla lleva el
+// color del terreno de base y, por encima, la marca del agua (t-sobre-agua).
 function claseTerreno(nombre = "") {
+  let [base, ...encima] = nombre.split(" + ");
+  // "agua" a secas es agua sobre llano: se pinta como llano con la marca, no como un foso
+  if (base.toLowerCase() === "agua" && !encima.length) [base, encima] = ["llanura", ["agua"]];
+  let clase = "t-desconocido";
   for (const [k, v] of Object.entries(CLASES_TERRENO)) {
-    if (nombre.toLowerCase().includes(k.toLowerCase())) return v;
+    if (base.toLowerCase().includes(k.toLowerCase())) { clase = v; break; }
   }
-  return "t-desconocido";
+  if (encima.some(e => e.toLowerCase() === "agua")) clase += " t-sobre-agua";
+  return clase;
 }
+
+// Bonos de casilla con su signo: el agua o la arena restan (−30), no "+-30"
+const conSigno = n => (n >= 0 ? `+${n}` : `${n}`);
 
 // ─── Construcción del grid ─────────────────────────────────────────────────
 
@@ -142,9 +152,9 @@ async function loadTerrenoAsync(ancho, alto) {
             const celda = $(`c-${x}-${y}`);
             if (!celda) return;
             celda.classList.remove("t-desconocido");
-            celda.classList.add(claseTerreno(t.nombre));
+            celda.classList.add(...claseTerreno(t.nombre).split(" "));
 
-            const perks = [`${t.nombre} | AVO +${t.avo} DEF +${t.dfn} (voladores: sin bono)`];
+            const perks = [`${t.nombre} | AVO ${conSigno(t.avo)} DEF ${conSigno(t.dfn)} (voladores: sin bono)`];
             if (t.curacion_turno) perks.push(`Cura +${t.curacion_turno} HP/turno`);
             if (t.es_antirruptura) perks.push(`Inmune Ruptura`);
             if (t.es_recarga_emblema) perks.push(`Recarga Emblema 100%`);
@@ -159,7 +169,7 @@ async function loadTerrenoAsync(ancho, alto) {
             if (t.curacion_turno) tagExtra += ` · +${t.curacion_turno}HP`;
             if (t.es_antirruptura) tagExtra += ` · Antirruptura`;
             if (t.es_recarga_emblema) tagExtra += ` · Recarga Fusión`;
-            celda.dataset.tip = `${x},${y} [${t.nombre}] AVO +${t.avo}${tagExtra}`;
+            celda.dataset.tip = `${x},${y} [${t.nombre}] AVO ${conSigno(t.avo)}${tagExtra}`;
           })
           .catch(() => {})
       );
@@ -2475,6 +2485,7 @@ function initModalEvents() {
     const res = await api("/api/preset/actual", "POST", { dificultad });
     if (res.ok && res.fichas) {
       state.dificultad = dificultad;
+      state.eventosPorAccion = res.eventos_por_accion || [];
       await refrescarRefuerzosPendientes();
       actualizarTokens(res.fichas);
       mostrarToast(`${res.mensaje || "Preset cargado con éxito"}`, "ok");
@@ -2725,6 +2736,7 @@ $("btn-reset").addEventListener("click", async () => {
   if (res && res.ok) {
     state.turno = res.turno || 1;
     state.fase = res.fase || "jugador";
+    state.eventosPorAccion = res.eventos_por_accion || [];
     actualizarBadge();
     actualizarTokens(res.fichas || []);
     $("analisis-scroll").innerHTML = "";
@@ -3741,8 +3753,8 @@ async function refrescarTerrenoCasilla(x, y) {
   const celda = $(`c-${x}-${y}`);
   if (!celda || !t || t.error) return;
   celda.className = "celda " + claseTerreno(t.nombre);
-  celda.title = `${t.nombre} | AVO +${t.avo} DEF +${t.dfn}`;
-  celda.dataset.tip = `${x},${y} [${t.nombre}] AVO +${t.avo}`;
+  celda.title = `${t.nombre} | AVO ${conSigno(t.avo)} DEF ${conSigno(t.dfn)}`;
+  celda.dataset.tip = `${x},${y} [${t.nombre}] AVO ${conSigno(t.avo)}`;
 }
 
 function initModalObjeto() {

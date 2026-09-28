@@ -56,17 +56,20 @@ NIEBLA_AVO = 30
 # Cada uno es un terreno de Terrain.xml: sus números (Evasión, Defensa, curación,
 # inmunidad a Ruptura) se leen del catálogo compilado por su TID, no se copian aquí.
 # `coste_extra` sí va a mano: en el XML el fuego trae MoveCost 2, pero en el juego lo
-# que hace es encarecer en 1 el coste de la casilla (verificado con Blazing Lion).
+# que hace es encarecer en 1 el coste de la casilla (verificado con Blazing Lion). La regla
+# que cuadra con lo observado: MoveCost > 0 en el XML = +1 a lo que cueste la casilla, y se
+# SUMA al terreno de debajo (bosque 2 + agua = 3: con Canter no se entra; Cap. 11). Agua,
+# niebla, pilares y enredaderas traen MoveCost 1; miasma, brillo y el hielo, 0.
 TERRENOS_TEMPORALES = {
     # tipo:            (TID de Terrain.xml, nombre a mostrar, coste de movimiento extra)
     "fuego":           ("TID_炎上", "Fuego", 1),        # Blazing Lion, Fire/Flame Breath, vena Mística
-    "niebla":          ("TID_霧", "Niebla", 0),         # Fog Breath
+    "niebla":          ("TID_霧", "Niebla", 1),         # Fog Breath / vena de Corrin: frena +1 (visto en juego)
     "hielo":           (None, "Hielo", 0),              # Ice Breath: marca el área congelada, sin efecto de casilla
     # Venas de Dragón (Camilla)
-    "pilares":         ("TID_土柱", "Pilares", 0),      # [Apoyo] pilares de piedra: +Def/Res
-    "agua":            ("TID_水溜まり", "Agua", 0),      # [Caballería] agua: -Evasión
+    "pilares":         ("TID_土柱", "Pilares", 1),      # [Apoyo] pilares de piedra: +Def/Res
+    "agua":            ("TID_水溜まり", "Agua", 1),      # [Caballería] agua: -Evasión
     "miasma":          ("TID_瘴気", "Miasma", 0),       # [Encubierto] humo: -Def/-Evasión
-    "enredaderas":     ("TID_ツタ", "Enredaderas", 0),  # [Acorazado] inmunidad a Ruptura
+    "enredaderas":     ("TID_ツタ", "Enredaderas", 1),  # [Acorazado] inmunidad a Ruptura
     "brillo":          ("TID_アロマ", "Brillo", 0),     # [Volador] cura al empezar la fase encima
     "pista_hielo":     ("TID_氷の床", "Hielo resbaladizo", 0),  # [Qi Adept] suelo helado
 }

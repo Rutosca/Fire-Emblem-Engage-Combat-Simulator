@@ -308,6 +308,12 @@ class CargadorDisposEngage:
             }
             if not nom.startswith("PID_") and nom not in nombres_genericos and not any(w in pid for w in ["兵", "雑魚", "汎用"]):
                 return nom
+            # Personajes con nombre propio convertidos en Corrupted (PID_M010_異形兵_モリオン,
+            # MPID_MorphMorion): su PID lleva 兵 como la tropa, pero el juego los muestra con
+            # su nombre ("Corrupted Morion"), no con la clase.
+            propio = nom[len("Corrupted "):] if nom.startswith("Corrupted ") else ""
+            if propio and any(p.get("nombre") == propio for p in self.catalogo.get("personajes", {}).values()):
+                return nom
 
         # Si es un soldado genérico, usar la clase en inglés + coordenadas para ser identificable
         clase_info = self.catalogo.get("clases", {}).get(jid)

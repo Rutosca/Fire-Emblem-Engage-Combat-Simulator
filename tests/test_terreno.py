@@ -80,3 +80,56 @@ class TestBonosDeTerrenoEnCombate(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _mapa_tiled(capas, ancho):
+    """Mapa Tiled mínimo con tileset incrustado: gid 1 llanura, 2 evasion (bosque), 3 agua."""
+    import json
+    import tempfile
+    data = {
+        "width": ancho, "height": 1,
+        "tilesets": [{"firstgid": 1, "tiles": [
+            {"id": i, "properties": [{"name": "tipo", "type": "string", "value": tipo}]}
+            for i, tipo in enumerate(("llanura", "evasion", "agua"))]}],
+        "layers": [{"type": "tilelayer", "name": nombre, "data": datos} for nombre, datos in capas],
+    }
+    f = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8")
+    json.dump(data, f)
+    f.close()
+    try:
+        return MapaTactico(f.name)
+    finally:
+        os.unlink(f.name)
+
+
+class TestAguaSuperpuesta(unittest.TestCase):
+    """Cap. 11: el agua (TID_水溜まり_永続, −30 Avo, +1 de coste) va encima del terreno de
+    base. Sobre un bosque la evasión se anula (0 Avo) y el coste se suma: 2 + 1 = 3, así que
+    con Canter (2) no se entra en la arboleda con agua (observado en juego)."""
+
+    BASE = ("terreno", [1, 2, 1])
+    AGUA = ("superpuestos", [0, 3, 3])
+
+    def _comprobar(self, mapa):
+        llano, bosque_agua, agua = (mapa.grid[x][0] for x in range(3))
+        self.assertEqual((llano.nombre, llano.avo, llano.coste_mov), ("llanura", 0, 1))
+        self.assertEqual((bosque_agua.nombre, bosque_agua.avo, bosque_agua.coste_mov), ("evasion + agua", 0, 3))
+        self.assertEqual((agua.nombre, agua.avo, agua.coste_mov), ("agua", -30, 2))
+
+    def test_agua_encima_de_bosque_y_de_llano(self):
+        self._comprobar(_mapa_tiled([self.BASE, self.AGUA], 3))
+
+    def test_da_igual_el_orden_de_las_capas(self):
+        self._comprobar(_mapa_tiled([self.AGUA, self.BASE], 3))
+
+    def test_dos_capas_de_agua_no_acumulan(self):
+        self._comprobar(_mapa_tiled([self.BASE, self.AGUA, self.AGUA], 3))
+
+    def test_la_vena_de_agua_de_camilla_no_se_suma_al_agua_fija(self):
+        mapa = _mapa_tiled([self.BASE, self.AGUA], 3)
+        mapa.aplicar_terrenos_temporales({"agua": [(0, 0), (1, 0), (2, 0)]})
+        self.assertEqual((mapa.grid[0][0].avo, mapa.grid[0][0].coste_mov), (-30, 2), "la vena sobre llano resta y frena")
+        self.assertEqual((mapa.grid[2][0].avo, mapa.grid[2][0].coste_mov), (-30, 2), "sobre agua fija no se repite")
+        self.assertEqual(mapa.grid[1][0].coste_mov, 3, "bosque con agua fija y vena: sigue en 3")
+        mapa.limpiar_terrenos_temporales()
+        self._comprobar(mapa)

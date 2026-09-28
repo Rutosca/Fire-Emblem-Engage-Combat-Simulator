@@ -773,7 +773,8 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
         return {
             "ok": True,
             "mensaje": f"Sin dispos para {capitulo_id}; cargados {num} spawns del mapa",
-            "fichas": [f.como_dict() for f in tablero.fichas.values()]
+            "fichas": [f.como_dict() for f in tablero.fichas.values()],
+            "eventos_por_accion": tablero.eventos_por_accion(),
         }
 
     for u in unidades_dispos:
@@ -800,6 +801,9 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
         "fichas": [f.como_dict() for f in tablero.fichas.values()],
         "refuerzos_previstos": tablero.refuerzos_previstos(),
         "refuerzos_por_evento": tablero.refuerzos_por_evento_previstos(),
+        # Botón "Ha actuado → refuerzos" (Hortensia en M010): sin esto el cliente no lo
+        # veía hasta recargar la página, porque solo lo leía al restaurar la partida.
+        "eventos_por_accion": tablero.eventos_por_accion(),
     }
 
 
@@ -2106,7 +2110,8 @@ def reset():
         "mensaje": f"Tablero reiniciado al Turno 1 con {nombre_cap} ({len(tablero.fichas)} unidades).",
         "fase": tablero.fase,
         "turno": tablero.turno_actual,
-        "fichas": fichas_result
+        "fichas": fichas_result,
+        "eventos_por_accion": tablero.eventos_por_accion(),
     })
 
 

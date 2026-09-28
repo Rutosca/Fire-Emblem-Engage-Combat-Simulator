@@ -213,6 +213,11 @@ class TestVenasDeDragon(unittest.TestCase):
         self.assertEqual(efecto_de_terreno_temporal("brillo")["curacion_turno"], 10)
         self.assertTrue(efecto_de_terreno_temporal("enredaderas")["es_antirruptura"])
         self.assertEqual(efecto_de_terreno_temporal("fuego")["coste_extra"], 1)
+        # Las venas que en Terrain.xml traen MoveCost frenan +1 (y se suma a la casilla)
+        for vena in ("agua", "niebla", "pilares", "enredaderas"):
+            self.assertEqual(efecto_de_terreno_temporal(vena)["coste_extra"], 1, vena)
+        for vena in ("miasma", "brillo", "pista_hielo"):
+            self.assertEqual(efecto_de_terreno_temporal(vena)["coste_extra"], 0, vena)
         self.assertEqual(efecto_de_terreno_temporal("fuego")["curacion_turno"], 0,
                          "el daño del fuego lo aplica el tablero, no la curación del terreno")
 

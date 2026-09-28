@@ -58,7 +58,34 @@ class Terreno:
     # Se marca en Tiled con la propiedad de tile `objetivo` en una capa aparte
     # sobre el terreno; el cargador la fusiona sin sobreescribir avo/dfn/etc.
     objetivo: str = ""
+    # Capa superpuesta del juego (Terrain.xml): el agua fija de algunos mapas va ENCIMA del
+    # terreno de base, no lo sustituye (bosque + agua en el Cap. 11). Ver TERRENOS_SUPERPUESTOS.
+    superpuesto: str = ""
 
+
+
+# Tipos de tile que en el juego son una capa encima del terreno de base, con el TID de
+# Terrain.xml del que salen sus números. En Tiled van en una capa aparte; el lector los
+# aplica después de todo el terreno de base, sea cual sea el orden de las capas:
+#   - Avo y Def se SUMAN a los de debajo (bosque +30 y agua −30 dan 0).
+#   - El coste de movimiento también se suma: +1 si Terrain.xml le da MoveCost (el agua sí).
+#     Bosque (2) con agua cuesta 3: con Canter (2) no se entra (observado en juego, Cap. 11).
+#     Es la misma regla que las venas de ataques_area.TERRENOS_TEMPORALES.
+TERRENOS_SUPERPUESTOS = {
+    "agua": "TID_水溜まり_永続",
+}
+
+
+def superponer_terreno(t: "Terreno", tipo: str, props: Optional[dict] = None) -> None:
+    """Aplica encima de `t` la capa superpuesta `tipo` (ver TERRENOS_SUPERPUESTOS)."""
+    props = props or {}
+    info = _CANONICO_TERRENOS.get(TERRENOS_SUPERPUESTOS[tipo].lower(), {})
+    t.avo = int(t.avo) + int(props.get('avo', info.get('avoid', 0)) or 0)
+    t.dfn = int(t.dfn) + int(props.get('dfn', info.get('defense', 0)) or 0)
+    extra = props.get('coste_extra', 1 if int(info.get('coste_mov', 0) or 0) > 0 else 0)
+    t.coste_mov = int(t.coste_mov) + int(extra or 0)
+    t.nombre = tipo if str(t.nombre).lower() == 'llanura' else f"{t.nombre} + {tipo}"
+    t.superpuesto = tipo
 
 
 def defensa_de_terreno(terreno, es_aliado: bool) -> int:
@@ -258,6 +285,8 @@ class MapaTactico:
         
         # Iteramos sobre TODAS las capas de terreno de abajo a arriba (orden de Tiled)
         # Si pones un 'Muro' en la Capa 2 sobre una 'Llanura' de la Capa 1, el Muro sobreescribe la Llanura.
+        # Los tiles superpuestos (agua) se guardan y se aplican al final, encima de lo que haya.
+        superpuestos = []
         for capa in capas_terreno:
             datos_1d = capa['data']
 
@@ -294,6 +323,9 @@ class MapaTactico:
                     tipo_prop = str(props.get('tipo', '')).lower()
                     if tipo_prop == 'objetivo' or ('objetivo' in props and 'tipo' not in props):
                         self.grid[x][y].objetivo = str(props.get('condicion', props.get('objetivo', ''))).lower()
+                        continue
+                    if tipo_prop in TERRENOS_SUPERPUESTOS:
+                        superpuestos.append((x, y, tipo_prop, props))
                         continue
 
                     tipo_nombre = str(props.get('tipo', 'Desconocido')).lower()
@@ -337,6 +369,10 @@ class MapaTactico:
                         # si el objetivo ya venía de una capa inferior, se conserva.
                         objetivo=str(props.get('objetivo', self.grid[x][y].objetivo or '')).lower(),
                     )
+
+        for x, y, tipo_sup, props_sup in superpuestos:
+            if self.grid[x][y].superpuesto != tipo_sup:   # dos capas de agua no dan −60
+                superponer_terreno(self.grid[x][y], tipo_sup, props_sup)
 
         # 3b. Condiciones globales del mapa (Tiled: Mapa → Propiedades personalizadas),
         # p.ej. victoria="derrotar_jefe", derrota="alear_muere;posicion_tomada", turnos_limite=15
@@ -430,16 +466,21 @@ class MapaTactico:
                 if (x, y) not in self._terreno_base_fuego:
                     self._terreno_base_fuego[(x, y)] = _copy.copy(self.grid[x][y])
                 base = self._terreno_base_fuego[(x, y)]
+                ef = efecto
+                if getattr(base, "superpuesto", "") == tipo:
+                    # Vena de agua sobre agua fija: la casilla ya tiene su −30, no se repite
+                    ef = dict(efecto, avo=0, dfn=0, defensa_aliado=0, defensa_enemigo=0,
+                              curacion_turno=0, coste_extra=0, es_antirruptura=False)
                 t = self.grid[x][y]
                 t.terreno_temporal = tipo
-                t.nombre = efecto["nombre"]
-                t.avo = int(base.avo) + efecto["avo"]
-                t.dfn = int(base.dfn) + efecto["dfn"]
-                t.dfn_aliado = int(base.dfn_aliado) + efecto["defensa_aliado"]
-                t.dfn_enemigo = int(base.dfn_enemigo) + efecto["defensa_enemigo"]
-                t.curacion_turno = int(base.curacion_turno) + efecto["curacion_turno"]
-                t.coste_mov = int(base.coste_mov) + efecto["coste_extra"]
-                t.es_antirruptura = bool(base.es_antirruptura or efecto["es_antirruptura"])
+                t.nombre = ef["nombre"]
+                t.avo = int(base.avo) + ef["avo"]
+                t.dfn = int(base.dfn) + ef["dfn"]
+                t.dfn_aliado = int(base.dfn_aliado) + ef["defensa_aliado"]
+                t.dfn_enemigo = int(base.dfn_enemigo) + ef["defensa_enemigo"]
+                t.curacion_turno = int(base.curacion_turno) + ef["curacion_turno"]
+                t.coste_mov = int(base.coste_mov) + ef["coste_extra"]
+                t.es_antirruptura = bool(base.es_antirruptura or ef["es_antirruptura"])
                 # Marcas antiguas, las que consulta la interfaz y el daño por fase
                 t.es_fuego = (tipo == "fuego")
                 t.es_niebla = (tipo == "niebla")
