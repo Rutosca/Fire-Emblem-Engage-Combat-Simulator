@@ -22,6 +22,7 @@ Disparos repetidos refrescan el estado sin acumularse.
 
 import condicion_dsl
 import pasivas
+from motor_calculo import distancia_entre_unidades
 
 SID_ANIMA_FOCUS = "SID_理魔法＋"
 # Elemento del tomo → efecto que Anima Focus (Soren) le cuelga al objetivo (datamine:
@@ -151,7 +152,7 @@ def al_danar_aliado(tablero, ficha_danada) -> list:
     for f in tablero.fichas.values():
         if not f.viva or not f.es_aliado or f.nombre == ficha_danada.nombre:
             continue
-        if abs(f.x - ficha_danada.x) + abs(f.y - ficha_danada.y) > 2:
+        if distancia_entre_unidades(f, ficha_danada) > 2:
             continue
         if _tiene_pasiva(f, SID_GET_BEHIND_ME):
             # "Durante 1 turno": vale toda la fase de jugador N+1
@@ -252,7 +253,7 @@ def al_empezar_fase(tablero, es_aliado: bool) -> list:
 
 
 def _distancia(a, b) -> int:
-    return abs(a.x - b.x) + abs(a.y - b.y)
+    return distancia_entre_unidades(a, b)
 
 
 def al_terminar_fase_jugador(tablero) -> list:

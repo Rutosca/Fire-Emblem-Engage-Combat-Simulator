@@ -243,10 +243,28 @@ class TestRefuerzosPorCombateYMuerte(unittest.TestCase):
         r = self.client.post("/api/preset/actual", json={"dificultad": "Extremo"}).get_json()
         self.assertEqual([(e["nombre"], e["disparado"]) for e in r["eventos_por_accion"]], [("Hortensia", False)])
 
+    def test_exportar_con_eventos_sin_casilla(self):
+        """Los eventos de combate/muerte/acción no tienen casilla: exportar reventaba con
+        list(None) y el botón Exportar fallaba en el Cap. 10."""
+        r = self.client.get("/api/partida/exportar")
+        self.assertEqual(r.status_code, 200)
+        eventos = r.get_json()["partida"]["refuerzos_por_evento"]
+        self.assertTrue(eventos and all(e["casilla"] is None for e in eventos))
+        imp = self.client.post("/api/partida/importar", json={"partida": r.get_json()["partida"]})
+        self.assertEqual(imp.status_code, 200)
+
     def test_morion_sale_con_su_nombre(self):
         """PID_M010_異形兵_モリオン lleva 兵 como la tropa, pero el juego lo llama
         "Corrupted Morion" (MPID_MorphMorion), no "Hero (8,0)"."""
         self.assertEqual(self._por_pid("PID_M010_異形兵_モリオン").nombre, "Corrupted Morion")
+
+    def test_los_dos_wyrms_del_capitulo_11_no_se_pisan(self):
+        """PID_M011_異形竜 sale dos veces con el mismo nombre de catálogo; el tablero indexa
+        por nombre, así que se distinguen por su casilla como las tropas genéricas."""
+        from app import _cargador_dispos
+        wyrms = [u["nombre"] for u in _cargador_dispos.cargar_capitulo("M011", "Extremo", mapa_ancho=16, mapa_alto=30)
+                 if u["pid"] == "PID_M011_異形竜"]
+        self.assertEqual(wyrms, ["Corrupted Wyrm (10,4)", "Corrupted Wyrm (7,5)"])
 
     def test_una_partida_empezada_se_pone_al_dia_con_los_disparadores_nuevos(self):
         """Los disparadores se guardan en la partida al cargar el capítulo. Si se corrige

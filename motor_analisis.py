@@ -13,7 +13,8 @@ Contiene:
 import math
 from collections import deque
 from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept, resolver_estilo_combate
-from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock, casillas_advance
+from motor_calculo import casillas_de_unidad, casillas_ocupadas_por, distancia_a_unidad, distancia_entre_unidades
+from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, ContextoMapaEnemigo, UnidadMock, ArmaMock, casillas_advance, mock_de_ficha
 from catalogo_loader import (_arma_desde_item, _catalogo, normalizar_texto, info_curacion_item,
                              puede_usar_arma_de_mapa, arma_de_mapa_desde, tipo_arma_de_objeto,
                              nombre_arma_de_mapa)
@@ -75,7 +76,7 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
             c for c in companeros
             if c.viva and c.stats and c.arma
             and c.nombre not in (atacante_ficha.nombre, defensor_ficha.nombre)
-            and abs(c.x - atacante_ficha.x) + abs(c.y - atacante_ficha.y) <= forzado["rango"]
+            and distancia_entre_unidades(c, atacante_ficha) <= forzado["rango"]
         ]
 
     apoyos = []
@@ -85,7 +86,7 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
         if not c.stats or not c.arma:
             continue
         # Primero el alcance (barato): descarta la mayoría antes de mirar sus habilidades
-        dist_c = abs(c.x - defensor_ficha.x) + abs(c.y - defensor_ficha.y)
+        dist_c = distancia_entre_unidades(c, defensor_ficha)
         r_c = c.arma.rango if (c.arma and c.arma.rango) else [1]
         if dist_c not in r_c:
             continue
@@ -130,22 +131,22 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
     r_enemigo = enemigo.arma.rango if (enemigo and enemigo.arma and enemigo.arma.rango) else [1]
     enemigo_roto = getattr(enemigo, 'cargas_ruptura', 0) > 0
 
-    todas_ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre}
+    todas_ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre)
 
     is_tele = "ragnarok" in (arma.nombre if arma else "").lower() or getattr(arma, 'engage_attack_nombre', '').lower().startswith('warp')
     if is_tele:
         casillas_alcanzables = set()
         for x in range(mapa.ancho):
             for y in range(mapa.alto):
-                if abs(x - aliado.x) + abs(y - aliado.y) <= 10:
+                if distancia_a_unidad(aliado, x, y) <= 10:
                     t = mapa.grid[x][y]
                     if getattr(t, 'caminable', True) or (getattr(aliado, 'es_volador', False) and getattr(t, 'volable', True)):
                         casillas_alcanzables.add((x, y))
     elif casillas_alcanzables_precalc is not None:
         casillas_alcanzables = casillas_alcanzables_precalc
     else:
-        enemigos_bloqueo = {(f.x, f.y) for f in tablero.obtener_enemigos() if f.viva and f.nombre != enemigo.nombre}
-        enemigos_bloqueo.add((enemigo.x, enemigo.y))
+        enemigos_bloqueo = casillas_ocupadas_por(f for f in tablero.obtener_enemigos() if f.viva and f.nombre != enemigo.nombre)
+        enemigos_bloqueo.update(casillas_de_unidad(enemigo))
 
         tiene_pass = pasivas.tiene_sid(aliado, 'SID_すり抜け')   # Pass
 
@@ -192,8 +193,8 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
     # Advance: casillas extra (adyacentes al enemigo) que solo se alcanzan con el comando
     advance = {}
     if not is_tele and 1 in r_arma and not getattr(arma, 'es_engage_attack', False) and pasivas.tiene_advance(aliado):
-        rivales = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != aliado.es_aliado}
-        advance = {q: p for q, p in casillas_advance(casillas_alcanzables, {(enemigo.x, enemigo.y)}, todas_ocupadas | rivales,
+        rivales = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.es_aliado != aliado.es_aliado)
+        advance = {q: p for q, p in casillas_advance(casillas_alcanzables, set(casillas_de_unidad(enemigo)), todas_ocupadas | rivales,
                                                     mapa.grid, mapa.ancho, mapa.alto, getattr(aliado, 'es_volador', False)).items()}
     if isinstance(detalle, dict):
         detalle["advance_desde"] = None
@@ -202,10 +203,10 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
     for (nx, ny) in set(casillas_alcanzables) | set(advance):
         if (nx, ny) in todas_ocupadas:
             continue
-        d_ene = abs(nx - enemigo.x) + abs(ny - enemigo.y)
+        d_ene = distancia_a_unidad(enemigo, nx, ny)
         if d_ene in r_arma:
             t = mapa.grid[nx][ny]
-            coste_pasos = abs(nx - aliado.x) + abs(ny - aliado.y)
+            coste_pasos = distancia_a_unidad(aliado, nx, ny)
             enemigo_contraataca = (not enemigo_roto) and (enemigo.arma is not None) and (d_ene in r_enemigo)
             bonus_seguridad = 500 if not enemigo_contraataca else 0
 
@@ -297,7 +298,7 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
         and not (objetivo_derrotado and f.nombre == objetivo_nombre)
     }
     restantes_canter = analizador.calcular_movimiento_restante(mock_canter, enemigos_despues)
-    ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre}
+    ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre)
     if objetivo_derrotado and objetivo_nombre:
         objetivo = tablero.obtener_ficha(objetivo_nombre)
         if objetivo:
@@ -708,7 +709,7 @@ def _evaluar_objetivos_extra(aliado, arma, area, mapa, tablero=None, pos_atk=Non
     es_eng = bool(getattr(arma, 'es_engage_attack', False))
     pos_atk = tuple(pos_atk) if pos_atk else (aliado.x, aliado.y)
     aliados_atk = [
-        (a.stats, abs(a.x - pos_atk[0]) + abs(a.y - pos_atk[1]))
+        (a.stats, distancia_a_unidad(a, pos_atk[0], pos_atk[1]))
         for a in (tablero.obtener_aliados() if tablero else [])
         if a.viva and a.stats and a.nombre != aliado.nombre
     ]
@@ -717,7 +718,7 @@ def _evaluar_objetivos_extra(aliado, arma, area, mapa, tablero=None, pos_atk=Non
         try:
             t_def = mapa.grid[e.x][e.y]
             aliados_def = [
-                (o.stats, abs(o.x - e.x) + abs(o.y - e.y))
+                (o.stats, distancia_entre_unidades(o, e))
                 for o in (tablero.obtener_enemigos() if tablero else [])
                 if o.viva and o.stats and o.nombre != e.nombre
             ]
@@ -807,7 +808,7 @@ def _pos_forzada_alcanzable(aliado, pos, casillas_alcanzables, tablero):
     if casillas_alcanzables is not None and (px, py) not in casillas_alcanzables:
         return False
     for f in tablero.fichas.values():
-        if f.viva and f.nombre != aliado.nombre and (f.x, f.y) == (px, py):
+        if f.viva and f.nombre != aliado.nombre and (px, py) in casillas_de_unidad(f):
             return False
     return True
 
@@ -950,7 +951,7 @@ def obtener_protector_chain_guard(objetivo, tablero):
         return None
     for f in tablero.fichas.values():
         if f.viva and f.es_aliado == objetivo.es_aliado and f.union_pendiente == objetivo.union_pendiente and f.nombre != objetivo.nombre:
-            if abs(f.x - objetivo.x) + abs(f.y - objetivo.y) == 1:
+            if distancia_entre_unidades(f, objetivo) == 1:
                 es_qi = es_unidad_qi_adept(f)
                 hp_act = getattr(f, 'hp_actual', getattr(getattr(f, 'stats', None), 'hp', 0))
                 hp_max = getattr(f, 'hp_max', getattr(getattr(f, 'stats', None), 'hp_max', 0))
@@ -983,6 +984,25 @@ def _hp_de(ficha) -> int:
     return int(getattr(ficha, 'hp_actual', 0) or getattr(getattr(ficha, 'stats', None), 'hp', 0) or 0)
 
 
+def armas_de_ataque(ficha) -> list:
+    """
+    Armas con las que una unidad puede atacar en su fase: todas las del inventario, no
+    solo la equipada (la IA cambia de arma: el Corrupted Wyrm lleva Fire Breath a 1-3 y
+    Fireball a 4; Hortensia, Elfire; Ivy, Master Lance). Sin bastones, sin las que solo
+    valen en Fusión y sin el Ataque de Emblema.
+    """
+    armas = [a for a, _eng, _nota in _armas_aliado(ficha)
+             if not getattr(a, 'requiere_fusion', False) and not getattr(a, 'es_engage_attack', False)]
+    if not armas and getattr(ficha, 'arma', None) is not None:
+        armas = [ficha.arma]
+    return armas
+
+
+def rangos_de_ataque(ficha) -> list:
+    """Distancias a las que puede atacar con alguna de sus armas (ver armas_de_ataque)."""
+    return sorted({r for a in armas_de_ataque(ficha) for r in (a.rango or [1])}) or [1]
+
+
 def peligro_de_enemigo(enemigo, aliado) -> dict:
     """
     {"daño", "letal", "peso"} del peor combate que `enemigo` puede iniciar contra `aliado`
@@ -992,14 +1012,16 @@ def peligro_de_enemigo(enemigo, aliado) -> dict:
     hp = _hp_de(aliado)
     peor = None
     if enemigo is not None and getattr(enemigo, 'stats', None) and getattr(enemigo, 'arma', None) and getattr(aliado, 'stats', None):
-        for dist in sorted(set(enemigo.arma.rango or [1])):
-            try:
-                r = CalculadoraEngage.simular_combate(enemigo.stats, aliado.stats, enemigo.arma, aliado.arma,
-                                                      Terreno(), Terreno(), dist)
-            except Exception:
-                continue
-            d = max(0, hp - int(r["resultado"].get("hp_defensor_final", hp)))
-            peor = d if peor is None else max(peor, d)
+        # Con cada arma de su inventario, a cada distancia que alcance: se queda la peor
+        for arma_e in armas_de_ataque(enemigo):
+            for dist in sorted(set(arma_e.rango or [1])):
+                try:
+                    r = CalculadoraEngage.simular_combate(enemigo.stats, aliado.stats, arma_e, aliado.arma,
+                                                          Terreno(), Terreno(), dist)
+                except Exception:
+                    continue
+                d = max(0, hp - int(r["resultado"].get("hp_defensor_final", hp)))
+                peor = d if peor is None else max(peor, d)
     if peor is None:
         return {"daño": None, "letal": False, "peso": PESO_AMENAZA_DESCONOCIDA}
     letal = hp > 0 and peor >= hp
@@ -1080,7 +1102,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             setattr(e.stats, 'hp_stock', getattr(e, 'hp_stock', 0))
 
     # Precomputar casillas de movimiento una sola vez por bando
-    enemigos_bloqueo = {(f.x, f.y) for f in enemigos_activos}
+    enemigos_bloqueo = casillas_ocupadas_por(f for f in enemigos_activos)
 
     casillas_mov_aliados = {}
     # Alcance EXTRA que daría activar la Fusión (Gallop de Sigurd: +5 Mov, +7 caballería).
@@ -1113,15 +1135,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     ancho_m = mapa.ancho
     alto_m = mapa.alto
     for e in enemigos_que_actuan:
-        r_arma = e.arma.rango if (e.arma and e.arma.rango) else [1]
+        r_arma = rangos_de_ataque(e)   # todas sus armas, no solo la equipada
         # Un enemigo congelado en esta fase sigue congelado en la suya (se deshiela al acabarla)
-        u_mock = UnidadMock(
-            x=e.x,
-            y=e.y,
-            mov=e.movimiento_disponible,
-            es_volador=e.es_volador,
-            arma=ArmaMock(rango=r_arma)
-        )
+        # Con su huella (Corrupted Wyrm 2x2) y su tipo de movimiento (dragón)
+        u_mock = mock_de_ficha(e, rango=r_arma)
         mov_e = analizador.calcular_casillas_alcanzables(u_mock)
         casillas_mov_enemigos[e.nombre] = mov_e
 
@@ -1156,7 +1173,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     # solo para el jugador desde 00380d7, así que aquí ya no se simula cada amenaza.)
     for enemigo in enemigos_que_actuan:
         for aliado in aliados_activos:
-            distancias_frente.append((abs(aliado.x - enemigo.x) + abs(aliado.y - enemigo.y), enemigo, aliado))
+            distancias_frente.append((distancia_entre_unidades(aliado, enemigo), enemigo, aliado))
 
     # ── 2. Evaluar oportunidades de ataque del jugador (multi-arma) ───────
     for aliado in aliados_activos:
@@ -1168,7 +1185,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         mov_extra_fusion = (len(alcanzables_con_fusion) - len(alcanzables_normales)) if alcanzables_con_fusion else 0
 
         for enemigo in enemigos_activos:
-            dist = abs(aliado.x - enemigo.x) + abs(aliado.y - enemigo.y)
+            dist = distancia_entre_unidades(aliado, enemigo)
 
             mejor_veredicto = None
             mejor_arma = None
@@ -1210,7 +1227,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 if pos_candidata is None:
                     continue
 
-                dist_combate = abs(pos_candidata[0] - enemigo.x) + abs(pos_candidata[1] - enemigo.y)
+                dist_combate = distancia_a_unidad(enemigo, pos_candidata[0], pos_candidata[1])
                 if dist_combate not in (arma_candidata.rango or [1]):
                     continue
 
@@ -1233,14 +1250,14 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     area_info = resolver_ataque_area(nom_area_cand, pos_candidata, enemigo, aliado, tablero, mapa)
                     if not area_info.get("valido"):
                         continue
-                    dist_combate = abs(pos_candidata[0] - enemigo.x) + abs(pos_candidata[1] - enemigo.y)
+                    dist_combate = distancia_a_unidad(enemigo, pos_candidata[0], pos_candidata[1])
                     area_info["extras"] = _evaluar_objetivos_extra(
                         aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)
                 elif nom_area_cand:
                     # La dirección importa: probar las 4 casillas adyacentes al objetivo que el
                     # aliado pueda alcanzar y quedarse con la válida que más objetivos abarque.
                     alcanzables_a = casillas_mov_aliados.get(aliado.nombre) or set()
-                    ocupadas_a = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre}
+                    ocupadas_a = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre)
                     mejor_area_pos, mejor_area_val = None, None
                     for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                         cand = (enemigo.x + dx, enemigo.y + dy)
@@ -1270,12 +1287,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     t_atk = mapa.grid[pos_candidata[0]][pos_candidata[1]]
 
                     aliados_cercanos_atk = [
-                        (a.stats, abs(a.x - pos_candidata[0]) + abs(a.y - pos_candidata[1]))
+                        (a.stats, distancia_a_unidad(a, pos_candidata[0], pos_candidata[1]))
                         for a in tablero.obtener_aliados()
                         if a.viva and a.stats and a.nombre != aliado.nombre
                     ]
                     aliados_cercanos_def = [
-                        (e_def.stats, abs(e_def.x - enemigo.x) + abs(e_def.y - enemigo.y))
+                        (e_def.stats, distancia_entre_unidades(e_def, enemigo))
                         for e_def in tablero.obtener_enemigos()
                         if e_def.viva and e_def.stats and e_def.nombre != enemigo.nombre
                     ]
@@ -1699,7 +1716,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 "tipo_analisis": "oportunidad_jugador",
                 "aliado": aliado.nombre,
                 "enemigo": enemigo.nombre,
-                "distancia_combate": abs(pos_sug[0] - enemigo.x) + abs(pos_sug[1] - enemigo.y),
+                "distancia_combate": distancia_a_unidad(enemigo, pos_sug[0], pos_sug[1]),
                 "arma_recomendada": mejor_arma.nombre,
                 "objeto_id": objeto_id_sug,
                 "requiere_fusion": req_fusion,
@@ -1767,7 +1784,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     pos = pos_forzada_c
                 else:
                     alcance_c = (10 if is_tele_c else a.movimiento_disponible) + rango_max
-                    if abs(a.x - enemigo.x) + abs(a.y - enemigo.y) > alcance_c:
+                    if distancia_entre_unidades(a, enemigo) > alcance_c:
                         continue
                     pos = encontrar_pos_ataque_optima(
                         a, enemigo, arma,
@@ -1778,7 +1795,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     )
                 if not pos:
                     continue
-                dist_c = abs(pos[0] - enemigo.x) + abs(pos[1] - enemigo.y)
+                dist_c = distancia_a_unidad(enemigo, pos[0], pos[1])
                 if dist_c not in (arma.rango or [1]):
                     continue
 
@@ -1922,7 +1939,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 rango_baston = list(baston["_curacion"]["rango"] or [1])
 
                 pos_sanacion = None
-                dist_actual = abs(sanador.x - obj.x) + abs(sanador.y - obj.y)
+                dist_actual = distancia_entre_unidades(sanador, obj)
                 if dist_actual in rango_baston:
                     pos_sanacion = [sanador.x, sanador.y]
                 else:
@@ -1932,7 +1949,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                             if any(f.viva and f.nombre != sanador.nombre and f.x == cx and f.y == cy for f in tablero.fichas.values()):
                                 continue
                             t = mapa.grid[cx][cy]
-                            if t.caminable and (abs(cx - sanador.x) + abs(cy - sanador.y) <= sanador.mov):
+                            if t.caminable and (distancia_a_unidad(sanador, cx, cy) <= sanador.mov):
                                 pos_sanacion = [cx, cy]
                                 break
 
@@ -2068,7 +2085,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     casillas_victoria = list(mapa.casillas_victoria()) if hasattr(mapa, 'casillas_victoria') else []
     casillas_derrota = list(mapa.casillas_derrota()) if hasattr(mapa, 'casillas_derrota') else []
     acciones_objetivo = []
-    ocupadas_ahora = {(f.x, f.y): f.nombre for f in tablero.fichas.values() if f.viva}
+    ocupadas_ahora = {c: f.nombre for f in tablero.fichas.values() if f.viva for c in casillas_de_unidad(f)}
 
     for a in aliados_activos:
         alcanzables_a = casillas_mov_aliados.get(a.nombre) or set()
@@ -2259,7 +2276,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     oportunidades_jefe = [o for o in oportunidades_filtradas if _es_jefe(tablero.obtener_ficha(o.get("enemigo"))) and o.get("enemigo") in jefes_derrotables]
     objetivo_avance = []
     if jefes_vivos and oportunidades_jefe and not modo_defensa:
-        jefe = min(jefes_vivos, key=lambda e: min((abs(a.x - e.x) + abs(a.y - e.y) for a in aliados_activos), default=999))
+        jefe = min(jefes_vivos, key=lambda e: min((distancia_entre_unidades(a, e) for a in aliados_activos), default=999))
         for op in oportunidades_jefe:
             op["objetivo_victoria"] = True
             ficha_jefe = tablero.obtener_ficha(op.get("enemigo"))
@@ -2328,7 +2345,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                      if any((a.x, a.y) in zona for zona in zonas_amenaza_enemigos.values())]
         distancias_frente.sort(key=lambda x: x[0])
         dist_min, e_cercano, a_cercano = distancias_frente[0]
-        alcance_e = e_cercano.movimiento_disponible + (max(e_cercano.arma.rango) if e_cercano.arma else 1)
+        alcance_e = e_cercano.movimiento_disponible + max(rangos_de_ataque(e_cercano))
         if expuestos:
             motivos = [f"Al alcance de algún enemigo, pero sin peligro serio: {', '.join(a.nombre for a in expuestos)}."]
             recomendacion = ("Sin jugadas de ataque que valgan la pena este turno. Las unidades al alcance de "

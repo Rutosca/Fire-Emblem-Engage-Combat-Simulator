@@ -245,6 +245,12 @@ function crearToken(ficha) {
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) claseBando += " en-ruptura";
   if (ficha.es_doble) claseBando += " doble";   // residuo de Call Doubles: 1 HP, encadena solo con su invocador
   tok.className = `token ${claseBando}`;
+  // Unidades grandes (Corrupted Wyrm 2x2): la ficha cubre su huella entera, desde la
+  // casilla de anclaje (esquina inferior izquierda) hacia la derecha y hacia arriba.
+  if ((ficha.tamano || 1) > 1) {
+    tok.classList.add("grande");
+    tok.style.setProperty("--tam", ficha.tamano);
+  }
   tok.dataset.nombre = ficha.nombre;
   tok.textContent = ficha.nombre[0].toUpperCase();
 

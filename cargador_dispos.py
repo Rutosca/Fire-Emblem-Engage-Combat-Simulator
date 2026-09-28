@@ -90,8 +90,25 @@ def _dificultad_norm(dificultad: str) -> str:
 
 # Emblemas que el guion entrega por evento y que por eso NO aparecen en el atributo
 # Gid del dispos: en M007 la cinemática le da a Hortensia el Emblema Oscuro de Lucina.
+# Clave: el pid, o "pid@X,Y" (casilla del dispos) cuando varias filas comparten pid.
 EMBLEMA_POR_EVENTO = {
     "M007": {"PID_M007_オルテンシア": "GID_M007_敵ルキナ"},
+    # M011: seis anillos en tropas Corrupted (según la guía del capítulo) y, cuando
+    # aparecen, los Cuatro Sabuesos con los suyos (Zephia & Marth, Griss & Celica,
+    # Mauvier & Micaiah, Marni & Sigurd).
+    "M011": {
+        "PID_アイビー": "GID_リン",   # Ivy llega con Lyn
+        "PID_M011_異形兵_アクスナイト@7,29": "GID_M011_敵シグルド",
+        "PID_M011_異形兵_モンク@9,28": "GID_M011_敵ミカヤ",
+        "PID_M011_異形兵_ソードペガサス@3,18": "GID_M011_敵マルス",
+        "PID_M011_異形兵_アクスファイター@11,16": "GID_M011_敵ロイ",
+        "PID_M011_異形兵_ランスファイター@7,12": "GID_M011_敵リーフ",
+        "PID_M011_異形兵_マージ@9,8": "GID_M011_敵セリカ",
+        "PID_M011_セピア": "GID_M011_敵マルス",
+        "PID_M011_グリ": "GID_M011_敵セリカ",
+        "PID_M011_モーヴ": "GID_M011_敵ミカヤ",
+        "PID_M011_マロン": "GID_M011_敵シグルド",
+    },
 }
 
 RECOLOCACIONES_APERTURA = {
@@ -135,11 +152,34 @@ CALENDARIO_REFUERZOS = {
 #   {"tipo": "muerte",  "pid": ...}   esa unidad cae (o tiene su conversación de combate)
 #   {"tipo": "turno",   "turno": 6}   al empezar ese turno de jugador
 #   {"tipo": "objeto",  "objeto_tipo": "puerta"}  se destruye/abre ese objeto del mapa
+#   {"tipo": "fila", "fila_datamine": 7, "pid": ...}  esa unidad (sin pid: cualquiera del
+#       jugador) llega a esa fila o más al sur (Y del datamine; en el tablero, y >= alto - 7)
+# Opciones del evento: "junto_al_disparo" coloca el grupo en las casillas libres más
+# cercanas a la unidad que lo disparó; "retira_emblemas" quita a quien los llevara los
+# anillos que traen las unidades del grupo (guarda su versión sin anillo en "sin_emblema").
 #   {"tipo": "accion",  "pid": ...}   esa unidad HACE algo que la herramienta no puede
 #       observar (atacar o usar un bastón en la fase enemiga). Lo registra el jugador con
 #       el botón del modal de esa unidad; al entrar en la fase enemiga se le recuerda.
 # Se admite la forma antigua (`pid` + `casilla_datamine` sueltos = disparo por casilla).
 REFUERZOS_POR_EVENTO = {
+    # M011: cuando ALEAR llega a la fila Y=7 del datamine (y=23 en el tablero, en todo el
+    # ancho; la línea roja de la guía) aparecen Ivy (con Lyn), Kagetsu y Zelkov junto a
+    # Alear, los Cuatro Sabuesos arriba y cuatro Corrupted abajo, y se activan los
+    # Corrupted Wyrm (AI_AC_FlagTrue: FLAG_四狗とアイビー登場_済). Observado en juego.
+    # Ivy/Kagetsu/Zelkov salen en casillas algo aleatorias según por dónde cruce Alear: la
+    # herramienta los pone en las libres más cercanas a él y el jugador los ajusta en su
+    # modal. Los Sabuesos y los Corrupted del sur sí salen siempre en su sitio.
+    # Cada Sabueso trae un anillo, y el Corrupted que lo llevaba lo pierde ("retira_emblemas").
+    "M011": [
+        {"grupo": grupo, "descripcion": desc,
+         "disparos": [{"tipo": "fila", "fila_datamine": 7, "pid": "PID_リュール"}], **extra}
+        for grupo, desc, extra in (
+            ("Ally_Add0", "Alear llega a la fila 23 — Ivy (con Lyn) y Kagetsu se unen junto a él", {"junto_al_disparo": True}),
+            ("Ally_Add1", "Alear llega a la fila 23 — Zelkov se une junto a él", {"junto_al_disparo": True}),
+            ("Enemy_4dogs", "Alear llega a la fila 23 — los Cuatro Sabuesos se llevan los anillos", {"retira_emblemas": True}),
+            ("Enemy_EV1", "Alear llega a la fila 23 — Corrupted por el sur", {}),
+        )
+    ],
     "M009": [
         # 砦到着_カゲツ: Kagetsu llega al fuerte norte → 2 Sword Fighters a ambos lados
         {"grupo": "Enemy_Kagetsu_Fort", "pid": "PID_M009_カゲツ", "casilla_datamine": (15, 16),
@@ -321,7 +361,7 @@ class CargadorDisposEngage:
         return f"{clase_nom} ({x},{y})"
 
     def cargar_capitulo(self, dispos_id: str = "M007", dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17,
-                        incluir_refuerzos: bool = False) -> List[dict]:
+                        incluir_refuerzos: bool = False, sin_emblemas_de_guion: bool = False) -> List[dict]:
         """
         Lee el XML de dispos/{dispos_id}.xml y retorna la lista de diccionarios de unidades
         listas para ser enviadas a la UI o cargadas en EstadoTablero.
@@ -394,6 +434,10 @@ class CargadorDisposEngage:
             es_aliado = (force_int == 0 or force_int == 2)
             es_verde = (force_int == 2)
             es_fijo = (force_int == 2 or pid == "PID_リュール")
+            # Grupos "Ally_Add" (M011: Ivy, Kagetsu, Zelkov): llevan Force 2, pero en cuanto
+            # aparecen se unen al ejército como unidades azules normales (observado en juego).
+            if grupo_actual.startswith("Ally_Add"):
+                es_verde = es_fijo = False
             habla_con = list(UNION_POR_CONVERSACION.get((dispos_id or "").upper(), {}).get(pid, [])) if es_verde else []
             union_pendiente = bool(habla_con)
 
@@ -502,7 +546,11 @@ class CargadorDisposEngage:
             # catálogo de emblemas; los Emblemas Oscuros de jefe (GID_M0xx_敵…) están
             # compilados con sus propias stats/sincronías, así que los bonos salen del
             # catálogo y no de aquí.
-            gid = param.get("Gid", "") or EMBLEMA_POR_EVENTO.get(dispos_id.upper(), {}).get(pid, "")
+            # `sin_emblemas_de_guion`: la misma unidad sin el anillo que le da el guion (para
+            # quitárselo cuando pasa a otra, ver REFUERZOS_POR_EVENTO "retira_emblemas")
+            por_evento = {} if sin_emblemas_de_guion else EMBLEMA_POR_EVENTO.get(dispos_id.upper(), {})
+            gid = (param.get("Gid", "") or por_evento.get(f"{pid}@{x_str},{y_str}", "")
+                   or por_evento.get(pid, ""))
             emblema_id = gid if gid in self.catalogo.get("emblemas", {}) else ""
             emblema_info = self.catalogo.get("emblemas", {}).get(emblema_id, {}) if emblema_id else {}
             emblema_nombre = emblema_info.get("nombre", "")
@@ -588,6 +636,15 @@ class CargadorDisposEngage:
                 "es_refuerzo": es_refuerzo,
             })
 
+        # El tablero identifica las fichas por nombre: dos con el mismo (los dos Corrupted
+        # Wyrm de M011, PID_M011_異形竜 sin 兵) se pisarían. Se distinguen por su casilla,
+        # como las tropas genéricas.
+        repetidos = {n for n in (u["nombre"] for u in unidades)
+                     if sum(1 for v in unidades if v["nombre"] == n) > 1 and not re.search(r"\(\d+,\d+\)$", n)}
+        for u in unidades:
+            if u["nombre"] in repetidos:
+                u["nombre"] = f"{u['nombre']} ({u['x']},{u['y']})"
+
         return unidades
 
     def calendario_refuerzos(self, dispos_id: str, dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> dict:
@@ -623,17 +680,35 @@ class CargadorDisposEngage:
                 if d.get("casilla_datamine"):
                     d["casilla"] = _a_mapa(d.pop("casilla_datamine"))
                 d.pop("casilla_datamine", None)
+                if d.get("fila_datamine") is not None:
+                    d["fila_min"] = mapa_alto - int(d.pop("fila_datamine"))
                 normalizados.append(d)
             primero = normalizados[0]
+            extra = {}
+            if ev.get("junto_al_disparo"):
+                extra["junto_al_disparo"] = True
+            if ev.get("retira_emblemas"):
+                extra["sin_emblema"] = self._portadores_sin_emblema(
+                    dispos_id, dificultad, mapa_ancho, mapa_alto,
+                    {u.get("emblema_id") for u in unidades if u.get("emblema_id")})
             salida.append({
                 "grupo": ev["grupo"], "descripcion": ev.get("descripcion", ""),
-                "disparos": normalizados, "unidades": unidades,
+                "disparos": normalizados, "unidades": unidades, **extra,
                 # Compatibilidad con los guardados y la UI anteriores (primer disparo)
                 "pid": ev.get("pid", primero.get("pid", "")),
                 "disparo": primero.get("tipo", "casilla"),
                 "casilla": primero.get("casilla"),
             })
         return salida
+
+    def _portadores_sin_emblema(self, dispos_id, dificultad, mapa_ancho, mapa_alto, gids) -> dict:
+        """{gid: unidad del despliegue inicial que lleva ese anillo, cargada SIN él}."""
+        if not gids:
+            return {}
+        con = self.cargar_capitulo(dispos_id, dificultad, mapa_ancho, mapa_alto)
+        sin = self.cargar_capitulo(dispos_id, dificultad, mapa_ancho, mapa_alto, sin_emblemas_de_guion=True)
+        return {u["emblema_id"]: s for u, s in zip(con, sin)
+                if u.get("emblema_id") in gids and u["nombre"] == s["nombre"]}
 
     def cargar_refuerzos(self, dispos_id: str, dificultad: str = "Extremo", mapa_ancho: int = 24, mapa_alto: int = 17) -> dict:
         """Refuerzos del capítulo agrupados por nombre de grupo del dispos: {grupo: [unidad, ...]}."""

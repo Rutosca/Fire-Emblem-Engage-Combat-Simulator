@@ -16,12 +16,32 @@ class ArmaMock:
         self.rango = rango  # Ej: [1] para espada, [2] para arco, [1, 2] para tomo magico
 
 class UnidadMock:
-    def __init__(self, x: int, y: int, mov: int, es_volador: bool, arma: ArmaMock):
+    def __init__(self, x: int, y: int, mov: int, es_volador: bool, arma: ArmaMock,
+                 tamano: int = 1, es_dragon: bool = False):
         self.x = x
         self.y = y
         self.movimiento_max = mov
         self.es_volador = es_volador
         self.arma = arma
+        # Huella (Corrupted Wyrm 2x2, anclada abajo a la izquierda) y tipo de movimiento
+        # dragón (MoveType 4: bosque y agua le cuestan 1, como el llano).
+        self.tamano = max(1, int(tamano or 1))
+        self.es_dragon = bool(es_dragon)
+
+
+def mock_de_ficha(ficha, mov: Optional[int] = None, rango: Optional[List[int]] = None) -> UnidadMock:
+    """UnidadMock de una ficha con su huella y su tipo de movimiento."""
+    stats = getattr(ficha, 'stats', None)
+    tipo = str(getattr(stats, 'tipo_movimiento', '') or '').lower()
+    arma = getattr(ficha, 'arma', None)
+    return UnidadMock(
+        x=ficha.x, y=ficha.y,
+        mov=ficha.movimiento_disponible if mov is None else mov,
+        es_volador=ficha.es_volador,
+        arma=ArmaMock(rango=rango if rango is not None else (getattr(arma, 'rango', None) or [1])),
+        tamano=getattr(ficha, 'tamano', 1),
+        es_dragon=tipo in ('dragón', 'dragon'),
+    )
 
 
 # =============================================================================
@@ -96,6 +116,44 @@ class AnalizadorAmenaza:
         self.ancho = ancho
         self.alto = alto
 
+    def _huella(self, unidad, x: int, y: int):
+        t = getattr(unidad, 'tamano', 1) or 1
+        return [(x + dx, y - dy) for dy in range(t) for dx in range(t)]
+
+    def _coste_huella(self, unidad, x: int, y: int, bloqueadas) -> int:
+        """Coste de que la unidad (toda su huella) pase a tener la esquina en (x, y)."""
+        coste = 0
+        for (hx, hy) in self._huella(unidad, x, y):
+            if not getattr(unidad, 'tiene_pass', False) and (hx, hy) in bloqueadas:
+                return 999
+            if getattr(unidad, 'es_dragon', False) and not unidad.es_volador:
+                c = 999 if not (0 <= hx < self.ancho and 0 <= hy < self.alto) or not getattr(self.grid[hx][hy], 'caminable', True) else 1
+            else:
+                c = self._obtener_coste_terreno(hx, hy, unidad.es_volador)
+            coste = max(coste, c)
+        return coste
+
+    def _anclas(self, unidad, bloqueadas) -> dict:
+        """{esquina: movimiento restante} de una unidad grande o dragón."""
+        visitados = {(unidad.x, unidad.y): unidad.movimiento_max}
+        cola = deque([(unidad.x, unidad.y, unidad.movimiento_max)])
+        while cola:
+            cx, cy, mov_restante = cola.popleft()
+            for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0)):
+                nx, ny = cx + dx, cy + dy
+                nuevo_mov = mov_restante - self._coste_huella(unidad, nx, ny, bloqueadas)
+                if nuevo_mov >= 0 and nuevo_mov > visitados.get((nx, ny), -1):
+                    visitados[(nx, ny)] = nuevo_mov
+                    cola.append((nx, ny, nuevo_mov))
+        return visitados
+
+    def _es_especial(self, unidad) -> bool:
+        return (getattr(unidad, 'tamano', 1) or 1) > 1 or getattr(unidad, 'es_dragon', False)
+
+    def calcular_anclas_alcanzables(self, unidad, casillas_bloqueadas=None) -> Set[Tuple[int, int]]:
+        """Posiciones (esquina de la huella) a las que puede ir la unidad."""
+        return set(self._anclas(unidad, casillas_bloqueadas or set()))
+
     def _obtener_coste_terreno(self, x: int, y: int, es_volador: bool) -> int:
         """Devuelve el coste de pisar una casilla. Retorna 999 si es intransitable."""
         if not (0 <= x < self.ancho and 0 <= y < self.alto):
@@ -123,6 +181,12 @@ class AnalizadorAmenaza:
         Paso 1: Calcula las casillas a las que la unidad puede Moverse (Rango Azul).
         - casillas_bloqueadas (ej. enemigos sin pasiva Pass/Traspasar) actúan como muros infranqueables.
         """
+        # Unidades grandes (2x2) y dragones: se mueve la huella entera. Se devuelven todas
+        # las casillas que puede cubrir, que son las que cuentan para alcanzar a alguien.
+        if self._es_especial(unidad):
+            return {c for (ax, ay) in self._anclas(unidad, casillas_bloqueadas or set())
+                    for c in self._huella(unidad, ax, ay)}
+
         # Formato de la cola: (x, y, movimiento_restante)
         cola = deque([(unidad.x, unidad.y, unidad.movimiento_max)])
         
@@ -160,6 +224,12 @@ class AnalizadorAmenaza:
         casillas_bloqueadas: Optional[Set[Tuple[int, int]]] = None
     ) -> dict:
         """Devuelve cada casilla alcanzable y el movimiento que queda al llegar."""
+        if self._es_especial(unidad):
+            restantes = {}
+            for (ax, ay), m in self._anclas(unidad, casillas_bloqueadas or set()).items():
+                for c in self._huella(unidad, ax, ay):
+                    restantes[c] = max(m, restantes.get(c, -1))
+            return restantes
         cola = deque([(unidad.x, unidad.y, unidad.movimiento_max)])
         visitados = {(unidad.x, unidad.y): unidad.movimiento_max}
         bloqueadas = casillas_bloqueadas or set()
@@ -245,13 +315,7 @@ class AnalizadorAmenaza:
         if casillas_movimiento_precalc is not None:
             casillas_movimiento = casillas_movimiento_precalc
         else:
-            unidad_mock = UnidadMock(
-                x=ficha_enemigo.x,
-                y=ficha_enemigo.y,
-                mov=ficha_enemigo.mov,
-                es_volador=ficha_enemigo.es_volador,
-                arma=ArmaMock(rango=arma_rango),
-            )
+            unidad_mock = mock_de_ficha(ficha_enemigo, mov=ficha_enemigo.mov, rango=arma_rango)
             casillas_movimiento = self.calcular_casillas_alcanzables(unidad_mock)
         px, py = pos_jugador
 

@@ -7,6 +7,8 @@ La UI escribe aquí cuando el jugador arrastra tokens; el motor de cálculo lee 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, TYPE_CHECKING
 
+from motor_calculo import casillas_ocupadas_por, distancia_a_unidad, distancia_entre_unidades
+
 if TYPE_CHECKING:
     from motor_calculo import Unidad, Arma
     from lector_de_mapas import MapaTactico
@@ -70,6 +72,7 @@ class FichaUnidad:
     dificultad: str = ""               # Dificultad con la que se resolvieron sus stats (enemigos/refuerzos): "Extremo" | "Hard" | "Normal"
     mov_base: int = 0                  # Mov SIN el bono de Fusión (Gallop de Sigurd); `mov` = mov_base + bono
     invocador: str = ""                # Nombre de quien la invocó: doble de Call Doubles (SID_残像) de Lyn
+    tamano: int = 1                    # Lado de su huella (Person.xml BmapSize): Corrupted Wyrm 2x2, anclada abajo a la izquierda
     # Estados temporales (buffs "de 1 turno" del juego, p.ej. SID_力＋２_１ターン). Cada uno:
     #   {"sid", "nombre", "stat_boosts": {str,mag,...}, "expira_fase", "expira_turno", "origen"}
     # Caduca al ENTRAR en (expira_fase, expira_turno). Ver otorgar_estado_temporal / purgar_estados_temporales.
@@ -340,6 +343,7 @@ class FichaUnidad:
             "es_refuerzo": self.es_refuerzo,
             "invocador": self.invocador,
             "es_doble": bool(self.invocador),
+            "tamano": int(self.tamano or 1),
             "puede_call_doubles": self._puede_call_doubles(),
             "puede_escudo_vinculo": self._puede_escudo_vinculo(),
             "dificultad": self.dificultad,
@@ -739,7 +743,7 @@ class EstadoTablero:
             if f.ha_actuado:
                 self.ultimo_error_cofre = f"{f.nombre} ya ha actuado este turno"
                 return None
-            if not any(abs(f.x - cx) + abs(f.y - cy) == 1 for (cx, cy) in ent.casillas):
+            if not any(distancia_a_unidad(f, cx, cy) == 1 for (cx, cy) in ent.casillas):
                 self.ultimo_error_cofre = f"{f.nombre} debe estar en una casilla adyacente al cofre"
                 return None
             f.ha_actuado = True
@@ -1107,7 +1111,7 @@ class EstadoTablero:
         autorizados = list(o.habla_con or [])
         if autorizados and getattr(h, "pid", "") not in autorizados and h.nombre not in autorizados:
             return False, f"{o.nombre} solo habla con: {', '.join(autorizados)}"
-        if abs(h.x - o.x) + abs(h.y - o.y) != 1:
+        if distancia_entre_unidades(h, o) != 1:
             return False, f"{h.nombre} debe estar en una casilla adyacente a {o.nombre}"
         o.union_pendiente = False
         o.es_fijo = False
@@ -1229,9 +1233,15 @@ class EstadoTablero:
             if viejo is None:
                 continue   # grupo que no estaba en esta partida: no se añade a mitad de mapa
             normalizado = self._normalizar_evento(nuevo)
-            if viejo.get("disparos") == normalizado["disparos"]:
+            opciones = {k: nuevo.get(k) for k in ("junto_al_disparo", "sin_emblema")}
+            if viejo.get("disparos") == normalizado["disparos"] and all(viejo.get(k) == v for k, v in opciones.items()):
                 continue
             viejo["disparos"] = normalizado["disparos"]
+            for k, v in opciones.items():
+                if v:
+                    viejo[k] = v
+                else:
+                    viejo.pop(k, None)
             viejo["descripcion"] = nuevo.get("descripcion", viejo.get("descripcion", ""))
             cambiados.append(grupo)
         return cambiados
@@ -1267,6 +1277,14 @@ class EstadoTablero:
                 if tipo == "turno" and int(self.turno_actual) >= int(d.get("turno", 99)):
                     desplegados += self._disparar_evento(ev, d)
                     break
+                if tipo == "fila" and d.get("fila_min") is not None:
+                    quien = next((f for f in self.fichas.values()
+                                  if f.viva and f.es_aliado and not f.invocador and not f.union_pendiente
+                                  and (not d.get("pid") or getattr(f, "pid", "") == d["pid"])
+                                  and f.y >= int(d["fila_min"])), None)
+                    if quien is not None:
+                        desplegados += self._disparar_evento(ev, d, disparador=quien)
+                        break
         return desplegados
 
     def disparar_refuerzos_por_evento(self, tipo: str, *unidades) -> list:
@@ -1342,14 +1360,55 @@ class EstadoTablero:
                     break
         return desplegados
 
-    def _disparar_evento(self, ev: dict, disparo: dict = None) -> list:
+    def _disparar_evento(self, ev: dict, disparo: dict = None, disparador=None) -> list:
         """Marca el evento y despliega su grupo (posponiendo lo que caiga en casillas ocupadas)."""
         ev["disparado"] = True
         ev["disparado_por"] = dict(disparo) if disparo else None
-        nuevos, pospuestos = self._desplegar_unidades(ev["unidades"])
+        unidades = ev["unidades"]
+        if ev.get("junto_al_disparo") and disparador is not None:
+            unidades = self._junto_a(disparador, unidades)
+        nuevos, pospuestos = self._desplegar_unidades(unidades)
         if pospuestos:
             self.refuerzos_pendientes.setdefault(int(self.turno_actual) + 1, []).extend(pospuestos)
+        if ev.get("sin_emblema"):
+            self._retirar_emblemas(ev["sin_emblema"], {f["nombre"] for f in nuevos})
         return nuevos
+
+    def _junto_a(self, ficha, unidades: list) -> list:
+        """Las unidades, recolocadas en las casillas libres más cercanas a `ficha` (el juego
+        las pone junto a quien disparó el evento, algo al azar: el jugador las ajusta)."""
+        ocupadas = casillas_ocupadas_por(f for f in self.fichas.values() if f.viva)
+        salida = []
+        for u in unidades:
+            hueco = self._casilla_libre_cerca(ficha.x, ficha.y, ocupadas, bool(u.get("es_volador", False)), radio=4)
+            if hueco is not None:
+                u = dict(u, x=hueco[0], y=hueco[1])
+                ocupadas.add(hueco)
+            salida.append(u)
+        return salida
+
+    def _retirar_emblemas(self, sin_emblema: dict, excluir: set) -> None:
+        """
+        Cada anillo de `sin_emblema` ({gid: unidad cargada sin él}) pasa a su nuevo dueño:
+        la unidad que lo llevaba (M011: el Corrupted que lo tenía antes de llegar los
+        Sabuesos) se rehace sin él, conservando su nombre, casilla, daño y estado.
+        """
+        from catalogo_loader import resolver_unidad_con_catalogo
+        for gid, datos in (sin_emblema or {}).items():
+            viejo = next((f for f in self.fichas.values()
+                          if f.viva and f.nombre not in excluir and f.emblema_id == gid), None)
+            if viejo is None:
+                continue
+            nueva = resolver_unidad_con_catalogo(dict(datos, nombre=viejo.nombre, x=viejo.x, y=viejo.y), tablero=self)
+            daño = max(0, int(viejo.hp_max or 0) - int(viejo.hp_actual or 0))
+            nueva.hp_actual = max(1, int(nueva.hp_max or 0) - daño)
+            if nueva.stats is not None:
+                nueva.stats.hp = nueva.hp_actual
+                setattr(nueva.stats, 'hp_actual', nueva.hp_actual)
+            for campo in ("ha_actuado", "accion_turno", "cargas_ruptura", "nivel_veneno", "congelado",
+                          "hp_stock", "es_refuerzo", "estados_temporales", "mov_extra_turno"):
+                setattr(nueva, campo, getattr(viejo, campo))
+            self.fichas[viejo.nombre] = nueva
 
     def _casilla_libre_cerca(self, x: int, y: int, ocupadas: set, es_volador: bool = False, radio: int = 3):
         """Casilla transitable y libre más cercana a (x, y) (anillos crecientes, orden
@@ -1377,7 +1436,7 @@ class EstadoTablero:
         """
         from catalogo_loader import resolver_unidad_con_catalogo
         desplegados, pospuestos = [], []
-        ocupadas = {(f.x, f.y) for f in self.fichas.values() if f.viva}
+        ocupadas = casillas_ocupadas_por(f for f in self.fichas.values() if f.viva)
         for u in unidades:
             if (u["x"], u["y"]) in ocupadas:
                 hueco = self._casilla_libre_cerca(u["x"], u["y"], ocupadas, bool(u.get("es_volador", False)))
@@ -1395,7 +1454,7 @@ class EstadoTablero:
             ficha = resolver_unidad_con_catalogo(datos, tablero=self)
             ficha.es_refuerzo = True
             self.registrar_unidad(ficha, resolver_colision=False)
-            ocupadas.add((ficha.x, ficha.y))
+            ocupadas.update(casillas_ocupadas_por([ficha]))
             desplegados.append(ficha.como_dict())
         return desplegados, pospuestos
 
@@ -1504,7 +1563,7 @@ class EstadoTablero:
         """Casillas donde aparecen los dobles: la casilla fija de cada uno (CASILLAS_DOBLES,
         las `cuantas` primeras). Si está ocupada (unidad), fuera del mapa o no es transitable
         (muro…), ese doble no se invoca: el juego no lo recoloca en otra (verificado en juego)."""
-        ocupadas = {(u.x, u.y) for u in self.fichas.values() if u.viva}
+        ocupadas = casillas_ocupadas_por(u for u in self.fichas.values() if u.viva)
         salida = []
         for dx, dy in self.CASILLAS_DOBLES[:cuantas]:
             if len(salida) >= cuantas:
@@ -1558,7 +1617,7 @@ class EstadoTablero:
         for c in self.fichas.values():
             if not c.viva or c.es_aliado != f.es_aliado:
                 continue
-            if abs(c.x - f.x) + abs(c.y - f.y) > self.RADIO_REFLECT:
+            if distancia_entre_unidades(c, f) > self.RADIO_REFLECT:
                 continue
             c.otorgar_estado_temporal(
                 sid=self.SID_REFLECT, nombre="Reflect (devuelve el 50 % del daño mágico)",
@@ -1588,7 +1647,7 @@ class EstadoTablero:
         for c in self.fichas.values():
             if not c.viva or c is f or c.es_aliado != f.es_aliado:
                 continue
-            if abs(c.x - f.x) + abs(c.y - f.y) != 1:
+            if distancia_entre_unidades(c, f) != 1:
                 continue
             prob = pasivas.probabilidad_bonded_shield(f, c)
             c.otorgar_estado_temporal(

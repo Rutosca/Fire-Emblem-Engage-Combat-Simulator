@@ -879,6 +879,17 @@ def _arma_desde_item(item_dict):
 
     return arma_obj
 
+def _capitulo_de_tablero(tablero) -> str:
+    """"M011" del mapa activo del tablero (dispos del datamine o CAP_11_Tiled.json), o ""."""
+    import re as _re
+    mapa = getattr(tablero, "mapa", None) if tablero is not None else None
+    dispos_id = getattr(mapa, "dispos_id", None)
+    if dispos_id:
+        return str(dispos_id).upper()
+    m = _re.search(r"CAP_(\d+)", str(getattr(mapa, "filepath", "") or ""))
+    return f"M{int(m.group(1)):03d}" if m else ""
+
+
 def resolver_unidad_con_catalogo(data, tablero=None):
     """
     Toma los datos enviados desde la UI (o Tiled) y resuelve stats, clase, arma e inventario
@@ -945,15 +956,27 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if not emblema_info and data.get("emblema_nombre"):
         en_raw = data.get("emblema_nombre", "").strip()
         en_norm = normalizar_texto(en_raw)
+        por_nombre, candidatos, parciales = [], [], []
         for eid, edata in _catalogo.get("emblemas", {}).items():
             nom = normalizar_texto(edata.get("nombre", ""))
             ascii_n = normalizar_texto(edata.get("ascii_name", ""))
             link_n = normalizar_texto(edata.get("link_name", ""))
             eid_n = normalizar_texto(eid)
-            if en_norm == nom or en_norm == ascii_n or en_norm == link_n or en_norm == eid_n or (en_norm in nom and len(en_norm) >= 3):
-                emblema_info = edata
-                emblema_id = eid
-                break
+            if en_norm == nom:
+                por_nombre.append((eid, edata))
+            elif en_norm == ascii_n or en_norm == link_n or en_norm == eid_n:
+                candidatos.append((eid, edata))
+            elif en_norm in nom and len(en_norm) >= 3:
+                parciales.append((eid, edata))
+        # Manda el nombre visible exacto ("Lucina" es el Emblema, no "Lucina (Oscuro)", que
+        # comparte link_name); luego los alias y, si no hay nada, la primera parcial.
+        candidatos = por_nombre or candidatos or parciales[:1]
+        if candidatos:
+            # "Marth (Oscuro)" existe en los Cap. 11, 17, 21 y 24 con stats distintas: se
+            # elige el del capítulo del mapa activo (el que el jugador pone a mano en el modal)
+            cap = _capitulo_de_tablero(tablero)
+            emblema_id, emblema_info = next(((eid, ed) for eid, ed in candidatos if cap and ed.get("capitulo") == cap),
+                                            candidatos[0])
 
     es_sigurd = bool(emblema_info and ("siglud" in str(emblema_id).lower() or "sigurd" in str(emblema_info.get("nombre", "")).lower())) or ("sigurd" in str(data.get("emblema_nombre", "")).lower())
     tiene_botas = any("bota" in str(p).lower() for p in data.get("potenciadores_usados", []))
@@ -1778,7 +1801,11 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         accion_turno=str(data.get("accion_turno", getattr(unidad_previa, 'accion_turno', "") if unidad_previa else "") or ""),
         dificultad=str(data.get("dificultad") or (getattr(unidad_previa, 'dificultad', "") if unidad_previa else "") or ""),
         estados_temporales=list(data.get("estados_temporales", getattr(unidad_previa, 'estados_temporales', []) if unidad_previa else []) or []),
+        # Huella en el mapa (BmapSize): del personaje del catálogo; el payload no la cambia
+        tamano=int(((_catalogo.get("personajes", {}) or {}).get(pid) or p_info or {}).get("tamano", 1) or 1),
     )
+    if stats_obj is not None:
+        setattr(stats_obj, 'tamano', ficha.tamano)
     setattr(ficha, 'genero', genero_val)
     setattr(ficha, 'emblema_oscuro', es_emblema_oscuro)
     setattr(ficha, 'pid', getattr(stats_obj, 'pid', '') or pid)

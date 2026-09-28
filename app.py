@@ -6,11 +6,12 @@ API REST Flask que conecta la UI del Gemelo con el motor de cálculo.
 from flask import Flask, jsonify, request, render_template, abort, has_request_context, session
 from werkzeug.local import LocalProxy
 from motor_calculo import CalculadoraEngage, Unidad, Arma, Terreno
+from motor_calculo import casillas_de_unidad, casillas_ocupadas_por, distancia_a_unidad, distancia_entre_unidades
 from estado_tablero import EstadoTablero, FichaUnidad
 import pasivas
 import pasivas_temporales
 from lector_de_mapas import defensa_de_terreno, MapaTactico
-from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock, casillas_advance
+from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock, casillas_advance, mock_de_ficha
 
 import os
 import re
@@ -634,7 +635,12 @@ def exportar_partida():
         "capitulo": _capitulo_sesion(),
         "dificultad": tablero.dificultad,
         "refuerzos_pendientes": {str(t): list(us) for t, us in sorted(tablero.refuerzos_pendientes.items())},
-        "refuerzos_por_evento": [dict(e, casilla=list(e["casilla"])) for e in tablero.refuerzos_por_evento],
+        # Los eventos que no son de casilla (combate, muerte, acción, fila…) no tienen casilla
+        "refuerzos_por_evento": [
+            dict(e, casilla=list(e["casilla"]) if e.get("casilla") else None,
+                 disparos=[dict(d, casilla=list(d["casilla"]) if d.get("casilla") else None)
+                           for d in (e.get("disparos") or [])])
+            for e in tablero.refuerzos_por_evento],
         "casillas_fuego": tablero.casillas_fuego_lista(),
         "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "fichas": fichas_vivas
@@ -847,6 +853,24 @@ def cargar_preset_capitulo(capitulo_id=None):
         capitulo_id = _dispos_id_activo() if capitulo_id != "capitulo7" else "M007"
     return jsonify(_desplegar_capitulo(capitulo_id, dificultad))
 
+def _anclas_libres(ficha, analizador, umock) -> set:
+    """Unidad grande (2x2): esquinas a las que puede ir y en las que le cabe la huella libre."""
+    ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != ficha.nombre)
+    return {a for a in analizador.calcular_anclas_alcanzables(umock)
+            if not ocupadas.intersection(casillas_de_unidad(ficha, *a))}
+
+
+def _ancla_para_casilla(ficha, x, y, anclas):
+    """
+    Esquina con la que la unidad grande acaba cubriendo (x, y): la propia casilla si vale
+    como esquina; si no, de las posiciones cuya huella la cubre, la más cercana a donde está.
+    """
+    if (x, y) in anclas:
+        return (x, y)
+    cubren = [a for a in anclas if (x, y) in casillas_de_unidad(ficha, *a)]
+    return min(cubren, key=lambda a: (abs(a[0] - ficha.x) + abs(a[1] - ficha.y), a)) if cubren else None
+
+
 @app.route("/api/unidad/rango_movimiento", methods=["GET"])
 def obtener_rango_movimiento():
     """
@@ -872,19 +896,22 @@ def obtener_rango_movimiento():
     analizador = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
     
     # Construir objeto para el analizador
-    umock = UnidadMock(
-        x=ficha.x,
-        y=ficha.y,
-        mov=ficha.movimiento_disponible,
-        # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
-        es_volador=ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha),
-        arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
-    )
+    umock = mock_de_ficha(ficha)
+    # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
+    umock.es_volador = ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha)
     casillas_mov = analizador.calcular_casillas_alcanzables(umock)
 
     # Ocupantes: no se puede terminar el movimiento en una casilla ocupada por otra unidad viva
-    ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != nombre}
-    casillas_validas = [[x, y] for (x, y) in casillas_mov if (x, y) not in ocupadas or (x == ficha.x and y == ficha.y)]
+    ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != nombre)
+    if (ficha.tamano or 1) > 1:
+        # Unidad grande: se mueve como una normal, pero su avance cubre su huella entera (2
+        # filas y 2 columnas). Se ilumina todo lo que puede cubrir, como en el juego; al
+        # soltarla en cualquiera de esas casillas se busca la posición que la cubre.
+        casillas_validas = sorted({c for a in _anclas_libres(ficha, analizador, umock)
+                                   for c in casillas_de_unidad(ficha, *a)})
+        casillas_validas = [list(c) for c in casillas_validas]
+    else:
+        casillas_validas = [[x, y] for (x, y) in casillas_mov if (x, y) not in ocupadas or (x == ficha.x and y == ficha.y)]
     advance = _casillas_advance_de(ficha, casillas_mov)
 
     return jsonify({
@@ -904,8 +931,8 @@ def _casillas_advance_de(ficha, alcanzables) -> dict:
     """{Q: P} de Advance (SID_踏み込み) para `ficha`, o {} si no lo tiene."""
     if not pasivas.tiene_advance(ficha):
         return {}
-    rivales = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != ficha.es_aliado}
-    ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre != ficha.nombre}
+    rivales = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.es_aliado != ficha.es_aliado)
+    ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != ficha.nombre)
     return casillas_advance(alcanzables, rivales, ocupadas, _mapa.grid, _mapa.ancho, _mapa.alto, ficha.es_volador)
 
 @app.route("/api/mover", methods=["POST"])
@@ -946,22 +973,28 @@ def mover_unidad():
     if tablero.fase == "jugador" and ficha.controlable and ficha.ha_actuado:
         return jsonify({"error": f"{nombre} ya ha actuado este turno. Usa la Cronogema (Deshacer) para cambiar la elección."}), 400
 
-    # 1. Casilla ocupada por otra unidad viva?
-    otra_unidad = next((f for f in tablero.fichas.values() if f.viva and f.nombre != nombre and f.x == x and f.y == y), None)
+    # 0. Unidad grande: la casilla soltada puede ser cualquiera de su huella final
+    if (ficha.tamano or 1) > 1:
+        analizador_g = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
+        ancla = _ancla_para_casilla(ficha, x, y, _anclas_libres(ficha, analizador_g, mock_de_ficha(ficha)))
+        if ancla is None:
+            return jsonify({"error": f"{nombre} no puede cubrir la casilla ({x},{y}) este turno: fuera de su alcance o no le cabe el cuerpo."}), 400
+        x, y = ancla
+
+    # 1. Casilla ocupada por otra unidad viva? (las grandes, en toda su huella)
+    destino = set(casillas_de_unidad(ficha, x, y))
+    otra_unidad = next((f for f in tablero.fichas.values()
+                        if f.viva and f.nombre != nombre and destino.intersection(casillas_de_unidad(f))), None)
     if otra_unidad:
         return jsonify({"error": f"La casilla ({x},{y}) ya está ocupada por {otra_unidad.nombre}."}), 400
 
     # 2. Validar alcance de movimiento táctico para la unidad (aliada o enemiga)
     analizador = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
-    umock = UnidadMock(
-        x=ficha.x,
-        y=ficha.y,
-        mov=ficha.movimiento_disponible,
-        # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
-        es_volador=ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha),
-        arma=ArmaMock(ficha.arma.rango if ficha.arma else [1])
-    )
-    alcanzables = analizador.calcular_casillas_alcanzables(umock)
+    umock = mock_de_ficha(ficha)
+    # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
+    umock.es_volador = ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha)
+    alcanzables = (analizador.calcular_anclas_alcanzables(umock) if (ficha.tamano or 1) > 1
+                   else analizador.calcular_casillas_alcanzables(umock))
     via_advance = None
     if (x, y) not in alcanzables:
         via_advance = _casillas_advance_de(ficha, alcanzables).get((x, y))
@@ -1285,7 +1318,7 @@ def hablar_con_unidad():
             if f_h.ha_actuado:
                 tablero.historial.pop()
                 return jsonify({"error": f"{f_h.nombre} ya ha actuado este turno"}), 400
-            if any(f.viva and f.nombre != f_h.nombre and (f.x, f.y) == (x, y) for f in tablero.fichas.values()):
+            if any(f.viva and f.nombre != f_h.nombre and (x, y) in casillas_de_unidad(f) for f in tablero.fichas.values()):
                 tablero.historial.pop()
                 return jsonify({"error": f"La casilla ({x},{y}) está ocupada"}), 400
             analizador = AnalizadorAmenaza(_mapa.grid, _mapa.ancho, _mapa.alto)
@@ -1293,7 +1326,7 @@ def hablar_con_unidad():
                                es_volador=f_h.es_volador or pasivas.cruza_terreno_como_volador(f_h),
                                arma=ArmaMock([1]))
             setattr(umock, 'tiene_pass', pasivas.tiene_sid(f_h, 'SID_すり抜け'))
-            bloqueo = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != f_h.es_aliado}
+            bloqueo = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.es_aliado != f_h.es_aliado)
             if (x, y) not in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo):
                 tablero.historial.pop()
                 return jsonify({"error": f"{f_h.nombre} no puede llegar a ({x},{y}) este turno"}), 400
@@ -1346,10 +1379,10 @@ def _casillas_movidas_en_mapa(ficha, destino):
 
         grid = [[_T(_mapa.grid[x][y]) for y in range(_mapa.alto)] for x in range(_mapa.ancho)]
         analizador = AnalizadorAmenaza(grid, _mapa.ancho, _mapa.alto)
-        bloqueo = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.es_aliado != ficha.es_aliado}
+        bloqueo = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.es_aliado != ficha.es_aliado)
         return _casillas_movidas(ficha, destino, analizador, bloqueo)
     except Exception:
-        return abs(ficha.x - destino[0]) + abs(ficha.y - destino[1])
+        return distancia_a_unidad(ficha, destino[0], destino[1])
 
 
 def _activar_fusion(ficha, es_engage_attack: bool = False):
@@ -1493,7 +1526,7 @@ def ejecutar_combate():
     aliados_backup = [a.stats for a in apoyos_fichas]
 
     # 4. Distancia y terrenos
-    dist = abs(f_atk.x - f_def.x) + abs(f_atk.y - f_def.y)
+    dist = distancia_entre_unidades(f_atk, f_def)
     r_arma = f_atk.arma.rango if (f_atk.arma and f_atk.arma.rango) else [1]
 
     # Si no se pasó pos_destino y la unidad no está en rango desde su casilla actual:
@@ -1501,7 +1534,7 @@ def ejecutar_combate():
         pos_sug = encontrar_pos_ataque_optima(f_atk, f_def, f_atk.arma, tablero=tablero)
         if pos_sug is not None and pos_sug != [f_atk.x, f_atk.y]:
             tablero.mover_unidad(nombre_atk, pos_sug[0], pos_sug[1])
-            dist = abs(f_atk.x - f_def.x) + abs(f_atk.y - f_def.y)
+            dist = distancia_entre_unidades(f_atk, f_def)
 
     # Si tras verificar/mover NO está en rango válido del arma, RECHAZAR el combate
     if dist not in r_arma:
@@ -1514,19 +1547,19 @@ def ejecutar_combate():
     t_atk = _mapa.grid[f_atk.x][f_atk.y]
     t_def = _mapa.grid[f_def.x][f_def.y]
 
-    casillas_ocupadas = {(f.x, f.y) for f in tablero.fichas.values() if f.viva and f.nombre not in (f_atk.nombre, f_def.nombre)}
+    casillas_ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre not in (f_atk.nombre, f_def.nombre))
 
     # Los verdes pendientes de unión no dan apoyos ni auras al ejército (ni al revés)
     def _mismo_bando(f, ref):
         return f.es_aliado == ref.es_aliado and f.union_pendiente == ref.union_pendiente
 
     aliados_cercanos_atk = [
-        (f.stats, abs(f.x - f_atk.x) + abs(f.y - f_atk.y))
+        (f.stats, distancia_entre_unidades(f, f_atk))
         for f in tablero.fichas.values()
         if f.viva and _mismo_bando(f, f_atk) and f.nombre != f_atk.nombre and f.stats
     ]
     aliados_cercanos_def = [
-        (f.stats, abs(f.x - f_def.x) + abs(f.y - f_def.y))
+        (f.stats, distancia_entre_unidades(f, f_def))
         for f in tablero.fichas.values()
         if f.viva and _mismo_bando(f, f_def) and f.nombre != f_def.nombre and f.stats
     ]
@@ -1667,7 +1700,7 @@ def ejecutar_combate():
                 # Mismos bonos de posición del atacante que contra el objetivo principal
                 # (Guía Divina, Gente de Cuento…): golpea a todos desde su casilla de ataque
                 aliados_cercanos_ex = [
-                    (f.stats, abs(f.x - e_extra.x) + abs(f.y - e_extra.y))
+                    (f.stats, distancia_entre_unidades(f, e_extra))
                     for f in tablero.fichas.values()
                     if f.viva and _mismo_bando(f, e_extra) and f.nombre != e_extra.nombre and f.stats
                 ]
@@ -1687,7 +1720,7 @@ def ejecutar_combate():
                 objetivos_extra_res.append({"nombre": e_extra.nombre, "daño": dmg_ex, "hp_tras": nuevo_hp, "muere": nuevo_hp <= 0})
             if area.get("tipo") == "override" and area.get("pos_final"):
                 lx, ly = area["pos_final"]
-                if not any(f.viva and f.nombre != f_atk.nombre and (f.x, f.y) == (lx, ly) for f in tablero.fichas.values()):
+                if not any(f.viva and f.nombre != f_atk.nombre and (lx, ly) in casillas_de_unidad(f) for f in tablero.fichas.values()):
                     tablero.mover_unidad(nombre_atk, lx, ly)
                     pos_final_area = [lx, ly]
             elif area.get("tipo") == "blazing_lion" and area.get("casillas_fuego"):

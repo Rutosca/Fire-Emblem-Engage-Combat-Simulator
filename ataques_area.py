@@ -272,8 +272,9 @@ def _terreno(mapa, x: int, y: int):
 
 
 def _unidad_en(tablero, x: int, y: int):
+    from motor_calculo import casillas_de_unidad   # diferido, como el resto de este módulo
     for f in tablero.fichas.values():
-        if f.viva and (f.x, f.y) == (x, y):
+        if f.viva and (x, y) in casillas_de_unidad(f):
             return f
     return None
 

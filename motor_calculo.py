@@ -420,11 +420,40 @@ def obtener_genero_unidad(u) -> int:
         return getattr(u, 'genero', 1)
     return 0
 
+def casillas_de_unidad(u, x=None, y=None) -> list:
+    """
+    Casillas que ocupa una unidad (en su posición, o con su esquina en (x, y)).
+    Las unidades grandes (Person.xml BmapSize: los Corrupted Wyrm ocupan 2x2) se anclan
+    en la esquina INFERIOR IZQUIERDA: la casilla del dispos más las de su derecha y las
+    de encima (la y del tablero crece hacia abajo). Verificado en juego en el Cap. 11.
+    """
+    x = getattr(u, 'x', 0) if x is None else x
+    y = getattr(u, 'y', 0) if y is None else y
+    t = int(getattr(u, 'tamano', 1) or 1)
+    if t <= 1:
+        return [(x, y)]
+    return [(x + dx, y - dy) for dy in range(t) for dx in range(t)]
+
+
+def distancia_a_unidad(u, x, y) -> int:
+    """Distancia Manhattan de la casilla (x, y) a la casilla más cercana de la unidad."""
+    if int(getattr(u, 'tamano', 1) or 1) <= 1:
+        return abs(getattr(u, 'x', 0) - x) + abs(getattr(u, 'y', 0) - y)
+    return min(abs(cx - x) + abs(cy - y) for cx, cy in casillas_de_unidad(u))
+
+
 def distancia_entre_unidades(u1, u2) -> int:
-    """Distancia Manhattan entre dos unidades u objetos con x, y."""
-    x1, y1 = getattr(u1, 'x', 0), getattr(u1, 'y', 0)
-    x2, y2 = getattr(u2, 'x', 0), getattr(u2, 'y', 0)
-    return abs(x1 - x2) + abs(y1 - y2)
+    """Distancia Manhattan entre dos unidades u objetos con x, y (entre sus casillas más cercanas)."""
+    if int(getattr(u1, 'tamano', 1) or 1) <= 1 and int(getattr(u2, 'tamano', 1) or 1) <= 1:
+        x1, y1 = getattr(u1, 'x', 0), getattr(u1, 'y', 0)
+        x2, y2 = getattr(u2, 'x', 0), getattr(u2, 'y', 0)
+        return abs(x1 - x2) + abs(y1 - y2)
+    return min(distancia_a_unidad(u2, cx, cy) for cx, cy in casillas_de_unidad(u1))
+
+
+def casillas_ocupadas_por(fichas) -> set:
+    """Todas las casillas que ocupan esas unidades (las grandes cuentan entera su huella)."""
+    return {c for f in fichas for c in casillas_de_unidad(f)}
 
 def obtener_rango_apoyo(u1, u2) -> str:
     """Devuelve 'C', 'B', 'A' o '' si no hay apoyo activo entre u1 y u2."""

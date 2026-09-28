@@ -522,7 +522,9 @@ def compilar():
             "1": "infantería",
             "2": "caballería",
             "3": "volador",
-            "4": "acorazado",
+            # 4 es el de dragón (columna Dragon de la tabla de costes de Terrain.xml:
+            # bosque y agua le cuestan 1): Corrupted/Phantom Wyrm, Fell Dragon…
+            "4": "dragón",
         }
         move_type_raw = j.get("MoveType", "1")
         tipo_movimiento = MOVE_TYPE_MAP.get(str(move_type_raw), "infantería")
@@ -731,6 +733,9 @@ def compilar():
             "growths": p_growths,
             "join_stats": join_stats,
         }
+        # Tamaño en el mapa (BmapSize): los Corrupted Wyrm ocupan 2x2. Solo se guarda si no es 1.
+        if to_int(p.get("BmapSize"), 1) > 1:
+            personajes[pid]["tamano"] = to_int(p.get("BmapSize"), 1)
 
     print(f"Personajes procesados: {len(personajes)}")
 
