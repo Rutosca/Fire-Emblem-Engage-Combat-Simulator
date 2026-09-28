@@ -604,6 +604,7 @@ def tiene_sid(unidad, *sids: str) -> bool:
 # evaluando Condition con 相手 = quien recibiría el efecto.
 TIMING_AURA = 20
 TARGET_ALIADOS = 2
+TARGET_RIVALES = 1
 # Bit 23 del Flag: el portador también recibe el efecto cuando algún aliado cumple
 # la condición ("grants Avo+10 to both of them": Crimson Cheer, Alabaster Duty, Verdant Faith).
 FLAG_AURA_TAMBIEN_PROPIO = 1 << 23
@@ -930,7 +931,25 @@ def _alrededor_de(dador, receptor, dist_receptor, aliados_receptor) -> list:
     return salida
 
 
-def efectos_recibidos(unidad, aliados_cercanos, ctx_unidad=None) -> list:
+_RANGO_MAX_AURA_RIVAL = None
+
+
+def rango_max_aura_rival() -> int:
+    """Mayor RangeO de las auras sobre rivales del catálogo (3 con Racket of Solm): los
+    rivales más lejanos no pueden dar ninguna, así que ni se miran (se vacía con invalidar_caches)."""
+    global _RANGO_MAX_AURA_RIVAL
+    if _RANGO_MAX_AURA_RIVAL is None:
+        _RANGO_MAX_AURA_RIVAL = max((_rango_aura(i)[1] for i in HABILIDADES.values() if _es_aura_rival(i)), default=0)
+    return _RANGO_MAX_AURA_RIVAL
+
+
+def _es_aura_rival(info: dict) -> bool:
+    """Aura sobre los RIVALES (Timing 20 / Target 1): Racket of Solm y la personal de Timerra
+    ("Crit −5 a los enemigos a 1-3 casillas")."""
+    return bool(info) and int(info.get("timing") or 0) == TIMING_AURA and int(info.get("target") or 0) == TARGET_RIVALES and bool(info.get("give_sids"))
+
+
+def efectos_recibidos(unidad, aliados_cercanos, ctx_unidad=None, rivales_cercanos=None) -> list:
     """
     [(sid_efecto, nombre_dador)] que `unidad` recibe ahora mismo de las auras
     (Timing 20 / Target 2) de sus aliados cercanos y de las suyas propias:
@@ -939,7 +958,10 @@ def efectos_recibidos(unidad, aliados_cercanos, ctx_unidad=None) -> list:
       - RangeI = 0 incluye al propio portador (Knightly Escort: 相手の識別子 == 識別子)
       - Flag bit 23: el portador también recibe el efecto si algún aliado en rango
         cumple la Condition (Crimson Cheer / Alabaster Duty "a ambos")
+    y de las auras de sus RIVALES cercanos (Timing 20 / Target 1: Racket of Solm).
     `aliados_cercanos`: [(unidad, distancia)] del mismo bando, sin `unidad`.
+    `rivales_cercanos`: [(unidad, distancia)] del bando contrario (el rival del combate y
+    los que estén cerca), o None.
     """
     salida = []
     aliados = [(u, int(d)) for u, d in (aliados_cercanos or []) if u is not unidad]
@@ -979,6 +1001,17 @@ def efectos_recibidos(unidad, aliados_cercanos, ctx_unidad=None) -> list:
         if int(info.get("flag") or 0) & FLAG_AURA_TAMBIEN_PROPIO:
             if any(ri <= d <= ro and _condicion_cumplida(info, _ctx(unidad, v, d)) for v, d in aliados):
                 salida += [(h, nombre_propio) for h in info["give_sids"]]
+    alcance_max = rango_max_aura_rival()
+    for dador, d in [(u, int(d)) for u, d in (rivales_cercanos or []) if u is not unidad and int(d) <= alcance_max]:
+        for sid in _sids(dador):
+            info = HABILIDADES.get(sid)
+            if not _es_aura_rival(info):
+                continue
+            ri, ro = _rango_aura(info)
+            ctx_r = condicion_dsl.ContextoCombate(unidad=dador, rival=unidad, es_iniciador=True,
+                                                  habilidades_sids=list(_sids(dador)))
+            if ri <= d <= ro and _condicion_cumplida(info, ctx_r):
+                salida += [(h, str(getattr(dador, "nombre", "") or "")) for h in info["give_sids"]]
     vistos, unicos = set(), []
     for h, de in salida:
         if h not in vistos:
@@ -1015,10 +1048,11 @@ def recopilar(unidad, ctx, sids: Optional[list] = None, recibidos: Optional[list
     return mods
 
 
-def recopilar_combate(unidad, ctx, aliados_cercanos=None) -> Modificadores:
-    """`recopilar` + auras de los aliados cercanos: la entrada única de motor_calculo."""
+def recopilar_combate(unidad, ctx, aliados_cercanos=None, rivales_cercanos=None) -> Modificadores:
+    """`recopilar` + auras de los aliados (y rivales) cercanos: la entrada única de motor_calculo."""
     sids = list(ctx.habilidades_sids) if ctx.habilidades_sids else None
-    return recopilar(unidad, ctx, sids=sids, recibidos=efectos_recibidos(unidad, aliados_cercanos, ctx))
+    return recopilar(unidad, ctx, sids=sids,
+                     recibidos=efectos_recibidos(unidad, aliados_cercanos, ctx, rivales_cercanos))
 
 
 # Overlay escrito a mano (Emblemas DLC sin datamine, correcciones verificadas):
@@ -1035,8 +1069,9 @@ def invalidar_caches() -> None:
     variante_por_estilo pueden devolver resultados de antes del cambio.
     Los estados de la partida (temporales, Fusión…) no están cacheados.
     """
-    global _INDICE_NOMBRES
+    global _INDICE_NOMBRES, _RANGO_MAX_AURA_RIVAL
     _INDICE_NOMBRES = _construir_indice_nombres()
+    _RANGO_MAX_AURA_RIVAL = None
     _resolver_nombre_a_sid.cache_clear()
     _variante_por_estilo.cache_clear()
     _sids_activos_de.cache_clear()

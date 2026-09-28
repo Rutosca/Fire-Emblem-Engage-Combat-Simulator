@@ -1266,6 +1266,20 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 ls = c_canon.get("lunatic_skill")
                 if ls not in habs_lista:
                     habs_lista.append(ls)
+            # Partidas guardadas con versiones antiguas: les ponían a los enemigos la habilidad
+            # de clase y la de Extremo sin exigir el nivel (Goldmary Nv 1 con Triangle Adept,
+            # Rosado Nv 1 con Certain Blow; verificado en juego que no las tienen). A un
+            # enemigo solo se las da esta regla, así que por debajo del nivel se retiran,
+            # salvo que las lleve como propias (Person.xml).
+            if not es_aliado and nivel < nivel_hab_clase:
+                propias = set()
+                if p_canon:
+                    for clave_p in ("common_sids", "normal_sids", "hard_sids", "lunatic_sids"):
+                        propias.update(p_canon.get(clave_p, []) or [])
+                for sid_clase in (c_canon.get("lunatic_skill"), aprendida):
+                    if sid_clase and sid_clase not in propias:
+                        nombre_clase = _catalogo.get("habilidades", {}).get(sid_clase, {}).get("nombre")
+                        habs_lista = [h for h in habs_lista if h not in (sid_clase, nombre_clase)]
 
     # Los SID se conservan internamente en los XML, pero la UI debe mostrar
     # el nombre traducido. Si existe traducción, no expongas el identificador

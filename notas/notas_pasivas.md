@@ -167,8 +167,41 @@ el JSON a `tests/fixtures/`, registrándola en `escenarios.py`.
     de "Avance Seguro" comprueba de verdad las zonas (2D: mapas horizontales y verticales) en
     vez de afirmar "ningún enemigo alcanza" y dar una "columna X" segura. Quitado el cálculo
     muerto de `amenazas_inminentes` (el panel es solo del jugador desde 00380d7) y `expo_txt`.
-  - Pendiente: auras de combate sobre rivales (Timing 20 / Target 1: Racket of Solm, Timerra)
-    y auras por estado del tablero (calcular `efectos_recibidos` una vez por combate).
+  - **Cierre de la 3b** (2026-09-28, segunda tanda):
+    - **Timing 12 por golpe** (`CalculadoraEngage._efectos_por_golpe`, aplicados en la secuencia
+      por `golpear_defensor` / `golpear_atacante`): robo de vida `回復 + …` (Renewal de Flare:
+      "min(相手のダメージ, 相手のHP) × 0.5", ×1 en Qi Adept; volvió a funcionar, se había perdido al
+      quitar el overlay), `相手のダメージ =` deterministas del que golpea (Mercy: nunca mata;
+      Demolish) y `ダメージ ×/=/−/+` del que recibe (Damage Reduction / Nullify, Engage Attack
+      Guard, Special Guard), con su Stand. **Flag bit 7 = solo contra Ataques de Emblema**
+      (deducido: Engage Attack Guard y la otra con su forma, Flag 129 y sin Condition). Fuera: los
+      procs (Bane, Lethality: スキル確率 → riesgo), Hold Out (su camino propio) y las fracciones de
+      los Ataques de Emblema de varios golpes (ya aplicadas por `forma_ataque_emblema`). El
+      pronóstico (`daño_por_golpe`) ya enseña el daño con estos efectos; el robo de vida no cuenta
+      como golpe ni resta del daño total (antes sí).
+    - **Special Guard** (overlay DLC) pasa a su mecánica real: Timing 12, `ダメージ − N`.
+    - **Triangle Adept** (`SID_相性激化`, LunaticSkill de la clase Hero en Job.xml: la extra de
+      Extremo a partir del Nv 5): `手番回数` / `相手の手番回数 = 2` por triángulo — el motor no leía
+      esos acts; ahora sí (`rondas_propias` / `…_rival`). Ningún enemigo de los mapas actuales la
+      lleva (ningún Hero enemigo tiene Nv 5+).
+    - **Partidas guardadas antiguas con habilidades de clase de más** (2026-09-28): la partida
+      del Cap. 7 turno 10 traía Triangle Adept en Goldmary y Certain Blow en Rosado, ambas Nv 1
+      (verificado en juego: Goldmary solo tiene Disarming Sigh y Veteran+; la de clase de Hero,
+      Brave Assist, es LearningSkill de Nv 5 y tampoco la tiene). Las puso una versión antigua
+      que no exigía el nivel. `resolver_unidad_con_catalogo` retira a los enemigos la
+      LearningSkill y la LunaticSkill de su clase por debajo del nivel de habilidad de clase,
+      salvo que las lleven como propias (Person.xml). Golden `cap7_turno10` regenerado: 10
+      combates de Rosado sin Certain Blow (+40 Hit).
+    - **Auras sobre rivales** (Timing 20 / Target 1: Racket of Solm y la personal de Timerra,
+      Crit −5 a 1-3): `efectos_recibidos(..., rivales_cercanos)`; `simular_combate` pasa el rival
+      del combate y los aliados del rival a su distancia de la casilla desde la que se pelea
+      (`pos_atk` / `pos_def`). Solo se miran los rivales dentro del mayor alcance de estas auras
+      del catálogo (3), sin coste apreciable.
+    - Sin tocar a propósito: los acts de secuencia de Vantage / Alacrity / Divine Speed / Brave
+      siguen reconocidos por su SID (funcionan y tienen ground truth; ninguna unidad de los mapas
+      lleva otro act de secuencia sin cubrir), y las auras no se cachean por combate (el análisis
+      tarda 0,05-0,3 s). Holy Stance (`SID_異形リベンジ`: devuelve un % del daño recibido de un
+      Corrupted) es un efecto tras el golpe: Fase 3c.
 - **Fase 3 — secuencia y eventos**: acts de secuencia (`手番回数`, `攻撃回数`,
   `行動回数`, `攻撃結果`) en `simular_combate`; evaluación por golpe (`timing` 6-12,
   `action` 1/2) para `ダメージ` (Hold Out, Divine Speed 50 %); `give_target` 0/2/3/4 y

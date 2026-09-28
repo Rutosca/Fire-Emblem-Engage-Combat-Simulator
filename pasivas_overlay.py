@@ -151,11 +151,10 @@ OVERLAY = {
         f"SID_OVERLAY_SPECIAL_GUARD_{n}": _entrada(
             f"SID_OVERLAY_SPECIAL_GUARD_{n}", f"Special Guard {n}",
             condition="相手の武器の種類 == 特殊",
-            act_names=["相手の威力"], act_operations=["-"], act_values=[str(n)],
-            # En el juego es una reducción de daño (Timing 12), que es Fase 3. Como es una
-            # resta fija se expresa en el Timing 7 (daño), que el motor ya aplica, y da el
-            # mismo número; cuando llegue la Fase 3 puede volver a su timing real.
-            timing=7, priority=n,
+            # Reducción del daño RECIBIDO en cada golpe (Timing 12, ダメージ −N), como las
+            # Damage Reduction del datamine; nunca por debajo de 0 (Fase 3b).
+            act_names=["ダメージ"], act_operations=["-"], act_values=[str(n)],
+            timing=12, action=2, priority=n,
         )
         for n in range(1, 6)
     },

@@ -50,6 +50,14 @@ def _resolver_estilo_raw(raw: str) -> str:
                 return canon
     return "infanteria"
 
+def _unidad_con_hp(unidad, hp):
+    """Copia de `unidad` con el HP del momento (evaluación por golpe de la DSL: HP, 相手のHP)."""
+    u = copy.copy(unidad)
+    u.hp = hp
+    u.hp_actual = hp
+    return u
+
+
 if TYPE_CHECKING:
     from motor_de_movimiento_y_amenaza import ContextoMapaEnemigo
 
@@ -806,6 +814,8 @@ class CalculadoraEngage:
         rival_contraataca=None,
         chain_attacks: int = 0,
         ronda: int = 0,
+        rivales_cercanos_atk=None,
+        rivales_cercanos_def=None,
     ):
         """
         Estadísticas de un golpe individual del atacante al defensor.
@@ -904,8 +914,12 @@ class CalculadoraEngage:
         # ÉL quien pega con efectividad.
         ctx_atk.mult_efectividad_propia = mult_mt_efectividad
 
-        mods_atk = pasivas.recopilar_combate(atacante, ctx_atk, aliados_cercanos_atk)
-        mods_def = pasivas.recopilar_combate(defensor, ctx_def, aliados_cercanos_def)
+        # Rivales cercanos de cada bando (auras sobre enemigos: Racket of Solm). Sin lista, al
+        # menos el rival del propio combate, a la distancia del golpe.
+        mods_atk = pasivas.recopilar_combate(atacante, ctx_atk, aliados_cercanos_atk,
+                                             rivales_cercanos_atk if rivales_cercanos_atk is not None else [(defensor, distancia)])
+        mods_def = pasivas.recopilar_combate(defensor, ctx_def, aliados_cercanos_def,
+                                             rivales_cercanos_def if rivales_cercanos_def is not None else [(atacante, distancia)])
 
         # Veteran+ (SID_特効無効_効果): inmune a la efectividad; Stalwart / Veteran
         # (SID_特効耐性_効果: "相手の武器特効 = 2"): la reduce a ×2. Se aplica a cualquier
@@ -993,7 +1007,14 @@ class CalculadoraEngage:
                 atk_base += 15
             pasivas_activas.append("Ragnarök Fusión (Ataque de Emblema Celica)")
         elif es_override:
-            pasivas_activas.append(f"Superación / Override ({arma.nombre})")
+            # El "arma" del ataque ya se llama "Override (Ridersbane (Emblema))": se nombra el
+            # arma con la que se lanza, sin anidar paréntesis ("con Ridersbane del Emblema").
+            base = str(getattr(arma, 'arma_base_nombre', '') or '')
+            if not base:
+                base = arma.nombre[arma.nombre.find("(") + 1:-1] if arma.nombre.endswith(")") and "(" in arma.nombre else arma.nombre
+            del_emblema = "(emblema)" in base.lower()
+            base = base.replace(" (Emblema)", "").replace("(Emblema)", "").strip()
+            pasivas_activas.append(f"Override (Ataque de Emblema de Sigurd) con {base}{' del Emblema' if del_emblema else ''}")
 
         atk_efectivo = atk_base
 
@@ -1284,9 +1305,23 @@ class CalculadoraEngage:
             "lodestar_hits": lodestar_hits,
             "concede_accion_extra": es_houses_unite,
             "pasivas_activas": pasivas_activas,
+            # Rondas impuestas por habilidades (手番回数 / 相手の手番回数 = 2: Triangle Adept, "con
+            # ventaja ataca dos veces; con desventaja, el rival"). De cada bando, sobre sí mismo
+            # y sobre el otro. None = sin cambio.
+            "rondas_propias": mods_atk.asignado('turno_extra', T),
+            "rondas_impuestas_al_rival": mods_atk.asignado('rival_turno_extra', T),
+            "rondas_propias_rival": mods_def.asignado('turno_extra', T),
+            "rondas_impuestas_por_rival": mods_def.asignado('rival_turno_extra', T),
             # Reprisal y compañía: el daño de los golpes propios cambia con el HP actual;
             # simular_combate recalcula cada golpe con el HP del momento
             "depende_hp": pasivas.depende_del_hp_propio(mods_atk.sids),
+            # Timing 12 que solo se resuelve en el golpe (daño real, HP del momento): los aplica
+            # simular_combate. No se serializa (lleva los contextos de la DSL).
+            "_efectos_golpe": cls._efectos_por_golpe(mods_atk.sids, mods_def.sids, ctx_atk, ctx_def,
+                                                     es_iniciador, es_engage_attack,
+                                                     # los de varios golpes ya aplican su fracción
+                                                     # (SID_ダメージNN％ es un "=" de Timing 12)
+                                                     reparte_golpes=bool(es_houses_unite or es_cataclysm or forma_multigolpe)),
             "apoyos_activos": det_apoyos_atk,
             # Detalle del motor de pasivas (lo que ha aportado cada SID a este golpe)
             "motor_pasivas": {"atk": mods_atk.como_dict(), "def": mods_def.como_dict()},
@@ -1303,6 +1338,110 @@ class CalculadoraEngage:
         "spd": "Vel", "lck": "Suerte", "bld": "Complexión",
         "rival_effectividad": "efectividad", "rival_hit_rate": "Hit% rival", "rival_crit_rate": "Crit% rival",
     }
+
+    # Skill.xml Flag bit 7: el efecto solo vale contra Ataques de Emblema. Deducido: lo llevan
+    # Engage Attack Guard (SID_敵エンゲージ技ダメージ軽減, "daño de Ataques de Emblema -20 %") y
+    # la otra habilidad de clase con la misma forma, ambas sin Condition (Flag 129).
+    FLAG_SOLO_ATAQUE_EMBLEMA = 1 << 7
+
+    @classmethod
+    def _efectos_por_golpe(cls, sids_golpeador, sids_receptor, ctx_golpeador, ctx_receptor,
+                           golpeador_inicia: bool, es_engage_attack: bool, reparte_golpes: bool = False):
+        """
+        Habilidades de Timing 12 que dependen del golpe en curso y no se pueden decidir antes:
+          - del que golpea (golpes propios): 相手のダメージ = … (Mercy: nunca mata; Demolish) y
+            回復 + … (robo de vida: Renewal de Flare, "min(相手のダメージ, 相手のHP) × 0.5");
+          - del que recibe: ダメージ ×/=/−/+ … (Damage Reduction, Damage Nullify, Engage Attack
+            Guard, Special Guard…), con su Stand (1 si él inició, 2 si defiende).
+        Los procs (スキル確率: Bane, Lethality…) quedan fuera: son riesgo, no daño seguro. Hold
+        Out (SID_踏ん張り…) tiene su propio camino. None si no hay nada que aplicar.
+        """
+        def _acts(info):
+            return list(zip(info.get("act_names") or [], info.get("act_operations") or [], info.get("act_values") or []))
+
+        def _vale_stand(info, inicia):
+            stand = int(info.get("stand") or 0)
+            return stand == 0 or (stand == 1 and inicia) or (stand == 2 and not inicia)
+
+        def _es_proc(info):
+            return "スキル確率" in str(info.get("condition") or "")
+
+        propios, recibidos = [], []
+        for sid in dict.fromkeys(sids_golpeador or []):
+            info = pasivas.HABILIDADES.get(sid) or {}
+            if int(info.get("timing") or 0) != 12 or int(info.get("action") or 0) == 2 or _es_proc(info):
+                continue
+            if not _vale_stand(info, golpeador_inicia):
+                continue
+            if any((n == "相手のダメージ" and op == "=" and not reparte_golpes) or (n == "回復" and op == "+")
+                   for n, op, _ in _acts(info)):
+                propios.append(info)
+        for sid in dict.fromkeys(sids_receptor or []):
+            info = pasivas.HABILIDADES.get(sid) or {}
+            if int(info.get("timing") or 0) != 12 or _es_proc(info) or sid.startswith("SID_踏ん張り"):
+                continue
+            if not _vale_stand(info, not golpeador_inicia):
+                continue
+            if int(info.get("flag") or 0) & cls.FLAG_SOLO_ATAQUE_EMBLEMA and not es_engage_attack:
+                continue
+            if any(n == "ダメージ" for n, _, _ in _acts(info)):
+                recibidos.append(info)
+        if not propios and not recibidos:
+            return None
+        return {"propios": propios, "recibidos": recibidos, "ctx_golpeador": ctx_golpeador, "ctx_receptor": ctx_receptor}
+
+    @staticmethod
+    def _aplicar_efectos_golpe(efectos, golpeador, receptor, hp_golpeador, hp_receptor, daño):
+        """Daño final del golpe tras los efectos de Timing 12 de quien recibe (ダメージ) y de
+        quien golpea (相手のダメージ =). Devuelve el daño (entero, >= 0)."""
+        if not efectos:
+            return daño
+        base_r = efectos["ctx_receptor"]
+        ctx_r = copy.copy(base_r)
+        ctx_r.unidad, ctx_r.rival = _unidad_con_hp(receptor, hp_receptor), _unidad_con_hp(golpeador, hp_golpeador)
+        for info in efectos["recibidos"]:
+            ctx_r.dano_actual = daño
+            if not pasivas._condicion_cumplida(info, ctx_r):
+                continue
+            for clave, op, valor in condicion_dsl.leer_acts(info, ctx_r):
+                if clave != "dano" or not isinstance(valor, (int, float)):
+                    continue
+                if op == "=":
+                    daño = valor
+                elif op == "*":
+                    daño = daño * valor
+                elif op == "-":
+                    daño = daño - valor
+                elif op == "+":
+                    daño = daño + valor
+        daño = max(0, math.floor(daño))
+        ctx_g = copy.copy(efectos["ctx_golpeador"])
+        ctx_g.unidad, ctx_g.rival = _unidad_con_hp(golpeador, hp_golpeador), _unidad_con_hp(receptor, hp_receptor)
+        for info in efectos["propios"]:
+            ctx_g.dano_rival = daño
+            if not pasivas._condicion_cumplida(info, ctx_g):
+                continue
+            for clave, op, valor in condicion_dsl.leer_acts(info, ctx_g):
+                if clave == "rival_dano" and op == "=" and isinstance(valor, (int, float)):
+                    daño = max(0, math.floor(valor))
+        return daño
+
+    @staticmethod
+    def _curacion_por_golpe(efectos, golpeador, receptor, hp_golpeador, hp_receptor_antes, daño_hecho) -> int:
+        """HP que recupera quien golpea tras conectar (回復 + …: Renewal de Flare)."""
+        if not efectos or daño_hecho <= 0:
+            return 0
+        ctx_g = copy.copy(efectos["ctx_golpeador"])
+        ctx_g.unidad, ctx_g.rival = _unidad_con_hp(golpeador, hp_golpeador), _unidad_con_hp(receptor, hp_receptor_antes)
+        ctx_g.dano_rival, ctx_g.dano_actual = daño_hecho, 0
+        total = 0
+        for info in efectos["propios"]:
+            if not pasivas._condicion_cumplida(info, ctx_g):
+                continue
+            for clave, op, valor in condicion_dsl.leer_acts(info, ctx_g):
+                if clave == "curacion" and op == "+" and isinstance(valor, (int, float)):
+                    total += math.floor(valor)
+        return max(0, total)
 
     @classmethod
     def _textos_pasivas(cls, mods_atk, mods_def, timings) -> list:
@@ -1376,6 +1515,27 @@ class CalculadoraEngage:
         norm_atk = normalizar_aliados_cercanos(aliados_cercanos_atk, pos_atk)
         norm_def = normalizar_aliados_cercanos(aliados_cercanos_def, pos_def)
 
+        # Rivales cercanos de cada bando (auras sobre enemigos, Timing 20 / Target 1: Racket
+        # of Solm): el rival del combate a la distancia del golpe y los aliados del rival a su
+        # distancia de la casilla desde la que se pelea (pos_atk / pos_def o la de la unidad).
+        def _pos_de(u, pos):
+            if pos is not None:
+                return tuple(pos)
+            x, y = getattr(u, 'x', None), getattr(u, 'y', None)
+            return (x, y) if isinstance(x, (int, float)) and isinstance(y, (int, float)) else None
+
+        def _rivales(pos_propia, rival, aliados_del_rival):
+            lista = [(rival, distancia)]
+            if pos_propia:
+                for u, _ in aliados_del_rival or []:
+                    ux, uy = getattr(u, 'x', None), getattr(u, 'y', None)
+                    if isinstance(ux, (int, float)) and isinstance(uy, (int, float)):
+                        lista.append((u, abs(ux - pos_propia[0]) + abs(uy - pos_propia[1])))
+            return lista
+
+        rivales_atk = _rivales(_pos_de(atacante, pos_atk), defensor, norm_def)
+        rivales_def = _rivales(_pos_de(defensor, pos_def), atacante, norm_atk)
+
         if not es_engage_attack and getattr(arma_atk, 'es_engage_attack', False):
             es_engage_attack = True
         if not engage_attack_nombre and hasattr(arma_atk, 'engage_attack_nombre'):
@@ -1406,6 +1566,7 @@ class CalculadoraEngage:
             terreno_atacante=terreno_atk,
             rival_contraataca=puede_contra,
             chain_attacks=n_chain_attacks,
+            rivales_cercanos_atk=rivales_atk, rivales_cercanos_def=rivales_def,
         )
         if es_ballesta:
             aliados_apoyo_backup = None
@@ -1423,6 +1584,7 @@ class CalculadoraEngage:
                 distancia=distancia,
                 terreno_atacante=terreno_def,
                 rival_contraataca=True,
+                rivales_cercanos_atk=rivales_def, rivales_cercanos_def=rivales_atk,
             )
 
         es_smash_atk = getattr(arma_atk, 'es_smash', False)
@@ -1445,11 +1607,13 @@ class CalculadoraEngage:
                     distancia=distancia, es_engage_attack=es_engage_attack,
                     engage_attack_nombre=engage_attack_nombre, defensor_en_ruptura=defensor_en_ruptura,
                     terreno_atacante=terreno_atk, rival_contraataca=puede_contra,
-                    chain_attacks=n_chain_attacks, ronda=1)
+                    chain_attacks=n_chain_attacks, ronda=1,
+                    rivales_cercanos_atk=rivales_atk, rivales_cercanos_def=rivales_def)
             return cls._stats_de_golpe(
                 defensor, arma_def, atacante, arma_atk, terreno_atk,
                 es_iniciador=False, aliados_cercanos_atk=norm_def, aliados_cercanos_def=norm_atk,
-                distancia=distancia, terreno_atacante=terreno_def, rival_contraataca=True, ronda=1)
+                distancia=distancia, terreno_atacante=terreno_def, rival_contraataca=True, ronda=1,
+                rivales_cercanos_atk=rivales_def, rivales_cercanos_def=rivales_atk)
 
         stats_atk_seguimiento = _stats_ronda_siguiente(stats_atk, True)
         stats_def_seguimiento = _stats_ronda_siguiente(stats_def, False) if stats_def else None
@@ -1459,6 +1623,19 @@ class CalculadoraEngage:
         # Brave (SID_２回行動, Stand=1): solo cuando la unidad inicia el combate; el defensor con Brave contraataca normal
         es_brave_atk = bool(getattr(arma_atk, 'es_brave', False)) and not es_engage_attack and not es_ballesta
         follow_up_def = puede_contra and ((stats_atk["as_def"] - stats_atk["as_atk"]) >= 5) and (not cede_def) and not stats_atk.get("sin_follow_up_def")
+
+        # Rondas impuestas por habilidades (Triangle Adept: 手番回数 = 2 con ventaja de
+        # triángulo; 相手の手番回数 = 2 si la desventaja es del rival). Su Condition ya descarta
+        # a quien no puede doblar (追撃不可); aquí se respetan las demás reglas del follow-up.
+        def _dos_rondas(*valores):
+            return any((v or 0) >= 2 for v in valores)
+
+        if not follow_up_atk and _dos_rondas(stats_atk.get("rondas_propias"), stats_atk.get("rondas_impuestas_por_rival")) \
+                and not cede_atk and not es_engage_attack and not es_ballesta and not stats_atk.get("sin_follow_up"):
+            follow_up_atk = True
+        if not follow_up_def and puede_contra and _dos_rondas(stats_atk.get("rondas_propias_rival"), stats_atk.get("rondas_impuestas_al_rival")) \
+                and not cede_def and not stats_atk.get("sin_follow_up_def"):
+            follow_up_def = True
 
         # Alacrity (Lyn, SID_攻め立て): su Condition ("AS - AS rival >= 9", sin 追撃不可) ya
         # está evaluada en _stats_de_golpe; con follow-up, este va antes del contraataque
@@ -1526,12 +1703,14 @@ class CalculadoraEngage:
                         distancia=distancia, es_engage_attack=es_engage_attack,
                         engage_attack_nombre=engage_attack_nombre, defensor_en_ruptura=defensor_en_ruptura,
                         terreno_atacante=terreno_atk, rival_contraataca=puede_contra,
-                        chain_attacks=n_chain_attacks, ronda=ronda)
+                        chain_attacks=n_chain_attacks, ronda=ronda,
+                        rivales_cercanos_atk=rivales_atk, rivales_cercanos_def=rivales_def)
                 else:
                     r = cls._stats_de_golpe(
                         _con_hp(defensor, hp_propio), arma_def, _con_hp(atacante, hp_rival), arma_atk, terreno_atk,
                         es_iniciador=False, aliados_cercanos_atk=norm_def, aliados_cercanos_def=norm_atk,
-                        distancia=distancia, terreno_atacante=terreno_def, rival_contraataca=True, ronda=ronda)
+                        distancia=distancia, terreno_atacante=terreno_def, rival_contraataca=True, ronda=ronda,
+                        rivales_cercanos_atk=rivales_def, rivales_cercanos_def=rivales_atk)
                 _cache_golpes[clave] = r["daño"]
             return _cache_golpes[clave]
 
@@ -1556,10 +1735,18 @@ class CalculadoraEngage:
                 registrar(actor, f"{tipo} (bloqueado por Guardia en Cadena)", 0, hp_def)
                 return False
 
+            # Timing 12 por golpe (del defensor al recibir y del atacante al golpear): Damage
+            # Reduction, Mercy… Los Chain Attack de apoyo no son golpes del atacante.
+            efectos = stats_atk.get("_efectos_golpe") if (actor == atacante.nombre and "chain_attack" not in tipo) else None
+            if efectos:
+                daño = cls._aplicar_efectos_golpe(efectos, atacante, defensor, hp_atk, hp_def, daño)
+            hp_def_antes = hp_def
             dano_aplicado_ultimo = min(max(0, daño), max(0, hp_def))
             hp_def -= daño
             registrar(actor, tipo, dano_aplicado_ultimo, hp_def)
             curar_al_atacante(actor, dano_aplicado_ultimo)
+            if efectos:
+                curar_por_efectos(True, efectos, hp_def_antes, dano_aplicado_ultimo)
             if hp_def <= 0 and piedras_res > 0:
                 piedras_res -= 1
                 barra_resucitada = True
@@ -1587,6 +1774,42 @@ class CalculadoraEngage:
         drenaje_atk = float(stats_atk.get("drenaje", 0.0) or 0.0)
         hp_atk_max_drenaje = int(getattr(atacante, 'hp_max', 0) or getattr(atacante, 'hp', 0) or 0)
         curado_total_atk = 0
+
+        def curar_por_efectos(es_atk: bool, efectos, hp_rival_antes: int, daño_hecho: int):
+            """Robo de vida de Timing 12 (Renewal de Flare) de quien acaba de golpear."""
+            nonlocal hp_atk, hp_def, curado_total_atk
+            if es_atk:
+                hp_propio, maximo, quien, rival = hp_atk, hp_atk_max_drenaje, atacante, defensor
+            else:
+                hp_propio, maximo, quien, rival = hp_def, hp_def_max, defensor, atacante
+            if hp_propio <= 0 or hp_propio >= maximo:
+                return
+            curado = min(cls._curacion_por_golpe(efectos, quien, rival, hp_propio, hp_rival_antes, daño_hecho),
+                         maximo - hp_propio)
+            if curado <= 0:
+                return
+            if es_atk:
+                hp_atk += curado
+                curado_total_atk += curado
+            else:
+                hp_def += curado
+            secuencia.append({"actor": quien.nombre, "tipo": "drenaje", "daño": -curado,
+                              "hp_objetivo_tras": hp_propio + curado})
+
+        def golpear_atacante(stats_golpe, tipo, daño):
+            """El defensor golpea al atacante (contraataque, follow-up, Vantage), con los
+            efectos de Timing 12 del golpe (Damage Reduction del atacante, Mercy y Renewal
+            del defensor…)."""
+            nonlocal hp_atk
+            efectos = stats_golpe.get("_efectos_golpe") if stats_golpe else None
+            if efectos:
+                daño = cls._aplicar_efectos_golpe(efectos, defensor, atacante, hp_def, hp_atk, daño)
+            hp_atk_antes = hp_atk
+            hp_atk -= daño
+            registrar(defensor.nombre, tipo, daño, hp_atk)
+            revivir_atacante_si_procede()
+            if efectos:
+                curar_por_efectos(False, efectos, hp_atk_antes, min(max(0, daño), max(0, hp_atk_antes)))
 
         def curar_al_atacante(actor, daño_hecho):
             """Robo de vida del atacante tras conectar un golpe."""
@@ -1634,10 +1857,7 @@ class CalculadoraEngage:
             # ("HP <= 25/50/75 % && puede contraatacar") ya se evaluó al calcular el contraataque
             vantage = stats_def.get("vantage")
             if vantage:
-                dmg_contra = daño_golpe(stats_def, False)
-                hp_atk -= dmg_contra
-                registrar(defensor.nombre, f"contraataque ({vantage})", dmg_contra, hp_atk)
-                revivir_atacante_si_procede()
+                golpear_atacante(stats_def, f"contraataque ({vantage})", daño_golpe(stats_def, False))
                 contra_ya_hecha = True
                 pasivas_def_extra = stats_def.setdefault("pasivas_activas", [])
                 pasivas_def_extra.append(f"{vantage} (golpea primero)")
@@ -1648,11 +1868,8 @@ class CalculadoraEngage:
         elif cede_atk and puede_contra and not cede_def and not barra_resucitada and not barra_atk_resucitada and not contra_ya_hecha:
             # ── Defensor contraataca PRIMERO (prioridad por arma Smash del rival) ──
             if hp_def > 0 and stats_def:
-                dmg_contra = daño_golpe(stats_def, False)
-                hp_atk -= dmg_contra
                 etiqueta_primero = "prioridad sobre Smash" if es_smash_atk else "el aliento cede el primer golpe"
-                registrar(defensor.nombre, f"contraataque ({etiqueta_primero})", dmg_contra, hp_atk)
-                revivir_atacante_si_procede()
+                golpear_atacante(stats_def, f"contraataque ({etiqueta_primero})", daño_golpe(stats_def, False))
 
             # ── Atacante ejecuta su golpe (si sobrevive al contraataque) ──
             if hp_atk > 0 and hp_def > 0:
@@ -1663,10 +1880,7 @@ class CalculadoraEngage:
 
             # ── Follow-up del defensor si doblaba, atacante sigue vivo y defensor no quedó roto ──
             if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not barra_atk_resucitada and not defensor_roto and stats_def:
-                dmg_contra = daño_golpe(stats_def_seguimiento, False, 1)
-                hp_atk -= dmg_contra
-                registrar(defensor.nombre, "follow-up", dmg_contra, hp_atk)
-                revivir_atacante_si_procede()
+                golpear_atacante(stats_def_seguimiento, "follow-up", daño_golpe(stats_def_seguimiento, False, 1))
 
         elif not barra_resucitada and not barra_atk_resucitada:
             # ── Secuencia estándar o Ataques de Emblema (sin Smash del atacante, o ambos con Smash) ──
@@ -1716,11 +1930,8 @@ class CalculadoraEngage:
             # 2c. Contraataque del defensor (si vivo, en rango y no roto; no si ya golpeó por Vantage)
             if puede_contra and not contra_ya_hecha and hp_def > 0 and not barra_resucitada and not barra_atk_resucitada and not defensor_roto and stats_def:
                 tipo_contra_str = "contraataque (smash)" if es_smash_def else "contraataque"
-                dmg_contra = daño_golpe(stats_def, False)
-                hp_atk -= dmg_contra
                 # Un contraataque NUNCA inflige Ruptura
-                registrar(defensor.nombre, tipo_contra_str, dmg_contra, hp_atk)
-                revivir_atacante_si_procede()
+                golpear_atacante(stats_def, tipo_contra_str, daño_golpe(stats_def, False))
 
             # 2d. Follow-up regular del atacante (si no se ejecutó por Alacrity)
             if not activa_alacrity and follow_up_atk and hp_atk > 0 and hp_def > 0 and not barra_resucitada and not barra_atk_resucitada:
@@ -1730,10 +1941,7 @@ class CalculadoraEngage:
 
             # 2e. Follow-up del defensor
             if follow_up_def and hp_def > 0 and hp_atk > 0 and not barra_resucitada and not barra_atk_resucitada and not defensor_roto and stats_def:
-                dmg_contra = daño_golpe(stats_def_seguimiento, False, 1)
-                hp_atk -= dmg_contra
-                registrar(defensor.nombre, "follow-up", dmg_contra, hp_atk)
-                revivir_atacante_si_procede()
+                golpear_atacante(stats_def_seguimiento, "follow-up", daño_golpe(stats_def_seguimiento, False, 1))
 
         # 2f. Velocidad Divina (Marth): SIEMPRE el último golpe del combate, tras
         # todos los follow-ups, al 50% del daño truncado. Verificado en capturas
@@ -1821,9 +2029,10 @@ class CalculadoraEngage:
         hp_atk_final = max(0, hp_atk)
         hp_def_final = max(0, hp_def)
 
-        golpes_atk = sum(1 for s in secuencia if s["actor"] == atacante.nombre)
-        golpes_def = sum(1 for s in secuencia if s["actor"] == defensor.nombre)
-        daño_total_atk = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre) + chain_dmg_total
+        # El robo de vida se anota en la secuencia (daño negativo del propio actor): no es un golpe
+        golpes_atk = sum(1 for s in secuencia if s["actor"] == atacante.nombre and s["tipo"] != "drenaje")
+        golpes_def = sum(1 for s in secuencia if s["actor"] == defensor.nombre and s["tipo"] != "drenaje")
+        daño_total_atk = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre and s["tipo"] != "drenaje") + chain_dmg_total
 
         # Efectos de Veneno (Dagas aplican Veneno si conectan al menos 1 golpe)
         es_daga_atk = bool(arma_atk and (getattr(arma_atk, 'tipo', '') in ('Daga', 'Dagger') or 'daga' in str(arma_atk.nombre).lower() or 'dagger' in str(arma_atk.nombre).lower() or 'knife' in str(arma_atk.nombre).lower()))
@@ -1831,16 +2040,29 @@ class CalculadoraEngage:
         veneno_def_previo = max(0, min(3, int(getattr(defensor, 'nivel_veneno', 0) or 0)))
         veneno_def_post = min(3, veneno_def_previo + (1 if aplica_veneno else 0))
 
-        daño_solo_atacante = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre)
+        daño_solo_atacante = sum(s["daño"] for s in secuencia if s["actor"] == atacante.nombre and s["tipo"] != "drenaje")
         mata_solo_atacante = (hp_def_final <= 0) and not barra_resucitada
         es_kill_seguro = (hp_def_final <= 0) and (stats_atk["precision"] == 100) and mata_solo_atacante
         es_kill_probable = (hp_def_final <= 0) and not es_kill_seguro
+
+        # Pronóstico por golpe con los efectos de Timing 12 que no dependen del HP (Damage
+        # Reduction, Engage Attack Guard…), con el HP del inicio: lo mismo que enseña el juego
+        def _pronostico(stats_golpe, golpeador, receptor, hp_g, hp_r):
+            if not stats_golpe:
+                return 0
+            efectos = stats_golpe.get("_efectos_golpe")
+            if not efectos:
+                return stats_golpe["daño"]
+            return cls._aplicar_efectos_golpe(efectos, golpeador, receptor, hp_g, hp_r, stats_golpe["daño"])
+
+        dano_pronostico_atk = _pronostico(stats_atk, atacante, defensor, hp_atk_inicial, hp_def_inicial)
+        dano_pronostico_def = _pronostico(stats_def, defensor, atacante, hp_def_inicial, hp_atk_inicial)
 
         return {
             "atacante": {
                 "nombre": atacante.nombre,
                 "hp_inicial": hp_atk_inicial,
-                "daño_por_golpe": stats_atk["daño"],
+                "daño_por_golpe": dano_pronostico_atk,
                 "daño_critico": stats_atk["daño_critico"],
                 "precision": stats_atk["precision"],
                 "prob_critico": stats_atk["prob_critico"],
@@ -1873,14 +2095,15 @@ class CalculadoraEngage:
                 "nivel_veneno": veneno_def_previo,
                 "puede_contraatacar": puede_contra,
                 "contraataque_anulado_por_ruptura": (defensor_en_ruptura or (defensor_roto and puede_contra)) and not (cede_atk and not cede_def),
-                "daño_por_golpe": stats_def["daño"] if stats_def else 0,
+                "daño_por_golpe": dano_pronostico_def,
                 "daño_critico": stats_def["daño_critico"] if stats_def else 0,
                 "precision": stats_def["precision"] if stats_def else 0,
                 "prob_critico": stats_def["prob_critico"] if stats_def else 0,
                 "golpes_en_ronda": golpes_def,
                 # Con Reprisal cada golpe puede valer distinto: se suman los golpes reales
-                "daño_total_ronda": (sum(s["daño"] for s in secuencia if s["actor"] == defensor.nombre)
-                                     if stats_def.get("depende_hp") else stats_def["daño"] * golpes_def) if stats_def else 0,
+                "daño_total_ronda": (sum(s["daño"] for s in secuencia if s["actor"] == defensor.nombre and s["tipo"] != "drenaje")
+                                     if (stats_def.get("depende_hp") or stats_def.get("_efectos_golpe"))
+                                     else stats_def["daño"] * golpes_def) if stats_def else 0,
                 "tiene_follow_up": follow_up_def,
                 "es_smash": es_smash_def,
                 "pasivas_activas": stats_def.get("pasivas_activas", []) if stats_def else [],
