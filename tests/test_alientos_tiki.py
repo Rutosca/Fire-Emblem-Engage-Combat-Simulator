@@ -171,9 +171,11 @@ class TestGeometria(unittest.TestCase):
 
 class TestTerrenoDelEfecto(unittest.TestCase):
 
-    def test_el_fuego_solo_prende_en_llano(self):
+    def test_el_fuego_prende_en_suelo_transitable(self):
+        """Cap. 11, visto en el juego: "Woods + Flames" y el fuego sustituye al agua fija."""
         self.assertTrue(admite_efecto_de_suelo(Terreno(nombre="Llanura"), "fuego"))
-        self.assertFalse(admite_efecto_de_suelo(Terreno(nombre="Bosque", coste_mov=2), "fuego"))
+        self.assertTrue(admite_efecto_de_suelo(Terreno(nombre="Bosque", coste_mov=2), "fuego"))
+        self.assertTrue(admite_efecto_de_suelo(Terreno(nombre="agua", avo=-30, coste_mov=2), "fuego"))
         self.assertFalse(admite_efecto_de_suelo(Terreno(nombre="Muro", caminable=False, volable=False), "fuego"))
 
     def test_niebla_y_hielo_cubren_tambien_terreno_dificil(self):

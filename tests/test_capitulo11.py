@@ -225,6 +225,29 @@ class TestCapitulo11(unittest.TestCase):
         self.assertEqual(tablero.mapa.grid[c[0]][c[1]].nombre, "agua")
         self.assertEqual(tablero.terrenos_temporales, {})
 
+    def test_dark_inferno_prende_el_bosque_y_el_agua(self):
+        """La partida del usuario: Chloé con Camilla en (12,16) y el área base alrededor.
+        El juego enseña "Woods + Flames" en el bosque y el fuego sobre el agua fija; antes
+        solo ardían las casillas de llano."""
+        from types import SimpleNamespace
+        from ataques_area import resolver_ataque_area, es_terreno_llano, _terreno_natural
+        grid = tablero.mapa.grid
+        chloe = SimpleNamespace(es_aliado=True, estilo_combate="飛行スタイル")
+        area = resolver_ataque_area("Dark Inferno (Steel Axe)", (12, 16), self._ficha("Axe Fighter (10,14)"),
+                                    chloe, tablero, tablero.mapa)
+        self.assertTrue(area["valido"], area["motivo"])
+        self.assertEqual(grid[14][18].nombre, "foso")
+        self.assertEqual(sorted(area["casillas_fuego"]), sorted(c for c in area["casillas_dano"] if c != (14, 18)),
+                         "arden las doce casillas del área menos el foso")
+        tablero.encender_fuego(area["casillas_fuego"])
+        self.addCleanup(lambda: (tablero.terrenos_temporales.clear(), tablero.sincronizar_terrenos_temporales()))
+        self.assertEqual((grid[12][14].nombre, grid[12][14].avo, grid[12][14].coste_mov), ("evasion + Fuego", 30, 3))
+        # el agua fija también arde (la sustituye); da igual que ya tenga otro efecto encima
+        self.assertEqual(grid[12][15].superpuesto, "agua")
+        self.assertTrue(es_terreno_llano(_terreno_natural(tablero.mapa, 12, 15)))
+        tablero.aplicar_terreno_temporal([(12, 15)], "pilares")
+        self.assertTrue(es_terreno_llano(_terreno_natural(tablero.mapa, 12, 15)))
+
     def test_poner_un_anillo_a_mano_usa_el_del_capitulo(self):
         """"Marth (Oscuro)" existe en los Cap. 11, 17, 21 y 24: se elige el del mapa activo."""
         f = resolver_unidad_con_catalogo({

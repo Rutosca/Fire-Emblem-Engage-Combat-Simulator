@@ -3809,7 +3809,10 @@ async function refrescarTerrenoCasilla(x, y) {
   const t = await api(`/api/terreno/${x}/${y}`);
   const celda = $(`c-${x}-${y}`);
   if (!celda || !t || t.error) return;
-  celda.className = "celda " + claseTerreno(t.nombre);
+  // Solo cambian las clases de terreno (t-…): el efecto temporal, los objetos del mapa y
+  // las casillas objetivo que tenga encima siguen ahí
+  [...celda.classList].filter(k => k.startsWith("t-")).forEach(k => celda.classList.remove(k));
+  celda.classList.add(...claseTerreno(t.nombre).split(" ").filter(Boolean));
   celda.title = `${t.nombre} | AVO ${conSigno(t.avo)} DEF ${conSigno(t.dfn)}`;
   celda.dataset.tip = `${x},${y} [${t.nombre}] AVO ${conSigno(t.avo)}`;
 }
@@ -3862,6 +3865,10 @@ const TERRENOS_TEMPORALES = {
 };
 
 function renderTerrenosTemporales(casillas) {
+  // Casillas que tenían o tienen un efecto: su terreno cambia de nombre ("evasion + Fuego")
+  // y el agua fija que cubre el efecto pierde sus rayas, así que se vuelven a pedir.
+  const cambiadas = new Map();
+  for (const c of [...(state.terrenosTemporales || []), ...(casillas || [])]) cambiadas.set(`${c.x},${c.y}`, c);
   for (const clase of new Set(Object.values(TERRENOS_TEMPORALES).map(d => d.clase))) {
     document.querySelectorAll(`.celda.${clase}`).forEach(c => {
       c.classList.remove(clase);
@@ -3871,11 +3878,7 @@ function renderTerrenosTemporales(casillas) {
   }
   for (const c of casillas || []) {
     // "sin_capa": un efecto se comió el agua fija y ya se fue; la casilla es terreno natural
-    if (c.tipo === "sin_capa") {
-      const celdaSin = $(`c-${c.x}-${c.y}`);
-      if (celdaSin && celdaSin.classList.contains("t-sobre-agua")) refrescarTerrenoCasilla(c.x, c.y);
-      continue;
-    }
+    if (c.tipo === "sin_capa") continue;
     const def = TERRENOS_TEMPORALES[c.tipo || "fuego"];
     const celda = $(`c-${c.x}-${c.y}`);
     if (!def || !celda) continue;
@@ -3888,6 +3891,11 @@ function renderTerrenosTemporales(casillas) {
   }
   state.terrenosTemporales = casillas || [];
   state.casillasFuego = (casillas || []).filter(c => (c.tipo || "fuego") === "fuego");
+  for (const c of cambiadas.values()) {
+    const celda = $(`c-${c.x}-${c.y}`);
+    // un "sin_capa" ya pintado como terreno natural no hace falta pedirlo otra vez
+    if (celda && !(c.tipo === "sin_capa" && !celda.classList.contains("t-sobre-agua"))) refrescarTerrenoCasilla(c.x, c.y);
+  }
 }
 
 // Las partidas guardadas antes de la niebla y el hielo solo traen el fuego.

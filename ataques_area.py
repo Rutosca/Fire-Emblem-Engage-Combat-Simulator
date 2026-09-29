@@ -14,7 +14,7 @@ casilla:
   • Blazing Lion / León ardiente (Roy): con una espada, golpea al objetivo
     adyacente y a los enemigos a su izquierda y derecha (perpendicular a la
     dirección del ataque), y prende fuego a un área de 3x3: esa fila y las dos
-    de detrás. El fuego solo prende en terreno llano (caminable, coste 1), dura
+    de detrás. El fuego prende en cualquier suelo transitable (también bosque y agua), dura
     hasta el siguiente turno, hace 10 de daño a quien empiece su fase encima
     (aliado o enemigo, NUNCA a voladores, y nunca mata: deja a 1 HP) y encarece
     el movimiento: entrar en la casilla cuesta 1 punto más (coste +1).
@@ -148,7 +148,7 @@ def casillas_de_vena(vena: str, pos, direccion, mapa) -> list:
     salida = []
     for dx, dy in _girar(AREA_VENA.get(vena) or [], direccion):
         c = (int(pos[0]) + dx, int(pos[1]) + dy)
-        if _dentro(mapa, *c) and admite_efecto_de_suelo(_terreno(mapa, *c), vena):
+        if _dentro(mapa, *c) and admite_efecto_de_suelo(_terreno_natural(mapa, *c), vena):
             salida.append(c)
     return salida
 
@@ -271,6 +271,14 @@ def _terreno(mapa, x: int, y: int):
     return mapa.grid[x][y] if _dentro(mapa, x, y) else None
 
 
+def _terreno_natural(mapa, x: int, y: int):
+    """El terreno de la casilla sin los efectos temporales que tenga encima: un efecto nuevo
+    sustituye al anterior, así que lo que decide si cabe es el suelo de debajo."""
+    if not _dentro(mapa, x, y):
+        return None
+    return (getattr(mapa, "_terreno_base_fuego", None) or {}).get((x, y)) or mapa.grid[x][y]
+
+
 def _unidad_en(tablero, x: int, y: int):
     from motor_calculo import casillas_de_unidad   # diferido, como el resto de este módulo
     for f in tablero.fichas.values():
@@ -288,22 +296,24 @@ def _direccion(pos_atk, pos_obj):
 
 
 def es_terreno_llano(terreno) -> bool:
-    """Casilla en la que puede prender el fuego de Blazing Lion: llano transitable de coste 1."""
+    """Casilla en la que puede prender el fuego: cualquier suelo transitable que no sea un
+    obstáculo. Arde también el bosque ("Woods + Flames") y la casilla con agua fija, a la
+    que sustituye (Dark Inferno en el Cap. 11, visto en el juego). Se mira el terreno
+    natural: el agua o un efecto anterior no deciden, porque el fuego los reemplaza."""
     if terreno is None:
         return False
     if not getattr(terreno, "caminable", False):
         return False
-    if int(getattr(terreno, "coste_mov", 1) or 1) != 1:
-        return False
-    nombre = str(getattr(terreno, "nombre", "") or "").lower()
-    return not any(k in nombre for k in ("muro", "foso", "agua", "pilar", "trono", "puerta", "cofre"))
+    nombre = str((getattr(terreno, "sin_superpuesto", None) or {}).get("nombre")
+                 or getattr(terreno, "nombre", "") or "").lower()
+    return not any(k in nombre for k in ("muro", "foso", "pilar", "trono", "puerta", "cofre"))
 
 
 def admite_efecto_de_suelo(terreno, efecto: str) -> bool:
     """
-    Si el efecto de un aliento puede quedarse en la casilla. El fuego solo prende en llano
-    (igual que el de Blazing Lion, verificado); la niebla y el hielo cubren cualquier
-    casilla por la que se pueda pasar o volar, pero no un muro.
+    Si el efecto de un aliento puede quedarse en la casilla. El fuego prende en cualquier
+    suelo transitable que no sea un obstáculo (`es_terreno_llano`); la niebla y el hielo
+    cubren cualquier casilla por la que se pueda pasar o volar, pero no un muro.
     """
     if terreno is None:
         return False
@@ -382,7 +392,7 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
             if u is not None and u.viva and bool(getattr(u, "es_aliado", False)) != es_aliado_atk_di
         ]
         base.update(objetivos=objetivos, casillas_dano=fuego, casillas_luz=luz,
-                    casillas_fuego=[c for c in fuego if es_terreno_llano(_terreno(mapa, *c))])
+                    casillas_fuego=[c for c in fuego if es_terreno_llano(_terreno_natural(mapa, *c))])
         return base
 
     d = _direccion(pos_atk, pos_obj)
@@ -439,7 +449,7 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
             if es_enemigo(u):
                 objetivos.append(u)
         suelo = [c for c in (casilla(o) for o in casillas_efecto)
-                 if _dentro(mapa, *c) and admite_efecto_de_suelo(_terreno(mapa, *c), efecto)]
+                 if _dentro(mapa, *c) and admite_efecto_de_suelo(_terreno_natural(mapa, *c), efecto)]
         base.update(sabor=sabor, objetivos=objetivos, casillas_dano=dano)
         if efecto == "fuego":
             base["casillas_fuego"] = suelo
@@ -461,7 +471,7 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
         for lado in (-1, 0, 1):
             fx = pos_obj[0] + d[0] * fila + p[0] * lado
             fy = pos_obj[1] + d[1] * fila + p[1] * lado
-            if _dentro(mapa, fx, fy) and es_terreno_llano(_terreno(mapa, fx, fy)):
+            if _dentro(mapa, fx, fy) and es_terreno_llano(_terreno_natural(mapa, fx, fy)):
                 fuego.append((fx, fy))
     base.update(objetivos=objetivos, casillas_fuego=fuego)
     return base
