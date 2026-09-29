@@ -451,6 +451,26 @@ def distancia_entre_unidades(u1, u2) -> int:
     return min(distancia_a_unidad(u2, cx, cy) for cx, cy in casillas_de_unidad(u1))
 
 
+def probabilidad_de_matar(hp: int, golpes) -> float:
+    """% de que los golpes `[(precision, daño), ...]` sumen al menos `hp`, cada uno con su
+    tirada (Hit 88 % con doble y un golpe que ya mata: 1 − 0.12² = 98.56 %)."""
+    if hp <= 0:
+        return 100.0
+    reparto = {0: 1.0}   # daño acumulado (tope hp) → probabilidad
+    for precision, daño in golpes:
+        p = max(0.0, min(1.0, float(precision) / 100.0))
+        siguiente = {}
+        for acum, prob in reparto.items():
+            if acum >= hp:
+                siguiente[acum] = siguiente.get(acum, 0.0) + prob
+                continue
+            tras = min(hp, acum + max(0, int(daño)))
+            siguiente[tras] = siguiente.get(tras, 0.0) + prob * p
+            siguiente[acum] = siguiente.get(acum, 0.0) + prob * (1 - p)
+        reparto = siguiente
+    return round(100.0 * reparto.get(hp, 0.0), 2)
+
+
 def casillas_ocupadas_por(fichas) -> set:
     """Todas las casillas que ocupan esas unidades (las grandes cuentan entera su huella)."""
     return {c for f in fichas for c in casillas_de_unidad(f)}
@@ -2087,6 +2107,29 @@ class CalculadoraEngage:
         dano_pronostico_atk = _pronostico(stats_atk, atacante, defensor, hp_atk_inicial, hp_def_inicial)
         dano_pronostico_def = _pronostico(stats_def, defensor, atacante, hp_def_inicial, hp_atk_inicial)
 
+        # Probabilidad de matar: la simulación da por buenos todos los golpes y se para en el
+        # que mata, pero fallar el primero no es fallar la jugada si quedan más (la doble, el
+        # Brave): cada golpe que puede dar tiene su propia tirada. Sin críticos.
+        if es_kill_seguro:
+            prob_kill = 100.0
+        elif not es_kill_probable:
+            prob_kill = 0.0
+        elif (stats_atk.get("es_houses_unite") or stats_atk.get("es_lodestar_rush")
+              or stats_atk.get("nombre_multigolpe") or stats_atk.get("es_warp_ragnarok")):
+            prob_kill = float(stats_atk["precision"])   # golpes especiales: una sola tirada
+        else:
+            seg = stats_atk_seguimiento or stats_atk
+            golpes_posibles = [(stats_atk["precision"], dano_pronostico_atk)] * (2 if es_brave_atk else 1)
+            if follow_up_atk:
+                golpes_posibles += [(seg["precision"], _pronostico(seg, atacante, defensor, hp_atk_inicial, hp_def_inicial))] * (2 if es_brave_atk else 1)
+            if chain_guard_info.get("activo"):
+                golpes_posibles = golpes_posibles[1:]   # el primero lo para la Guardia en Cadena
+            prob_kill = probabilidad_de_matar(hp_def_inicial - chain_dmg_total, golpes_posibles)
+            if prob_kill <= 0:
+                # El daño cambia golpe a golpe (Reprisal…) y la cuenta simple no llega:
+                # lo de antes, una tirada
+                prob_kill = float(stats_atk["precision"])
+
         return {
             "atacante": {
                 "nombre": atacante.nombre,
@@ -2099,6 +2142,7 @@ class CalculadoraEngage:
                 "daño_total_ronda": daño_total_atk,
                 "tiene_follow_up": follow_up_atk,
                 "es_brave": es_brave_atk,
+                "prob_kill": prob_kill,
                 "recoil_hp": recoil,
                 "tiene_divine_speed": stats_atk.get("tiene_divine_speed", False),
                 "curacion_divine_speed": curacion_divine_speed,
@@ -2170,6 +2214,7 @@ class CalculadoraEngage:
                 "peligro_letal": hp_atk_final <= 0,
                 "kill_seguro": es_kill_seguro,
                 "kill_probable": es_kill_probable,
+                "prob_kill": prob_kill,
                 "atacante_en_peligro": 0 < hp_atk_final <= atacante.hp * 0.25,
                 "defensor_en_peligro": 0 < hp_def_final <= defensor.hp * 0.25,
                 "daño_cero": stats_atk["daño"] == 0,
@@ -2499,8 +2544,9 @@ class CalculadoraEngage:
         elif kill_probable:
             motivos.append(
                 f"{atk['nombre']} puede matar a {dfn['nombre']}, "
-                f"pero depende de acertar ({atk['precision']}% hit). "
-                f"Para el plan B, {dfn['nombre']} sigue vivo."
+                f"pero depende de acertar ({atk['precision']}% hit"
+                + (f" por golpe, {atk['prob_kill']:g}% de matar" if atk.get("prob_kill") not in (None, atk['precision']) else "")
+                + f"). Para el plan B, {dfn['nombre']} sigue vivo."
             )
         elif kill_con_critico:
             motivos.append(
@@ -2629,6 +2675,7 @@ class CalculadoraEngage:
             "rng_semilla_bloqueada": cronogema_usada and not kill_seguro,
             "kill_seguro": kill_seguro,
             "kill_probable": kill_probable,
+            "prob_kill": atk.get("prob_kill", 100.0 if kill_seguro else 0.0),
             "kill_con_critico": kill_con_critico,
             "atacante_muere_si_falla": atacante_muere_si_falla,
             "atacante_muere_en_contra": atacante_muere_en_contra,

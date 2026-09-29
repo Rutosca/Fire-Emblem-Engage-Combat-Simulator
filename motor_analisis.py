@@ -970,6 +970,9 @@ PESO_AMENAZA_DESCONOCIDA = 80    # sin combate simulable: el peso de siempre (1 
 PESO_AMENAZA_INOFENSIVA = 5      # le alcanza pero no le hace daño
 PESO_AMENAZA_LETAL = 300         # le mata él solo
 EXTRA_LETAL_COMBINADA = 200      # ninguno le mata solo, pero entre todos sí
+# Una jugada que deja al aliado donde le matan en la fase enemiga: lo bastante para que
+# cualquier baja probable razonable (≥ 60 %) desde una casilla segura gane a la segura
+PENALIZACION_DESTINO_LETAL = 600
 
 
 def _peso_amenaza(daño: int, hp: int, letal: bool) -> int:
@@ -1365,6 +1368,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
 
                     kill_seguro = verd.get("kill_seguro", False)
                     kill_probable = verd.get("kill_probable", False)
+                    # Con doble o Brave, fallar un golpe no es fallar la baja: cuenta cada tirada
+                    prob_kill = float(verd.get("prob_kill", precision) or 0)
                     kill_con_critico = verd.get("kill_con_critico", False)
                     quiebra_barra = res_info.get("piedra_resurrectora_consumida", False)
                     atacante_muere = verd.get("atacante_muere_si_falla", False) or verd.get("atacante_muere_en_contra", False)
@@ -1400,9 +1405,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                             # Cada 1% de fallo pesa como ~0.8 HP recibidos en la rama de arriba, así
                             # que un 91% limpio (958) gana a un 100% que encaja 11 dmg (940) pero
                             # pierde frente a uno que encaja 3 (1020).
-                            score = 1000 - (100 - precision) * 8 + min(50, daño_total) - int(prob_muerte * 10)
+                            score = 1000 - (100 - prob_kill) * 8 + min(50, daño_total) - int(prob_muerte * 10)
                         else:
-                            score = 350 - (daño_recibido * 15) + precision - int(prob_muerte * 15)
+                            score = 350 - (daño_recibido * 15) + prob_kill - int(prob_muerte * 15)
                             if atacante_muere:
                                 score -= 200
                     elif kill_con_critico and atk_info.get("prob_critico", 0) > 0:
@@ -1460,13 +1465,19 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     pos_cand_tuple = (pos_candidata[0], pos_candidata[1])
                     # "Amenazas equivalentes": cada enemigo pesa según su daño real a este
                     # aliado (1 = una amenaza normal; uno inofensivo ~0; uno letal ~3.75)
-                    amenazas_candidata = (exposicion(pos_cand_tuple, aliado, {enemigo.nombre})["peso"]
-                                          / PESO_AMENAZA_DESCONOCIDA)
+                    expo_candidata = exposicion(pos_cand_tuple, aliado, {enemigo.nombre})
+                    amenazas_candidata = expo_candidata["peso"] / PESO_AMENAZA_DESCONOCIDA
                     # Capping y racionalización: la exposición guía la elección de casilla,
                     # pero jamás debe hundir un ataque viable no-suicida en -1680 pts
                     penalizacion_amenazas = min(120, amenazas_candidata * 25)
                     if es_jefe_e:
                         penalizacion_amenazas = min(60, amenazas_candidata * 15)
+                    elif expo_candidata["letal"] and hp_aliado_fin > 0:
+                        # Acabar donde le matan en la fase enemiga SÍ es suicida, aunque este
+                        # combate salga limpio: sin tope, para que una baja probable desde una
+                        # casilla segura gane a una segura que le deja morir (Cap. 11: Diamant
+                        # mataba al Martial Monk y quedaba al alcance del Axe Cavalier y un wyrm)
+                        penalizacion_amenazas = max(penalizacion_amenazas, PENALIZACION_DESTINO_LETAL)
                     if score > 0 and not atacante_muere:
                         score = max(15, score - penalizacion_amenazas)
                     else:
@@ -1542,6 +1553,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             chain_txt = f" + {chain_dmg} (Chain Attack)" if chain_dmg > 0 else ""
 
             dano_arma_base = dpp * 2 if follow_up else dpp
+            # Puede doblar, pero el primer golpe ya basta: la doble es el seguro por si falla
+            etiqueta_follow = " (First-hit kill)" if (
+                golpes == 1 and (verd.get("kill_seguro") or verd.get("kill_probable"))) else " (Follow-up)"
             tiene_ds = atk_f.get("tiene_divine_speed", False)
             if atk_f.get("es_houses_unite"):
                 hits_u = atk_f.get("houses_unite_hits", [13, 12, 8])
@@ -1553,13 +1567,13 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 golpe_txt = f"1x{dpp}{chain_txt} = {dpp + chain_dmg} dmg"
             elif atk_f.get("es_brave"):
                 n_atq = 2 if follow_up else 1
-                golpe_txt = f"{n_atq}x({dpp}x2 Brave){chain_txt} = {golpes * dpp + chain_dmg} dmg" + (" (Follow-up)" if follow_up else "")
+                golpe_txt = f"{n_atq}x({dpp}x2 Brave){chain_txt} = {golpes * dpp + chain_dmg} dmg" + (etiqueta_follow if follow_up else "")
             elif follow_up and tiene_ds:
                 dmg_ds = max(1, math.floor(dpp * 0.50))
                 cura_ds = atk_f.get("curacion_divine_speed", 0)
                 golpe_txt = f"2x{dpp} + {dmg_ds} (Velocidad Divina){chain_txt} = {dano_arma_base + dmg_ds + chain_dmg} dmg" + (f" · cura {cura_ds} HP" if cura_ds else "")
             elif follow_up:
-                golpe_txt = f"2x{dpp}{chain_txt} = {dano_arma_base + chain_dmg} dmg" + (" (Follow-up)" if not chain_txt else "")
+                golpe_txt = f"2x{dpp}{chain_txt} = {dano_arma_base + chain_dmg} dmg" + (etiqueta_follow if not chain_txt else "")
             elif tiene_ds:
                 dmg_ds = max(1, math.floor(dpp * 0.50))
                 cura_ds = atk_f.get("curacion_divine_speed", 0)
