@@ -7,8 +7,10 @@ de las armas verificadas en juego por el jugador (Mt, Hit, Crit, Wt, Avo, Ddg, R
     Lightning:       3, 75, 0, 10,   0, 0, 1-2   (mágica)
     Camilla's Axe:  19, 80, 0, 11,   0, 0, 1
 
-Pendiente (a la espera del jugador): la geometría de Dragon Vein y de Dark Inferno, y los
-números reales del miasma, que Terrain.xml guarda en campos que el catálogo no extrae.
+La geometría base de Dark Inferno (volador: tablero de ajedrez de 5x5 sin las adyacentes)
+está verificada en el juego (Chloé con Camilla, Cap. 11). Pendiente (a la espera del
+jugador): la de Dragon Vein, la del estilo Dragón de Dark Inferno, y los números reales
+del miasma, que Terrain.xml guarda en campos que el catálogo no extrae.
 """
 import os
 import sys
@@ -240,7 +242,8 @@ class TestVenasEnElTablero(unittest.TestCase):
         base = _mapa.grid[c[0]][c[1]].dfn
         tablero.aplicar_terreno_temporal([c], "pilares")
         self.assertEqual(_mapa.grid[c[0]][c[1]].dfn, base + 3)
-        self.assertEqual(_mapa.grid[c[0]][c[1]].nombre, "Pilares")
+        # Como en el juego ("Ground + Flames"): el terreno de debajo y el efecto encima
+        self.assertTrue(_mapa.grid[c[0]][c[1]].nombre.endswith(" + Pilares"), _mapa.grid[c[0]][c[1]].nombre)
         tablero.turno_actual += 1
         tablero.caducar_terrenos_temporales()
         self.assertEqual(_mapa.grid[c[0]][c[1]].dfn, base)
@@ -550,6 +553,62 @@ class TestGeometriaDeInfiernoOscuro(unittest.TestCase):
         """Por eso no se ofrece solo a rango 1 como Override."""
         self.assertEqual(rango_de_ataque_area("Dark Inferno (Steel Axe)"), [1, 2, 4])
         self.assertEqual(rango_de_ataque_area("Override (Iron Lance)"), [1])
+
+
+class TestInfiernoOscuroEnElAnalisis(unittest.TestCase):
+    """
+    El análisis elegía la casilla de Infierno Oscuro como la de un arma normal (junto al
+    objetivo), y en el área base de un volador la adyacente no entra: se descartaba o solo
+    pillaba a un enemigo. Ahora prueba todas las casillas a las que llega y se queda la que
+    mete más enemigos en el área. Caso del Cap. 11 (Chloé, Wyvern Knight, Camilla Nv 20).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.client = app.test_client()
+        cls.client.post("/api/mapa/seleccionar", json={"capitulo": 11})
+
+    @classmethod
+    def tearDownClass(cls):
+        app.test_client().post("/api/mapa/seleccionar", json={"capitulo": 7})
+
+    def _pon(self, **d):
+        f = cl.resolver_unidad_con_catalogo(d, tablero=tablero)
+        tablero.registrar_unidad(f, resolver_colision=False)
+        return f
+
+    def test_propone_la_casilla_que_pilla_a_los_dos(self):
+        import sys as _sys
+        import motor_analisis as ma
+        tablero.limpiar()
+        tablero.fase = "jugador"
+        self._pon(nombre="Chloé", es_aliado=True, clase_nombre="Wyvern Knight", nivel=10, x=8, y=12,
+                  emblema_nombre="Camilla", emblema_tipo="normal", nivel_vinculo=20, energia_emblema=6,
+                  inventario=[{"nombre": "Steel Axe", "equipada": True}])
+        # Desde (8,12) quedan en (-2,-2) y (0,+2): las dos dentro del área. Con poca vida,
+        # Infierno Oscuro los mata a los dos y un ataque normal solo a uno.
+        for nombre, clase, x, y, arma in (("Sword E", "Sword Fighter", 6, 10, "Steel Sword"),
+                                          ("Axe E", "Axe Fighter", 8, 14, "Steel Axe")):
+            e = self._pon(nombre=nombre, es_aliado=False, clase_nombre=clase, nivel=13, x=x, y=y,
+                          dificultad="Extremo", inventario=[{"nombre": arma, "equipada": True}])
+            e.hp_actual = e.stats.hp = 8
+        captura = {}
+
+        def traza(frame, evento, arg):
+            if evento == "return" and frame.f_code.co_name == "analizar_situacion_tactica":
+                captura["ops"] = list(frame.f_locals.get("oportunidades_jugador") or [])
+            return traza
+        _sys.settrace(traza)
+        try:
+            ma.analizar_situacion_tactica(tablero, tablero.mapa)
+        finally:
+            _sys.settrace(None)
+        ops = [op for op in captura["ops"] if op["aliado"] == "Chloé"]
+        self.assertTrue(ops)
+        for op in ops:
+            self.assertTrue(op["arma_recomendada"].startswith("Dark Inferno"), op["arma_recomendada"])
+            self.assertEqual(op["pos_sugerida"], [8, 12])
+            self.assertEqual([ex["muere"] for ex in op["objetivos_extra"]], [True])
 
 
 class TestComandoVenaDeDragon(unittest.TestCase):

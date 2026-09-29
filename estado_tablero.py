@@ -489,16 +489,35 @@ class EstadoTablero:
     def casillas_de_tipo(self, tipo: str) -> list:
         return sorted(c for c, e in self.terrenos_temporales.items() if e["tipo"] == tipo)
 
+    # Marca permanente de una casilla que perdió su capa superpuesta (el agua fija del Cap. 11):
+    # un efecto temporal la sustituyó y, al acabar, la casilla queda con su terreno natural.
+    SIN_CAPA = "sin_capa"
+
     def aplicar_terreno_temporal(self, casillas, tipo: str, turnos: int = 1) -> list:
         """Cubre `casillas` con `tipo` hasta el turno actual + `turnos`. Un efecto nuevo
-        sustituye al que hubiera en la casilla (el último aliento manda)."""
+        sustituye al que hubiera en la casilla (el último aliento manda), y también al agua
+        fija del mapa, que ya no vuelve (visto en juego: tras el fuego queda llanura)."""
         puestas = []
         for c in casillas:
             c = (int(c[0]), int(c[1]))
-            self.terrenos_temporales[c] = {"tipo": str(tipo), "expira": self.turno_actual + int(turnos)}
+            previa = self.terrenos_temporales.get(c) or {}
+            retira = bool(previa.get("retira") or previa.get("tipo") == self.SIN_CAPA
+                          or (self.mapa and hasattr(self.mapa, 'capa_superpuesta') and self.mapa.capa_superpuesta(*c)))
+            entrada = {"tipo": str(tipo), "expira": self.turno_actual + int(turnos)}
+            if retira:
+                entrada["retira"] = True
+            self.terrenos_temporales[c] = entrada
             puestas.append(c)
         self.sincronizar_terrenos_temporales()
         return puestas
+
+    def _quitar_terreno_temporal(self, c) -> None:
+        """Quita el efecto de `c`; si había sustituido al agua fija, la casilla se queda sin ella."""
+        entrada = self.terrenos_temporales.get(c)
+        if entrada and entrada.get("retira"):
+            self.terrenos_temporales[c] = {"tipo": self.SIN_CAPA, "expira": 10 ** 9}
+        else:
+            self.terrenos_temporales.pop(c, None)
 
     def encender_fuego(self, casillas, turnos: int = 1) -> list:
         """Prende `casillas` hasta el turno actual + `turnos`. Devuelve las casillas encendidas."""
@@ -528,7 +547,7 @@ class EstadoTablero:
         """Quita los terrenos cuyo turno de caducidad ya llegó. Devuelve sus casillas."""
         caducadas = [c for c, e in self.terrenos_temporales.items() if self.turno_actual >= e["expira"]]
         for c in caducadas:
-            self.terrenos_temporales.pop(c, None)
+            self._quitar_terreno_temporal(c)
         if caducadas:
             self.sincronizar_terrenos_temporales()
         return caducadas
@@ -613,9 +632,9 @@ class EstadoTablero:
         if not f or not f.viva or not pasivas.tiene_sid(f, self.SID_GROUNDSWELL):
             return None
         entrada = self.terrenos_temporales.get((f.x, f.y))
-        if not entrada:
+        if not entrada or entrada.get("tipo") == self.SIN_CAPA:
             return None
-        self.terrenos_temporales.pop((f.x, f.y), None)
+        self._quitar_terreno_temporal((f.x, f.y))
         self.sincronizar_terrenos_temporales()
         curado = min(f.hp_max, f.hp_actual + 10) - f.hp_actual
         if curado > 0:
@@ -693,7 +712,8 @@ class EstadoTablero:
         return [{"x": x, "y": y, "expira_turno": t} for (x, y), t in sorted(self.casillas_fuego.items())]
 
     def terrenos_temporales_lista(self) -> list:
-        return [{"x": x, "y": y, "tipo": e["tipo"], "expira_turno": e["expira"]}
+        return [dict({"x": x, "y": y, "tipo": e["tipo"], "expira_turno": e["expira"]},
+                     **({"retira": True} if e.get("retira") else {}))
                 for (x, y), e in sorted(self.terrenos_temporales.items())]
 
     # ── Objetos de mapa (capa de objetos de Tiled) ───────────────────────

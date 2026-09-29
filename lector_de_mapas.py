@@ -61,6 +61,9 @@ class Terreno:
     # Capa superpuesta del juego (Terrain.xml): el agua fija de algunos mapas va ENCIMA del
     # terreno de base, no lo sustituye (bosque + agua en el Cap. 11). Ver TERRENOS_SUPERPUESTOS.
     superpuesto: str = ""
+    # Cómo era la casilla sin esa capa ({nombre, avo, dfn, coste_mov}): un efecto temporal
+    # (fuego, niebla, venas…) ocupa la misma capa y la sustituye mientras dura.
+    sin_superpuesto: Optional[dict] = None
 
 
 
@@ -80,6 +83,7 @@ def superponer_terreno(t: "Terreno", tipo: str, props: Optional[dict] = None) ->
     """Aplica encima de `t` la capa superpuesta `tipo` (ver TERRENOS_SUPERPUESTOS)."""
     props = props or {}
     info = _CANONICO_TERRENOS.get(TERRENOS_SUPERPUESTOS[tipo].lower(), {})
+    t.sin_superpuesto = {"nombre": t.nombre, "avo": int(t.avo), "dfn": int(t.dfn), "coste_mov": int(t.coste_mov)}
     t.avo = int(t.avo) + int(props.get('avo', info.get('avoid', 0)) or 0)
     t.dfn = int(t.dfn) + int(props.get('dfn', info.get('defense', 0)) or 0)
     extra = props.get('coste_extra', 1 if int(info.get('coste_mov', 0) or 0) > 0 else 0)
@@ -466,25 +470,38 @@ class MapaTactico:
                 if (x, y) not in self._terreno_base_fuego:
                     self._terreno_base_fuego[(x, y)] = _copy.copy(self.grid[x][y])
                 base = self._terreno_base_fuego[(x, y)]
+                # El efecto temporal va en la capa de encima del terreno natural: se suma al
+                # bosque o al llano ("Woods + Flames", como lo enseña el juego), pero SUSTITUYE
+                # a lo que hubiera en esa capa (el agua fija del Cap. 11 bajo el fuego de Dark
+                # Inferno deja de contar; otro efecto temporal ya lo sustituye el tablero).
+                nat = getattr(base, "sin_superpuesto", None) or {
+                    "nombre": base.nombre, "avo": base.avo, "dfn": base.dfn, "coste_mov": base.coste_mov}
                 ef = efecto
-                if getattr(base, "superpuesto", "") == tipo:
-                    # Vena de agua sobre agua fija: la casilla ya tiene su −30, no se repite
-                    ef = dict(efecto, avo=0, dfn=0, defensa_aliado=0, defensa_enemigo=0,
-                              curacion_turno=0, coste_extra=0, es_antirruptura=False)
                 t = self.grid[x][y]
-                t.terreno_temporal = tipo
-                t.nombre = ef["nombre"]
-                t.avo = int(base.avo) + ef["avo"]
-                t.dfn = int(base.dfn) + ef["dfn"]
+                # "sin_capa": el efecto que sustituyó al agua fija ya se fue; queda el terreno
+                # natural, sin efecto ni nombre añadido (estado_tablero.SIN_CAPA)
+                sin_capa = (tipo == "sin_capa")
+                t.terreno_temporal = "" if sin_capa else tipo
+                t.nombre = nat["nombre"] if sin_capa else f"{nat['nombre']} + {ef['nombre']}"
+                t.avo = int(nat["avo"]) + ef["avo"]
+                t.dfn = int(nat["dfn"]) + ef["dfn"]
                 t.dfn_aliado = int(base.dfn_aliado) + ef["defensa_aliado"]
                 t.dfn_enemigo = int(base.dfn_enemigo) + ef["defensa_enemigo"]
                 t.curacion_turno = int(base.curacion_turno) + ef["curacion_turno"]
-                t.coste_mov = int(base.coste_mov) + ef["coste_extra"]
+                t.coste_mov = int(nat["coste_mov"]) + ef["coste_extra"]
                 t.es_antirruptura = bool(base.es_antirruptura or ef["es_antirruptura"])
+                t.superpuesto = ""
                 # Marcas antiguas, las que consulta la interfaz y el daño por fase
                 t.es_fuego = (tipo == "fuego")
                 t.es_niebla = (tipo == "niebla")
                 t.es_hielo = (tipo == "hielo")
+
+    def capa_superpuesta(self, x: int, y: int) -> str:
+        """La capa superpuesta de la casilla en el mapa (el agua fija), sin efectos temporales."""
+        base = getattr(self, '_terreno_base_fuego', {}).get((x, y))
+        if base is None and 0 <= x < self.ancho and 0 <= y < self.alto:
+            base = self.grid[x][y]
+        return str(getattr(base, "superpuesto", "") or "")
 
     def limpiar_terrenos_temporales(self, casillas=None) -> None:
         """Devuelve `casillas` (todas si None) a su terreno base."""

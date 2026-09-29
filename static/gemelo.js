@@ -3870,6 +3870,12 @@ function renderTerrenosTemporales(casillas) {
     });
   }
   for (const c of casillas || []) {
+    // "sin_capa": un efecto se comió el agua fija y ya se fue; la casilla es terreno natural
+    if (c.tipo === "sin_capa") {
+      const celdaSin = $(`c-${c.x}-${c.y}`);
+      if (celdaSin && celdaSin.classList.contains("t-sobre-agua")) refrescarTerrenoCasilla(c.x, c.y);
+      continue;
+    }
     const def = TERRENOS_TEMPORALES[c.tipo || "fuego"];
     const celda = $(`c-${c.x}-${c.y}`);
     if (!def || !celda) continue;

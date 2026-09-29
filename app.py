@@ -690,8 +690,9 @@ def importar_partida():
     if not guardados:
         guardados = [dict(c, tipo="fuego") for c in (partida.get("casillas_fuego") or [])]
     tablero.terrenos_temporales = {
-        (int(c["x"]), int(c["y"])): {"tipo": str(c.get("tipo") or "fuego"),
-                                     "expira": int(c.get("expira_turno", tablero.turno_actual + 1))}
+        (int(c["x"]), int(c["y"])): dict({"tipo": str(c.get("tipo") or "fuego"),
+                                          "expira": int(c.get("expira_turno", tablero.turno_actual + 1))},
+                                         **({"retira": True} if c.get("retira") else {}))
         for c in guardados if "x" in c and "y" in c}
     tablero.sincronizar_terrenos_temporales()
     ref_guardados = partida.get("refuerzos_pendientes")
@@ -765,6 +766,9 @@ def _desplegar_capitulo(capitulo_id: str, dificultad: str = "Extremo") -> dict:
     tablero.batalla_iniciada = False
     tablero.dificultad = dificultad
     tablero.inicializar_objetos_mapa()   # pozos, ballestas y destructibles vuelven al estado inicial
+    # Sin fuego, niebla ni venas de la partida anterior; el agua fija que quitaron, vuelve
+    tablero.terrenos_temporales = {}
+    tablero.sincronizar_terrenos_temporales()
 
     ancho_m = getattr(_mapa, "ancho", 24)
     alto_m = getattr(_mapa, "alto", 17)
@@ -2130,6 +2134,8 @@ def reset():
         tablero.turno_actual = 1
         tablero.fase = "jugador"
         tablero.batalla_iniciada = False
+        tablero.terrenos_temporales = {}
+        tablero.sincronizar_terrenos_temporales()
         num = tablero.cargar_spawns_desde_mapa()
         nombre_cap = getattr(_mapa, "filepath", "Mapa Tiled").split("/")[-1].split("\\")[-1]
         fichas_result = [f.como_dict() for f in tablero.fichas.values()]

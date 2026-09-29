@@ -177,6 +177,54 @@ class TestCapitulo11(unittest.TestCase):
             "Sword Flier (2,12)": "Marth (Oscuro)", "Axe Fighter (10,14)": "Roy (Oscuro)",
             "Lance Fighter (6,18)": "Leif (Oscuro)", "Mage (8,22)": "Celica (Oscuro)"})
 
+    def test_axe_fighter_con_roy_como_en_el_juego(self):
+        """Ficha del juego (Extremo, captura del Cap. 11): Corrupted & Roy, Axe Fighter Nv 16
+        (13 + los 3 de Sink Below, EnhanceLevel 3 de Skill.xml). HP 51, Fue 21, Mag 2,
+        Des 11, Vel 10 (13 menos 3 por el peso de la Steel Axe: 12 − Com 9, así lo enseña
+        el juego), Def 14, Res 5, Sue 2, Com 9. Habilidades: solo Hold Out+ y Sink Below."""
+        f = self._ficha("Axe Fighter (10,14)")
+        s = f.stats
+        self.assertEqual((f.hp_max, s.fuerza, s.magia, s.destreza, s.velocidad, s.defensa, s.resistencia,
+                          s.suerte, s.complexion), (51, 21, 2, 11, 13, 14, 5, 2, 9))
+        self.assertEqual(f.habilidades, ["Hold Out+", "Sink Below"])
+
+    def test_de_una_misma_familia_solo_cuenta_la_mejor(self):
+        """Una partida guardada con Hold Out y Hold Out+ a la vez: se queda Hold Out+."""
+        d = self._ficha("Axe Fighter (10,14)").como_dict()
+        d["habilidades"] = ["Hold Out", "Hold Out+", "Sink Below"]
+        f = resolver_unidad_con_catalogo(d)
+        self.assertEqual(f.habilidades, ["Hold Out+", "Sink Below"])
+        self.assertNotIn("SID_踏ん張り", f.habilidades_sids)
+
+    def test_el_fuego_se_come_el_agua_para_siempre(self):
+        """Visto en el juego (Dark Inferno sobre el agua fija): el fuego sustituye al agua y,
+        cuando se apaga, la casilla queda como llanura. Se guarda en la partida (sobrevive a
+        exportar/importar y a otro efecto encima); Groundswell no la devuelve; el Preset sí."""
+        c = (4, 28)
+        grid = tablero.mapa.grid
+        self.assertEqual(grid[c[0]][c[1]].superpuesto, "agua")
+        tablero.aplicar_terreno_temporal([c], "fuego")
+        self.assertEqual((grid[c[0]][c[1]].nombre, grid[c[0]][c[1]].avo), ("llanura + Fuego", 0))
+        tablero.turno_actual += 1
+        tablero.caducar_terrenos_temporales()
+        t = grid[c[0]][c[1]]
+        self.assertEqual((t.nombre, t.avo, t.coste_mov, t.superpuesto), ("llanura", 0, 1, ""))
+        # exportar / importar
+        exp = self.client.get("/api/partida/exportar").get_json()["partida"]
+        self.client.post("/api/partida/importar", json={"partida": exp})
+        self.assertEqual(tablero.mapa.grid[c[0]][c[1]].nombre, "llanura")
+        # otro efecto encima y otra vez fuera: sigue sin agua
+        tablero.aplicar_terreno_temporal([c], "niebla")
+        tablero.turno_actual += 1
+        tablero.caducar_terrenos_temporales()
+        self.assertEqual(tablero.mapa.grid[c[0]][c[1]].nombre, "llanura")
+        self.assertEqual(tablero.terrenos_temporales_lista(),
+                         [{"x": 4, "y": 28, "tipo": "sin_capa", "expira_turno": 10 ** 9}])
+        # un Preset empieza con el mapa tal cual: el agua vuelve
+        _desplegar_capitulo("M011", "Extremo")
+        self.assertEqual(tablero.mapa.grid[c[0]][c[1]].nombre, "agua")
+        self.assertEqual(tablero.terrenos_temporales, {})
+
     def test_poner_un_anillo_a_mano_usa_el_del_capitulo(self):
         """"Marth (Oscuro)" existe en los Cap. 11, 17, 21 y 24: se elige el del mapa activo."""
         f = resolver_unidad_con_catalogo({

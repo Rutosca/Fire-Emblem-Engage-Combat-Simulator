@@ -125,6 +125,21 @@ class TestAguaSuperpuesta(unittest.TestCase):
     def test_dos_capas_de_agua_no_acumulan(self):
         self._comprobar(_mapa_tiled([self.BASE, self.AGUA, self.AGUA], 3))
 
+    def test_el_fuego_va_sobre_el_bosque_y_sustituye_al_agua(self):
+        """Dark Inferno en el Cap. 11 (visto en el juego): el fuego se suma al terreno natural
+        ("Woods + Flames": el bosque conserva su +30) y quita el agua fija de su casilla,
+        porque los dos van en la misma capa; lo que quede después lo decide el terreno base."""
+        mapa = _mapa_tiled([self.BASE, self.AGUA], 3)
+        mapa.aplicar_terrenos_temporales({"fuego": [(0, 0), (1, 0), (2, 0)]})
+        llano, bosque_agua, agua = (mapa.grid[x][0] for x in range(3))
+        self.assertEqual((llano.nombre, llano.avo, llano.coste_mov), ("llanura + Fuego", 0, 2))
+        self.assertEqual((bosque_agua.nombre, bosque_agua.avo, bosque_agua.coste_mov), ("evasion + Fuego", 30, 3),
+                         "bosque (+30, coste 2) con fuego (+1); el −30 del agua ya no cuenta")
+        self.assertEqual((agua.nombre, agua.avo, agua.coste_mov), ("llanura + Fuego", 0, 2))
+        self.assertTrue(bosque_agua.es_fuego)
+        mapa.limpiar_terrenos_temporales()
+        self._comprobar(mapa)
+
     def test_la_vena_de_agua_de_camilla_no_se_suma_al_agua_fija(self):
         mapa = _mapa_tiled([self.BASE, self.AGUA], 3)
         mapa.aplicar_terrenos_temporales({"agua": [(0, 0), (1, 0), (2, 0)]})
