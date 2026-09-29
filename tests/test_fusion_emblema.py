@@ -489,6 +489,32 @@ class TestFusionEmblema(unittest.TestCase):
         self.assertFalse(tablero.obtener_ficha("Alfred").en_fusion)
         self.assertEqual(tablero.obtener_ficha("Alfred").mov, mov_normal + 2)   # conserva la edición manual (base 8)
 
+    def test_fusionar_desde_el_modal_da_el_mov_extra(self):
+        """El modal no manda mov_base: manda el Mov que MOSTRABA, que no lleva el bono si la
+        unidad no estaba fusionada. Al marcar "Activar Fusión" y guardar, se restaba el bono
+        nuevo a ese número y la Fusión no daba Mov (desde una recomendación sí lo daba).
+        Vale para Gallop (Sigurd) y Soar (Camilla)."""
+        client = app.test_client()
+        for emblema, clase, extra in (("Sigurd", "Paladin", 7), ("Sigurd", "Sword Fighter", 5),
+                                      ("Camilla", "Sword Fighter", 2), ("Camilla", "Wyvern Knight", 3)):
+            tablero.limpiar()
+            u = resolver_unidad_con_catalogo({"nombre": "U", "x": 2, "y": 2, "es_aliado": True, "clase_nombre": clase,
+                                              "nivel": 10, "emblema_nombre": emblema, "nivel_vinculo": 10,
+                                              "inventario": [{"nombre": "Iron Sword", "equipada": True}]}, tablero=tablero)
+            tablero.registrar_unidad(u)
+            mov_normal = u.mov
+            d = u.como_dict()
+            modal = {"nombre": "U", "es_aliado": True, "x": 2, "y": 2, "nivel": 10, "clase_nombre": clase,
+                     "emblema_nombre": emblema, "emblema_tipo": "normal", "nivel_vinculo": 10,
+                     "en_fusion": True, "energia_emblema": 6, "mov": mov_normal,
+                     "inventario": d["inventario"], "stats": d["stats"], "habilidades": d["habilidades"]}
+            f = client.post("/api/unidad/guardar", json=modal).get_json()["ficha"]
+            self.assertEqual(f["mov"], mov_normal + extra, (emblema, clase))
+            # volver a guardar desde el modal (ahora muestra el total): no se acumula
+            modal["mov"] = f["mov"]
+            f2 = client.post("/api/unidad/guardar", json=modal).get_json()["ficha"]
+            self.assertEqual(f2["mov"], mov_normal + extra, (emblema, clase))
+
     def test_gallop_abre_ataques_fuera_de_alcance_y_se_ejecutan_fusionando_antes_de_mover(self):
         """El análisis debe ver que fusionarse con Sigurd da alcance (Gallop) y proponer
         '⚡ Fusionar y atacar'; al ejecutarlo, la Fusión se activa ANTES de mover."""

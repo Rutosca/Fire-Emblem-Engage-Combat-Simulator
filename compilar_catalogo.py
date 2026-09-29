@@ -837,6 +837,9 @@ def compilar():
             # Nº de copias que invoca la habilidad (VisionCount): solo Call Doubles de Lyn
             # (SID_残像 4, _竜族 5, _飛行 4). 0 = la habilidad no invoca nada.
             "vision_count": to_int(s.get("VisionCount")),
+            # Niveles que sube la unidad mientras la tiene (EnhanceLevel): Rise Above 5 (6 a
+            # caballo), Sink Below 3 (el Roy oscuro del Cap. 11), los "límite" 1-3. 0 = nada.
+            "enhance_level": to_int(s.get("EnhanceLevel")),
             # Clasificación del motor del juego (Effect): "エンゲージスキル" = habilidad de
             # Emblema con comando propio, "汎用エンゲージ技" / "エンゲージ技_*" = Ataque de Emblema.
             "efecto": s.get("Effect", ""),

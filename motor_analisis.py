@@ -1245,11 +1245,32 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 nom_area_cand = nom_eng_cand if (nom_eng_cand and tipo_ataque_area(nom_eng_cand)) else (
                     arma_candidata.nombre if tipo_ataque_area(getattr(arma_candidata, 'nombre', '')) == "aliento" else '')
                 if nom_area_cand and tipo_ataque_area(nom_area_cand) == "dark_inferno":
-                    # No hay dirección: el área rodea a la unidad. Vale la casilla desde la
-                    # que ataca, siempre que el enemigo caiga dentro.
-                    area_info = resolver_ataque_area(nom_area_cand, pos_candidata, enemigo, aliado, tablero, mapa)
-                    if not area_info.get("valido"):
+                    # No hay dirección: el área rodea a la unidad. La casilla que elige
+                    # encontrar_pos_ataque_optima es la de un arma normal (casi siempre junto
+                    # al objetivo, que en el área base de un volador no entra), así que se
+                    # prueban todas las casillas a las que llega (también con el Mov extra de
+                    # la Fusión, que el Ataque de Emblema exige) y se queda la que mete más
+                    # enemigos en el área; a igualdad, la menos expuesta.
+                    ocupadas_a = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre)
+                    candidatas = ({tuple(pos_candidata), (aliado.x, aliado.y)}
+                                  | set(alcanzables_normales or ()) | set(alcanzables_con_fusion or ()))
+                    area_info, mejor_clave = None, None
+                    for cand in candidatas:
+                        if cand in ocupadas_a:
+                            continue
+                        a_i = resolver_ataque_area(nom_area_cand, cand, enemigo, aliado, tablero, mapa)
+                        if not a_i.get("valido"):
+                            continue
+                        clave = (len(a_i.get("objetivos") or []), -exposicion(cand, aliado)["peso"],
+                                 1 if tuple(cand) == tuple(pos_candidata) else 0)
+                        if mejor_clave is None or clave > mejor_clave:
+                            mejor_clave, area_info, mejor_cand = clave, a_i, cand
+                    if area_info is None:
                         continue
+                    pos_candidata = list(mejor_cand)
+                    fusion_por_movimiento = bool(
+                        alcanzables_con_fusion and tuple(pos_candidata) not in alcanzables_normales
+                        and tuple(pos_candidata) in alcanzables_con_fusion)
                     dist_combate = distancia_a_unidad(enemigo, pos_candidata[0], pos_candidata[1])
                     area_info["extras"] = _evaluar_objetivos_extra(
                         aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)

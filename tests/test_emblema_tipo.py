@@ -16,7 +16,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app import app, tablero, _desplegar_capitulo  # noqa: E402
-from catalogo_loader import _emblema_oscuro_de  # noqa: E402
+from catalogo_loader import _emblema_oscuro_de, _subida_por_niveles, _catalogo  # noqa: E402
 from cargador_dispos import DISPOS_DIR  # noqa: E402
 
 
@@ -66,14 +66,21 @@ class TestTipoDeEmblema(unittest.TestCase):
         f = self._guardar("Sword Flier (2,12)", "Marth", "oscuro")
         self.assertEqual((f.emblema_id, f.stats.velocidad, f.arma.nombre), ("GID_M011_敵マルス", vel, arma))
 
+    def _sink_below(self, ficha):
+        """Lo que suben los 3 niveles de Sink Below a esa unidad (ver test_capitulo11)."""
+        return _subida_por_niveles(_catalogo["clases"][ficha.clase_id], ficha.nivel, 3)
+
     def test_poner_un_anillo_oscuro_desde_el_modal(self):
-        """Roy (Oscuro) del Cap. 11: +7 HP, +3 Fue, +2 Def, Lancereaver equipada, Hold Out+ y Sink Below."""
+        """Roy (Oscuro) del Cap. 11: +7 HP, +3 Fue, +2 Def y los 3 niveles de Sink Below,
+        Lancereaver, Hold Out+ y Sink Below."""
         antes = tablero.obtener_ficha("Sword Fighter (7,1)")
         hp, fue, dfn = antes.hp_max, antes.stats.fuerza, antes.stats.defensa
+        sb = self._sink_below(antes)
         f = self._guardar("Sword Fighter (7,1)", "Roy", "oscuro")
         self.assertEqual(f.emblema_id, "GID_M011_敵ロイ")
         self.assertTrue(f.emblema_oscuro)
-        self.assertEqual((f.hp_max, f.stats.fuerza, f.stats.defensa), (hp + 7, fue + 3, dfn + 2))
+        self.assertEqual((f.hp_max, f.stats.fuerza, f.stats.defensa),
+                         (hp + 7 + sb.get("hp", 0), fue + 3 + sb.get("str", 0), dfn + 2 + sb.get("def", 0)))
         self.assertEqual(f.arma.nombre, "Lancereaver")
         self.assertTrue({"Hold Out+", "Sink Below"} <= set(f.habilidades))
 
@@ -86,10 +93,12 @@ class TestTipoDeEmblema(unittest.TestCase):
         self.assertFalse({"Unyielding+", "Divine Speed"} & set(f.habilidades))
 
     def test_cambiar_un_anillo_oscuro_por_otro(self):
+        sb = self._sink_below(tablero.obtener_ficha("Sword Flier (2,12)"))
         f = self._guardar("Sword Flier (2,12)", "Roy", "oscuro")
         self.assertEqual(f.emblema_id, "GID_M011_敵ロイ")
-        # Marth daba +2 Fue +3 Des +3 Vel; Roy da +7 HP +3 Fue +2 Def
-        self.assertEqual((f.stats.fuerza, f.stats.destreza, f.stats.velocidad), (15, 16, 17))
+        # Marth daba +2 Fue +3 Des +3 Vel; Roy da +7 HP +3 Fue +2 Def, más Sink Below
+        self.assertEqual((f.stats.fuerza, f.stats.destreza, f.stats.velocidad),
+                         (15 + sb.get("str", 0), 16 + sb.get("dex", 0), 17 + sb.get("spd", 0)))
         self.assertEqual(f.arma.nombre, "Lancereaver")
         self.assertNotIn("Rapier", [i.get("nombre") for i in f.inventario])
 

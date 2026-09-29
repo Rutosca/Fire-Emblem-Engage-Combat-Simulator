@@ -719,6 +719,35 @@ def _sid_de_habilidad(valor):
     return resolver_nombre_a_sid(texto)
 
 
+def _quedarse_con_la_mejor(valores: list) -> list:
+    """
+    De una misma familia de habilidades (el SID sin los "＋" del final: Hold Out, Hold Out+,
+    Hold Out++) se queda solo la de mayor Priority de Skill.xml, como hace el juego: el
+    Axe Fighter con el Roy oscuro del Cap. 11 lleva Hold Out+, no Hold Out y Hold Out+.
+    Las que no tienen Priority (0) no se tocan.
+    """
+    habilidades = _catalogo.get("habilidades", {}) or {}
+
+    def _familia(v):
+        sid = _sid_de_habilidad(v)
+        info = habilidades.get(sid) if sid else None
+        prioridad = int((info or {}).get("priority") or 0)
+        return (sid.rstrip("＋"), prioridad) if info and prioridad else (None, 0)
+
+    mejor = {}
+    for v in valores:
+        fam, p = _familia(v)
+        if fam:
+            mejor[fam] = max(mejor.get(fam, 0), p)
+    salida = []
+    for v in valores:
+        fam, p = _familia(v)
+        if fam and p < mejor[fam]:
+            continue
+        salida.append(v)
+    return salida
+
+
 def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
     """
     Parsea nombres de armas con nivel de forja (+1..+5) y grabado de emblema (Marth, Sigurd, etc.).
@@ -923,7 +952,42 @@ _CLAVES_STAT_PAYLOAD = {
 }
 
 
-def _transicion_emblema_oscuro(data: dict, gid_previo: str, gid_nuevo: str) -> dict:
+def _niveles_de_mejora(info: Optional[dict]) -> int:
+    """
+    Niveles que sube la unidad por las habilidades de Fusión de un Emblema Oscuro, que las
+    tiene siempre puestas (Skill.xml EnhanceLevel: Sink Below del Roy oscuro del Cap. 11, +3).
+    """
+    if not info or not info.get("es_oscuro"):
+        return 0
+    v1 = (info.get("bond_levels") or {}).get("1") or {}
+    sids = [sk.get("sid") if isinstance(sk, dict) else sk for sk in (v1.get("engage_skills") or [])] \
+        or list(info.get("engage_skills") or [])
+    return sum(int(((_catalogo.get("habilidades", {}) or {}).get(s) or {}).get("enhance_level") or 0) for s in sids)
+
+
+def _subida_por_niveles(clase_info: Optional[dict], nivel: int, niveles: int) -> dict:
+    """
+    Stats que gana un ENEMIGO al subir `niveles` sobre su `nivel` (EnhanceLevel). El juego
+    lo calcula con los crecimientos de enemigo de la clase base + DiffGrow (sin la tabla
+    extra de Extremo) y redondeo acumulado: con el Axe Fighter Nv 13 del Cap. 11, Sink
+    Below (+3) da +4 HP, +2 Fue, +1 Des, +1 Vel y +1 Def, como en el juego (una muestra:
+    confirmar con más unidades).
+    """
+    if not clase_info or niveles <= 0:
+        return {}
+    eg = clase_info.get("enemy_growths") or {}
+    base, dif = eg.get("base") or {}, eg.get("hard") or {}
+    niv = int(nivel) + int(clase_info.get("internal_level", 0) or 0)
+    salida = {}
+    for st in ("hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"):
+        g = int(base.get(st, 0) or 0) + int(dif.get(st, 0) or 0)
+        d = round_half_up(g * (niv + niveles) / 100.0) - round_half_up(g * niv / 100.0)
+        if d:
+            salida[st] = d
+    return salida
+
+
+def _transicion_emblema_oscuro(data: dict, gid_previo: str, gid_nuevo: str, extra: Optional[dict] = None) -> dict:
     """
     El modal guarda las stats, las habilidades y el inventario tal como se ven, ya con lo
     que aporta el Emblema Oscuro que llevaba la unidad. Si el anillo oscuro cambia (se
@@ -953,10 +1017,12 @@ def _transicion_emblema_oscuro(data: dict, gid_previo: str, gid_nuevo: str) -> d
     def _nombres_armas(info):
         return {normalizar_texto((_catalogo.get("armas", {}).get(i, {}) or {}).get("nombre", i)) for i in _iids(info)}
 
-    # 1. Stats
+    # 1. Stats (bonos del anillo y, si lo hay, lo que sube por niveles: `extra` {gid: {stat: n}})
     delta = {}
-    for info, signo in ((viejo, -1), (nuevo, 1)):
+    for gid, info, signo in ((gid_previo, viejo, -1), (gid_nuevo, nuevo, 1)):
         for k, v in ((_v1(info).get("stat_boosts") or {}).items() if info else ()):
+            delta[k] = delta.get(k, 0) + signo * int(v)
+        for k, v in (((extra or {}).get(gid) or {}).items() if info else ()):
             delta[k] = delta.get(k, 0) + signo * int(v)
     stats = dict(data.get("stats") or {})
     for k, v in delta.items():
@@ -1134,7 +1200,13 @@ def resolver_unidad_con_catalogo(data, tablero=None):
 
     # Poner, quitar o cambiar un anillo oscuro desde el modal (stats explícitas)
     if unidad_previa is not None and isinstance(data.get("stats"), dict):
-        data = _transicion_emblema_oscuro(data, getattr(unidad_previa, "emblema_id", "") or "", emblema_id or "")
+        gid_previo = getattr(unidad_previa, "emblema_id", "") or ""
+        subidas = {}
+        if not es_aliado:
+            for gid in {gid_previo, emblema_id or ""} - {""}:
+                subidas[gid] = _subida_por_niveles(
+                    clase_info, nivel, _niveles_de_mejora((_catalogo.get("emblemas", {}) or {}).get(gid)))
+        data = _transicion_emblema_oscuro(data, gid_previo, emblema_id or "", extra=subidas)
 
     es_sigurd = bool(emblema_info and ("siglud" in str(emblema_id).lower() or "sigurd" in str(emblema_info.get("nombre", "")).lower())) or ("sigurd" in str(data.get("emblema_nombre", "")).lower())
     tiene_botas = any("bota" in str(p).lower() for p in data.get("potenciadores_usados", []))
@@ -1275,6 +1347,12 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     # Bonos de estadísticas de Emblema según nivel de vínculo (o sobreescritura manual)
     emblem_stats = bond_data.get("stat_boosts", {}) if bond_data else {}
     bonos_a_aplicar = data.get("emblema_bonos") if data.get("emblema_bonos") is not None else emblem_stats
+    # Niveles extra de las habilidades del anillo oscuro (Sink Below: +3), en enemigos
+    niveles_mejora = _niveles_de_mejora(emblema_info) if (engage_permanente and not es_aliado) else 0
+    if niveles_mejora:
+        bonos_a_aplicar = dict(bonos_a_aplicar or {})
+        for st, v in _subida_por_niveles(clase_info, nivel, niveles_mejora).items():
+            bonos_a_aplicar[st] = int(bonos_a_aplicar.get(st, 0) or 0) + v
     for stat, bonus in (bonos_a_aplicar or {}).items():
         b_val = int(bonus)
         if stat == "hp": calc_hp += b_val
@@ -1474,6 +1552,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 nombre_sid = _catalogo.get("habilidades", {}).get(sid, {}).get("nombre")
                 habs_lista = [h for h in habs_lista if h not in (sid, nombre_sid)]
 
+    # Dos de la misma familia (Hold Out y Hold Out+): solo cuenta la mejor
+    habs_lista = _quedarse_con_la_mejor(habs_lista)
+
     # Los SID se conservan internamente en los XML, pero la UI debe mostrar
     # el nombre traducido. Si existe traducción, no expongas el identificador
     # japonés como una segunda pasiva duplicada.
@@ -1496,8 +1577,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         # durante una Fusión) solo se activan en Fusión: van en la lista aparte.
         if s_sid and s_sid not in habs_sids_crudos and s_sid not in sids_emblema_fusion:
             habs_sids_crudos.append(s_sid)
+    habs_sids_crudos = _quedarse_con_la_mejor(habs_sids_crudos)
     habilidades_limpias = []
-    nombres_ocultos = {str(i.get("nombre")) for i in _catalogo.get("habilidades", {}).values() if i.get("oculta") and i.get("nombre")}
+    nombres_ocultos ={str(i.get("nombre")) for i in _catalogo.get("habilidades", {}).values() if i.get("oculta") and i.get("nombre")}
     for habilidad in habs_lista:
         valor = str(habilidad)
         if valor in nombres_ocultos:
@@ -1974,9 +2056,13 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     setattr(ficha, '_chain_guard_activo_explicito', 'chain_guard_activo' in data)
     setattr(ficha, '_hp_stock_explicito', 'hp_stock' in data)
     setattr(ficha, '_energia_emblema_explicito', 'energia_emblema' in data)
-    # Gallop (Sigurd) y cualquier otra habilidad de Fusión con bono de Mov: el Mov del
-    # payload es el total que ve el jugador, así que el bono se descuenta de la base.
+    # Gallop (Sigurd), Soar (Camilla) y cualquier otra habilidad de Fusión con bono de Mov:
+    # el Mov del payload es el que el modal MOSTRABA, que llevaba el bono solo si la unidad
+    # ya estaba fusionada al abrirlo. Se descuenta ese bono, no el de la ficha nueva: al
+    # marcar "Activar Fusión" en el modal el campo sigue sin bono, y restarle el nuevo lo
+    # anulaba (se fusionaba sin ganar Mov; desde una recomendación sí lo ganaba).
     if mov_total_explicito is not None:
-        ficha.mov_base = max(1, mov_total_explicito - pasivas.bono_movimiento_fusion(ficha))
+        bono_mostrado = pasivas.bono_movimiento_fusion(unidad_previa) if unidad_previa is not None else 0
+        ficha.mov_base = max(1, mov_total_explicito - bono_mostrado)
     ficha.actualizar_movimiento_fusion()
     return ficha
