@@ -1094,6 +1094,55 @@ def _emblema_oscuro_de(nombre: str, capitulo: str):
     return oscuros[0]
 
 
+# Otras apariciones de un personaje en Person.xml: capítulo (M011), paralogo (S008),
+# Xenologue (E006), Somniel (G005), arena e invocación. Sin prefijo = el personaje jugable.
+_PREFIJO_APARICION = re.compile(r"^PID_(?:[MSEG]\d{3}|闘技場|召喚)")
+
+
+def _tipo_arma_equipada(data) -> str:
+    """Tipo ('Espada', 'Arco'…) del arma equipada en el payload, según el catálogo."""
+    nombres = [data.get("arma_nombre")] + [it.get("nombre") or it.get("arma") for it in (data.get("inventario") or [])
+                                           if isinstance(it, dict) and it.get("equipada")]
+    for nom in nombres:
+        base = normalizar_texto((parsear_arma_string(nom) or {}).get("nombre_base") or nom or "")
+        if not base:
+            continue
+        for a in (_catalogo.get("armas") or {}).values():
+            if normalizar_texto(a.get("nombre", "")) == base:
+                return a.get("tipo") or ""
+    return ""
+
+
+def _personaje_por_nombre(nombre: str, es_aliado: bool, tipo_arma: str = ""):
+    """
+    (pid, info) del personaje llamado `nombre`. Un enemigo se queda con la primera ficha
+    (su aparición en el capítulo). Un aliado, con el jugable (PID sin prefijo); y un
+    aliado con el nombre de un Emblema que no es un personaje jugable (Eirika, Edelgard…)
+    solo puede ser una invocación de Verónica: se usa su ficha de invocación (PID_召喚_,
+    con sus armas "_通常" y sus habilidades). Si el Emblema tiene varias (Lyn roja con Mani
+    Katti, blanca con arcos: SummonColor), la que admite el arma equipada.
+    """
+    n = normalizar_texto(nombre)
+    candidatos = [(pid, p) for pid, p in (_catalogo.get("personajes", {}) or {}).items()
+                  if normalizar_texto(p.get("nombre", "")) == n or normalizar_texto(pid) == n]
+    if not candidatos:
+        return "", None
+    if not es_aliado:
+        return candidatos[0]
+    jugable = next(((pid, p) for pid, p in candidatos if not _PREFIJO_APARICION.match(pid)), None)
+    if jugable:
+        return jugable
+    invocaciones = [(pid, p) for pid, p in candidatos if pid.startswith("PID_召喚_")]
+    if invocaciones:
+        if tipo_arma:
+            clases = _catalogo.get("clases", {}) or {}
+            for pid, p in invocaciones:
+                if tipo_arma in ((clases.get(p.get("jid_default")) or {}).get("armas_permitidas") or []):
+                    return pid, p
+        return invocaciones[0]
+    return candidatos[0]
+
+
 def resolver_unidad_con_catalogo(data, tablero=None):
     """
     Toma los datos enviados desde la UI (o Tiled) y resuelve stats, clase, arma e inventario
@@ -1131,14 +1180,16 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     clase_id = data.get("clase_id", "")
     clase_info = _catalogo.get("clases", {}).get(clase_id) if clase_id else None
 
-    # Si no viene por ID, buscar por nombre
+    # Si no viene por ID, buscar por nombre. Varias clases pueden llamarse igual ("Emblem"
+    # es la de cada Emblema invocado: una por Emblema, con sus armas): se guardan todas y
+    # decide el personaje, más abajo.
+    clases_con_ese_nombre = []
     if not clase_info and data.get("clase_nombre"):
         cn = normalizar_texto(data.get("clase_nombre"))
-        for cid, cdata in _catalogo.get("clases", {}).items():
-            if normalizar_texto(cdata.get("nombre", "")) == cn or normalizar_texto(cid) == cn:
-                clase_info = cdata
-                clase_id = cid
-                break
+        clases_con_ese_nombre = [(cid, cdata) for cid, cdata in _catalogo.get("clases", {}).items()
+                                 if normalizar_texto(cdata.get("nombre", "")) == cn or normalizar_texto(cid) == cn]
+        if clases_con_ese_nombre:
+            clase_id, clase_info = clases_con_ese_nombre[0]
 
     # 1. Buscar si es un personaje con datos propios (Alear, Alcryst, Citrinne, Lapis, etc.)
     p_info = None
@@ -1146,11 +1197,13 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     if pid and pid in _catalogo.get("personajes", {}):
         p_info = _catalogo["personajes"][pid]
     else:
-        n_norm = normalizar_texto(nombre)
-        for cpid, cperson in _catalogo.get("personajes", {}).items():
-            if normalizar_texto(cperson.get("nombre", "")) == n_norm or normalizar_texto(cpid) == n_norm:
-                p_info = cperson
-                break
+        # (el pid no se toma de aquí: el de una ficha ya en el tablero se conserva más abajo)
+        _, p_info = _personaje_por_nombre(nombre, es_aliado, _tipo_arma_equipada(data))
+    # La clase de ese nombre que es la del personaje (el "Emblem" de Edelgard, con hachas)
+    if len(clases_con_ese_nombre) > 1 and p_info:
+        propia = next(((cid, cd) for cid, cd in clases_con_ese_nombre if cid == p_info.get("jid_default")), None)
+        if propia:
+            clase_id, clase_info = propia
 
     # Bonos de Emblema (si aplica)
     emblema_id = data.get("emblema_id", "")
@@ -1468,6 +1521,10 @@ def resolver_unidad_con_catalogo(data, tablero=None):
             sid_real = _sid_de_habilidad(s_sid) or _sid_de_habilidad(s_nom)
             if sid_real and sid_real not in destino_engage:
                 destino_engage.append(sid_real)
+            # También como habilidad de Fusión, siempre activa: el Mov de Dark Gallop (+3)
+            # sale de ahí (pasivas.bono_movimiento_fusion)
+            if engage_permanente and sid_real and sid_real not in sids_emblema_fusion:
+                sids_emblema_fusion.append(sid_real)
 
     # Enriquecer habilidades personales y de clase desde el catálogo compilado
     sids_solo_motor = []   # SIDs que el motor necesita pero que el juego no muestra como pasivas
@@ -1631,6 +1688,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         emblema_nombre=emb_nom,
         estilo_combate=estilo_combate,
     )
+    # Emblema Oscuro: su Fusión no se activa ni se acaba, está siempre puesta
+    setattr(stats_obj, 'engage_permanente', engage_permanente)
     # SID del Ataque de Emblema (God.xml EngageAttack): pasivas.forma_ataque_emblema lo
     # lee para saber cuántos golpes da y a qué fracción de daño (Astra Storm, Lodestar…).
     setattr(stats_obj, 'sid_ataque_emblema', (emblema_info or {}).get("engage_attack", "") or "")

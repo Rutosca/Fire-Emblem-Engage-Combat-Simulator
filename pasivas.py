@@ -211,13 +211,15 @@ def bono_movimiento_fusion(unidad) -> int:
     """
     Mov extra que dan las habilidades de FUSIÓN activas, con la variante de estilo de
     combate de la unidad: Gallop de Sigurd (SID_迅走) es +5, +7 en caballería (_騎馬),
-    +6 en dragón (_竜族), +3 la versión oscura. 0 si la unidad no está en Fusión.
+    +6 en dragón (_竜族), +3 la versión oscura (Dark Gallop, SID_迅走_闇, que el portador
+    de un Emblema Oscuro tiene siempre: su Fusión es permanente). 0 si no está en Fusión.
     Las sincronías (el +1 de llevar a Sigurd equipado) NO entran aquí: van en los
     stat_boosts del nivel de vínculo que aplica catalogo_loader.
     """
     stats = getattr(unidad, "stats", None) or unidad
     en_fusion = bool(getattr(stats, "en_fusion", False) or int(getattr(stats, "turnos_fusion_restantes", 0) or 0) > 0
-                     or getattr(unidad, "en_fusion", False) or int(getattr(unidad, "turnos_fusion", 0) or 0) > 0)
+                     or getattr(unidad, "en_fusion", False) or int(getattr(unidad, "turnos_fusion", 0) or 0) > 0
+                     or getattr(stats, "engage_permanente", False))
     return bono_movimiento_fusion_potencial(unidad) if en_fusion else 0
 
 

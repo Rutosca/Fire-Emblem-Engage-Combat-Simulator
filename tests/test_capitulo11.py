@@ -177,6 +177,16 @@ class TestCapitulo11(unittest.TestCase):
             "Sword Flier (2,12)": "Marth (Oscuro)", "Axe Fighter (10,14)": "Roy (Oscuro)",
             "Lance Fighter (6,18)": "Leif (Oscuro)", "Mage (8,22)": "Celica (Oscuro)"})
 
+    def test_dark_gallop_da_mov_3_al_portador_de_sigurd(self):
+        """El Sigurd oscuro del Cap. 11 trae Dark Gallop (SID_迅走_闇, Move 3 en Skill.xml) y
+        su Fusión es permanente: Axe Cavalier 5 + 1 del vínculo + 3 = 9 (antes se quedaba en 6
+        y había que ponerlo a mano). Exportar e importar no lo suma dos veces."""
+        f = self._ficha("Axe Cavalier (6,1)")
+        self.assertEqual((f.mov_base, f.mov), (6, 9))
+        exp = self.client.get("/api/partida/exportar").get_json()["partida"]
+        self.client.post("/api/partida/importar", json={"partida": exp})
+        self.assertEqual(self._ficha("Axe Cavalier (6,1)").mov, 9)
+
     def test_axe_fighter_con_roy_como_en_el_juego(self):
         """Ficha del juego (Extremo, captura del Cap. 11): Corrupted & Roy, Axe Fighter Nv 16
         (13 + los 3 de Sink Below, EnhanceLevel 3 de Skill.xml). HP 51, Fue 21, Mag 2,
