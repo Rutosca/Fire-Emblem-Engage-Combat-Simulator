@@ -147,6 +147,21 @@ class TestChainGuardObjetos(unittest.TestCase):
         self.assertFalse(es_unidad_qi_adept(lapis), "Backup no es Qi Adept")
         self.assertFalse(es_unidad_qi_adept(celine), "Mystical no es Qi Adept")
 
+    def test_qi_adept_es_de_la_clase_no_del_nombre(self):
+        """El nombre no cuenta: "Axe Cavalier Framme" (la invocación de Verónica) no es
+        Qi Adept, ni Framme si pasa a Sword Fighter; Framme Martial Monk sí."""
+        from motor_calculo import es_unidad_qi_adept
+        casos = [({"nombre": "Axe Cavalier Framme", "clase_nombre": "Axe Cavalier", "es_aliado": False}, False),
+                 ({"nombre": "Framme", "clase_nombre": "Sword Fighter", "es_aliado": True}, False),
+                 ({"nombre": "Framme", "clase_nombre": "Martial Monk", "es_aliado": True}, True),
+                 ({"nombre": "Framme", "es_aliado": True}, False)]
+        for datos, esperado in casos:
+            f = resolver_unidad_con_catalogo(datos)
+            self.assertEqual(es_unidad_qi_adept(f), esperado, datos)
+        estilos = app.test_client().get("/api/catalogo/estilos_clase").get_json()["estilos"]
+        self.assertEqual((estilos["Martial Monk"], estilos["Dancer"], estilos["Axe Cavalier"]),
+                         ("qi_adept", "qi_adept", "caballeria"))
+
     def test_usar_objeto_consume_uso_y_marca_actuado(self):
         """
         /api/unidad/usar_objeto debe: 1) descontar un uso del objeto indicado

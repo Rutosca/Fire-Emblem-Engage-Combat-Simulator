@@ -185,6 +185,17 @@ def recargar_catalogo_endpoint():
     return jsonify({"ok": True, "armas": len(_catalogo.get('armas', {})), "emblemas": len(_catalogo.get('emblemas', {}))})
 
 
+@app.route("/api/catalogo/estilos_clase", methods=["GET"])
+def obtener_estilos_de_clase():
+    """Estilo de combate (Job.xml StyleName) de cada clase por su nombre, ya resuelto
+    ('qi_adept', 'backup'…): el modal decide con él qué opciones enseña (Guardia en
+    Cadena solo en las clases Qi Adept), nunca con el nombre de la unidad."""
+    from motor_calculo import resolver_estilo_combate
+    return jsonify({"ok": True, "estilos": {
+        c.get("nombre"): resolver_estilo_combate(c.get("estilo_combate") or "")
+        for c in (_catalogo.get("clases") or {}).values() if c.get("nombre")}})
+
+
 @app.route("/api/catalogo/emblemas", methods=["GET"])
 def obtener_catalogo_emblemas():
     """

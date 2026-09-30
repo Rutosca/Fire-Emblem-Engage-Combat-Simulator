@@ -203,27 +203,31 @@ function notificarEstadosOtorgados(res) {
   }
 }
 
+// Estilo de combate de cada clase (Job.xml), por nombre de clase: lo carga
+// cargarEstilosDeClase al arrancar. Con él se decide si una clase es Qi Adept.
+let ESTILOS_DE_CLASE = {};
+
+async function cargarEstilosDeClase() {
+  try {
+    const res = await api("/api/catalogo/estilos_clase");
+    if (res && res.ok && res.estilos) {
+      ESTILOS_DE_CLASE = {};
+      for (const [nombre, estilo] of Object.entries(res.estilos)) ESTILOS_DE_CLASE[nombre.toLowerCase()] = estilo;
+    }
+  } catch (e) {
+    console.warn("No se pudieron cargar los estilos de clase:", e);
+  }
+}
+
+// Qi Adept (Guardia en Cadena) es cosa de la CLASE, nunca del nombre de la unidad:
+// "Axe Cavalier Framme" no lo es, ni Framme si pasa a Sword Fighter.
 function esClaseQiAdept(ficha) {
   if (!ficha) return false;
-  const clase = String(ficha.clase_nombre || (ficha.stats ? ficha.stats.clase_nombre : "") || "").toLowerCase();
+  const clase = String(ficha.clase_nombre || (ficha.stats ? ficha.stats.clase_nombre : "") || "").trim().toLowerCase();
+  if (clase && ESTILOS_DE_CLASE[clase] !== undefined) return ESTILOS_DE_CLASE[clase] === "qi_adept";
+  // Clase desconocida o sin clase: el estilo que resolvió el servidor para la ficha
   const estilo = String(ficha.estilo_combate || (ficha.stats ? ficha.stats.estilo_combate : "") || "").toLowerCase();
-  const nombre = String(ficha.nombre || "").toLowerCase();
-  // El estilo de combate (StyleName de Job.xml) manda: si viene y no es 気功, no es Qi Adept
-  // (p.ej. "Swordmaster" contiene "master" pero es Backup).
-  if (estilo && !["infantería", "infanteria", "none", "infantry"].includes(estilo)) {
-    return estilo.includes("qi") || estilo.includes("adept") || estilo.includes("adepto") || estilo.includes("気功");
-  }
-  if (["martial monk", "martial master", "monje", "maestro marcial", "dancer", "bailar", "qi adept", "adepto"].some(k => clase.includes(k))) return true;
-  if (["framme", "seadall"].some(k => nombre.includes(k))) return true;
-  if (state && state.catalogo && state.catalogo.clases) {
-    for (const c of Object.values(state.catalogo.clases)) {
-      if (c && c.nombre && c.nombre.toLowerCase() === clase) {
-        const cEstilo = String(c.estilo_combate || "").toLowerCase();
-        if (cEstilo.includes("qi") || cEstilo.includes("adept") || cEstilo.includes("気功") || cEstilo.includes("artes")) return true;
-      }
-    }
-  }
-  return false;
+  return estilo.includes("qi_adept") || estilo.includes("気功");
 }
 
 function crearToken(ficha) {
@@ -1622,14 +1626,9 @@ function actualizarSelectorLiderTresCasas() {
 function actualizarVisibilidadChainGuard(ficha) {
   const fila = $("fila-chain-guard");
   if (!fila) return;
+  // Manda la clase escrita en el modal (puede haberla cambiado); sin clase, la ficha
   const clase = $("f-clase") ? $("f-clase").value.trim() : "";
-  const nombre = $("f-nombre") ? $("f-nombre").value.trim() : "";
-  let esQi = false;
-  if (ficha && esClaseQiAdept(ficha)) {
-    esQi = true;
-  } else {
-    esQi = esClaseQiAdept({ clase_nombre: clase, nombre: nombre });
-  }
+  const esQi = clase ? esClaseQiAdept({ clase_nombre: clase }) : esClaseQiAdept(ficha);
   fila.classList.toggle("hidden", !esQi);
 }
 
@@ -2210,10 +2209,6 @@ function initModalEvents() {
   if ($("f-clase")) {
     $("f-clase").addEventListener("input", () => actualizarVisibilidadChainGuard());
     $("f-clase").addEventListener("change", () => actualizarVisibilidadChainGuard());
-  }
-  if ($("f-nombre")) {
-    $("f-nombre").addEventListener("input", () => actualizarVisibilidadChainGuard());
-    $("f-nombre").addEventListener("change", () => actualizarVisibilidadChainGuard());
   }
 
   // ─── Autorellenado Inteligente de Atributos desde el Catálogo ────────────────
@@ -3297,6 +3292,7 @@ function mostrarToast(msg, tipo = "info") {
 
 async function init() {
   await cargarCatalogoEmblemas();
+  await cargarEstilosDeClase();
   poblarSelectoresGrabado();
   let estado = await api("/api/estado");
 

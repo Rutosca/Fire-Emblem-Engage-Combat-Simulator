@@ -129,7 +129,6 @@ def es_unidad_qi_adept(ficha_o_stats) -> bool:
     stats = getattr(ficha_o_stats, 'stats', ficha_o_stats)
     clase = str(getattr(ficha_o_stats, 'clase_nombre', '') or getattr(stats, 'clase_nombre', '') or '').lower().strip()
     estilo = str(getattr(stats, 'estilo_combate', '') or getattr(ficha_o_stats, 'estilo_combate', '') or '')
-    nombre = str(getattr(ficha_o_stats, 'nombre', '') or getattr(stats, 'nombre', '') or '').lower().strip()
 
     # 1. Estilo de combate explícito (StyleName de Job.xml): es la fuente canónica.
     # Si la unidad trae estilo y NO es 気功, no es Qi Adept aunque el nombre de la
@@ -138,13 +137,19 @@ def es_unidad_qi_adept(ficha_o_stats) -> bool:
     if estilo and normalizar_texto(estilo) not in ('infanteria', 'none', 'infantry'):
         return resolver_estilo_combate(estilo) == 'qi_adept'
 
-    # 2. Sin estilo: clases canónicas Qi Adept (palabras completas, no "master" suelto)
-    if clase in QI_ADEPT_CLASSES or any(k in clase for k in ('martial monk', 'martial master', 'monje', 'maestro marcial', 'dancer', 'bailar', 'qi adept', 'adepto')):
-        return True
-
-    # 3. Comprobar personajes canónicos si no tienen clase asignada
-    if any(k in nombre for k in ('framme', 'seadall')):
-        return True
+    # 2. Sin estilo: el de su clase en el catálogo (Job.xml). El nombre de la unidad no
+    # cuenta: "Axe Cavalier Framme" no es Qi Adept, y Framme tampoco si cambia de clase.
+    if clase:
+        try:
+            from catalogo_loader import _catalogo
+            for c in (_catalogo.get("clases") or {}).values():
+                if str(c.get("nombre") or "").lower().strip() == clase:
+                    return resolver_estilo_combate(c.get("estilo_combate") or "") == 'qi_adept'
+        except Exception:
+            pass
+        # Clase que no está en el catálogo (el nombre en español, "Bailarín") o sin catálogo
+        # cargado (scripts sueltos): las clases Qi Adept de Job.xml
+        return clase in QI_ADEPT_CLASSES
 
     return False
 
