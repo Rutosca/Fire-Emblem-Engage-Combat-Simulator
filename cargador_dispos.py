@@ -130,6 +130,16 @@ CALENDARIO_REFUERZOS = {
     "M010": {
         2: ["Thief"],
     },
+    # M012.lua: los refuerzos de Difícil/Extremo son EventEntryTurn(増援N, 3/4/6, FORCE_ALLY):
+    # llegan en la fase aliada (verde) de esos turnos, que va tras la enemiga, así que el
+    # jugador los ve al empezar los turnos 4, 5 y 7 (lo que dicen las guías). En Normal
+    # llegan un turno más tarde (4/5/7 en la fase aliada) y la herramienta no lo distingue.
+    # Reinforcement1_4 solo en Difícil y superiores; su Flag ya lo filtra.
+    "M012": {
+        4: ["Reinforcement1_1", "Reinforcement1_2", "Reinforcement1_3", "Reinforcement1_4"],
+        5: ["Reinforcement2_1", "Reinforcement2_2"],
+        7: ["Reinforcement3_1", "Reinforcement3_2"],
+    },
     "M008": {
         2: ["Enemy_Reinforcement0", "Enemy_Reinforcement0_Normal"],
         3: ["Enemy_Reinforcement1", "Enemy_Reinforcement1_Normal"],
@@ -222,6 +232,55 @@ UNION_POR_CONVERSACION = {
     # M009.lua: ジェーデ加入_リュール / ジェーデ加入_ディアマンド
     "M009": {"PID_ジェーデ": ["PID_リュール", "PID_ディアマンド"]},
 }
+
+
+# Tipo de cada aliado verde del dispos (Force 2). Tres tipos:
+#   "inmediato"     se une al empezar la batalla (UnitJoin del turno 1: Cap. 7, 8, 12...):
+#                   azul desde el Preset, en su casilla fija de aparición.
+#   "conversacion"  sigue verde, lo mueve la CPU, hasta que le habla una unidad concreta
+#                   (UNION_POR_CONVERSACION); entonces pasa a azul. Cap. 9: Jade.
+#   "npc"           genérico que la CPU mueve toda la batalla: nunca se une, nunca se
+#                   controla y no ataca. Cap. 12: los aldeanos de Solm.
+# Por defecto se deduce del guion (ver tipo_de_aliado_verde); esta tabla manda cuando el
+# datamine no lo deja claro. {dispos_id: {pid: tipo}}
+TIPO_ALIADO = {}
+
+_UNIONES_CACHE: dict = {}
+
+
+def uniones_del_guion(dispos_id: str):
+    """
+    PIDs que el guion (.lua) une al ejército con UnitJoin("PID_…", …). None si no se puede
+    saber: sin guion, sin UnitJoin, o alguna llamada con una variable (`UnitJoin( pid )`,
+    Cap. 9, 15, 19…), porque entonces no se sabe a quién une.
+    """
+    clave = (dispos_id or "").upper()
+    if clave not in _UNIONES_CACHE:
+        resultado = None
+        try:
+            with open(os.path.join(SCRIPTS_DIR, f"{clave}.lua"), "r", encoding="utf-8") as f:
+                llamadas = re.findall(r"UnitJoin\s*\(([^)]*)\)", f.read())
+            argumentos = [a.strip() for ll in llamadas for a in ll.split(",") if a.strip()]
+            if argumentos and all(a.startswith('"') for a in argumentos):
+                resultado = {a.strip('"') for a in argumentos}
+        except OSError:
+            pass
+        _UNIONES_CACHE[clave] = resultado
+    return _UNIONES_CACHE[clave]
+
+
+def tipo_de_aliado_verde(dispos_id: str, pid: str) -> str:
+    """"inmediato", "conversacion" o "npc" (ver TIPO_ALIADO)."""
+    clave = (dispos_id or "").upper()
+    explicito = TIPO_ALIADO.get(clave, {}).get(pid)
+    if explicito:
+        return explicito
+    if pid in UNION_POR_CONVERSACION.get(clave, {}):
+        return "conversacion"
+    uniones = uniones_del_guion(clave)
+    if uniones is not None and pid not in uniones:
+        return "npc"   # el guion une a otros por su nombre, a este nunca
+    return "inmediato"
 
 
 def _grupos_por_evento(dispos_id: str) -> set:
@@ -438,8 +497,15 @@ class CargadorDisposEngage:
             # aparecen se unen al ejército como unidades azules normales (observado en juego).
             if grupo_actual.startswith("Ally_Add"):
                 es_verde = es_fijo = False
-            habla_con = list(UNION_POR_CONVERSACION.get((dispos_id or "").upper(), {}).get(pid, [])) if es_verde else []
-            union_pendiente = bool(habla_con)
+            # Los tres tipos de aliado verde (TIPO_ALIADO): el inmediato es azul desde el
+            # Preset (conserva su casilla fija); el conversacional y el NPC siguen verdes.
+            tipo_verde = tipo_de_aliado_verde(dispos_id, pid) if es_verde else ""
+            habla_con = (list(UNION_POR_CONVERSACION.get((dispos_id or "").upper(), {}).get(pid, []))
+                         if tipo_verde == "conversacion" else [])
+            union_pendiente = tipo_verde == "conversacion"
+            nunca_se_une = tipo_verde == "npc"
+            if tipo_verde == "inmediato":
+                es_verde = False
 
             # Buscar datos de Person.xml
             p_info = self.persons.get(pid, {})
@@ -610,6 +676,7 @@ class CargadorDisposEngage:
                 "es_verde": es_verde,
                 "es_fijo": es_fijo,
                 "union_pendiente": union_pendiente,   # verde que aún no se ha unido (hablar para reclutar)
+                "nunca_se_une": nunca_se_une,         # verde de la CPU que nunca se une (aldeanos)
                 "habla_con": habla_con,               # pids que pueden hablar con él
                 "x": x,
                 "y": y,

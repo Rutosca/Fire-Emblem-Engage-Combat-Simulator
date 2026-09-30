@@ -1306,6 +1306,21 @@ def usar_objeto():
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
+@app.route("/api/unidad/unir", methods=["POST"])
+def unir_unidad():
+    """Botón "Ha hablado" del modal: el jugador ya ha hablado con este aliado verde por su
+    cuenta; se une al ejército (azul y controlable). No gasta la acción de nadie: quien le
+    habló lo marca el jugador moviéndolo. Body: {"nombre": "Jade"}."""
+    nombre = (request.get_json(force=True) or {}).get("nombre")
+    f = tablero.obtener_ficha(nombre) if nombre else None
+    if not f or not f.union_pendiente:
+        return jsonify({"error": f"{nombre} no está pendiente de unirse"}), 400
+    tablero.guardar_snapshot()
+    tablero.unir_al_ejercito(f.nombre)
+    return jsonify({"ok": True, "mensaje": f"{f.nombre} se une al ejército",
+                    "fichas": [x.como_dict() for x in tablero.fichas.values()]})
+
+
 @app.route("/api/unidad/hablar", methods=["POST"])
 def hablar_con_unidad():
     """

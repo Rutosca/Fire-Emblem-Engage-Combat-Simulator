@@ -31,13 +31,18 @@ class TestUnionPorConversacion(unittest.TestCase):
         self.assertTrue(self.jade.union_pendiente)
         self.assertFalse(self.jade.controlable)
         self.assertEqual(self.jade.habla_con, ["PID_リュール", "PID_ディアマンド"])
+        self.assertEqual(self.jade.como_dict()["habla_con_nombres"], ["Alear", "Diamant"],
+                         "el botón Ha hablado los nombra así, no por su PID")
         self.assertEqual([i["nombre"] for i in self.jade.inventario], ["Steel Axe", "Poción"])
         self.assertEqual(self.jade.arma.nombre, "Steel Axe")
         self.assertNotIn("Jade", [f.nombre for f in tablero.obtener_aliados()])
         self.assertEqual([f.nombre for f in tablero.obtener_npcs_pendientes()], ["Jade"])
-        # Los verdes del Cap. 7 siguen siendo controlables desde el turno 1
+        # Alcryst, Citrinne y Lapis (Cap. 7) se unen al empezar: azules y controlables
+        # desde el Preset, en su casilla fija
         _desplegar_capitulo("M007", "Extremo")
-        self.assertTrue(all(f.controlable for f in tablero.fichas.values() if f.es_verde))
+        uno = [f for f in tablero.fichas.values() if getattr(f, "pid", "") in ("PID_スタルーク", "PID_シトリニカ", "PID_ラピス")]
+        self.assertEqual(len(uno), 3)
+        self.assertTrue(all(f.controlable and not f.es_verde and f.es_fijo for f in uno))
 
     def test_hablar_requiere_adyacencia_autorizacion_y_accion(self):
         x, y = self.jade.x, self.jade.y
@@ -55,11 +60,23 @@ class TestUnionPorConversacion(unittest.TestCase):
         ok, msg = tablero.hablar(self.alear.nombre, "Jade")
         self.assertTrue(ok, msg)
         self.assertTrue(self.jade.controlable)
+        self.assertFalse(self.jade.es_verde, "al unirse pasa a azul")
         self.assertTrue(self.alear.ha_actuado)
         self.assertEqual(self.alear.accion_turno, "hablar")
         self.assertIn("Jade", [f.nombre for f in tablero.obtener_aliados()])
         ok, _ = tablero.hablar(self.alear.nombre, "Jade")
         self.assertFalse(ok)                                        # ya reclutada
+
+    def test_boton_ha_hablado(self):
+        """El jugador habló con Jade por su cuenta: se une sin gastar la acción de nadie."""
+        r = self.client.post("/api/unidad/unir", json={"nombre": "Jade"})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        jade = tablero.obtener_ficha("Jade")
+        self.assertTrue(jade.controlable and not jade.es_verde and not jade.union_pendiente)
+        self.assertFalse(self.alear.ha_actuado)
+        self.assertEqual(self.client.post("/api/unidad/unir", json={"nombre": "Jade"}).status_code, 400)
+        self.assertTrue(tablero.deshacer())
+        self.assertTrue(tablero.obtener_ficha("Jade").union_pendiente)
 
     def test_api_hablar_y_deshacer(self):
         tablero.mover_unidad(self.alear.nombre, self.jade.x, self.jade.y + 1)

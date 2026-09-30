@@ -310,6 +310,9 @@ def extraer_terrenos(trans):
             "es_antirruptura": bool(flag & 4096),
             "combate_prohibido": to_int(row.get("Prohibition")) > 0,
             "coste_mov": to_int(row.get("MoveCost"), 1),
+            # MoveFirst (初期移動加算): Mov que gana o pierde quien EMPIEZA su fase encima
+            # (arenas movedizas −3, suelo helado +2)
+            "mov_inicial": to_int(row.get("MoveFirst")),
         }
     return terrenos
 

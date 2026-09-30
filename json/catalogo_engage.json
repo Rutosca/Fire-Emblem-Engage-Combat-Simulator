@@ -237062,7 +237062,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_進入不可": {
       "tid": "TID_進入不可",
@@ -237076,7 +237077,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_進入不可_M026": {
       "tid": "TID_進入不可_M026",
@@ -237090,7 +237092,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_平地": {
       "tid": "TID_平地",
@@ -237104,7 +237107,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_草原": {
       "tid": "TID_草原",
@@ -237118,7 +237122,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_甲板": {
       "tid": "TID_甲板",
@@ -237132,7 +237137,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_地面": {
       "tid": "TID_地面",
@@ -237146,7 +237152,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_道": {
       "tid": "TID_道",
@@ -237160,7 +237167,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_砂漠": {
       "tid": "TID_砂漠",
@@ -237174,7 +237182,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_砂浜": {
       "tid": "TID_砂浜",
@@ -237188,7 +237197,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_砂浜_M016": {
       "tid": "TID_砂浜_M016",
@@ -237202,7 +237212,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_流砂": {
       "tid": "TID_流砂",
@@ -237216,7 +237227,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": -3
     },
     "TID_浅瀬": {
       "tid": "TID_浅瀬",
@@ -237230,7 +237242,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_川": {
       "tid": "TID_川",
@@ -237244,7 +237257,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_水路": {
       "tid": "TID_水路",
@@ -237258,7 +237272,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_海": {
       "tid": "TID_海",
@@ -237272,7 +237287,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_海_全戦禁": {
       "tid": "TID_海_全戦禁",
@@ -237286,7 +237302,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_海_影無": {
       "tid": "TID_海_影無",
@@ -237300,7 +237317,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_山": {
       "tid": "TID_山",
@@ -237314,7 +237332,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_崖": {
       "tid": "TID_崖",
@@ -237328,7 +237347,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_空": {
       "tid": "TID_空",
@@ -237342,7 +237362,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_岩": {
       "tid": "TID_岩",
@@ -237356,7 +237377,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_大岩": {
       "tid": "TID_大岩",
@@ -237370,7 +237392,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_土嚢": {
       "tid": "TID_土嚢",
@@ -237384,7 +237407,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_障害物": {
       "tid": "TID_障害物",
@@ -237398,7 +237422,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_低障害物": {
       "tid": "TID_低障害物",
@@ -237412,7 +237437,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_防柵": {
       "tid": "TID_防柵",
@@ -237426,7 +237452,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_防壁": {
       "tid": "TID_防壁",
@@ -237440,7 +237467,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_瓦礫": {
       "tid": "TID_瓦礫",
@@ -237454,7 +237482,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_瓦礫_全戦禁": {
       "tid": "TID_瓦礫_全戦禁",
@@ -237468,7 +237497,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_溶岩": {
       "tid": "TID_溶岩",
@@ -237482,7 +237512,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_階段": {
       "tid": "TID_階段",
@@ -237496,7 +237527,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_階段_戦禁": {
       "tid": "TID_階段_戦禁",
@@ -237510,7 +237542,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_魔法陣": {
       "tid": "TID_魔法陣",
@@ -237524,7 +237557,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_橋": {
       "tid": "TID_橋",
@@ -237538,7 +237572,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_船着き場": {
       "tid": "TID_船着き場",
@@ -237552,7 +237587,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_壊れた橋": {
       "tid": "TID_壊れた橋",
@@ -237566,7 +237602,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_上橋": {
       "tid": "TID_上橋",
@@ -237580,7 +237617,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_民家": {
       "tid": "TID_民家",
@@ -237594,7 +237632,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_民家入口": {
       "tid": "TID_民家入口",
@@ -237608,7 +237647,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_建物": {
       "tid": "TID_建物",
@@ -237622,7 +237662,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_風車": {
       "tid": "TID_風車",
@@ -237636,7 +237677,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_建物灯": {
       "tid": "TID_建物灯",
@@ -237650,7 +237692,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_船体": {
       "tid": "TID_船体",
@@ -237664,7 +237707,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_建造物": {
       "tid": "TID_建造物",
@@ -237678,7 +237722,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_建造物灯": {
       "tid": "TID_建造物灯",
@@ -237692,7 +237737,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_配置物": {
       "tid": "TID_配置物",
@@ -237706,7 +237752,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_石像": {
       "tid": "TID_石像",
@@ -237720,7 +237767,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_祭壇": {
       "tid": "TID_祭壇",
@@ -237734,7 +237782,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_石棺": {
       "tid": "TID_石棺",
@@ -237748,7 +237797,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_長椅子": {
       "tid": "TID_長椅子",
@@ -237762,7 +237812,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_茂み": {
       "tid": "TID_茂み",
@@ -237776,7 +237827,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_廃墟": {
       "tid": "TID_廃墟",
@@ -237790,7 +237842,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_砦": {
       "tid": "TID_砦",
@@ -237804,7 +237857,8 @@
       "heal_turno": 10,
       "es_antirruptura": true,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_林": {
       "tid": "TID_林",
@@ -237818,7 +237872,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_森": {
       "tid": "TID_森",
@@ -237832,7 +237887,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_植込": {
       "tid": "TID_植込",
@@ -237846,7 +237902,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_床": {
       "tid": "TID_床",
@@ -237860,7 +237917,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_床_全戦禁": {
       "tid": "TID_床_全戦禁",
@@ -237874,7 +237932,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_崩れた床": {
       "tid": "TID_崩れた床",
@@ -237888,7 +237947,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_回復床": {
       "tid": "TID_回復床",
@@ -237902,7 +237962,8 @@
       "heal_turno": 10,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_防衛床": {
       "tid": "TID_防衛床",
@@ -237916,7 +237977,8 @@
       "heal_turno": 10,
       "es_antirruptura": true,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_柱": {
       "tid": "TID_柱",
@@ -237930,7 +237992,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_大柱": {
       "tid": "TID_大柱",
@@ -237944,7 +238007,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_帆柱": {
       "tid": "TID_帆柱",
@@ -237958,7 +238022,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_台座": {
       "tid": "TID_台座",
@@ -237972,7 +238037,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_壁": {
       "tid": "TID_壁",
@@ -237986,7 +238052,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_低い壁": {
       "tid": "TID_低い壁",
@@ -238000,7 +238067,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_壊れる壁": {
       "tid": "TID_壊れる壁",
@@ -238014,7 +238082,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_壊れる壁_HP30": {
       "tid": "TID_壊れる壁_HP30",
@@ -238028,7 +238097,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_壊れる壁_HP50": {
       "tid": "TID_壊れる壁_HP50",
@@ -238042,7 +238112,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_壊れる壁_HP90_敵のみ": {
       "tid": "TID_壊れる壁_HP90_敵のみ",
@@ -238056,7 +238127,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_破壊可能_HP20": {
       "tid": "TID_破壊可能_HP20",
@@ -238070,7 +238142,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_破壊可能_HP30": {
       "tid": "TID_破壊可能_HP30",
@@ -238084,7 +238157,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_破壊可能_HP50": {
       "tid": "TID_破壊可能_HP50",
@@ -238098,7 +238172,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_防護柵": {
       "tid": "TID_防護柵",
@@ -238112,7 +238187,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_水晶": {
       "tid": "TID_水晶",
@@ -238126,7 +238202,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_扉": {
       "tid": "TID_扉",
@@ -238140,7 +238217,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_扉_HP30": {
       "tid": "TID_扉_HP30",
@@ -238154,7 +238232,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_屋根": {
       "tid": "TID_屋根",
@@ -238168,7 +238247,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_篝火": {
       "tid": "TID_篝火",
@@ -238182,7 +238262,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_篝火消": {
       "tid": "TID_篝火消",
@@ -238196,7 +238277,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_篝火常": {
       "tid": "TID_篝火常",
@@ -238210,7 +238292,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_燭台": {
       "tid": "TID_燭台",
@@ -238224,7 +238307,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_宝箱": {
       "tid": "TID_宝箱",
@@ -238238,7 +238322,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_空宝箱": {
       "tid": "TID_空宝箱",
@@ -238252,7 +238337,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_弓砲台": {
       "tid": "TID_弓砲台",
@@ -238266,7 +238352,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_弓砲台_S010": {
       "tid": "TID_弓砲台_S010",
@@ -238280,7 +238367,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_魔砲台": {
       "tid": "TID_魔砲台",
@@ -238294,7 +238382,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_火炎砲台": {
       "tid": "TID_火炎砲台",
@@ -238308,7 +238397,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_火炎砲台_M019": {
       "tid": "TID_火炎砲台_M019",
@@ -238322,7 +238412,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_火炎砲台_S013": {
       "tid": "TID_火炎砲台_S013",
@@ -238336,7 +238427,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_邪竜脈": {
       "tid": "TID_邪竜脈",
@@ -238350,7 +238442,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_シグルドの指輪": {
       "tid": "TID_シグルドの指輪",
@@ -238364,7 +238457,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_セリカの指輪": {
       "tid": "TID_セリカの指輪",
@@ -238378,7 +238472,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ミカヤの指輪": {
       "tid": "TID_ミカヤの指輪",
@@ -238392,7 +238487,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ロイの指輪": {
       "tid": "TID_ロイの指輪",
@@ -238406,7 +238502,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_リーフの指輪": {
       "tid": "TID_リーフの指輪",
@@ -238420,7 +238517,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ルキナの指輪": {
       "tid": "TID_ルキナの指輪",
@@ -238434,7 +238532,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_リンの指輪": {
       "tid": "TID_リンの指輪",
@@ -238448,7 +238547,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_アイクの指輪": {
       "tid": "TID_アイクの指輪",
@@ -238462,7 +238562,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ベレトの指輪": {
       "tid": "TID_ベレトの指輪",
@@ -238476,7 +238577,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_カムイの指輪": {
       "tid": "TID_カムイの指輪",
@@ -238490,7 +238592,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_エイリークの指輪": {
       "tid": "TID_エイリークの指輪",
@@ -238504,7 +238607,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_加勢マス": {
       "tid": "TID_加勢マス",
@@ -238518,7 +238622,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_砂場": {
       "tid": "TID_砂場",
@@ -238532,7 +238637,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_金貨の山": {
       "tid": "TID_金貨の山",
@@ -238546,7 +238652,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_泉": {
       "tid": "TID_泉",
@@ -238560,7 +238667,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_氷の床": {
       "tid": "TID_氷の床",
@@ -238574,7 +238682,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_弓砲台_対戦": {
       "tid": "TID_弓砲台_対戦",
@@ -238588,7 +238697,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_魔砲台_対戦": {
       "tid": "TID_魔砲台_対戦",
@@ -238602,7 +238712,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_火炎砲台_対戦": {
       "tid": "TID_火炎砲台_対戦",
@@ -238616,7 +238727,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_雪だるま": {
       "tid": "TID_雪だるま",
@@ -238630,7 +238742,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_干し草": {
       "tid": "TID_干し草",
@@ -238644,7 +238757,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_結晶": {
       "tid": "TID_結晶",
@@ -238658,7 +238772,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_サボテン": {
       "tid": "TID_サボテン",
@@ -238672,7 +238787,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ローズアーチ": {
       "tid": "TID_ローズアーチ",
@@ -238686,7 +238802,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_遺跡": {
       "tid": "TID_遺跡",
@@ -238700,7 +238817,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_荷車": {
       "tid": "TID_荷車",
@@ -238714,7 +238832,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_井戸": {
       "tid": "TID_井戸",
@@ -238728,7 +238847,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_積み荷": {
       "tid": "TID_積み荷",
@@ -238742,7 +238862,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_柵": {
       "tid": "TID_柵",
@@ -238756,7 +238877,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_動物像": {
       "tid": "TID_動物像",
@@ -238770,7 +238892,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ソラ像": {
       "tid": "TID_ソラ像",
@@ -238784,7 +238907,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_霧": {
       "tid": "TID_霧",
@@ -238798,7 +238922,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_炎上": {
       "tid": "TID_炎上",
@@ -238812,7 +238937,8 @@
       "heal_turno": -10,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 2
+      "coste_mov": 2,
+      "mov_inicial": 0
     },
     "TID_瘴気": {
       "tid": "TID_瘴気",
@@ -238826,7 +238952,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_アロマ": {
       "tid": "TID_アロマ",
@@ -238840,7 +238967,8 @@
       "heal_turno": 10,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ブロック": {
       "tid": "TID_ブロック",
@@ -238854,7 +238982,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 255
+      "coste_mov": 255,
+      "mov_inicial": 0
     },
     "TID_水溜まり": {
       "tid": "TID_水溜まり",
@@ -238868,7 +238997,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_ツタ": {
       "tid": "TID_ツタ",
@@ -238882,7 +239012,8 @@
       "heal_turno": 0,
       "es_antirruptura": true,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_照明": {
       "tid": "TID_照明",
@@ -238896,7 +239027,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_土柱": {
       "tid": "TID_土柱",
@@ -238910,7 +239042,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_霧_永続": {
       "tid": "TID_霧_永続",
@@ -238924,7 +239057,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_炎上_永続": {
       "tid": "TID_炎上_永続",
@@ -238938,7 +239072,8 @@
       "heal_turno": -10,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 2
+      "coste_mov": 2,
+      "mov_inicial": 0
     },
     "TID_瘴気_永続": {
       "tid": "TID_瘴気_永続",
@@ -238952,7 +239087,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_アロマ_永続": {
       "tid": "TID_アロマ_永続",
@@ -238966,7 +239102,8 @@
       "heal_turno": 10,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_ブロック_永続": {
       "tid": "TID_ブロック_永続",
@@ -238980,7 +239117,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 255
+      "coste_mov": 255,
+      "mov_inicial": 0
     },
     "TID_水溜まり_永続": {
       "tid": "TID_水溜まり_永続",
@@ -238994,7 +239132,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_ツタ_永続": {
       "tid": "TID_ツタ_永続",
@@ -239008,7 +239147,8 @@
       "heal_turno": 0,
       "es_antirruptura": true,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_土柱_永続": {
       "tid": "TID_土柱_永続",
@@ -239022,7 +239162,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_紋章氣": {
       "tid": "TID_紋章氣",
@@ -239036,7 +239177,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_扉_破壊不可": {
       "tid": "TID_扉_破壊不可",
@@ -239050,7 +239192,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_宝箱_氷結界": {
       "tid": "TID_宝箱_氷結界",
@@ -239064,7 +239207,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_床_氷結界": {
       "tid": "TID_床_氷結界",
@@ -239078,7 +239222,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_魔法陣_氷結界": {
       "tid": "TID_魔法陣_氷結界",
@@ -239092,7 +239237,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_謎の平地": {
       "tid": "TID_謎の平地",
@@ -239106,7 +239252,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_起動盤": {
       "tid": "TID_起動盤",
@@ -239120,7 +239267,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_水晶_味方破壊": {
       "tid": "TID_水晶_味方破壊",
@@ -239134,7 +239282,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_魔法障壁": {
       "tid": "TID_魔法障壁",
@@ -239148,7 +239297,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_床_ターゲット・ワープ禁": {
       "tid": "TID_床_ターゲット・ワープ禁",
@@ -239162,7 +239312,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_柱_ターゲット・ワープ禁": {
       "tid": "TID_柱_ターゲット・ワープ禁",
@@ -239176,7 +239327,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_防衛床_ターゲット・ワープ禁": {
       "tid": "TID_防衛床_ターゲット・ワープ禁",
@@ -239190,7 +239342,8 @@
       "heal_turno": 10,
       "es_antirruptura": true,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_瓦礫_ターゲット・ワープ禁": {
       "tid": "TID_瓦礫_ターゲット・ワープ禁",
@@ -239204,7 +239357,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜１": {
       "tid": "TID_竜１",
@@ -239218,7 +239372,8 @@
       "heal_turno": 30,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜２": {
       "tid": "TID_竜２",
@@ -239232,7 +239387,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜３": {
       "tid": "TID_竜３",
@@ -239246,7 +239402,8 @@
       "heal_turno": 20,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜４": {
       "tid": "TID_竜４",
@@ -239260,7 +239417,8 @@
       "heal_turno": 40,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜５": {
       "tid": "TID_竜５",
@@ -239274,7 +239432,8 @@
       "heal_turno": 40,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜６": {
       "tid": "TID_竜６",
@@ -239288,7 +239447,8 @@
       "heal_turno": 10,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_竜７": {
       "tid": "TID_竜７",
@@ -239302,7 +239462,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_湖": {
       "tid": "TID_湖",
@@ -239316,7 +239477,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_噴気孔": {
       "tid": "TID_噴気孔",
@@ -239330,7 +239492,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_池": {
       "tid": "TID_池",
@@ -239344,7 +239507,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_火山弾跡": {
       "tid": "TID_火山弾跡",
@@ -239358,7 +239522,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_噴火口": {
       "tid": "TID_噴火口",
@@ -239372,7 +239537,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_墓地": {
       "tid": "TID_墓地",
@@ -239386,7 +239552,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": true,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_氷床": {
       "tid": "TID_氷床",
@@ -239400,7 +239567,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 2
     },
     "TID_煙": {
       "tid": "TID_煙",
@@ -239414,7 +239582,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_煙_G004": {
       "tid": "TID_煙_G004",
@@ -239428,7 +239597,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 1
+      "coste_mov": 1,
+      "mov_inicial": 0
     },
     "TID_氷床_永続": {
       "tid": "TID_氷床_永続",
@@ -239442,7 +239612,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 2
     },
     "TID_瘴気の領域": {
       "tid": "TID_瘴気の領域",
@@ -239456,7 +239627,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 0
     },
     "TID_氷の領域": {
       "tid": "TID_氷の領域",
@@ -239470,7 +239642,8 @@
       "heal_turno": 0,
       "es_antirruptura": false,
       "combate_prohibido": false,
-      "coste_mov": 0
+      "coste_mov": 0,
+      "mov_inicial": 2
     }
   },
   "estilos_combate": {

@@ -52,6 +52,7 @@ class FichaUnidad:
     boosts_fusion: dict = field(default_factory=dict)  # Bono de stats en Fusión observado en el juego (Rise Above de Roy): {"hp":5,"str":3,...}
     es_verde: bool = False             # True para aliados que se unen en turno 1 (Alcryst, Citrinne, Lapis)
     union_pendiente: bool = False      # Verde que aún no se ha unido: lo mueve la CPU, no es controlable (Jade en Cap. 9)
+    nunca_se_une: bool = False         # Verde de la CPU toda la batalla (aldeanos de Solm, Cap. 12): nunca controlable
     habla_con: list = field(default_factory=list)   # pids que pueden reclutarlo hablando desde una casilla adyacente
     es_fijo: bool = False              # True si su posición no puede cambiarse en preparación (Alear, verdes)
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
@@ -98,8 +99,9 @@ class FichaUnidad:
 
     @property
     def controlable(self) -> bool:
-        """Aliado que el jugador controla (los verdes pendientes de unión no lo son)."""
-        return bool(self.es_aliado and not self.union_pendiente)
+        """Aliado que el jugador controla (ni los verdes pendientes de unión ni los que la
+        CPU mueve toda la batalla)."""
+        return bool(self.es_aliado and not self.union_pendiente and not self.nunca_se_une)
 
     def _puede_call_doubles(self) -> bool:
         """True si la unidad tiene el comando Call Doubles (SID_残像) activo — lo usa la
@@ -120,6 +122,19 @@ class FichaUnidad:
         except Exception:
             info = {}
         return str(info.get("emblema_base") or self.emblema_nombre or "").strip()
+
+    @staticmethod
+    def _nombres_de_pids(pids) -> list:
+        """Nombres (del catálogo) de unos PIDs: la ficha de un personaje del escuadrón no
+        siempre lleva su pid, así que buscarlo en el tablero no basta (Diamant en el Cap. 9)."""
+        if not pids:
+            return []
+        try:
+            from catalogo_loader import _catalogo
+            personajes = _catalogo.get("personajes", {}) or {}
+        except Exception:
+            personajes = {}
+        return [(personajes.get(p) or {}).get("nombre") or p for p in pids]
 
     def _puede_escudo_vinculo(self) -> bool:
         """True si la unidad tiene Bonded Shield (SID_絆盾) activo."""
@@ -346,7 +361,9 @@ class FichaUnidad:
             "es_verde": self.es_verde,
             "pid": getattr(self, "pid", "") or "",
             "union_pendiente": self.union_pendiente,
+            "nunca_se_une": self.nunca_se_une,
             "habla_con": list(self.habla_con or []),
+            "habla_con_nombres": self._nombres_de_pids(self.habla_con),
             "controlable": self.controlable,
             "es_fijo": self.es_fijo,
             "ha_actuado": self.ha_actuado,
@@ -643,22 +660,37 @@ class EstadoTablero:
 
     def refrescar_hielo_deslizante(self) -> list:
         """
-        Vena de hielo (Camilla, [Qi Adept]): +2 de movimiento a quien esté sobre una de
-        esas casillas, de cualquier bando. No hace falta haber empezado la fase encima —
-        si se lo crean debajo antes de que se mueva, ya le cuenta. Se recalcula cada vez
-        que cambia el suelo o se mueve alguien. Devuelve [(nombre, bono)].
+        Mov de este turno según la casilla en la que está la unidad, de cualquier bando:
+          - Vena de hielo (Camilla, [Qi Adept]): +2. No hace falta haber empezado la fase
+            encima: si se lo crean debajo antes de que se mueva, ya le cuenta.
+          - Terreno del mapa con MoveFirst en Terrain.xml (`Terreno.mov_inicial`): las
+            arenas movedizas del Cap. 12 quitan 3 a quien empieza su fase encima, también a
+            los enemigos que aparecen sobre ellas.
+        Como el movimiento se calcula desde donde está la unidad, "empezar encima" es estar
+        ahí antes de moverse: llegar a la casilla no cambia nada hasta su siguiente fase.
+        Se recalcula cada vez que cambia el suelo o se mueve alguien. Devuelve [(nombre, Mov)].
         """
         heladas = set(self.casillas_de_tipo("pista_hielo"))
-        beneficiadas = []
+        afectadas = []
         for f in self.fichas.values():
-            if not f.viva:
-                f.mov_extra_turno = 0
-                continue
-            f.mov_extra_turno = 2 if (f.x, f.y) in heladas else 0
+            f.mov_extra_turno = self._mov_por_casilla(f, heladas)
             if f.mov_extra_turno:
-                beneficiadas.append((f.nombre, f.mov_extra_turno))
-        self.hielo_deslizante_ultimo = beneficiadas
-        return beneficiadas
+                afectadas.append((f.nombre, f.mov_extra_turno))
+        self.hielo_deslizante_ultimo = afectadas
+        return afectadas
+
+    def _mov_por_casilla(self, f, heladas=None) -> int:
+        """Mov extra (o de menos) de `f` por la casilla en la que está. Los voladores no
+        reciben bonos ni penalizaciones del suelo: ni hielo ni arenas movedizas."""
+        if not f.viva or f.es_volador:
+            return 0
+        if heladas is None:
+            heladas = set(self.casillas_de_tipo("pista_hielo"))
+        extra = 2 if (f.x, f.y) in heladas else 0
+        grid = getattr(self.mapa, "grid", None)
+        if grid is not None and 0 <= f.x < len(grid) and 0 <= f.y < len(grid[f.x]):
+            extra += int(getattr(grid[f.x][f.y], "mov_inicial", 0) or 0)
+        return extra
 
     def congelar(self, nombres) -> list:
         """Congela a las unidades indicadas (Ice Breath). Devuelve las que quedaron congeladas."""
@@ -994,6 +1026,9 @@ class EstadoTablero:
             ficha.accion_turno = prev.accion_turno
 
         self.fichas[ficha.nombre] = ficha
+        # Sale al tablero sobre su casilla (Preset, refuerzos, modal): si son arenas
+        # movedizas, ya empieza su fase con −3
+        ficha.mov_extra_turno = self._mov_por_casilla(ficha)
 
     def registrar_muerte(self, nombre: str) -> None:
         """
@@ -1147,11 +1182,22 @@ class EstadoTablero:
             return False, f"{o.nombre} solo habla con: {', '.join(autorizados)}"
         if distancia_entre_unidades(h, o) != 1:
             return False, f"{h.nombre} debe estar en una casilla adyacente a {o.nombre}"
-        o.union_pendiente = False
-        o.es_fijo = False
+        self.unir_al_ejercito(o.nombre)
         h.ha_actuado = True
         h.accion_turno = "hablar"
         return True, f"{o.nombre} se une al ejército"
+
+    def unir_al_ejercito(self, nombre: str) -> bool:
+        """Un verde conversacional se une: pasa a ser azul y controlable. Lo usan la
+        conversación recomendada y el botón "Ha hablado" del modal (cuando el jugador la
+        hace por su cuenta, sin que la herramienta sepa quién le habló)."""
+        o = self.fichas.get(nombre)
+        if not o or not o.union_pendiente:
+            return False
+        o.union_pendiente = False
+        o.es_verde = False
+        o.es_fijo = False
+        return True
 
     def obtener_enemigos(self) -> List[FichaUnidad]:
         """Devuelve enemigos vivos."""
@@ -1732,6 +1778,13 @@ class EstadoTablero:
             return []
         self.guardar_snapshot()
         self.batalla_iniciada = True
+        # Los aliados que se unen al empezar ya salen azules del Preset; esto cubre las
+        # partidas guardadas antes de distinguir los tres tipos (TIPO_ALIADO). Siguen verdes
+        # los que hay que reclutar hablando y los que la CPU mueve toda la batalla.
+        for f in self.fichas.values():
+            if f.es_aliado and f.es_verde and not f.union_pendiente and not f.nunca_se_une:
+                f.es_verde = False
+                f.es_fijo = False
         import pasivas_temporales
         self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=True)
         return self.estados_inicio_fase_ultimo

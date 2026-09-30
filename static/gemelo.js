@@ -309,7 +309,7 @@ function crearToken(ficha) {
   const hpActual = ficha.hp_actual !== undefined ? ficha.hp_actual : hpMax;
   const pct = ficha.pct_hp !== undefined ? ficha.pct_hp : Math.round((hpActual / hpMax) * 100);
 
-  let desc = `${ficha.nombre} (${ficha.union_pendiente ? "Aliado Verde · NO controlable: habla con él para reclutarlo" : (ficha.es_verde ? "Aliado Verde" : (ficha.es_aliado ? "Aliado" : "Enemigo"))})\nHP: ${hpActual}/${hpMax} (${pct}%)\nClase: ${ficha.clase_nombre || "Desconocida"} | Nv: ${ficha.nivel || 1}`;
+  let desc = `${ficha.nombre} (${ficha.union_pendiente ? "Aliado Verde · NO controlable: habla con él para reclutarlo" : (ficha.nunca_se_une ? "Aliado Verde · lo mueve la CPU, nunca se une" : (ficha.es_verde ? "Aliado Verde" : (ficha.es_aliado ? "Aliado" : "Enemigo")))})\nHP: ${hpActual}/${hpMax} (${pct}%)\nClase: ${ficha.clase_nombre || "Desconocida"} | Nv: ${ficha.nivel || 1}`;
   if (ficha.arma_equipada) desc += `\nArma: ${ficha.arma_equipada.nombre} (Mt ${ficha.arma_equipada.mt}, Rango ${ficha.arma_equipada.rango.join('-')})`;
   if (ficha.emblema_nombre) desc += `\nEmblema: ${ficha.emblema_nombre}`;
   const es3H = (ficha.emblema_nombre && (ficha.emblema_nombre.toLowerCase().includes("edelgard") || ficha.emblema_nombre.toLowerCase().includes("tres casas") || ficha.emblema_nombre.toLowerCase().includes("three houses")));
@@ -1498,6 +1498,7 @@ function abrirModalEdicion(ficha) {
   actualizarBotonDobles(ficha);
   actualizarBotonEscudo(ficha);
   actualizarBotonAccion(ficha);
+  actualizarBotonUnion(ficha);
   $("modal-backdrop").classList.remove("hidden");
 }
 
@@ -1534,6 +1535,34 @@ function actualizarBotonAccion(ficha) {
   btn.title = ev.disparado
     ? `Ya llegaron los refuerzos de ${ficha.nombre}`
     : `${ev.descripcion}. Púlsalo cuando ${ficha.nombre} ataque, use un bastón o reciba un ataque.`;
+}
+
+// Aliado verde conversacional (Jade en el Cap. 9): el botón "Ha hablado" lo une cuando
+// el jugador ya ha hecho la conversación por su cuenta.
+function actualizarBotonUnion(ficha) {
+  const btn = $("btn-modal-unir");
+  if (!btn) return;
+  state.fichaUnion = ficha;
+  const pendiente = !!(ficha && ficha.union_pendiente);
+  btn.classList.toggle("hidden", !pendiente);
+  if (!pendiente) return;
+  const nombres = ficha.habla_con_nombres || ficha.habla_con || [];
+  btn.title = `Márcalo si ya has hablado con ${ficha.nombre} en el juego: pasará a azul y a tu control` +
+    (nombres.length ? ` (pueden hablarle: ${nombres.join(", ")})` : "");
+}
+
+async function unirUnidadHablada() {
+  const ficha = state.fichaUnion;
+  if (!ficha) return;
+  const res = await api("/api/unidad/unir", "POST", { nombre: ficha.nombre });
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo unir la unidad", "error");
+    return;
+  }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  mostrarToast(`💬 ${res.mensaje}`, "ok");
+  setTimeout(lanzarAnalisis, 250);
 }
 
 async function registrarAccionDeUnidad() {
@@ -1954,6 +1983,7 @@ function construirPayloadDesdeModal(fichaExistente) {
     es_verde: fichaExistente ? !!fichaExistente.es_verde : undefined,
     es_fijo: fichaExistente ? !!fichaExistente.es_fijo : undefined,
     union_pendiente: fichaExistente ? !!fichaExistente.union_pendiente : undefined,
+    nunca_se_une: fichaExistente ? !!fichaExistente.nunca_se_une : undefined,
     habla_con: fichaExistente ? (fichaExistente.habla_con || []) : undefined,
     pid: fichaExistente ? (fichaExistente.pid || undefined) : undefined,
     es_jefe: fichaExistente ? !!fichaExistente.es_jefe : undefined,
@@ -2184,6 +2214,7 @@ function initModalEvents() {
   if ($("btn-modal-dobles")) $("btn-modal-dobles").addEventListener("click", alternarDobles);
   if ($("btn-modal-escudo")) $("btn-modal-escudo").addEventListener("click", activarEscudoVinculo);
   if ($("btn-modal-accion")) $("btn-modal-accion").addEventListener("click", registrarAccionDeUnidad);
+  if ($("btn-modal-unir")) $("btn-modal-unir").addEventListener("click", unirUnidadHablada);
 
   // Botones rápidos de ajuste de HP en el modal
   $("btn-hp-pocion").addEventListener("click", () => {

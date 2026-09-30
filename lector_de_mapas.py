@@ -64,6 +64,9 @@ class Terreno:
     # Cómo era la casilla sin esa capa ({nombre, avo, dfn, coste_mov}): un efecto temporal
     # (fuego, niebla, venas…) ocupa la misma capa y la sustituye mientras dura.
     sin_superpuesto: Optional[dict] = None
+    # Mov que gana o pierde quien empieza su fase en la casilla (Terrain.xml MoveFirst):
+    # −3 en las arenas movedizas (Cap. 12). Lo aplica EstadoTablero.refrescar_mov_por_terreno.
+    mov_inicial: int = 0
 
 
 
@@ -76,6 +79,13 @@ class Terreno:
 #     Es la misma regla que las venas de ataques_area.TERRENOS_TEMPORALES.
 TERRENOS_SUPERPUESTOS = {
     "agua": "TID_水溜まり_永続",
+}
+
+# `tipo` de Tiled → TID de Terrain.xml de los terrenos de base cuyo efecto sale del catálogo
+# y no de las propiedades del tile. Solo se toma de ahí lo que Tiled no dice (MoveFirst):
+# el coste de paso sigue siendo el del tile (MoveCost de Terrain.xml es el de las capas).
+TIPOS_TILED_CON_TID = {
+    "arena_movediza": "TID_流砂", "arenas_movedizas": "TID_流砂", "quicksand": "TID_流砂",
 }
 
 
@@ -372,6 +382,8 @@ class MapaTactico:
                         # Un tile puede llevar tipo y objetivo a la vez (p.ej. trono + victoria);
                         # si el objetivo ya venía de una capa inferior, se conserva.
                         objetivo=str(props.get('objetivo', self.grid[x][y].objetivo or '')).lower(),
+                        mov_inicial=int(props.get('mov_inicial', (_CANONICO_TERRENOS.get(
+                            TIPOS_TILED_CON_TID.get(tipo_nombre, tid_nombre).lower()) or {}).get('mov_inicial', 0)) or 0),
                     )
 
         for x, y, tipo_sup, props_sup in superpuestos:

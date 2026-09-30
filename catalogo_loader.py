@@ -2039,6 +2039,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         return getattr(unidad_previa, clave, defecto) if unidad_previa else defecto
     es_verde = bool(_dato_o_previo("es_verde", False))
     union_pendiente = bool(_dato_o_previo("union_pendiente", False)) and bool(data.get("es_aliado", True))
+    nunca_se_une = bool(_dato_o_previo("nunca_se_une", False)) and bool(data.get("es_aliado", True))
     habla_con = list(_dato_o_previo("habla_con", []) or [])
     es_fijo = bool(_dato_o_previo("es_fijo", False)) or (es_verde and union_pendiente) or ("alear" in nombre.lower())
 
@@ -2061,6 +2062,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         es_aliado=es_aliado,
         es_verde=es_verde,
         union_pendiente=union_pendiente,
+        nunca_se_une=nunca_se_une,
         habla_con=habla_con,
         es_fijo=es_fijo,
         x=x,
