@@ -317,6 +317,7 @@ function crearToken(ficha) {
   if (ficha.nivel_veneno > 0) desc += `\n[VENENO NIVEL ${ficha.nivel_veneno}: Recibe +${ficha.nivel_veneno} dmg de todo ataque]`;
   if (ficha.congelado) desc += `\n[CONGELADA: 0 de movimiento durante su fase]`;
   if (ficha.ha_actuado) desc += `\n[HA ACTUADO ESTE TURNO - Movimiento bloqueado]`;
+  else if (ficha.sin_mover_turno) desc += `\n[CONTRACT: vuelve a actuar desde su casilla, sin moverse]`;
   if (ficha.en_ruptura || ficha.cargas_ruptura > 0) desc += `\n[RUPTURA ACTIVA: No puede contraatacar]`;
   for (const est of (ficha.estados_temporales || [])) {
     desc += `\n[⬆ ${est.nombre}: ${describirStatBoosts(est.stat_boosts)} hasta fase ${est.expira_fase} T${est.expira_turno}]`;
@@ -1499,6 +1500,7 @@ function abrirModalEdicion(ficha) {
   actualizarBotonEscudo(ficha);
   actualizarBotonAccion(ficha);
   actualizarBotonUnion(ficha);
+  actualizarBotonReactivar(ficha);
   $("modal-backdrop").classList.remove("hidden");
 }
 
@@ -1535,6 +1537,57 @@ function actualizarBotonAccion(ficha) {
   btn.title = ev.disparado
     ? `Ya llegaron los refuerzos de ${ficha.nombre}`
     : `${ev.descripcion}. Púlsalo cuando ${ficha.nombre} ataque, use un bastón o reciba un ataque.`;
+}
+
+// Dance (Seadall), Goddess Dance (Byleth en Fusión) y Contract (Verónica en Fusión):
+// devuelven la acción a aliados adyacentes que ya actuaron. El panel lista a quién y desde
+// qué casilla (la herramienta mueve antes a quien baila si hace falta: es una sola acción).
+function actualizarBotonReactivar(ficha) {
+  const btn = $("btn-modal-reactivar");
+  const panel = $("panel-reactivar");
+  if (!btn) return;
+  state.fichaReactivar = ficha;
+  if (panel) { panel.innerHTML = ""; panel.classList.add("hidden"); }
+  const puede = !!(ficha && ficha.es_aliado && (ficha.reactivaciones || []).length &&
+                   (!ficha.ha_actuado || !ficha.accion_turno));
+  btn.classList.toggle("hidden", !puede);
+}
+
+async function mostrarOpcionesReactivar() {
+  const ficha = state.fichaReactivar;
+  const panel = $("panel-reactivar");
+  if (!ficha || !panel) return;
+  const res = await api(`/api/unidad/opciones_reactivar?nombre=${encodeURIComponent(ficha.nombre)}`);
+  const opciones = (res && res.opciones) || [];
+  panel.innerHTML = "";
+  if (!opciones.length) {
+    panel.textContent = "Ningún aliado que ya haya actuado está a su alcance.";
+  }
+  for (const op of opciones) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn-tool btn-gold";
+    const desde = (op.pos[0] === ficha.x && op.pos[1] === ficha.y) ? "" : ` (desde ${op.pos[0]},${op.pos[1]})`;
+    const extra = op.tipo === "contrato" ? " · actúa sin moverse" : "";
+    b.textContent = `${op.comando}: ${op.objetivos.join(", ")}${desde}${extra}`;
+    b.addEventListener("click", () => ejecutarReactivacion(ficha, op));
+    panel.appendChild(b);
+  }
+  panel.classList.remove("hidden");
+}
+
+async function ejecutarReactivacion(ficha, op) {
+  const payload = { actor: ficha.nombre, tipo: op.tipo, x: op.pos[0], y: op.pos[1] };
+  if (op.tipo !== "danza_diosa") payload.objetivo = op.objetivos[0];
+  const res = await api("/api/unidad/reactivar", "POST", payload);
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo devolver la acción", "error");
+    return;
+  }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  mostrarToast(`🔄 ${res.mensaje}`, "ok");
+  setTimeout(lanzarAnalisis, 250);
 }
 
 // Aliado verde conversacional (Jade en el Cap. 9): el botón "Ha hablado" lo une cuando
@@ -2215,6 +2268,7 @@ function initModalEvents() {
   if ($("btn-modal-escudo")) $("btn-modal-escudo").addEventListener("click", activarEscudoVinculo);
   if ($("btn-modal-accion")) $("btn-modal-accion").addEventListener("click", registrarAccionDeUnidad);
   if ($("btn-modal-unir")) $("btn-modal-unir").addEventListener("click", unirUnidadHablada);
+  if ($("btn-modal-reactivar")) $("btn-modal-reactivar").addEventListener("click", mostrarOpcionesReactivar);
 
   // Botones rápidos de ajuste de HP en el modal
   $("btn-hp-pocion").addEventListener("click", () => {
@@ -3025,6 +3079,8 @@ function renderResultado(container, r) {
     headerText = `⚠️ ${r.aliado} en peligro (${(r.amenazas || []).length} enemigo${(r.amenazas || []).length === 1 ? "" : "s"})`;
   } else if (r.tipo_analisis === "objetivo_victoria") {
     headerText = `🏁 ${r.aliado} → Casilla de victoria`;
+  } else if (r.tipo_analisis === "reactivacion") {
+    headerText = `🔄 ${r.aliado}: ${r.comando} → ${(r.objetivos || []).join(", ")}`;
   } else if (r.plan_jefe) {
     headerText = `👑 ${r.aliado} vs ${r.enemigo} (Asalto al jefe ${r.plan_jefe.orden}/${r.plan_jefe.total})`;
   } else if (r.plan_baja) {
@@ -3220,6 +3276,20 @@ function renderResultado(container, r) {
     }
     btnExec.addEventListener("click", () => ejecutarJugada(r));
     actionBar.appendChild(btnExec);
+    card.appendChild(actionBar);
+  } else if (r.tipo_analisis === "reactivacion") {
+    const actionBar = document.createElement("div");
+    actionBar.className = "card-action-bar";
+    const btnReact = document.createElement("button");
+    btnReact.type = "button";
+    btnReact.className = "btn-ejecutar-jugada";
+    btnReact.style.background = "linear-gradient(135deg, #7a5a1c, #c99a2e)";
+    const irA = (r.pos_sugerida && state.fichas[r.aliado] && (state.fichas[r.aliado].x !== r.pos_sugerida[0] || state.fichas[r.aliado].y !== r.pos_sugerida[1]))
+      ? ` (ir a ${r.pos_sugerida[0]},${r.pos_sugerida[1]})` : "";
+    btnReact.innerHTML = `🔄 <b>${r.comando}: ${(r.objetivos || []).join(", ")}</b>${irA}`;
+    btnReact.addEventListener("click", () => ejecutarReactivacion({ nombre: r.aliado },
+      { tipo: r.tipo, pos: r.pos_sugerida, objetivos: r.objetivos }));
+    actionBar.appendChild(btnReact);
     card.appendChild(actionBar);
   } else if (r.tipo_analisis === "conversacion") {
     const actionBar = document.createElement("div");

@@ -70,6 +70,9 @@ class FichaUnidad:
     es_jefe: bool = False              # True si la unidad es un jefe (boss)
     es_refuerzo: bool = False          # True si entró como refuerzo (no estaba en el despliegue inicial)
     accion_turno: str = ""             # Acción consumida este turno: "combate" | "objeto" | "baston" | "" (esperó / aún no actuó)
+    # Contract (Verónica): le han devuelto la acción, pero este turno no puede moverse; actúa
+    # (ataca, cura, usa un objeto) desde su casilla. Se limpia al empezar el turno.
+    sin_mover_turno: bool = False
     dificultad: str = ""               # Dificultad con la que se resolvieron sus stats (enemigos/refuerzos): "Extremo" | "Hard" | "Normal"
     mov_base: int = 0                  # Mov SIN el bono de Fusión (Gallop de Sigurd); `mov` = mov_base + bono
     invocador: str = ""                # Nombre de quien la invocó: doble de Call Doubles (SID_残像) de Lyn
@@ -92,6 +95,8 @@ class FichaUnidad:
         """
         if self.congelado or self.invocador:
             return 0   # congelada, o doble de Call Doubles (no se mueve: solo encadena y hace de señuelo)
+        if self.sin_mover_turno and not self.ha_actuado:
+            return 0   # le devolvieron la acción con Contract: actúa sin moverse
         # Estados temporales que tocan el Mov (Anima Focus de Soren con viento: -2)
         mov_estados = sum(int((e.get("stat_boosts") or {}).get("mov", 0) or 0)
                           for e in (self.estados_temporales or []))
@@ -135,6 +140,26 @@ class FichaUnidad:
         except Exception:
             personajes = {}
         return [(personajes.get(p) or {}).get("nombre") or p for p in pids]
+
+    def tipos_reactivacion(self) -> list:
+        """Comandos con los que esta unidad devuelve la acción a otras (EstadoTablero.reactivar):
+          "baile"        Dance (SID_踊り, clase Dancer: Seadall): una adyacente, con movimiento.
+          "danza_diosa"  Goddess Dance (Ataque de Emblema de Byleth, en Fusión y sin usar):
+                         todas las adyacentes en cruz que ya actuaron, con movimiento.
+          "contrato"     Contract (SID_契約, Verónica en Fusión): una adyacente, sin moverse."""
+        try:
+            import pasivas
+        except Exception:
+            return []
+        tipos = []
+        if pasivas.tiene_sid(self, "SID_踊り"):
+            tipos.append("baile")
+        sid_atk = str(getattr(self.stats, "sid_ataque_emblema", "") or "") if self.stats else ""
+        if self.en_fusion and sid_atk.startswith("SID_ベレトエンゲージ技") and not self.ataque_emblema_usado:
+            tipos.append("danza_diosa")
+        if pasivas.tiene_sid(self, "SID_契約"):
+            tipos.append("contrato")
+        return tipos
 
     def _puede_escudo_vinculo(self) -> bool:
         """True si la unidad tiene Bonded Shield (SID_絆盾) activo."""
@@ -368,6 +393,8 @@ class FichaUnidad:
             "es_fijo": self.es_fijo,
             "ha_actuado": self.ha_actuado,
             "accion_turno": self.accion_turno,
+            "sin_mover_turno": self.sin_mover_turno,
+            "reactivaciones": self.tipos_reactivacion(),
             "es_refuerzo": self.es_refuerzo,
             "invocador": self.invocador,
             "es_doble": bool(self.invocador),
@@ -1252,8 +1279,74 @@ class EstadoTablero:
             f.ha_actuado = False
             f.chain_guard_usado = False
             f.accion_turno = ""
+            f.sin_mover_turno = False
             if f.es_aliado:
                 f.cargas_ruptura = 0
+
+    # Nombres del juego de los comandos que devuelven la acción (FichaUnidad.tipos_reactivacion)
+    NOMBRES_REACTIVACION = {"baile": "Dance", "danza_diosa": "Goddess Dance", "contrato": "Contract"}
+
+    @staticmethod
+    def puede_usar_comando(f) -> bool:
+        """Aún puede usar un comando este turno: no ha actuado, o solo se ha movido (en la
+        herramienta, arrastrar la ficha gasta la acción; en el juego se mueve y luego baila)."""
+        return bool(f and f.viva and f.controlable and (not f.ha_actuado or not f.accion_turno))
+
+    def objetivos_de_reactivacion(self, actor, tipo: str) -> list:
+        """Aliados a los que `actor` puede devolver la acción con `tipo` desde su casilla actual:
+        controlables, vivos, que ya actuaron y adyacentes (en cruz)."""
+        return [f for f in self.fichas.values()
+                if f.viva and f.controlable and f.nombre != actor.nombre and f.ha_actuado
+                and not f.invocador and distancia_entre_unidades(actor, f) == 1]
+
+    def reactivar(self, actor: str, tipo: str, objetivo: Optional[str] = None):
+        """
+        `actor` gasta su acción en devolvérsela a otros (ver FichaUnidad.tipos_reactivacion).
+        Baile y Contract: a `objetivo`, adyacente. Goddess Dance: a todos los adyacentes que
+        ya actuaron, y gasta el Ataque de Emblema. Con Contract el objetivo actúa sin moverse.
+        Encadenable: lo bailado puede volver a atacar y una Goddess Dance puede reactivar
+        también a la bailarina. Devuelve (ok, mensaje, [reactivados]).
+        """
+        a = self.fichas.get(actor)
+        nombre_cmd = self.NOMBRES_REACTIVACION.get(tipo, tipo)
+        if not a:
+            return False, "Unidad no encontrada", []
+        if self.fase != "jugador":
+            return False, "Solo se puede en la fase de jugador", []
+        if not self.puede_usar_comando(a):
+            return False, f"{a.nombre} ya ha actuado este turno", []
+        if tipo not in a.tipos_reactivacion():
+            return False, f"{a.nombre} no puede usar {nombre_cmd}", []
+        candidatos = self.objetivos_de_reactivacion(a, tipo)
+        if tipo == "danza_diosa":
+            elegidos = candidatos
+        else:
+            o = self.fichas.get(objetivo) if objetivo else None
+            if o is None:
+                return False, f"Elige a quién dar {nombre_cmd}", []
+            if o not in candidatos:
+                if not o.ha_actuado:
+                    return False, f"{o.nombre} aún no ha actuado", []
+                if distancia_entre_unidades(a, o) != 1:
+                    return False, f"{a.nombre} debe estar junto a {o.nombre}", []
+                return False, f"{o.nombre} no puede recibir {nombre_cmd}", []
+            elegidos = [o]
+        if not elegidos:
+            return False, f"No hay ningún aliado adyacente que ya haya actuado", []
+        for o in elegidos:
+            o.ha_actuado = False
+            o.accion_turno = ""
+            o.sin_mover_turno = (tipo == "contrato")
+        a.ha_actuado = True
+        a.accion_turno = tipo
+        a.sin_mover_turno = False
+        if tipo == "danza_diosa":
+            a.ataque_emblema_usado = True
+            if a.stats:
+                setattr(a.stats, "ataque_emblema_usado", True)
+        nombres = [o.nombre for o in elegidos]
+        sufijo = " (sin moverse)" if tipo == "contrato" else ""
+        return True, f"{a.nombre} usa {nombre_cmd}: {', '.join(nombres)} vuelve{'n' if len(nombres) > 1 else ''} a actuar{sufijo}", nombres
 
     def alternar_actuado(self, nombre: str) -> bool:
         """Alterna el estado de acción (ha_actuado) de una unidad."""
@@ -1486,7 +1579,7 @@ class EstadoTablero:
                 nueva.stats.hp = nueva.hp_actual
                 setattr(nueva.stats, 'hp_actual', nueva.hp_actual)
             for campo in ("ha_actuado", "accion_turno", "cargas_ruptura", "nivel_veneno", "congelado",
-                          "hp_stock", "es_refuerzo", "estados_temporales", "mov_extra_turno"):
+                          "hp_stock", "es_refuerzo", "estados_temporales", "mov_extra_turno", "sin_mover_turno"):
                 setattr(nueva, campo, getattr(viejo, campo))
             self.fichas[viejo.nombre] = nueva
 

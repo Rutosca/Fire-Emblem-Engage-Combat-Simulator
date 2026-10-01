@@ -603,6 +603,9 @@
         <span>Posición en el mapa: (<b id="label-pos-x">0</b>, <b id="label-pos-y">0</b>)</span>
       </div>
 
+      <!-- Dance / Goddess Dance / Contract: a quién devolverle la acción -->
+      <div id="panel-reactivar" class="panel-reactivar hidden"></div>
+
       <!-- Botones del modal -->
       <div class="modal-footer">
         <button type="button" id="btn-modal-eliminar" class="btn-danger hidden">Eliminar Ficha</button>
@@ -612,6 +615,8 @@
                 title="Bonded Shield (Emblema de Lucina): marca a los aliados adyacentes como protegidos del primer ataque hasta el turno siguiente">Bonded Shield</button>
         <button type="button" id="btn-modal-accion" class="btn-tool btn-red hidden"
                 title="El guion trae refuerzos cuando esta unidad actúa (ataca, usa un bastón...). Márcalo aquí para que aparezcan">Ha actuado → refuerzos</button>
+        <button type="button" id="btn-modal-reactivar" class="btn-tool btn-gold hidden"
+                title="Devolver la acción a un aliado que ya actuó (Dance, Goddess Dance, Contract)">Dar acción</button>
         <button type="button" id="btn-modal-unir" class="btn-tool btn-gold hidden"
                 title="Aliado verde que se recluta hablando con él: márcalo si ya le has hablado en el juego y pasará a azul">Ha hablado</button>
         <div class="footer-right">

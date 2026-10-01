@@ -489,6 +489,10 @@ def buscar_catalogo():
             # Filtrar duplicados de scripts de eventos / enemigos para emblemas
             if cat == "emblemas" and (key.startswith("GID_M0") or "相手" in key or "敵" in key or nombre == "???"):
                 continue
+            # Clases de los Xenologue (JID_リンドブルム_E, "LindwurmR"): copias de la clase
+            # del personaje con el nombre sin traducir. Se ofrece solo la normal.
+            if cat == "clases" and key.endswith("_E") and key[:-2] in _catalogo["clases"]:
+                continue
 
             if q_norm in nombre_norm or q_norm in key_norm or (ascii_norm and q_norm in ascii_norm):
                 display_nombre = nombre
@@ -513,7 +517,10 @@ def buscar_catalogo():
                 if cat == "armas" and item.get("tipo") in {'Espada', 'Hacha', 'Lanza', 'Artes', 'Arco', 'Tomo', 'Daga'}:
                     if "+" in q or any(k in q_norm for k in GRABADOS_EMBLEMA):
                         parsed_exact = parsear_arma_string(q)
-                        if parsed_exact and parsed_exact["nombre_base"] == display_nombre:
+                        # Solo si es una variante de verdad (con forja o grabado): "Killing
+                        # Edge" contiene "lin" (Lyn) y se añadía otra vez el arma tal cual
+                        if (parsed_exact and parsed_exact["nombre_base"] == display_nombre
+                                and parsed_exact["nombre"] != display_nombre):
                             resultados.insert(0, {
                                 "categoria": cat,
                                 "id": key,
@@ -982,6 +989,8 @@ def mover_unidad():
     # (los verdes pendientes de unión los mueve la CPU: se recolocan libremente)
     if tablero.fase == "jugador" and ficha.controlable and ficha.ha_actuado:
         return jsonify({"error": f"{nombre} ya ha actuado este turno. Usa la Cronogema (Deshacer) para cambiar la elección."}), 400
+    if tablero.fase == "jugador" and ficha.sin_mover_turno and (x, y) != (ficha.x, ficha.y):
+        return jsonify({"error": f"{nombre} recibió Contract: este turno actúa desde su casilla, sin moverse."}), 400
 
     # 0. Unidad grande: la casilla soltada puede ser cualquiera de su huella final
     if (ficha.tamano or 1) > 1:
@@ -1306,6 +1315,48 @@ def usar_objeto():
         "fichas": [x.como_dict() for x in tablero.fichas.values()]
     })
 
+@app.route("/api/unidad/opciones_reactivar", methods=["GET"])
+def opciones_reactivar():
+    """
+    Lo que `nombre` puede hacer con sus comandos de devolver la acción (Dance, Goddess
+    Dance, Contract), con la casilla desde la que lo haría: la suya si ya sirve; si no, la
+    alcanzable más cercana. Goddess Dance: la casilla que reactiva a más aliados.
+    {"opciones": [{"tipo", "comando", "pos": [x, y], "objetivos": [nombres]}]}
+    """
+    from motor_analisis import opciones_de_reactivacion
+    f = tablero.obtener_ficha(request.args.get("nombre", ""))
+    return jsonify({"opciones": opciones_de_reactivacion(tablero, _mapa, f)})
+
+
+@app.route("/api/unidad/reactivar", methods=["POST"])
+def reactivar_unidad():
+    """
+    Dance / Goddess Dance / Contract: `actor` (moviéndose antes a `x`, `y` si se indica;
+    mover + el comando es UNA acción) devuelve la acción a `objetivo` (Goddess Dance: a
+    todos sus adyacentes que ya actuaron). Body: {"actor", "tipo", "objetivo"?, "x"?, "y"?}
+    """
+    data = request.get_json(force=True) or {}
+    f = tablero.obtener_ficha(data.get("actor", ""))
+    tipo = data.get("tipo", "")
+    if not f:
+        return jsonify({"error": "Unidad no encontrada"}), 404
+    tablero.guardar_snapshot()
+    if data.get("x") is not None and data.get("y") is not None:
+        pos = (int(data["x"]), int(data["y"]))
+        if pos != (f.x, f.y):
+            from motor_analisis import casillas_para_comando
+            if pos not in casillas_para_comando(tablero, _mapa, f):
+                tablero.historial.pop()
+                return jsonify({"error": f"{f.nombre} no puede llegar a ({pos[0]},{pos[1]}) este turno"}), 400
+            tablero.mover_unidad(f.nombre, *pos)
+    ok, mensaje, reactivados = tablero.reactivar(f.nombre, tipo, data.get("objetivo"))
+    if not ok:
+        tablero.deshacer()
+        return jsonify({"error": mensaje}), 400
+    return jsonify({"ok": True, "mensaje": mensaje, "reactivados": reactivados,
+                    "fichas": [x.como_dict() for x in tablero.fichas.values()]})
+
+
 @app.route("/api/unidad/unir", methods=["POST"])
 def unir_unidad():
     """Botón "Ha hablado" del modal: el jugador ya ha hablado con este aliado verde por su
@@ -1467,6 +1518,13 @@ def ejecutar_combate():
         error_fusion = _activar_fusion(f_atk, es_engage_attack)
         if error_fusion:
             return jsonify({"error": error_fusion}), 400
+
+    # Contract (Verónica): ataca desde donde está, ni se mueve antes ni hace Canter después
+    if f_atk.sin_mover_turno and not f_atk.ha_actuado:
+        if pos_destino and tuple(int(v) for v in pos_destino) != (f_atk.x, f_atk.y):
+            return jsonify({"error": f"{f_atk.nombre} recibió Contract: ataca desde su casilla, sin moverse"}), 400
+        pos_destino = [f_atk.x, f_atk.y]
+        data["pos_canter"] = None
 
     # 0. Ballesta de mapa (objeto_id): la unidad dispara su propio arco desde la
     # casilla de la ballesta. Requiere maestría en Arco + un arco en el inventario.

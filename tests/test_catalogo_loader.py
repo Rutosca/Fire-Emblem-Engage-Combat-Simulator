@@ -83,6 +83,18 @@ class TestArmasDelDLC(unittest.TestCase):
         self.assertEqual(len(nombres), len(set(nombres)))
         self.assertTrue(all(x["datos"].get("usos_max") for x in r["resultados"]))
 
+    def test_sin_duplicados_en_el_buscador(self):
+        """"Killing Edge" contiene "lin" (Lyn) y el arma salía otra vez como si fuera una
+        variante con grabado; y la clase de Ivy salía también como "LindwurmR" (la copia
+        de los Xenologue, JID_リンドブルム_E). Las variantes de verdad siguen saliendo."""
+        from app import app
+        c = app.test_client()
+        def buscar(tipo, q):
+            return [x["nombre"] for x in c.get("/api/catalogo/buscar", query_string={"tipo": tipo, "q": q}).get_json()["resultados"]]
+        self.assertEqual(buscar("armas", "Killing Edge"), ["Killing Edge"])
+        self.assertEqual(buscar("clases", "Lindwurm"), ["Lindwurm"])
+        self.assertEqual(buscar("armas", "Killing Edge+2 (Lyn)")[0], "Killing Edge+2 (Lyn)")
+
     def test_una_partida_antigua_con_usos_entre_parentesis_se_sigue_leyendo(self):
         f = resolver_unidad_con_catalogo({"nombre": "Prueba", "es_aliado": True, "clase_nombre": "Sword Fighter",
                                           "nivel": 10, "inventario": ["Iron Sword", "Poción (2)"]})

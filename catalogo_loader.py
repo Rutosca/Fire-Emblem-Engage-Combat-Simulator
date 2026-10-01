@@ -2107,6 +2107,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         lider_tres_casas=val_lider_3h,
         estilo_combate=estilo_combate,
         accion_turno=str(data.get("accion_turno", getattr(unidad_previa, 'accion_turno', "") if unidad_previa else "") or ""),
+        sin_mover_turno=bool(data.get("sin_mover_turno", getattr(unidad_previa, 'sin_mover_turno', False) if unidad_previa else False)),
         dificultad=str(data.get("dificultad") or (getattr(unidad_previa, 'dificultad', "") if unidad_previa else "") or ""),
         estados_temporales=list(data.get("estados_temporales", getattr(unidad_previa, 'estados_temporales', []) if unidad_previa else []) or []),
         # Huella en el mapa (BmapSize): del personaje del catálogo; el payload no la cambia

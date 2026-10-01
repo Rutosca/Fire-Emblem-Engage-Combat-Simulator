@@ -260,8 +260,8 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
     casilla de ataque, no una distancia fija. Con `exposicion(pos, excluir)` (el análisis
     la pasa) decide por el peligro real de cada enemigo; sin ella, contando enemigos.
     """
-    if not unidad_tiene_canter(aliado):
-        return None
+    if not unidad_tiene_canter(aliado) or getattr(aliado, "sin_mover_turno", False):
+        return None   # (con Contract actúa sin moverse: tampoco después)
 
     if analizador is None:
         class _TerrenoAdapter:
@@ -1055,13 +1055,179 @@ def exposicion_en(pos, aliado, zonas, peligro, excluir=()) -> dict:
     return {"peso": peso, "daño": daño, "enemigos": enemigos, "letal": alguno_letal or letal_combinada}
 
 
+def casillas_para_comando(tablero, mapa, f) -> set:
+    """Casillas desde las que `f` puede usar un comando este turno: la suya y, si aún no se
+    ha movido ni actuado, las libres que alcanza (los enemigos bloquean el paso)."""
+    propias = {(f.x, f.y)}
+    if f.ha_actuado or getattr(f, "sin_mover_turno", False) or f.movimiento_disponible <= 0:
+        return propias
+    grid = [[type("T", (), {"caminable": mapa.grid[x][y].caminable, "volable": mapa.grid[x][y].volable,
+                            "coste": mapa.grid[x][y].coste_mov})() for y in range(mapa.alto)] for x in range(mapa.ancho)]
+    analizador = AnalizadorAmenaza(grid, mapa.ancho, mapa.alto)
+    umock = UnidadMock(x=f.x, y=f.y, mov=f.movimiento_disponible,
+                       es_volador=f.es_volador or pasivas.cruza_terreno_como_volador(f), arma=ArmaMock(rango=[1]))
+    setattr(umock, 'tiene_pass', pasivas.tiene_sid(f, 'SID_すり抜け'))
+    bloqueo = casillas_ocupadas_por(x for x in tablero.fichas.values() if x.viva and x.es_aliado != f.es_aliado)
+    ocupadas = casillas_ocupadas_por(x for x in tablero.fichas.values() if x.viva and x.nombre != f.nombre)
+    return propias | {c for c in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo)
+                      if c not in ocupadas}
+
+
+def opciones_de_reactivacion(tablero, mapa, f) -> list:
+    """
+    Lo que `f` puede hacer con sus comandos de devolver la acción (Dance, Goddess Dance,
+    Contract), con la casilla desde la que lo haría: la suya si ya sirve; si no, la alcanzable
+    más cercana. Goddess Dance: la casilla que reactiva a más aliados.
+    [{"tipo", "comando", "pos": [x, y], "objetivos": [nombres]}]
+    """
+    if not f or not tablero.puede_usar_comando(f):
+        return []
+    casillas = casillas_para_comando(tablero, mapa, f)
+    origen = (f.x, f.y)
+
+    def objetivos_desde(pos, tipo):
+        x0, y0 = f.x, f.y
+        f.x, f.y = pos
+        try:
+            return [o.nombre for o in tablero.objetivos_de_reactivacion(f, tipo)]
+        finally:
+            f.x, f.y = x0, y0
+
+    def cercania(pos):
+        return (pos != origen, abs(pos[0] - origen[0]) + abs(pos[1] - origen[1]), pos)
+
+    opciones = []
+    for tipo in f.tipos_reactivacion():
+        comando = tablero.NOMBRES_REACTIVACION.get(tipo, tipo)
+        if tipo == "danza_diosa":
+            mejor = max(sorted(casillas, key=cercania), key=lambda p: len(objetivos_desde(p, tipo)))
+            objs = objetivos_desde(mejor, tipo)
+            if objs:
+                opciones.append({"tipo": tipo, "comando": comando, "pos": list(mejor), "objetivos": objs})
+            continue
+        vistos = {}
+        for pos in sorted(casillas, key=cercania):
+            for nombre_o in objetivos_desde(pos, tipo):
+                vistos.setdefault(nombre_o, pos)
+        for nombre_o, pos in vistos.items():
+            opciones.append({"tipo": tipo, "comando": comando, "pos": list(pos), "objetivos": [nombre_o]})
+    return opciones
+
+
+def _jugadas_tras_reactivar(tablero, mapa, perfil, cronogema, condicion_victoria, actor, op) -> dict:
+    """
+    Simula `op` (ver opciones_de_reactivacion) y analiza solo a los reactivados:
+    {nombre: su mejor jugada útil}. Útil = una baja (segura o probable); con Contract vale
+    también curarse con una poción. Deja el tablero como estaba.
+    """
+    objetivos = [tablero.obtener_ficha(n) for n in op["objetivos"]]
+    guardado = [(f, f.x, f.y, f.ha_actuado, f.accion_turno, f.sin_mover_turno) for f in [actor] + objetivos]
+    try:
+        actor.x, actor.y = op["pos"]
+        actor.ha_actuado, actor.accion_turno = True, op["tipo"]
+        for o in objetivos:
+            o.ha_actuado, o.accion_turno, o.sin_mover_turno = False, "", op["tipo"] == "contrato"
+        analisis = analizar_situacion_tactica(tablero, mapa, perfil, cronogema, condicion_victoria,
+                                              solo_aliados={o.nombre for o in objetivos}, _anidado=True)
+    finally:
+        for f, x, y, ha, acc, sm in guardado:
+            f.x, f.y, f.ha_actuado, f.accion_turno, f.sin_mover_turno = x, y, ha, acc, sm
+    res = analisis["resultados"]
+    # Bajas posibles de cada reactivado, de más a menos rentable; se reparten entre enemigos
+    # distintos (uno muerto no se mata dos veces), empezando por la mejor de todas
+    bajas = sorted((r for r in analisis.get("oportunidades", [])
+                    if (r.get("veredicto") or {}).get("kill_seguro") or (r.get("veredicto") or {}).get("kill_probable")),
+                   key=lambda r: r.get("score_tactico", 0), reverse=True)
+    jugadas, muertos = {}, set()
+    for r in bajas:
+        if r["aliado"] in jugadas or r.get("enemigo") in muertos:
+            continue
+        jugadas[r["aliado"]] = r
+        muertos.add(r.get("enemigo"))
+    if op["tipo"] == "contrato":
+        for r in res:
+            if r.get("tipo_analisis") == "uso_pocion" and r.get("aliado") not in jugadas:
+                jugadas[r["aliado"]] = r
+    return jugadas
+
+
+def _recomendaciones_de_reactivacion(tablero, mapa, perfil, cronogema, condicion_victoria, exposicion) -> list:
+    """
+    Cuándo compensa devolver la acción (el comando gasta la acción de quien lo usa):
+      - Dance (Seadall): si el bailado puede rematar o matar a alguien. Es su papel: no mata
+        por sí misma, baila para que rematen otros.
+      - Contract (Verónica): si el reactivado remata desde su casilla o se cura con una poción.
+      - Goddess Dance (Byleth): gasta el Ataque de Emblema, así que solo si reactiva a dos o
+        más que matan, o si esas bajas terminan el mapa (exterminio o el jefe).
+    Una recomendación por unidad y comando: la que más rinde.
+    """
+    recs = []
+    enemigos_vivos = [e for e in tablero.obtener_enemigos() if e.viva]
+    actores = [f for f in tablero.fichas.values()
+               if f.es_aliado and tablero.puede_usar_comando(f) and f.tipos_reactivacion()]
+    for actor in actores:
+        mejores = {}
+        for op in opciones_de_reactivacion(tablero, mapa, actor):
+            jugadas = _jugadas_tras_reactivar(tablero, mapa, perfil, cronogema, condicion_victoria, actor, op)
+            if not jugadas:
+                continue
+            bajas = {n: j for n, j in jugadas.items() if j.get("tipo_analisis") == "oportunidad_jugador"}
+            if op["tipo"] == "danza_diosa":
+                muertos = {j.get("enemigo") for j in bajas.values()}
+                gana = ((condicion_victoria == "exterminio" and enemigos_vivos and len(muertos) >= len(enemigos_vivos))
+                        or (condicion_victoria == "jefe" and any(_es_jefe(tablero.obtener_ficha(m)) for m in muertos)))
+                if len(bajas) < 2 and not gana:
+                    continue
+                score = sum(j.get("score_tactico", 0) for j in bajas.values()) + (5000 if gana else 0)
+            else:
+                j = jugadas.get(op["objetivos"][0])
+                if not j:
+                    continue
+                score = j.get("score_tactico", 0) if j.get("tipo_analisis") == "oportunidad_jugador" else j.get("prioridad", 150)
+                jugadas = {op["objetivos"][0]: j}
+            if score > mejores.get(op["tipo"], ({}, -1))[1]:
+                mejores[op["tipo"]] = ((op, jugadas), score)
+        for tipo, ((op, jugadas), score) in mejores.items():
+            pos = tuple(op["pos"])
+            desde = "desde su casilla" if pos == (actor.x, actor.y) else f"moviéndose a ({pos[0]},{pos[1]})"
+            expo = exposicion(pos, actor)
+            motivos = [f"{actor.nombre} usa {op['comando']} {desde}: "
+                       + ", ".join(op["objetivos"]) + (" vuelven" if len(op["objetivos"]) > 1 else " vuelve")
+                       + " a actuar" + (" sin moverse" if tipo == "contrato" else "") + "."]
+            if tipo == "danza_diosa":
+                motivos.append("Gasta el Ataque de Emblema de Byleth.")
+            for n, j in jugadas.items():
+                motivos.append(f"Luego {n}: {j.get('recomendacion', '')}")
+            if expo.get("letal"):
+                motivos.append(f"Ojo: en ({pos[0]},{pos[1]}) {actor.nombre} queda al alcance de "
+                               f"{', '.join(expo['enemigos'])} (hasta {expo['daño']} de daño): puede morir.")
+            recs.append({
+                "tipo_analisis": "reactivacion",
+                "aliado": actor.nombre,
+                "tipo": tipo,
+                "comando": op["comando"],
+                "objetivos": list(op["objetivos"]),
+                "objetivo": op["objetivos"][0],
+                "enemigo": "",
+                "pos_sugerida": list(pos),
+                "score_tactico": score,
+                "jugadas_siguientes": [{"aliado": n, "enemigo": j.get("enemigo", ""),
+                                        "recomendacion": j.get("recomendacion", "")} for n, j in jugadas.items()],
+                "veredicto": {"nivel_riesgo": "alto" if expo.get("letal") else "bajo", "motivos": motivos},
+                "recomendacion": f"DAR ACCIÓN: {actor.nombre} usa {op['comando']} con {', '.join(op['objetivos'])} ({desde}).",
+            })
+    recs.sort(key=lambda r: r["score_tactico"], reverse=True)
+    return recs
+
+
 def actua_por_su_cuenta(ficha) -> bool:
     """False para los dobles de Call Doubles (Lyn): no se mueven ni atacan en la fase de su
     bando (verificado en juego); solo encadenan con su invocador y hacen de señuelo."""
     return not getattr(ficha, "invocador", "")
 
 
-def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, condicion_victoria=""):
+def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, condicion_victoria="",
+                               solo_aliados=None, _anidado=False):
     """
     Análisis táctico determinista completo de la situación actual del tablero:
     `condicion_victoria` ("jefe" | "exterminio" | ""): la del guion del capítulo
@@ -1089,6 +1255,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     # zona de peligro); siguen siendo objetivos (matarlos corta los Chain Attack del invocador)
     aliados_activos = [a for a in tablero.obtener_aliados() if a.stats and a.arma and a.viva and not a.ha_actuado
                        and actua_por_su_cuenta(a)]
+    # `solo_aliados`: analizar solo a esos (lo que haría un aliado al que le devuelven la
+    # acción; ver _recomendaciones_de_reactivacion). `_anidado`: esa misma simulación, que
+    # no vuelve a buscar reactivaciones.
+    if solo_aliados is not None:
+        aliados_activos = [a for a in aliados_activos if a.nombre in solo_aliados]
     enemigos_activos = [e for e in tablero.obtener_enemigos() if e.stats and e.arma and e.viva]
     enemigos_que_actuan = [e for e in enemigos_activos if actua_por_su_cuenta(e)]
 
@@ -1126,7 +1297,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             u_mock,
             casillas_bloqueadas=enemigos_bloqueo
         )
-        bono_mov = pasivas.bono_movimiento_fusion_potencial(a) if puede_fusionar(a) else 0
+        bono_mov = (pasivas.bono_movimiento_fusion_potencial(a)
+                    if puede_fusionar(a) and not getattr(a, "sin_mover_turno", False) else 0)
         if bono_mov > 0:
             u_fus = UnidadMock(x=a.x, y=a.y, mov=a.movimiento_disponible + bono_mov, es_volador=a.es_volador, arma=ArmaMock(rango=[1]))
             setattr(u_fus, 'tiene_pass', tiene_pass)
@@ -2334,6 +2506,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         resultados = soporte_urgente + top_oportunidades + soporte_normal[:2]
     if acciones_objetivo:
         resultados = acciones_objetivo + resultados
+    if not _anidado:
+        resultados = resultados + _recomendaciones_de_reactivacion(
+            tablero, mapa, perfil, cronogema, condicion_victoria,
+            lambda pos, aliado_p: exposicion(pos, aliado_p))
 
     # Amenazas serias sobre las casillas ACTUALES de los aliados que aún no han actuado
     # (en fase de jugador): quien se quede donde está y pueda morir, o perder la mitad del
@@ -2402,4 +2578,9 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             "recomendacion": recomendacion,
         })
 
-    return {"turno": tablero.turno_actual, "total_analizados": len(resultados), "resultados": resultados}
+    salida = {"turno": tablero.turno_actual, "total_analizados": len(resultados), "resultados": resultados}
+    if _anidado:
+        # La simulación de una reactivación necesita todas las opciones de cada aliado, no
+        # solo la mejor (Goddess Dance reparte las bajas entre enemigos distintos)
+        salida["oportunidades"] = oportunidades_jugador
+    return salida
