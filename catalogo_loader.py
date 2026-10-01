@@ -1072,6 +1072,13 @@ def _transicion_emblema_oscuro(data: dict, gid_previo: str, gid_nuevo: str, extr
     return data
 
 
+def niveles_subidos(nivel: int, nivel_interno_clase: int) -> int:
+    """Subidas de nivel de una unidad de `nivel` en una clase de ese InternalLevel (Job.xml):
+    en una básica, nivel − 1; en una promocionada, además las del 1 al InternalLevel de la
+    básica (nivel 1 promocionado = 19 subidas). Verificado con Bunet y Pandreo (Cap. 12)."""
+    return max(0, int(nivel) - 1) + max(0, int(nivel_interno_clase or 0) - 1)
+
+
 def _emblema_oscuro_de(nombre: str, capitulo: str):
     """
     (gid, info) de la versión oscura del Emblema `nombre` ("Marth", "Lyn"…): la del capítulo
@@ -1325,8 +1332,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         else:
             # Misma regla que join_stats del catálogo (verificada contra las tablas
             # oficiales): base de clase + base personal + round-half-up(crecimiento
-            # PERSONAL × niveles / 100), contando el nivel interno de la clase.
-            lvl_diff = max(0, nivel - 1) + int(clase_info.get("internal_level", 0) if clase_info else 0)
+            # PERSONAL × niveles / 100). Una promocionada de nivel 1 lleva 19 subidas.
+            lvl_diff = niveles_subidos(nivel, int(clase_info.get("internal_level", 0) if clase_info else 0))
             calc_hp  = c_bases.get("hp", 0)  + p_bases.get("hp", 20)  + round_half_up(p_growths.get("hp", 45) * lvl_diff / 100.0)
             calc_str = c_bases.get("str", 0) + p_bases.get("str", 6)  + round_half_up(p_growths.get("str", 30) * lvl_diff / 100.0)
             calc_mag = c_bases.get("mag", 0) + p_bases.get("mag", 0)  + round_half_up(p_growths.get("mag", 15) * lvl_diff / 100.0)

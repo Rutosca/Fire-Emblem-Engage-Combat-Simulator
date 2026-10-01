@@ -282,6 +282,12 @@ ESTILOS_COMBATE = {
 ELEMENTO_ARMA = {1: "fuego", 2: "trueno", 3: "viento", 5: "oscuridad", 6: "luz"}
 
 
+def niveles_subidos(nivel: int, nivel_interno_clase: int) -> int:
+    """Subidas de nivel de una unidad de `nivel` en una clase de ese InternalLevel: en una
+    básica, nivel − 1; en una promocionada, además las del 1 al InternalLevel de la básica."""
+    return max(0, int(nivel) - 1) + max(0, int(nivel_interno_clase or 0) - 1)
+
+
 def extraer_terrenos(trans):
     """Parsea Terrain.xml y decodifica sus flags a propiedades estructuradas."""
     filas = parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Terrain.xml"))
@@ -714,12 +720,13 @@ def compilar():
         c_growths = clase_def.get("growths", {})
 
         # Stats al unirse (nivel de Person.xml): base de clase + base personal +
-        # round-half-up(crecimiento PERSONAL × niveles subidos / 100), con los niveles
-        # internos de la clase (una promocionada de nivel 1 cuenta 20). Verificado contra
-        # las tablas oficiales para todos los personajes de clase base (0 errores) y
-        # ±1 en algunos de clase promocionada. Los crecimientos de clase NO intervienen.
+        # round-half-up(crecimiento PERSONAL × niveles subidos / 100). Una clase
+        # promocionada (InternalLevel 20) de nivel 1 viene del 1 al 20 de la básica: 19
+        # subidas, no 20 (Bunet 41 HP y Pandreo 34 HP / 22 Res en el juego, Cap. 12; con 20
+        # salían 1 por encima). Es la misma cuenta que la de los enemigos. Verificado contra
+        # las tablas oficiales en clases básicas. Los crecimientos de clase NO intervienen.
         join_stats = {}
-        lvl_ups = max(0, join_lvl - 1) + to_int(clase_def.get("internal_level"))
+        lvl_ups = niveles_subidos(join_lvl, to_int(clase_def.get("internal_level")))
         for stat in ["hp", "str", "mag", "dex", "spd", "def", "res", "lck", "bld"]:
             b = c_bases.get(stat, 0) + p_bases.get(stat, 0)
             join_stats[stat] = b + int(math.floor(p_growths.get(stat, 0) * lvl_ups / 100.0 + 0.5))

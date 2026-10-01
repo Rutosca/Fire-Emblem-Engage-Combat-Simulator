@@ -69,6 +69,20 @@ class TestCapitulo12(unittest.TestCase):
         self.assertEqual(pendientes[5], ["Mage (17,1)", "Martial Monk (19,10)"])
         self.assertEqual(len(pendientes[7]), 5)
 
+    # ── Stats de quien se une en clase promocionada ─────────────────────────
+
+    def test_bunet_y_pandreo_como_en_el_juego(self):
+        """Fichas del juego (Cap. 12). Promocionados de nivel 1: 19 subidas de nivel (del 1
+        al 20 de la clase básica), no 20; con 20 salían 42/35 HP y 23 de Res. La Def de
+        Pandreo en la ficha es 13 por Shielding Art equipado; sin él, 8. La Vel de Bunet
+        sale 5 en la ficha por el peso de la Silver Axe; sin él, 9."""
+        def stats(n):
+            f = self._ficha(n)
+            s = f.stats
+            return (f.hp_max, s.fuerza, s.magia, s.destreza, s.velocidad, s.defensa, s.resistencia, s.suerte, s.complexion)
+        self.assertEqual(stats("Bunet"), (41, 15, 5, 15, 9, 20, 8, 13, 11))
+        self.assertEqual(stats("Pandreo"), (34, 7, 16, 18, 17, 8, 22, 14, 8))
+
     # ── Aliados verdes ─────────────────────────────────────────────────────
     # M012.lua: UnitJoin("PID_フォガート", "PID_パンドロ", "PID_ボネ") al empezar el turno 1.
     # Los aldeanos de Solm (PID_M012_村人Ａ/Ｂ/Ｃ) no se unen nunca: los mueve la CPU (Retreat),
