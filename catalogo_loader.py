@@ -2131,6 +2131,17 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     setattr(ficha, 'emblema_oscuro', es_emblema_oscuro)
     if stats_obj is not None:
         setattr(stats_obj, 'ultimo_rival', ficha.ultimo_rival)
+        # Los stats que llegan del modal son los de la pantalla del juego, con Resolve
+        # (Def/Res +5 con HP <= 75 %) incluido si se cumple: se guardan sin él, y el
+        # combate y la ficha lo vuelven a sumar mientras se cumpla
+        if isinstance(data.get("stats"), dict):
+            for b in pasivas.bonos_stats_condicionales(ficha):
+                if b["activo"]:
+                    for k, v in b["stat_boosts"].items():
+                        campo = {"def": "defensa", "res": "resistencia", "str": "fuerza", "mag": "magia",
+                                 "dex": "destreza", "spd": "velocidad", "lck": "suerte", "bld": "complexion"}.get(k)
+                        if campo:
+                            setattr(stats_obj, campo, max(0, int(getattr(stats_obj, campo, 0) or 0) - int(v)))
     setattr(ficha, 'pid', getattr(stats_obj, 'pid', '') or pid)
     if unidad_previa is not None and getattr(unidad_previa, 'es_refuerzo', False):
         ficha.es_refuerzo = True

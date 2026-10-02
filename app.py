@@ -2098,6 +2098,7 @@ def resolver_unidad_preview():
         "hp_actual": ficha.hp_actual,
         "mov": ficha.mov,
         "stats": f_dict.get("stats", {}),
+        "bonos_condicionales": f_dict.get("bonos_condicionales", []),
         "es_aliado": ficha.es_aliado,
         "arma_nombre": ficha.arma.nombre if ficha.arma else "",
         "ficha": f_dict

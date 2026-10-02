@@ -144,6 +144,17 @@ class FichaUnidad:
             personajes = {}
         return [(personajes.get(p) or {}).get("nombre") or p for p in pids]
 
+    def bonos_stats_condicionales(self, con_rango: bool = False) -> list:
+        """Stats que suma una habilidad mientras se cumple su condición (Resolve: Def/Res
+        +5 con HP <= 75 %). Ver pasivas.bonos_stats_condicionales."""
+        if self.stats is None:
+            return []
+        try:
+            import pasivas
+            return pasivas.bonos_stats_condicionales(self, con_rango=con_rango)
+        except Exception:
+            return []
+
     def usa_ultimo_rival(self) -> bool:
         """Tiene alguna habilidad que depende de su último rival (最終戦闘相手): el modal
         le enseña el campo para fijarlo a mano."""
@@ -397,6 +408,14 @@ class FichaUnidad:
             self.stats.hp = hp_a
             self.stats.hp_max = hp_m
             setattr(self.stats, 'hp_actual', hp_a)
+        # Resolve (Ike) y similares: el juego enseña la Def/Res con el bono mientras se cumple
+        # su condición; la ficha la guarda sin él
+        bonos_cond = self.bonos_stats_condicionales(con_rango=True)
+        extra = {}
+        for b in bonos_cond:
+            if b["activo"]:
+                for k, v in b["stat_boosts"].items():
+                    extra[k] = extra.get(k, 0) + int(v)
 
         return {
             "nombre": self.nombre,
@@ -474,12 +493,13 @@ class FichaUnidad:
                 "magia": getattr(self.stats, 'magia', 0),
                 "destreza": getattr(self.stats, 'destreza', 10),
                 "velocidad": getattr(self.stats, 'velocidad', 10),
-                "defensa": getattr(self.stats, 'defensa', 8),
-                "resistencia": getattr(self.stats, 'resistencia', 5),
+                "defensa": getattr(self.stats, 'defensa', 8) + extra.get("def", 0),
+                "resistencia": getattr(self.stats, 'resistencia', 5) + extra.get("res", 0),
                 "suerte": getattr(self.stats, 'suerte', 5),
                 "complexion": getattr(self.stats, 'complexion', 7),
                 "es_lord": getattr(self.stats, 'es_lord', False),
             } if self.stats else None,
+            "bonos_condicionales": bonos_cond,
             "arma_equipada": {
                 "nombre": getattr(self.arma, 'nombre', 'Arma'),
                 "tipo": getattr(self.arma, 'tipo', 'Espada'),

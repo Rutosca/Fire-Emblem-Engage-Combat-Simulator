@@ -1932,3 +1932,10 @@ button:disabled { opacity: .4; cursor: not-allowed; filter: none; }
 /* Dance / Goddess Dance / Contract: a quién devolver la acción (modal de la unidad) */
 .panel-reactivar { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; font-size: 12px; color: var(--muted, #9aa3b2); }
 .panel-reactivar.hidden { display: none; }
+
+/* Resolve (Ike) y similares: bono de stats condicionado al HP, bajo los atributos */
+.bonos-condicionales {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #81c784;
+}

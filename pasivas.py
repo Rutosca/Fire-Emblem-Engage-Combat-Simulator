@@ -235,6 +235,72 @@ def bono_movimiento_fusion_potencial(unidad) -> int:
     return total
 
 
+class _ConHP:
+    """La unidad con otro HP actual, para evaluar una condición "si tuviera X HP"."""
+
+    def __init__(self, unidad, hp, hp_max):
+        self._u, self.hp_actual, self.hp, self.hp_max = unidad, hp, hp, hp_max
+
+    def __getattr__(self, nombre):
+        return getattr(self._u, nombre)
+
+
+def bonos_stats_condicionales(unidad, hp=None, con_rango: bool = False) -> list:
+    """
+    Stats que una habilidad suma solo mientras se cumple su SyncCondition: Resolve
+    (SID_勇将 → SID_勇将_効果, Def/Res +5 con "HP*100 <= MaxHP * 75") y Resolve+ (+7). El
+    juego los enseña en la pantalla de estado ("Emblem +5") mientras se cumplen.
+    Devuelve [{sid, nombre, stat_boosts, activo, hp_activos}]: `activo` con `hp` (por
+    defecto el HP actual); con `con_rango`, `hp_activos` son los valores de HP con los que
+    lo estaría (el modal ajusta Def/Res en vivo al cambiar el HP).
+    """
+    sids = sids_activos(unidad)
+    candidatas = _sids_con_bono_condicional()
+    if not any(s in candidatas for s in sids):
+        return []
+    stats = getattr(unidad, "stats", None) or unidad
+    hp_max = int(getattr(unidad, "hp_max", 0) or getattr(stats, "hp_max", 0) or 0)
+    if hp is None:
+        hp = getattr(unidad, "hp_actual", None)
+        if hp is None:
+            hp = getattr(stats, "hp", 0)
+    salida = []
+    for sid in _resolver_prioridades(sids):
+        for hijo, cond, boosts in candidatas.get(sid, ()):
+            def cumple(h, _cond=cond):
+                ctx = condicion_dsl.ContextoCombate(unidad=_ConHP(stats, h, hp_max), rival=None)
+                try:
+                    return bool(condicion_dsl.evaluar_condicion(_cond, ctx))
+                except Exception:
+                    return False
+            salida.append({"sid": hijo, "nombre": str((HABILIDADES.get(sid) or {}).get("nombre") or sid),
+                           "stat_boosts": dict(boosts), "activo": cumple(int(hp)),
+                           "hp_activos": [h for h in range(1, hp_max + 1) if cumple(h)] if con_rango else []})
+    return salida
+
+
+_CACHE_BONO_CONDICIONAL: dict = {}
+
+
+def _sids_con_bono_condicional() -> dict:
+    """{sid: [(hijo, SyncCondition, stat_boosts)]} de las habilidades del catálogo cuya
+    sincronía condicionada da stats (hoy solo Resolve / Resolve+)."""
+    clave = id(HABILIDADES)
+    if clave not in _CACHE_BONO_CONDICIONAL:
+        mapa = {}
+        for sid, info in HABILIDADES.items():
+            conds = list(info.get("sync_conditions") or [])
+            for i, hijo in enumerate(info.get("sync_sids") or []):
+                cond = conds[i] if i < len(conds) else ""
+                boosts = {k: int(v) for k, v in ((HABILIDADES.get(hijo) or {}).get("stat_boosts") or {}).items()
+                          if v and k not in ("hp", "mov")}
+                if cond and boosts:
+                    mapa.setdefault(sid, []).append((hijo, cond, boosts))
+        _CACHE_BONO_CONDICIONAL.clear()
+        _CACHE_BONO_CONDICIONAL[clave] = mapa
+    return _CACHE_BONO_CONDICIONAL[clave]
+
+
 def bono_por_efectividad(unidad) -> int:
     """
     Daño extra que la unidad suma cuando es ELLA quien pega con efectividad: Keen Insight

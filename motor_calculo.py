@@ -814,10 +814,17 @@ class CalculadoraEngage:
                     b = {}
                 if b:
                     estados.append({"nombre": "Superación (Roy, Nv+5, estimado)", "stat_boosts": b, "_rise_above": True})
+        # Resolve (Ike): Def/Res +5 mientras HP <= 75 %. Los stats de la ficha se guardan sin
+        # él (el modal lo resta al guardar) y se suma aquí con el HP con el que empieza el combate.
+        if not getattr(unidad, '_bonos_condicionales_aplicados', False):
+            for b in pasivas.bonos_stats_condicionales(unidad):
+                if b["activo"]:
+                    estados.append({"nombre": b["nombre"], "stat_boosts": b["stat_boosts"]})
         if not estados:
             return unidad
         u = copy.copy(unidad)
         u._rise_above_aplicado = True
+        u._bonos_condicionales_aplicados = True
         descs = []
         for est in estados:
             partes = []

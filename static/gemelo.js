@@ -1243,6 +1243,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   $("f-nivel").value = "10";
   $("f-hp-actual").value = "30";
   $("f-hp-max").value = "30";
+  fijarBonosCondicionales([], 30);
 
   $("f-stat-str").value = "10";
   $("f-stat-mag").value = "0";
@@ -1372,6 +1373,7 @@ function rellenarFormularioDesdeFicha(ficha) {
   $("f-stat-lck").value = st.suerte !== undefined ? st.suerte : 5;
   $("f-stat-bld").value = st.complexion !== undefined ? st.complexion : 7;
   $("f-stat-mov").value = ficha.mov !== undefined ? ficha.mov : 4;
+  fijarBonosCondicionales(ficha.bonos_condicionales, hpA);
 
   // Limpiar los 5 slots de inventario
   for (let i = 0; i < 5; i++) {
@@ -1705,6 +1707,52 @@ function actualizarSelectorLiderTresCasas() {
   const seccion = $("seccion-lider-tres-casas");
   if (!seccion) return;
   seccion.classList.toggle("hidden", !esEmblemaTresCasas($("f-emblema")?.value));
+}
+
+// Resolve (Ike) y similares: stats que suma una habilidad mientras se cumple su condición
+// de HP (Def/Res +5 con HP <= 75 %). Los campos del modal son lo que enseña el juego
+// ("Emblem +5" incluido), así que al cruzar el umbral se ajustan solos; el servidor lo
+// resta al guardar y lo vuelve a sumar en combate mientras se cumpla.
+const CAMPO_BONO_STAT = { str: "f-stat-str", mag: "f-stat-mag", dex: "f-stat-dex", spd: "f-stat-spd",
+                          def: "f-stat-def", res: "f-stat-res", lck: "f-stat-lck", bld: "f-stat-bld" };
+const ETIQUETA_BONO_STAT = { str: "FUE", mag: "MAG", dex: "DES", spd: "VEL", def: "DEF", res: "RES", lck: "SUE", bld: "COR" };
+
+function fijarBonosCondicionales(bonos, hpMostrado) {
+  state.bonosCondModal = Array.isArray(bonos) ? bonos : [];
+  const hp = parseInt(hpMostrado, 10) || 0;
+  state.bonosCondAplicados = state.bonosCondModal.map(b => (b.hp_activos || []).includes(hp));
+  pintarBonosCondicionales();
+}
+
+function ajustarBonosCondicionales() {
+  const bonos = state.bonosCondModal || [];
+  if (!bonos.length) return;
+  const hp = parseInt($("f-hp-actual").value, 10) || 0;
+  bonos.forEach((b, i) => {
+    const activo = (b.hp_activos || []).includes(hp);
+    if (activo === !!state.bonosCondAplicados[i]) return;
+    for (const [k, v] of Object.entries(b.stat_boosts || {})) {
+      const el = $(CAMPO_BONO_STAT[k]);
+      if (el) el.value = Math.max(0, (parseInt(el.value, 10) || 0) + (activo ? v : -v));
+    }
+    state.bonosCondAplicados[i] = activo;
+  });
+  pintarBonosCondicionales();
+  recalcularCombatStats();
+}
+
+function pintarBonosCondicionales() {
+  const el = $("f-bonos-condicionales");
+  if (!el) return;
+  const bonos = state.bonosCondModal || [];
+  el.classList.toggle("hidden", !bonos.length);
+  el.textContent = bonos.map((b, i) => {
+    const txt = Object.entries(b.stat_boosts || {}).map(([k, v]) => `${ETIQUETA_BONO_STAT[k] || k} +${v}`).join(" / ");
+    const umbral = (b.hp_activos || []).length ? ` con HP ≤ ${Math.max(...b.hp_activos)}` : "";
+    return state.bonosCondAplicados[i]
+      ? `${b.nombre}: ${txt} activo${umbral} (ya sumado arriba, como en el juego)`
+      : `${b.nombre}: ${txt}${umbral} (ahora inactivo)`;
+  }).join(" · ");
 }
 
 // Single-Minded (Ivy) y similares: el último rival con el que combatió. Las opciones son
@@ -2302,14 +2350,17 @@ function initModalEvents() {
     const max = parseInt($("f-hp-max").value, 10) || 30;
     const cur = parseInt($("f-hp-actual").value, 10) || 0;
     $("f-hp-actual").value = Math.min(max, cur + 15);
+    ajustarBonosCondicionales();
   });
   $("btn-hp-full").addEventListener("click", () => {
     const max = parseInt($("f-hp-max").value, 10) || 30;
     $("f-hp-actual").value = max;
+    ajustarBonosCondicionales();
   });
   $("btn-hp-menos5").addEventListener("click", () => {
     const cur = parseInt($("f-hp-actual").value, 10) || 0;
     $("f-hp-actual").value = Math.max(0, cur - 5);
+    ajustarBonosCondicionales();
   });
 
   // Botones rápidos de Piedras Resurrectoras
@@ -2366,6 +2417,8 @@ function initModalEvents() {
         if (res.stats.suerte !== undefined) $("f-stat-lck").value = res.stats.suerte;
         if (res.stats.complexion !== undefined) $("f-stat-bld").value = res.stats.complexion;
         if (res.mov !== undefined) $("f-stat-mov").value = res.mov;
+        fijarBonosCondicionales(res.bonos_condicionales, res.hp_actual);
+        ajustarBonosCondicionales();
         actualizarVisibilidadChainGuard();
 
         if (res.arma_nombre && (!$("inv-nombre-0").value || $("inv-nombre-0").value.trim() === "")) {
@@ -2567,7 +2620,7 @@ function initModalEvents() {
   });
   ["f-hp-actual", "f-hp-max"].forEach(id => {
     const el = $(id);
-    if (el) el.addEventListener("input", () => { state.statsEditadosManualmente = true; });
+    if (el) el.addEventListener("input", () => { state.statsEditadosManualmente = true; ajustarBonosCondicionales(); });
   });
 
   // Listeners y autocompletados para las 5 ranuras de inventario
