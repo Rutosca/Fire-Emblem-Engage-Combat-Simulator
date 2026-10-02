@@ -1921,6 +1921,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                 "es_smash": parsed_w.get("es_smash", False),
                 "cede_iniciativa": parsed_w.get("cede_iniciativa", False),
                 "equipada": es_eq,
+                # Habilidades del arma (Item.xml EquipSids): Brave, el daño extra de Camilla's Axe…
+                "sids": list(parsed_w.get("sids") or []),
             }
             inventario_resuelto.append(item_dict)
 
@@ -1939,6 +1941,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     ddg_bonus=parsed_w.get("ddg_bonus", 0),
                     es_smash=parsed_w.get("es_smash", False),
                     cede_iniciativa=parsed_w.get("cede_iniciativa", False),
+                    sids=list(parsed_w.get("sids") or []),
                     enhance=dict(parsed_w.get("enhance") or {}),
                 )
         else:

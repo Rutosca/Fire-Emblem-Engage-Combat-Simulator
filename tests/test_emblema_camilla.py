@@ -871,3 +871,41 @@ class TestMiasma(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestHachaDeCamilla(unittest.TestCase):
+    """Camilla's Axe (IID_カミラ_カミラの艶斧): Res +10 equipada y SID_カミラの艶斧 en
+    EquipSids, Timing 12: daño al rival + max(Res rival − Def rival, 0). El inventario perdía
+    las habilidades del arma (EquipSids) por el camino y el extra no salía: en el juego Dark
+    Inferno contra un mago (Res 17, Def 7) hacía 41 y la herramienta decía 31."""
+
+    def _chloe_y_mago(self):
+        chloe = cl.resolver_unidad_con_catalogo({
+            "nombre": "Chloé", "es_aliado": True, "clase_nombre": "Wyvern Knight", "nivel": 5,
+            "emblema_nombre": "Camilla", "en_fusion": True, "turnos_fusion": 3,
+            "stats": {"hp": 40, "hp_max": 40, "fuerza": 25, "magia": 5, "destreza": 20, "velocidad": 20,
+                      "defensa": 15, "resistencia": 10, "suerte": 10, "complexion": 9},
+            "inventario": [{"arma": "Camilla's Axe", "equipada": True}]})
+        mago = cl.resolver_unidad_con_catalogo({
+            "nombre": "Mage X", "es_aliado": False, "clase_nombre": "Mage", "nivel": 10,
+            "stats": {"hp": 60, "hp_max": 60, "fuerza": 2, "magia": 12, "destreza": 10, "velocidad": 8,
+                      "defensa": 7, "resistencia": 17, "suerte": 4, "complexion": 4},
+            "inventario": [{"arma": "Fire", "equipada": True}]})
+        return chloe, mago
+
+    def test_el_arma_conserva_sus_habilidades(self):
+        chloe, _ = self._chloe_y_mago()
+        self.assertEqual(chloe.arma.sids, ["SID_カミラの艶斧"])
+        self.assertEqual(chloe.arma.enhance, {"res": 10})
+
+    def test_suma_res_menos_def_del_rival(self):
+        from motor_calculo import CalculadoraEngage, Terreno
+        from motor_analisis import _armas_aliado
+        chloe, mago = self._chloe_y_mago()
+        base = 25 + 19 - 7   # Fue + Mt − Def
+        r = CalculadoraEngage.simular_combate(chloe.stats, mago.stats, chloe.arma, mago.arma, Terreno(), Terreno(), 1)
+        self.assertEqual(r["atacante"]["daño_por_golpe"], base + (17 - 7))
+        di = next(a for a, _, _ in _armas_aliado(chloe) if a.nombre == "Dark Inferno (Camilla's Axe)")
+        r = CalculadoraEngage.simular_combate(chloe.stats, mago.stats, di, mago.arma, Terreno(), Terreno(), 2,
+                                              es_engage_attack=True, engage_attack_nombre="Dark Inferno")
+        self.assertEqual(r["atacante"]["daño_por_golpe"], base + (17 - 7), "también con Dark Inferno")

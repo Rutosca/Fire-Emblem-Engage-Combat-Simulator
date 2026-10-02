@@ -497,6 +497,9 @@ def _armas_aliado(aliado):
                                 efectividades=list(getattr(w_c, 'efectividades', []) or []),
                                 efectivo_contra=list(getattr(w_c, 'efectivo_contra', []) or []),
                                 enhance=dict(getattr(w_c, 'enhance', None) or {}),
+                                # el Ataque de Emblema pega con el arma: sus habilidades cuentan
+                                # (Dark Inferno con Camilla's Axe: + Res − Def del rival)
+                                sids=list(getattr(w_c, 'sids', None) or []),
                             )
                             # El alcance lo fija el SID del ataque (Astra Storm 1-10, 1-20 en
                             # Encubierto): se asigna después de construir el Arma porque
