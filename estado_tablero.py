@@ -73,6 +73,9 @@ class FichaUnidad:
     # Contract (Verónica): le han devuelto la acción, pero este turno no puede moverse; actúa
     # (ataca, cura, usa un objeto) desde su casilla. Se limpia al empezar el turno.
     sin_mover_turno: bool = False
+    # Último rival con el que combatió (nombre en el tablero): Single-Minded de Ivy da +20
+    # Hit contra él (Skill.xml: 最終戦闘相手). Se actualiza con cada combate ejecutado.
+    ultimo_rival: str = ""
     dificultad: str = ""               # Dificultad con la que se resolvieron sus stats (enemigos/refuerzos): "Extremo" | "Hard" | "Normal"
     mov_base: int = 0                  # Mov SIN el bono de Fusión (Gallop de Sigurd); `mov` = mov_base + bono
     invocador: str = ""                # Nombre de quien la invocó: doble de Call Doubles (SID_残像) de Lyn
@@ -140,6 +143,21 @@ class FichaUnidad:
         except Exception:
             personajes = {}
         return [(personajes.get(p) or {}).get("nombre") or p for p in pids]
+
+    def usa_ultimo_rival(self) -> bool:
+        """Tiene alguna habilidad que depende de su último rival (最終戦闘相手): el modal
+        le enseña el campo para fijarlo a mano."""
+        try:
+            import pasivas
+            return any("最終戦闘相手" in str((pasivas.HABILIDADES.get(s) or {}).get("condition") or "")
+                       for s in pasivas.sids_activos(self))
+        except Exception:
+            return False
+
+    def fijar_ultimo_rival(self, nombre: str) -> None:
+        self.ultimo_rival = str(nombre or "")
+        if self.stats is not None:
+            setattr(self.stats, "ultimo_rival", self.ultimo_rival)
 
     def tipos_reactivacion(self) -> list:
         """Comandos con los que esta unidad devuelve la acción a otras (EstadoTablero.reactivar):
@@ -394,6 +412,8 @@ class FichaUnidad:
             "ha_actuado": self.ha_actuado,
             "accion_turno": self.accion_turno,
             "sin_mover_turno": self.sin_mover_turno,
+            "ultimo_rival": self.ultimo_rival,
+            "usa_ultimo_rival": self.usa_ultimo_rival(),
             "reactivaciones": self.tipos_reactivacion(),
             "es_refuerzo": self.es_refuerzo,
             "invocador": self.invocador,

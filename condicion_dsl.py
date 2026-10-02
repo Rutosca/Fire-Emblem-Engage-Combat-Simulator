@@ -495,6 +495,14 @@ VARIABLES = {
     "立場": lambda ctx: ctx.rol,
     "チェインアタック回数": lambda ctx: ctx.chain_attacks,
     # Identidad, género y Emblema (auras: 相手 = quien recibiría el efecto)
+    # 最終戦闘相手: el último rival con el que combatió (Single-Minded de Ivy:
+    # "最終戦闘相手 == 相手の識別子", +20 Hit). Los genéricos comparten pid (todos los
+    # Wolf Knight del capítulo), así que se compara la unidad concreta por su nombre en el
+    # tablero y, si es ella, se devuelve su identificador para que la igualdad se cumpla.
+    "最終戦闘相手": lambda ctx: (_identificador(ctx.rival)
+                           if getattr(ctx.unidad, 'ultimo_rival', '') and
+                           getattr(ctx.unidad, 'ultimo_rival', '') == getattr(ctx.rival, 'nombre', None)
+                           else "<ninguno>"),
     "識別子": lambda ctx: _identificador(ctx.unidad),
     "相手の識別子": lambda ctx: _identificador(ctx.rival),
     "性別": lambda ctx: __import__('motor_calculo').obtener_genero_unidad(ctx.unidad),

@@ -1855,6 +1855,10 @@ def ejecutar_combate():
         groundswell = tablero.aplicar_groundswell(f_atk.nombre)
         f_atk.accion_turno = "combate"
 
+    # Los dos combatientes recuerdan contra quién han combatido (Single-Minded de Ivy)
+    f_atk.fijar_ultimo_rival(f_def.nombre)
+    f_def.fijar_ultimo_rival(f_atk.nombre)
+
     # Tras un Ataque de Emblema la unidad sigue con el arma con la que lo lanzó: el "arma"
     # del ataque (Astra Storm (Steel Bow), alcance 1-10) no se queda equipada, o luego
     # encadenaría Chain Attacks a 10 casillas (Etie, Cap. 12)

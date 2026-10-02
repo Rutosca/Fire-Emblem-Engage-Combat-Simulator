@@ -1287,6 +1287,7 @@ function abrirModalCreacion(x = 0, y = 0, esAliado = true) {
   actualizarEstadoEnergiaModal();
   if ($("f-hp-stock")) $("f-hp-stock").value = "0";
   if ($("f-chain-guard")) $("f-chain-guard").checked = true;
+  rellenarUltimoRival(null);
   limpiarChips("chips-pasivas");
 
   if (esAliado) {
@@ -1359,6 +1360,7 @@ function rellenarFormularioDesdeFicha(ficha) {
   const stockV = ficha.hp_stock !== undefined ? ficha.hp_stock : (ficha.stats ? ficha.stats.hp_stock : 0);
   if ($("f-hp-stock")) $("f-hp-stock").value = stockV;
   if ($("f-chain-guard")) $("f-chain-guard").checked = (ficha.chain_guard_activo !== false);
+  rellenarUltimoRival(ficha);
 
   const st = ficha.stats || {};
   $("f-stat-str").value = st.fuerza !== undefined ? st.fuerza : 10;
@@ -1703,6 +1705,29 @@ function actualizarSelectorLiderTresCasas() {
   const seccion = $("seccion-lider-tres-casas");
   if (!seccion) return;
   seccion.classList.toggle("hidden", !esEmblemaTresCasas($("f-emblema")?.value));
+}
+
+// Single-Minded (Ivy) y similares: el último rival con el que combatió. Las opciones son
+// las unidades vivas del otro bando; se actualiza solo con los combates de la herramienta.
+function rellenarUltimoRival(ficha) {
+  const fila = $("fila-ultimo-rival"), sel = $("f-ultimo-rival");
+  if (!fila || !sel) return;
+  const usa = !!(ficha && ficha.usa_ultimo_rival);
+  fila.classList.toggle("hidden", !usa);
+  if (!usa) return;
+  sel.innerHTML = "";
+  const nadie = document.createElement("option");
+  nadie.value = ""; nadie.textContent = "(ninguno)";
+  sel.appendChild(nadie);
+  const rivales = Object.values(state.fichas || {}).filter(f => f.viva !== false && f.es_aliado !== ficha.es_aliado)
+    .map(f => f.nombre).sort();
+  if (ficha.ultimo_rival && !rivales.includes(ficha.ultimo_rival)) rivales.unshift(ficha.ultimo_rival);
+  for (const n of rivales) {
+    const o = document.createElement("option");
+    o.value = n; o.textContent = n;
+    sel.appendChild(o);
+  }
+  sel.value = ficha.ultimo_rival || "";
 }
 
 function actualizarVisibilidadChainGuard(ficha) {
@@ -2051,6 +2076,8 @@ function construirPayloadDesdeModal(fichaExistente) {
     hp_max: isNaN(hpMax) ? undefined : hpMax,
     hp_stock: hpStock,
     chain_guard_activo: chainGuardActivo,
+    ultimo_rival: $("f-ultimo-rival") && !$("fila-ultimo-rival").classList.contains("hidden")
+      ? $("f-ultimo-rival").value : (fichaExistente ? (fichaExistente.ultimo_rival || "") : ""),
     clase_nombre: claseNombre,
     arma_nombre: armaEquipadaNombre,
     emblema_nombre: emblemaNombre,
