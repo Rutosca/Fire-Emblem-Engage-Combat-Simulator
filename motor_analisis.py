@@ -85,9 +85,15 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
             continue
         if not c.stats or not c.arma:
             continue
-        # Primero el alcance (barato): descarta la mayoría antes de mirar sus habilidades
+        # Primero el alcance (barato): descarta la mayoría antes de mirar sus habilidades.
+        # Encadena con su arma: si lo último que usó fue un Ataque de Emblema (alcance de la
+        # técnica, Astra Storm 1-10), cuenta el del arma con la que lo lanzó.
         dist_c = distancia_entre_unidades(c, defensor_ficha)
-        r_c = c.arma.rango if (c.arma and c.arma.rango) else [1]
+        arma_c = c.arma
+        if getattr(arma_c, 'es_engage_attack', False):
+            equipada = next((it for it in (c.inventario or []) if isinstance(it, dict) and it.get("equipada")), None)
+            arma_c = _arma_desde_item(equipada) if equipada else None
+        r_c = arma_c.rango if (arma_c and arma_c.rango) else [1]
         if dist_c not in r_c:
             continue
         # Dobles de Call Doubles (SID_残像): "自分のみチェインアタック可能な残像" — solo
@@ -1223,6 +1229,26 @@ def _recomendaciones_de_reactivacion(tablero, mapa, perfil, cronogema, condicion
     return recs
 
 
+class _ComoFusionada:
+    """Simula la Fusión mientras se calcula una jugada que la activa ("⚡ Fusionar y
+    atacar"): sus habilidades de Fusión cuentan en ese combate, como cuenta en el juego
+    (Flare de Soren: Res del rival × 0.8, × 0.7 en Místico). Al salir lo deja como estaba."""
+
+    def __init__(self, aliado, activa: bool):
+        self.stats = getattr(aliado, "stats", None) if activa else None
+
+    def __enter__(self):
+        if self.stats is not None:
+            self.previo = getattr(self.stats, "en_fusion", False)
+            setattr(self.stats, "en_fusion", True)
+        return self
+
+    def __exit__(self, *exc):
+        if self.stats is not None:
+            setattr(self.stats, "en_fusion", self.previo)
+        return False
+
+
 def casillas_con_aura(tablero, aliado) -> set:
     """Casillas en las que `aliado` recibiría el aura de otro aliado (Skill.xml Timing 20 a
     aliados, RangeI..RangeO): estar junto a Alear con Divinely Inspiring, +3 de daño."""
@@ -1549,7 +1575,11 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     dist_combate = 1
                     area_info["extras"] = _evaluar_objetivos_extra(aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)
 
+                # Jugada que activa la Fusión: se calcula ya fusionada
+                simula_fusion = bool((getattr(arma_candidata, 'requiere_fusion', False) or fusion_por_movimiento)
+                                     and not _en_fusion(aliado))
                 if pos_forzada is None and not area_info and not is_tele_candidata:
+                  with _ComoFusionada(aliado, simula_fusion):
                     pos_aura = _mejor_casilla_por_aura(
                         aliado, enemigo, arma_candidata, pos_candidata,
                         (alcanzables_con_fusion or alcanzables_normales) | {(aliado.x, aliado.y)},
@@ -1589,7 +1619,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     # Momentum: casillas que recorrería hasta la casilla de ataque
                     setattr(aliado.stats, 'distancia_movida', _casillas_movidas(aliado, pos_candidata, analizador, enemigos_bloqueo))
 
-                    v = CalculadoraEngage.evaluar_riesgo(
+                    with _ComoFusionada(aliado, simula_fusion):
+                      v = CalculadoraEngage.evaluar_riesgo(
                         atacante=aliado.stats,
                         defensor=enemigo.stats,
                         arma_atk=arma_candidata,

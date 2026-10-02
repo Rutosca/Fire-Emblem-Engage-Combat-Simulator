@@ -1486,6 +1486,18 @@ def _activar_fusion(ficha, es_engage_attack: bool = False):
     return None
 
 
+def _arma_de_lanzamiento(f):
+    """El arma con la que `f` lanzó su Ataque de Emblema (o, si no se sabe, la equipada
+    en el inventario)."""
+    base = str(getattr(f.arma, 'arma_base_nombre', '') or '')
+    if base:
+        for a, _, _ in _armas_aliado(f):
+            if a.nombre == base and not getattr(a, 'es_engage_attack', False):
+                return a
+    equipada = next((it for it in (f.inventario or []) if isinstance(it, dict) and it.get("equipada")), None)
+    return _arma_desde_item(equipada) if equipada else None
+
+
 @app.route("/api/combate/ejecutar", methods=["POST"])
 def ejecutar_combate():
     """
@@ -1842,6 +1854,12 @@ def ejecutar_combate():
         # Groundswell (Camilla): al acabar sobre fuego, miasma o similar, lo limpia y cura 10
         groundswell = tablero.aplicar_groundswell(f_atk.nombre)
         f_atk.accion_turno = "combate"
+
+    # Tras un Ataque de Emblema la unidad sigue con el arma con la que lo lanzó: el "arma"
+    # del ataque (Astra Storm (Steel Bow), alcance 1-10) no se queda equipada, o luego
+    # encadenaría Chain Attacks a 10 casillas (Etie, Cap. 12)
+    if getattr(f_atk.arma, 'es_engage_attack', False):
+        f_atk.arma = _arma_de_lanzamiento(f_atk) or f_atk.arma
 
     # Registrar uso de ataque o tecnica especial de Engage (solo 1 vez por fusion)
     if es_engage_attack:

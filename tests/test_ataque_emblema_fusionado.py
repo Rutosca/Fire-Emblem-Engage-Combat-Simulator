@@ -70,5 +70,51 @@ class TestAstraStormDeEtie(unittest.TestCase):
         self.assertEqual(plan, {"Bunet", "Pandreo"})
 
 
+    def test_tras_astra_storm_vuelve_al_arco(self):
+        """El "arma" del Ataque de Emblema (Astra Storm (Steel Bow), alcance 1-10) se quedaba
+        equipada tras usarlo, y Etie, que es de Apoyo, encadenaba un Chain Attack contra el
+        Sword Fighter a 10 casillas. Vuelve a su Steel Bow (alcance 2) y ya no encadena."""
+        from app import tablero
+        r = self.client.post("/api/combate/ejecutar", json={
+            "atacante": "Etie", "defensor": "Lance Flier (6,7)", "arma_nombre": "Astra Storm (Steel Bow)",
+            "es_engage_attack": True, "engage_attack_nombre": "Astra Storm", "pos_destino": [16, 7]})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        etie = tablero.obtener_ficha("Etie")
+        self.assertEqual((etie.arma.nombre, etie.arma.rango), ("Steel Bow", [2]))
+        res = self.client.post("/api/analizar", json={"perfil": "seguro"}).get_json()["resultados"]
+        bunet = next(x for x in res if x.get("aliado") == "Bunet")
+        self.assertEqual(bunet.get("chain_attacks"), [])
+
+
+
+class TestFusionarYAtacarCuentaLaFusion(unittest.TestCase):
+    """Partida del usuario (Cap. 12, turno 3): Céline (Mística) puede fusionarse con Soren y
+    atacar con Bolting a un Sword Fighter de Res 10. Flare (SID_陽光_魔法, engage_skill de
+    Soren) deja la Res del rival × 0.7 con un tomo, pero solo en Fusión: el análisis
+    calculaba la jugada "⚡ Fusionar y atacar" sin fusionarla y daba 17; el juego, 20."""
+
+    @classmethod
+    def setUpClass(cls):
+        from app import app
+        app.config["TESTING"] = True
+        cls.client = app.test_client()
+        cls.partida = cargar_fixture("partida_cap12_turno3.json")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.post("/api/mapa/seleccionar", json={"capitulo": 7})
+
+    def test_bolting_con_flare(self):
+        from app import tablero
+        self.client.post("/api/mapa/seleccionar", json={"capitulo": 12})
+        self.client.post("/api/partida/importar", json={"partida": copy.deepcopy(self.partida)})
+        self.assertFalse(tablero.obtener_ficha("Céline").en_fusion)
+        res = self.client.post("/api/analizar", json={"perfil": "seguro"}).get_json()["resultados"]
+        celine = next(r for r in res if r.get("aliado") == "Céline")
+        self.assertEqual(celine["arma_recomendada"], "Bolting (Emblema)")
+        self.assertIn("1x20 = 20 dmg", celine["recomendacion"])
+        self.assertFalse(tablero.obtener_ficha("Céline").stats.en_fusion, "la simulación no la deja fusionada")
+
+
 if __name__ == "__main__":
     unittest.main()
