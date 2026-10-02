@@ -155,6 +155,26 @@ class FichaUnidad:
         except Exception:
             return []
 
+    def bonos_en_pantalla(self, con_rango: bool = False):
+        """
+        (extra, bonos_condicionales): lo que el juego suma a los stats de la pantalla de
+        estado mientras dura, y que la ficha guarda aparte. Los bonos condicionados (Resolve,
+        con HP <= 75 %) y los estados temporales (Self-Improver Fue +2 hasta el siguiente
+        turno, Meditation, los Seal…): verificado en juego, aparecen sumados y desaparecen
+        al dejar de cumplirse o al acabar. `extra` es {stat: n} (sin HP ni Mov).
+        """
+        bonos_cond = self.bonos_stats_condicionales(con_rango=con_rango)
+        extra = {}
+        for b in bonos_cond:
+            if b["activo"]:
+                for k, v in b["stat_boosts"].items():
+                    extra[k] = extra.get(k, 0) + int(v)
+        for est in (self.estados_temporales or []):
+            for k, v in ((est.get("stat_boosts") or {}) if isinstance(est, dict) else {}).items():
+                if k not in ("hp", "mov") and int(v or 0):
+                    extra[k] = extra.get(k, 0) + int(v)
+        return extra, bonos_cond
+
     def usa_ultimo_rival(self) -> bool:
         """Tiene alguna habilidad que depende de su último rival (最終戦闘相手): el modal
         le enseña el campo para fijarlo a mano."""
@@ -408,14 +428,9 @@ class FichaUnidad:
             self.stats.hp = hp_a
             self.stats.hp_max = hp_m
             setattr(self.stats, 'hp_actual', hp_a)
-        # Resolve (Ike) y similares: el juego enseña la Def/Res con el bono mientras se cumple
-        # su condición; la ficha la guarda sin él
-        bonos_cond = self.bonos_stats_condicionales(con_rango=True)
-        extra = {}
-        for b in bonos_cond:
-            if b["activo"]:
-                for k, v in b["stat_boosts"].items():
-                    extra[k] = extra.get(k, 0) + int(v)
+        # Resolve, Self-Improver…: el juego enseña los stats con el bono mientras dura; la
+        # ficha los guarda sin él
+        extra, bonos_cond = self.bonos_en_pantalla(con_rango=True)
 
         return {
             "nombre": self.nombre,
@@ -489,14 +504,14 @@ class FichaUnidad:
                 "hp": hp_a,
                 "hp_actual": hp_a,
                 "hp_max": hp_m,
-                "fuerza": getattr(self.stats, 'fuerza', 10),
-                "magia": getattr(self.stats, 'magia', 0),
-                "destreza": getattr(self.stats, 'destreza', 10),
-                "velocidad": getattr(self.stats, 'velocidad', 10),
+                "fuerza": getattr(self.stats, 'fuerza', 10) + extra.get("str", 0),
+                "magia": getattr(self.stats, 'magia', 0) + extra.get("mag", 0),
+                "destreza": getattr(self.stats, 'destreza', 10) + extra.get("dex", 0),
+                "velocidad": getattr(self.stats, 'velocidad', 10) + extra.get("spd", 0),
                 "defensa": getattr(self.stats, 'defensa', 8) + extra.get("def", 0),
                 "resistencia": getattr(self.stats, 'resistencia', 5) + extra.get("res", 0),
-                "suerte": getattr(self.stats, 'suerte', 5),
-                "complexion": getattr(self.stats, 'complexion', 7),
+                "suerte": getattr(self.stats, 'suerte', 5) + extra.get("lck", 0),
+                "complexion": getattr(self.stats, 'complexion', 7) + extra.get("bld", 0),
                 "es_lord": getattr(self.stats, 'es_lord', False),
             } if self.stats else None,
             "bonos_condicionales": bonos_cond,

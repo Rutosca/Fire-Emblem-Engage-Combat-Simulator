@@ -1373,7 +1373,7 @@ function rellenarFormularioDesdeFicha(ficha) {
   $("f-stat-lck").value = st.suerte !== undefined ? st.suerte : 5;
   $("f-stat-bld").value = st.complexion !== undefined ? st.complexion : 7;
   $("f-stat-mov").value = ficha.mov !== undefined ? ficha.mov : 4;
-  fijarBonosCondicionales(ficha.bonos_condicionales, hpA);
+  fijarBonosCondicionales(ficha.bonos_condicionales, hpA, ficha.estados_temporales);
 
   // Limpiar los 5 slots de inventario
   for (let i = 0; i < 5; i++) {
@@ -1717,8 +1717,11 @@ const CAMPO_BONO_STAT = { str: "f-stat-str", mag: "f-stat-mag", dex: "f-stat-dex
                           def: "f-stat-def", res: "f-stat-res", lck: "f-stat-lck", bld: "f-stat-bld" };
 const ETIQUETA_BONO_STAT = { str: "FUE", mag: "MAG", dex: "DES", spd: "VEL", def: "DEF", res: "RES", lck: "SUE", bld: "COR" };
 
-function fijarBonosCondicionales(bonos, hpMostrado) {
+function fijarBonosCondicionales(bonos, hpMostrado, estados) {
   state.bonosCondModal = Array.isArray(bonos) ? bonos : [];
+  // Estados temporales con stats (Self-Improver…): también vienen ya sumados en los campos
+  state.estadosStatsModal = (Array.isArray(estados) ? estados : []).filter(e =>
+    Object.entries(e.stat_boosts || {}).some(([k, v]) => CAMPO_BONO_STAT[k] && v));
   const hp = parseInt(hpMostrado, 10) || 0;
   state.bonosCondAplicados = state.bonosCondModal.map(b => (b.hp_activos || []).includes(hp));
   pintarBonosCondicionales();
@@ -1745,14 +1748,17 @@ function pintarBonosCondicionales() {
   const el = $("f-bonos-condicionales");
   if (!el) return;
   const bonos = state.bonosCondModal || [];
-  el.classList.toggle("hidden", !bonos.length);
+  const estados = state.estadosStatsModal || [];
+  const txtBonos = boosts => Object.entries(boosts || {}).filter(([k, v]) => CAMPO_BONO_STAT[k] && v)
+    .map(([k, v]) => `${ETIQUETA_BONO_STAT[k] || k} ${v > 0 ? "+" : ""}${v}`).join(" / ");
+  el.classList.toggle("hidden", !bonos.length && !estados.length);
   el.textContent = bonos.map((b, i) => {
-    const txt = Object.entries(b.stat_boosts || {}).map(([k, v]) => `${ETIQUETA_BONO_STAT[k] || k} +${v}`).join(" / ");
     const umbral = (b.hp_activos || []).length ? ` con HP ≤ ${Math.max(...b.hp_activos)}` : "";
     return state.bonosCondAplicados[i]
-      ? `${b.nombre}: ${txt} activo${umbral} (ya sumado arriba, como en el juego)`
-      : `${b.nombre}: ${txt}${umbral} (ahora inactivo)`;
-  }).join(" · ");
+      ? `${b.nombre}: ${txtBonos(b.stat_boosts)} activo${umbral} (ya sumado arriba, como en el juego)`
+      : `${b.nombre}: ${txtBonos(b.stat_boosts)}${umbral} (ahora inactivo)`;
+  }).concat(estados.map(e => `${e.nombre}: ${txtBonos(e.stat_boosts)} hasta la fase ${e.expira_fase || "?"} T${e.expira_turno || "?"} (ya sumado arriba, como en el juego)`))
+    .join(" · ");
 }
 
 // Single-Minded (Ivy) y similares: el último rival con el que combatió. Las opciones son
@@ -2417,7 +2423,16 @@ function initModalEvents() {
         if (res.stats.suerte !== undefined) $("f-stat-lck").value = res.stats.suerte;
         if (res.stats.complexion !== undefined) $("f-stat-bld").value = res.stats.complexion;
         if (res.mov !== undefined) $("f-stat-mov").value = res.mov;
-        fijarBonosCondicionales(res.bonos_condicionales, res.hp_actual);
+        // Las stats del catálogo vienen sin los estados temporales de la unidad (Self-Improver…):
+        // se suman, como los enseña el juego, y Resolve se ajusta al HP del modal
+        const estadosPrevios = state.estadosStatsModal || [];
+        fijarBonosCondicionales(res.bonos_condicionales, res.hp_actual, estadosPrevios);
+        for (const e of state.estadosStatsModal) {
+          for (const [k, v] of Object.entries(e.stat_boosts || {})) {
+            const el = $(CAMPO_BONO_STAT[k]);
+            if (el && v) el.value = Math.max(0, (parseInt(el.value, 10) || 0) + v);
+          }
+        }
         ajustarBonosCondicionales();
         actualizarVisibilidadChainGuard();
 

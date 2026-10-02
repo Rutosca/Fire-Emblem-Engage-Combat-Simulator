@@ -19,7 +19,7 @@ STATS = {"hp": 40, "hp_max": 40, "fuerza": 15, "magia": 5, "destreza": 15, "velo
          "defensa": 10, "resistencia": 8, "suerte": 8, "complexion": 8}
 
 
-class TestResolve(unittest.TestCase):
+class _BaseResolve(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -52,6 +52,10 @@ class TestResolve(unittest.TestCase):
         r = CalculadoraEngage.simular_combate(ene.stats, ike.stats, ene.arma, ike.arma, Terreno(), Terreno(), 1)
         return r["atacante"]["daño_por_golpe"]
 
+
+
+class TestResolve(_BaseResolve):
+
     def test_con_hp_alto_no_hay_bono(self):
         f = self._ike(40, 10, 8)
         d = f.como_dict()
@@ -82,6 +86,35 @@ class TestResolve(unittest.TestCase):
         bonos = f.como_dict()["bonos_condicionales"]
         self.assertEqual([b["stat_boosts"] for b in bonos], [{"def": 7, "res": 7}])
         self.assertEqual((f.stats.defensa, f.stats.resistencia), (10, 8))
+
+
+class TestEstadosTemporalesEnPantalla(_BaseResolve):
+    """Self-Improver (Fue +2 al esperar, hasta el siguiente turno) se ve igual que Resolve
+    en la pantalla de estado: sumado mientras dura (verificado en juego)."""
+
+    def test_self_improver_se_ve_sumado_y_se_guarda_sin_el(self):
+        import pasivas_temporales
+        r = self.client.post("/api/unidad/guardar", json={
+            "nombre": "Alfred", "clase_nombre": "Avenir", "es_aliado": True, "x": 5, "y": 9, "nivel": 10,
+            "hp_max": 40, "hp_actual": 40, "stats": dict(STATS, fuerza=15),
+            "arma_nombre": "Iron Lance", "inventario": [{"arma": "Iron Lance", "equipada": True}]})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        alfred = tablero.obtener_ficha("Alfred")
+        if not pasivas_temporales.al_esperar(tablero, alfred):
+            self.skipTest("Alfred sin Self-Improver en el catálogo")
+        d = alfred.como_dict()
+        self.assertEqual(d["stats"]["fuerza"], 17)
+        # el modal reenvía lo que enseña (17): se guarda 15, sin acumular
+        r = self.client.post("/api/unidad/guardar", json={
+            "nombre": "Alfred", "clase_nombre": "Avenir", "es_aliado": True, "x": 5, "y": 9, "nivel": 10,
+            "hp_max": 40, "hp_actual": 40, "stats": dict(STATS, fuerza=d["stats"]["fuerza"]),
+            "arma_nombre": "Iron Lance", "inventario": [{"arma": "Iron Lance", "equipada": True}]})
+        alfred = tablero.obtener_ficha("Alfred")
+        self.assertEqual(alfred.stats.fuerza, 15)
+        self.assertEqual(alfred.como_dict()["stats"]["fuerza"], 17)
+        # al acabar el estado vuelve a 15
+        alfred.estados_temporales = []
+        self.assertEqual(alfred.como_dict()["stats"]["fuerza"], 15)
 
 
 if __name__ == "__main__":
