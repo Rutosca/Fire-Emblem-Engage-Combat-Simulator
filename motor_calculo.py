@@ -2560,9 +2560,20 @@ class CalculadoraEngage:
                 f"No planificar en base a esto."
             )
         else:
+            # "hace 30 de daño (5 golpes de 6)": el daño total y cómo sale, sin confundir el
+            # total con el golpe (en los Ataques de Emblema de varios golpes, daño_por_golpe
+            # es el total)
+            if atk.get("lodestar_hits") and atk["lodestar_hits"][0]:
+                n_g, d_g = atk["lodestar_hits"]
+                desglose = f"{n_g} golpes de {d_g}"
+            elif atk.get("houses_unite_hits"):
+                desglose = f"{len(atk['houses_unite_hits'])} golpes: {', '.join(str(h) for h in atk['houses_unite_hits'])}"
+            elif atk["golpes_en_ronda"] > 1:
+                desglose = f"{atk['golpes_en_ronda']} golpes de {atk['daño_por_golpe']}"
+            else:
+                desglose = "1 golpe"
             motivos.append(
-                f"{atk['nombre']} hace {atk['daño_total_ronda']} "
-                f"({atk['golpes_en_ronda']}x{atk['daño_por_golpe']}). "
+                f"{atk['nombre']} hace {atk['daño_total_ronda']} de daño ({desglose}). "
                 f"{dfn['nombre']} queda en "
                 f"{res['hp_defensor_final']}/{dfn['hp_inicial']} HP."
             )

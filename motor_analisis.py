@@ -1223,6 +1223,78 @@ def _recomendaciones_de_reactivacion(tablero, mapa, perfil, cronogema, condicion
     return recs
 
 
+def casillas_con_aura(tablero, aliado) -> set:
+    """Casillas en las que `aliado` recibiría el aura de otro aliado (Skill.xml Timing 20 a
+    aliados, RangeI..RangeO): estar junto a Alear con Divinely Inspiring, +3 de daño."""
+    casillas = set()
+    for otro in tablero.fichas.values():
+        if not otro.viva or otro.nombre == aliado.nombre or otro.es_aliado != aliado.es_aliado:
+            continue
+        for sid in pasivas.sids_activos(otro):
+            info = pasivas.HABILIDADES.get(sid) or {}
+            if not pasivas._es_aura(info):
+                continue
+            ri, ro = pasivas._rango_aura(info)
+            for dx in range(-ro, ro + 1):
+                for dy in range(-ro, ro + 1):
+                    if max(1, ri) <= abs(dx) + abs(dy) <= ro:
+                        casillas.add((otro.x + dx, otro.y + dy))
+    return casillas
+
+
+def _mejor_casilla_por_aura(aliado, enemigo, arma, pos, casillas_alcanzables, tablero, mapa, exposicion,
+                            es_engage_attack=False, engage_attack_nombre=""):
+    """
+    La casilla de ataque se elige por seguridad; esta mira además las alcanzables desde
+    las que el arma llega al enemigo y que dan un aura (Divinely Inspiring de Alear: +3 de
+    daño, que en Astra Storm es +1 por golpe). Se cambia de casilla si así mata y desde la
+    elegida no, o si hace más daño sin quedar más expuesto.
+    """
+    con_aura = casillas_con_aura(tablero, aliado)
+    if not con_aura or tuple(pos) in con_aura:
+        return pos
+    ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre)
+    rango = set(arma.rango or [1])
+    candidatas = [c for c in (casillas_alcanzables or ()) if c in con_aura and c not in ocupadas
+                  and distancia_a_unidad(enemigo, c[0], c[1]) in rango]
+    if not candidatas:
+        return pos
+
+    def terreno(c, es_aliado):
+        t = mapa.grid[c[0]][c[1]]
+        return Terreno(avo=t.avo, dfn=defensa_de_terreno(t, es_aliado), curacion_turno=getattr(t, 'curacion_turno', 0),
+                       es_antirruptura=getattr(t, 'es_antirruptura', False))
+
+    def resultado(c):
+        cercanos = [(a.stats, distancia_a_unidad(a, c[0], c[1])) for a in tablero.obtener_aliados()
+                    if a.viva and a.stats and a.nombre != aliado.nombre]
+        try:
+            r = CalculadoraEngage.simular_combate(
+                aliado.stats, enemigo.stats, arma, enemigo.arma, terreno(c, aliado.es_aliado),
+                terreno((enemigo.x, enemigo.y), enemigo.es_aliado), distancia_a_unidad(enemigo, c[0], c[1]),
+                aliados_cercanos_atk=cercanos, es_engage_attack=es_engage_attack,
+                engage_attack_nombre=engage_attack_nombre)
+        except Exception:
+            return None
+        hp_def = r["resultado"].get("hp_defensor_final", enemigo.stats.hp)
+        return (hp_def <= 0, int(enemigo.stats.hp) - max(0, hp_def))
+
+    base = resultado(tuple(pos))
+    if base is None:
+        return pos
+    expo_base = exposicion(tuple(pos))
+    mejor, mejor_clave = pos, base
+    for c in sorted(candidatas, key=lambda c: (exposicion(c), c)):
+        r = resultado(c)
+        if r is None:
+            continue
+        mata_mas = r[0] and not mejor_clave[0]
+        mas_dano = r[0] == mejor_clave[0] and r[1] > mejor_clave[1] and exposicion(c) <= expo_base
+        if mata_mas or mas_dano:
+            mejor, mejor_clave = list(c), r
+    return mejor
+
+
 def actua_por_su_cuenta(ficha) -> bool:
     """False para los dobles de Call Doubles (Lyn): no se mueven ni atacan en la fase de su
     bando (verificado en juego); solo encadenan con su invocador y hacen de señuelo."""
@@ -1345,6 +1417,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
 
     oportunidades_jugador = []
     distancias_frente = []
+    hay_jefe_vivo = any(_es_jefe(e) for e in enemigos_activos)
 
     # ── 1. Distancias al frente ───────────────────────────────────────────
     # (Las amenazas por par enemigo/aliado se calculan a demanda con `peligro`; el panel es
@@ -1475,6 +1548,20 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                     pos_candidata = list(mejor_area_pos)
                     dist_combate = 1
                     area_info["extras"] = _evaluar_objetivos_extra(aliado, arma_candidata, area_info, mapa, tablero=tablero, pos_atk=pos_candidata)
+
+                if pos_forzada is None and not area_info and not is_tele_candidata:
+                    pos_aura = _mejor_casilla_por_aura(
+                        aliado, enemigo, arma_candidata, pos_candidata,
+                        (alcanzables_con_fusion or alcanzables_normales) | {(aliado.x, aliado.y)},
+                        tablero, mapa, lambda p, _a=aliado, _e=enemigo: exposicion(p, _a, {_e.nombre})["peso"],
+                        es_engage_attack=getattr(arma_candidata, 'es_engage_attack', False),
+                        engage_attack_nombre=nom_eng_cand)
+                    if list(pos_aura) != list(pos_candidata):
+                        pos_candidata = list(pos_aura)
+                        dist_combate = distancia_a_unidad(enemigo, pos_candidata[0], pos_candidata[1])
+                        fusion_por_movimiento = bool(
+                            alcanzables_con_fusion and tuple(pos_candidata) not in alcanzables_normales
+                            and tuple(pos_candidata) in alcanzables_con_fusion)
 
                 is_tele = "ragnarok" in arma_candidata.nombre.lower()
                 apoyos_aliados = [] if pos_forzada is not None else obtener_aliados_backup(
@@ -1615,7 +1702,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                         score += 300 if (kill_seguro or kill_probable or quiebra_barra) else 60
                         if es_engage_candidato:
                             score += 100
-                    elif (es_engage_candidato or getattr(arma_candidata, 'requiere_fusion', False) or fusion_por_movimiento) and not es_jefe_e                             and not (area_info and len(area_info.get("objetivos") or []) >= 2):
+                    elif (es_engage_candidato or getattr(arma_candidata, 'requiere_fusion', False) or fusion_por_movimiento) and not es_jefe_e \
+                            and not (area_info and len(area_info.get("objetivos") or []) >= 2) \
+                            and not (es_engage_candidato and _en_fusion(aliado) and not hay_jefe_vivo):
+                        # (Ni cuando ya está fusionada y el mapa no tiene jefe vivo: el Ataque de
+                        # Emblema está ahí, se gasta o se pierde con la Fusión. Cap. 12: Etie con
+                        # Lyn mata a un Lance Flier con Astra Storm, 5 golpes de 14.)
                         # (Excepción: un Override / Blazing Lion que alcanza a 2+ enemigos sí
                         # merece gastar la técnica de Emblema aunque no haya jefe.)
                         # Reservar la Fusión de Emblema para jefes: contra enemigos normales,
@@ -2396,8 +2488,15 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 enemigos_peligrosos_pre.add(e_nom)
     # Enemigos que ya caen con un solo aliado (kill seguro, o probable con buen Hit):
     # no se planifica una baja conjunta encima; el plan es para los que nadie mata solo.
+    # Solo cuenta la baja que es LA jugada de ese aliado (la de más puntuación): Etie puede
+    # matar al Sword Fighter con Astra Storm, pero su mejor jugada es el Lance Flier, así
+    # que el Sword Fighter sigue necesitando una baja conjunta de otros (Cap. 12).
+    mejor_de_aliado = {}
+    for op in oportunidades_jugador:
+        if int(op.get("score_tactico", 0) or 0) > int(mejor_de_aliado.get(op["aliado"], {}).get("score_tactico", -10**9) or 0):
+            mejor_de_aliado[op["aliado"]] = op
     con_kill_solo = {
-        op["enemigo"] for op in oportunidades_jugador
+        op["enemigo"] for op in mejor_de_aliado.values()
         if op.get("categoria") in ("kill_seguro", "kill_probable") and int(op.get("score_tactico", 0) or 0) >= 800
     }
     # Un aliado que ya tiene una baja propia (segura o probable con buen Hit) no se
