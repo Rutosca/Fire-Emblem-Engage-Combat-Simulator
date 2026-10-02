@@ -78,6 +78,10 @@ def obtener_aliados_backup(atacante_ficha, defensor_ficha, tablero=None, ataque_
             and c.nombre not in (atacante_ficha.nombre, defensor_ficha.nombre)
             and distancia_entre_unidades(c, atacante_ficha) <= forzado["rango"]
         ]
+    # El resto de Ataques de Emblema no admiten Chain Attacks (verificado en juego: Houses
+    # Unite de Kagetsu sin el de Etie al lado)
+    if ataque_emblema:
+        return []
 
     apoyos = []
     for c in companeros:

@@ -1606,6 +1606,10 @@ class CalculadoraEngage:
         atacante = cls._con_enhance(atacante, arma_atk)
         defensor = cls._con_enhance(defensor, arma_def)
         puede_contra = (not es_engage_attack) and (not es_ballesta) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
+        # Los Ataques de Emblema no admiten Chain Attacks, salvo All for One de Lucina, que
+        # obliga a encadenar a los aliados cercanos (verificado en juego: Houses Unite)
+        if es_engage_attack and not pasivas.chain_attack_forzado(atacante, nombre_ataque=engage_attack_nombre):
+            aliados_apoyo_backup = None
         n_chain_attacks = 0 if es_ballesta else len(aliados_apoyo_backup or [])
 
         stats_atk = cls._stats_de_golpe(

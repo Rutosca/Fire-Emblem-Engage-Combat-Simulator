@@ -1456,6 +1456,14 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         turnos_fusion = int(data.get("turnos_fusion", unidad_previa.turnos_fusion))
         if turnos_fusion <= 0:
             turnos_fusion = unidad_previa.turnos_fusion
+        # Subir a vínculo 11 en plena Fusión alarga la que está en curso al momento (+1
+        # turno: con 2 restantes pasa a 3), igual que la duración base pasa de 3 a 4.
+        # Bajarlo (corregir un nivel mal puesto) lo deshace.
+        vinculo_previo = int(getattr(unidad_previa, 'nivel_vinculo', 1) or 1)
+        if vinculo_previo < 11 <= nivel_vinculo:
+            turnos_fusion += 1
+        elif nivel_vinculo < 11 <= vinculo_previo:
+            turnos_fusion = max(1, turnos_fusion - 1)
         ataque_emblema_usado = getattr(unidad_previa, 'ataque_emblema_usado', False)
     else:
         en_fusion = bool(data.get("en_fusion", False)) or int(data.get("turnos_fusion", 0)) > 0
