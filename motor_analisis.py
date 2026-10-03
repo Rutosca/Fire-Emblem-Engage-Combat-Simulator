@@ -1307,16 +1307,19 @@ def _golpe_de_postura(f, postura, enemigo) -> dict:
             "cura": max(0, int(r["resultado"].get("hp_atacante_final", _hp_de(f))) - _hp_de(f))}
 
 
-def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
+def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos, peligro=None) -> list:
     """
     Great Aether (Ike): la unidad gasta su acción y su Ataque de Emblema en ponerse en
     guardia (Def/Res +5, sin contraataque) y, si sigue viva al empezar el turno siguiente,
     golpea a todos los enemigos a 2 casillas o menos. El enemigo lo sabe y va a por ella:
     Chain Attacks entre varios, o arcos y magia desde 3+ casillas para quedar fuera del área.
     Por eso solo se propone donde sobrevive al PEOR caso (todos los que la alcanzan la
-    atacan, con los Chain Attacks de los de estilo Apoyo) y donde los que la atacarían
-    tienen que ponerse a 2 casillas o menos (sus armas no llegan más lejos): dos o más
-    golpes, o al menos una baja. Una recomendación por unidad: la mejor casilla.
+    atacan, con los Chain Attacks de los de estilo Apoyo). Es una inversión, no un señuelo:
+    un enemigo va a por quien más daño le hace, así que solo se cuenta con golpear a los que
+    la tienen como mejor objetivo (ningún otro aliado a su alcance recibiría más daño ni
+    moriría), que tendrán que ponerse a 2 casillas o menos (sus armas no llegan más lejos) y
+    que se ven (de un oculto no se sabe dónde está). Dos o más golpes, o al menos una baja.
+    Una recomendación por unidad: la mejor casilla.
     """
     recs = []
     enemigos = {e.nombre: e for e in tablero.obtener_enemigos() if e.viva}
@@ -1351,9 +1354,21 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
                 peor += sum(len([b for b in apoyo if b != n]) for n in atacantes) * chain
                 if peor >= hp:
                     continue
+                # Irán a por otro aliado si con él hacen más daño o le matan (en guardia ella
+                # es mal objetivo: Def/Res +5, Laguz Friend, sin contraataque)
+                otros = {}
+                for n in atacantes:
+                    for a in tablero.fichas.values():
+                        if (a.viva and a.es_aliado and a.nombre != f.nombre and peligro is not None
+                                and (a.x, a.y) in zonas_amenaza_enemigos.get(n, ())):
+                            p_a = peligro(n, a)
+                            if p_a["letal"] or (p_a["daño"] or 0) > (peligro_g[n]["daño"] or 0):
+                                otros[n] = a.nombre
+                                break
                 # Los que solo pueden atacarla desde 2 casillas o menos acaban en el área
-                dentro = [n for n in atacantes if max(rangos_de_ataque(enemigos[n])) <= 2]
-                fuera = [n for n in atacantes if n not in dentro]
+                dentro = [n for n in atacantes if max(rangos_de_ataque(enemigos[n])) <= 2
+                          and n not in otros and not getattr(enemigos[n], "oculto", False)]
+                fuera = [n for n in atacantes if max(rangos_de_ataque(enemigos[n])) > 2]
                 for n in dentro:
                     if n not in golpe:
                         golpe[n] = _golpe_de_postura(f, postura, enemigos[n])
@@ -1364,11 +1379,11 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
                 score = 400 * len(bajas) + daño - peor // 4
                 clave = (score, -peor)
                 if mejor is None or clave > mejor[0]:
-                    mejor = (clave, pos, atacantes, dentro, fuera, bajas, peor, score)
+                    mejor = (clave, pos, atacantes, dentro, fuera, bajas, peor, score, dict(otros))
         f.arma = arma_previa
         if not mejor:
             continue
-        _clave, pos, atacantes, dentro, fuera, bajas, peor, score = mejor
+        _clave, pos, atacantes, dentro, fuera, bajas, peor, score, otros = mejor
         desde = "desde su casilla" if pos == (f.x, f.y) else f"en ({pos[0]},{pos[1]})"
         fusion_txt = "se fusiona y " if not fusionada else ""
         motivos = [
@@ -1384,6 +1399,12 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
         ]
         if fuera:
             motivos.append(f"Pueden atacarle desde fuera del área (3+ casillas): {', '.join(fuera)}.")
+        if otros:
+            motivos.append("Probablemente irán a por otro (más daño o una baja): "
+                           + ", ".join(f"{n} → {a}" for n, a in otros.items()) + ".")
+        ocultos_ga = [n for n in atacantes if getattr(enemigos[n], "oculto", False)]
+        if ocultos_ga:
+            motivos.append(f"A oscuras (no se cuenta con golpearlos): {', '.join(ocultos_ga)}.")
         motivos.append("Si nadie se pone a 2 casillas o menos, el ataque se pierde.")
         recs.append({
             "tipo_analisis": "postura_emblema",
@@ -2829,7 +2850,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             tablero, mapa, perfil, cronogema, condicion_victoria,
             lambda pos, aliado_p: exposicion(pos, aliado_p))
         if getattr(tablero, "fase", "jugador") == "jugador":
-            resultados = resultados + _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos)
+            resultados = resultados + _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos, peligro)
 
     # Amenazas serias sobre las casillas ACTUALES de los aliados que aún no han actuado
     # (en fase de jugador): quien se quede donde está y pueda morir, o perder la mitad del

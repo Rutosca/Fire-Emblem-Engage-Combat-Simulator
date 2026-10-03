@@ -1517,10 +1517,15 @@ class EstadoTablero:
             # turno siguiente sale con ella
             f.arma = arma
             n = str(arma.nombre)
-            item = next((it for it in (f.inventario or []) if isinstance(it, dict)
-                         and str(it.get("nombre") or it.get("arma") or "") == n), None)
+            iid = str(getattr(arma, 'iid', '') or '')
+            # Por su IID: "Hammer" a secas es la normal (Mt 9), no la de Ike (Mt 18)
+            item = next((it for it in (f.inventario or []) if isinstance(it, dict) and iid
+                         and str(it.get("id") or it.get("iid") or "") == iid), None)
+            if item is None and not iid:
+                item = next((it for it in (f.inventario or []) if isinstance(it, dict)
+                             and str(it.get("nombre") or it.get("arma") or "") == n), None)
             if item is None and (getattr(arma, 'es_engage', False) or "(emblema)" in n.lower()):
-                item = {"nombre": n, "es_engage": True}
+                item = {"nombre": n, "es_engage": True, **({"id": iid} if iid else {})}
                 f.inventario.append(item)
             for it in (f.inventario or []):
                 if isinstance(it, dict):
@@ -1536,6 +1541,8 @@ class EstadoTablero:
             expira_fase=fase, expira_turno=int(self.turno_actual) + 1, origen=f.nombre,
             postura=True, sin_contraataque=True, veces_atacado=0)
         return estado, ""
+
+    EFECTOS_QUE_LIMPIA_GREAT_AETHER = ("fuego", "miasma")
 
     def resolver_posturas(self, es_aliado: bool) -> list:
         """
@@ -1589,8 +1596,18 @@ class EstadoTablero:
                 golpes.append({"enemigo": e.nombre, "daño": daño, "hp_tras": e.hp_actual, "muere": muere})
             f.estados_temporales = [x for x in f.estados_temporales if x is not estado]
             f._sincronizar_estados_temporales()
+            # "Great Aether can clear effects like flames and miasma where it hits" (consejo
+            # del juego, MID_TIPS_SKILL_29): si llega a golpear, limpia su área
+            limpiadas = []
+            if golpes:
+                for c in sorted(area):
+                    if (self.terrenos_temporales.get(c) or {}).get("tipo") in self.EFECTOS_QUE_LIMPIA_GREAT_AETHER:
+                        self._quitar_terreno_temporal(c)
+                        limpiadas.append(list(c))
+                if limpiadas:
+                    self.sincronizar_terrenos_temporales()
             resultados.append({"unidad": f.nombre, "ataque": p["nombre"], "golpes": golpes,
-                               "curado": max(0, f.hp_actual - hp_inicial)})
+                               "curado": max(0, f.hp_actual - hp_inicial), "limpiadas": limpiadas})
         return resultados
 
     def objetivos_de_reactivacion(self, actor, tipo: str) -> list:

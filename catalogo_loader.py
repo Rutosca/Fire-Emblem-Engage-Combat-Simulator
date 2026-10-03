@@ -943,6 +943,12 @@ def _arma_desde_item(item_dict):
         )
 
     if arma_obj:
+        # El IID viaja con el arma: quien la equipe luego (Great Aether) la guarda por él, y
+        # no por el nombre, que se resolvería a otra que se llama igual (la Hammer de Ike,
+        # Mt 18, frente a la Hammer normal, Mt 9)
+        iid = (parsed or {}).get("id") or item_dict.get("id") or ""
+        if iid:
+            setattr(arma_obj, 'iid', iid)
         if item_dict.get("es_engage") or "(emblema)" in nombre_raw.lower():
             setattr(arma_obj, 'es_engage', True)
             if not arma_obj.nombre.endswith("(Emblema)"):

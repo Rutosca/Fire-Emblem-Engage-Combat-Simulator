@@ -112,7 +112,15 @@ class TestGreatAether(_BaseGreatAether):
         self.assertEqual(r.status_code, 200, r.get_json())
         t = tablero.obtener_ficha("Timerra")
         self.assertIn("Hammer", t.arma.nombre)
-        self.assertEqual([it for it in t.inventario if it.get("equipada")][0].get("nombre"), t.arma.nombre)
+        # la Hammer de Ike (IID_アイク_ハンマー, Mt 18), no la normal (Mt 9): en el juego, 18 de
+        # daño a un Wolf Knight de Def 15 con Fuerza 15
+        self.assertEqual(t.arma.mt, 18)
+        self.assertEqual([it for it in t.inventario if it.get("equipada")][0].get("id"), "IID_アイク_ハンマー")
+        # y lo sigue siendo al guardar y cargar la partida
+        partida = self.client.get("/api/partida/exportar").get_json()
+        self.assertEqual(self.client.post("/api/partida/importar", json=partida.get("partida", partida)).status_code, 200)
+        t = tablero.obtener_ficha("Timerra")
+        self.assertEqual((t.arma.mt, len([it for it in t.inventario if "Hammer" in str(it.get("nombre"))])), (18, 1))
 
     def test_rechazos(self):
         self.assertEqual(self._usar().status_code, 200)
@@ -143,6 +151,16 @@ class TestGreatAether(_BaseGreatAether):
         # todo se deshace con la Cronogema
         self.assertTrue(tablero.deshacer())
         self.assertEqual(tablero.obtener_ficha("Axe Fighter A").hp_actual, 30)
+
+    def test_limpia_fuego_y_miasma_de_su_area(self):
+        # "can clear effects like flames and miasma where it hits" (consejo del juego)
+        self._enemigo("Axe Fighter A", 6, 10)
+        tablero.encender_fuego([(7, 9), (6, 11)], turnos=5)
+        self.assertEqual(self._usar().status_code, 200)
+        self.client.post("/api/turno/inicio_fase_enemigo", json={})
+        r = self.client.post("/api/turno/fin", json={}).get_json()
+        self.assertEqual(sorted(r["posturas_resueltas"][0]["limpiadas"]), [[6, 11], [7, 9]])
+        self.assertNotIn((7, 9), tablero.terrenos_temporales)
 
     def test_si_muere_no_hay_golpe(self):
         self._enemigo("Axe Fighter A", 6, 10)
@@ -182,6 +200,18 @@ class TestRecomendarGreatAether(_BaseGreatAether):
         self._enemigo("Axe Fighter A", 6, 12, arma="Silver Axe", fuerza=30)
         self._enemigo("Axe Fighter B", 8, 12, arma="Silver Axe", fuerza=30)
         self._enemigo("Axe Fighter C", 4, 11, arma="Silver Axe", fuerza=30)
+        self.assertEqual(self._recs(), [])
+
+    def test_no_cuenta_con_quien_prefiere_a_otro_aliado(self):
+        # Un enemigo va a por quien más daño le hace: con Lapis (frágil) a su alcance, los
+        # Axe Fighter no irán a por Timerra en guardia
+        self._enemigo("Axe Fighter A", 6, 12, arma="Silver Axe", fuerza=22)
+        self._enemigo("Axe Fighter B", 8, 12, arma="Silver Axe", fuerza=22)
+        self.assertTrue(self._recs(), "sin nadie más, sí")
+        r = self.client.post("/api/unidad/guardar", json={
+            "nombre": "Lapis", "clase_nombre": "Sword Fighter", "es_aliado": True, "x": 7, "y": 14, "nivel": 3,
+            "hp_max": 20, "hp_actual": 20, "inventario": [{"arma": "Iron Sword", "equipada": True}]})
+        self.assertEqual(r.status_code, 200, r.get_json())
         self.assertEqual(self._recs(), [])
 
     def test_no_con_uno_solo_que_no_muere(self):
