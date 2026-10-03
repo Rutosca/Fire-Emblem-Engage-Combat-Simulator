@@ -23,6 +23,7 @@ from ataques_area import (resolver_ataque_area, tipo_ataque_area, rango_de_ataqu
                           FUEGO_DANO_POR_FASE)
 from lector_de_mapas import defensa_de_terreno
 import pasivas
+import visibilidad
 
 BACKUP_CLASSES = {
     'sword fighter', 'lance fighter', 'axe fighter',
@@ -158,6 +159,7 @@ def encontrar_pos_ataque_optima(aliado, enemigo, arma, mapa=None, tablero=None, 
     else:
         enemigos_bloqueo = casillas_ocupadas_por(f for f in tablero.obtener_enemigos() if f.viva and f.nombre != enemigo.nombre)
         enemigos_bloqueo.update(casillas_de_unidad(enemigo))
+        enemigos_bloqueo |= visibilidad.casillas_vetadas(tablero, aliado)   # oscuridad: muro
 
         tiene_pass = pasivas.tiene_sid(aliado, 'SID_すり抜け')   # Pass
 
@@ -287,7 +289,7 @@ def calcular_retirada_canter(aliado, pos_ataque, mapa, tablero, zonas_amenaza_en
     enemigos_bloqueo = {
         (f.x, f.y) for f in tablero.obtener_enemigos()
         if f.viva and f.nombre != aliado.nombre
-    }
+    } | visibilidad.casillas_vetadas(tablero, aliado)
     mock_inicio = UnidadMock(inicio[0], inicio[1], getattr(aliado, 'movimiento_disponible', aliado.mov),
                              aliado.es_volador, ArmaMock([1]))
     setattr(mock_inicio, 'tiene_pass', pasivas.tiene_sid(aliado, 'SID_すり抜け'))
@@ -1084,6 +1086,7 @@ def casillas_para_comando(tablero, mapa, f) -> set:
                        es_volador=f.es_volador or pasivas.cruza_terreno_como_volador(f), arma=ArmaMock(rango=[1]))
     setattr(umock, 'tiene_pass', pasivas.tiene_sid(f, 'SID_すり抜け'))
     bloqueo = casillas_ocupadas_por(x for x in tablero.fichas.values() if x.viva and x.es_aliado != f.es_aliado)
+    bloqueo |= visibilidad.casillas_vetadas(tablero, f)   # oscuridad: muro
     ocupadas = casillas_ocupadas_por(x for x in tablero.fichas.values() if x.viva and x.nombre != f.nombre)
     return propias | {c for c in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo)
                       if c not in ocupadas}
@@ -1520,6 +1523,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
 
     # Precomputar casillas de movimiento una sola vez por bando
     enemigos_bloqueo = casillas_ocupadas_por(f for f in enemigos_activos)
+    # Mapas a oscuras: los aliados no pueden entrar en casillas sin luz (muro)
+    enemigos_bloqueo |= set().union(*[visibilidad.casillas_vetadas(tablero, a) for a in aliados_activos[:1]])
 
     casillas_mov_aliados = {}
     # Alcance EXTRA que daría activar la Fusión (Gallop de Sigurd: +5 Mov, +7 caballería).

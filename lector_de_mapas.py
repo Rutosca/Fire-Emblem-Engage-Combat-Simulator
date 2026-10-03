@@ -120,7 +120,11 @@ def defensa_de_terreno(terreno, es_aliado: bool) -> int:
 #   cofre            → cofre: obstáculo que se abre gastando la acción de una unidad
 #                      adyacente. Sigue bloqueando su casilla después de abrirse
 #                      (es mobiliario del mapa), solo cambia a "abierto".
-TIPOS_OBJETO_MAPA = {"arma_usable", "destructible", "recarga_emblema", "cofre"}
+#   antorcha         → antorcha de los mapas a oscuras (Cap. 6, 13, 20): obstáculo que
+#                      alumbra un rombo de radio 3 (Terrain.xml TID_篝火 Sight) mientras está
+#                      encendida. Propiedades: `encendida` (por defecto sí), `permanente` (las
+#                      de las casas: no se apagan) y `radio` (si se quiere otro).
+TIPOS_OBJETO_MAPA = {"arma_usable", "destructible", "recarga_emblema", "cofre", "antorcha"}
 
 # `tipo` del tile (tileset) → clase de objeto de mapa. Permite colocar objetos-tile
 # en Tiled sin rellenar la clase a mano: las propiedades viven en el tileset.
@@ -131,6 +135,7 @@ _TIPO_TILE_A_CLASE = {
     "valla": "destructible", "caja": "destructible", "barril": "destructible",
     "muro_rompible": "destructible", "destructible": "destructible",
     "cofre": "cofre", "arcon": "cofre", "arcón": "cofre",
+    "antorcha": "antorcha", "hoguera": "antorcha", "farol": "antorcha",
 }
 
 
@@ -187,6 +192,8 @@ class MapaTactico:
         self.terrain_id: Optional[str] = None
         self.entidades: List[EntidadMapa] = []
         self.propiedades_mapa: dict = {}
+        # Casillas de la capa "Oscuridad" (mapas a oscuras): ver visibilidad.py
+        self.casillas_oscuras: set = set()
         self._cargar_mapa()
 
     def casillas_objetivo(self, objetivo: Optional[str] = None) -> List[tuple]:
@@ -314,6 +321,12 @@ class MapaTactico:
                     datos_1d = struct.unpack(formato, decompressed_data)
                 else:
                     raise ValueError("Formato de compresión no soportado. Usa zlib.")
+
+            # Capa "Oscuridad": marca las casillas a oscuras; no es terreno
+            if str(capa.get('name', '')).strip().lower() == 'oscuridad':
+                self.casillas_oscuras |= {(i % self.ancho, i // self.ancho)
+                                          for i, g in enumerate(datos_1d) if (g & FLIP_MASK) != 0}
+                continue
 
             for i, gid_raw in enumerate(datos_1d):
                 # Eliminamos los bits de flip (H/V/diagonal) que Tiled puede poner
@@ -546,6 +559,17 @@ class MapaTactico:
         for ent in self.objetos_mapa():
             activo = bool((estados.get(ent.id_entidad) or {}).get("activo", True))
             tipo_l = str(ent.tipo).lower()
+            # La antorcha es un obstáculo, encendida o apagada
+            if tipo_l == "antorcha":
+                encendida = bool((estados.get(ent.id_entidad) or {}).get("encendida", True))
+                for (cx, cy) in ent.casillas:
+                    if 0 <= cx < self.ancho and 0 <= cy < self.alto:
+                        t = self.grid[cx][cy]
+                        t.caminable = False
+                        t.volable = bool(ent.propiedades.get("volable", False))
+                        t.nombre = "Antorcha" + ("" if ent.propiedades.get("permanente") else
+                                                 (" encendida" if encendida else " apagada"))
+                continue
             # Un cofre bloquea su casilla esté abierto o cerrado (es mobiliario)
             if tipo_l == "cofre":
                 for (cx, cy) in ent.casillas:

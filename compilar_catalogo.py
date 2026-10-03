@@ -319,6 +319,9 @@ def extraer_terrenos(trans):
             # MoveFirst (初期移動加算): Mov que gana o pierde quien EMPIEZA su fase encima
             # (arenas movedizas −3, suelo helado +2)
             "mov_inicial": to_int(row.get("MoveFirst")),
+            # Luz en los mapas a oscuras (Terrain.xml Sight): antorchas del mapa encendidas
+            # (TID_篝火, 篝火常) y casas con farol (TID_建物灯), radio 3; apagada (篝火消), 0
+            "vision": to_int(row.get("Sight")),
         }
     return terrenos
 
@@ -497,6 +500,9 @@ def compilar():
             # dos golpes por ataque al iniciar), SID_追撃不可 (sin follow-up), SID_必中…
             "equip_sids": [x.strip() for x in equip_sids_raw.split(";") if x.strip()],
             "precio": to_int(it.get("Price")),
+            # Luz en los mapas a oscuras (UseType 19 = Torch, 16 = Illume): radio en rombo
+            # (Distance 7) que se encoge una casilla por turno
+            "radio_luz": to_int(it.get("Distance")) if to_int(it.get("UseType")) in (16, 19) else 0,
             # Bonos de stats mientras el arma está equipada (Item.xml Enhance.*): armas de
             # Emblema como Camilla's Axe (Res+10), Binding Blade (Def/Res+5), Mulagir (Vel+5).
             # Solo armas (Kind 1-9): en los consumibles (Kind 10) es el bono permanente.
@@ -615,6 +621,8 @@ def compilar():
             # las clases especiales (Thief, Dancer, Fell Child, Melusine…) tienen
             # MaxLevel 40 y aprenden su habilidad de clase al Nv 25, no al 5.
             "rank": to_int(j.get("Rank"), 0),
+            # Visión en los mapas a oscuras (Job.xml Base.Sight): 3; Thief 5
+            "vision": to_int(j.get("Base.Sight")),
             "max_level": to_int(j.get("MaxLevel"), 20),
             "es_especial": to_int(j.get("MaxLevel"), 20) >= 40,
             "nivel_habilidad_clase": 25 if to_int(j.get("MaxLevel"), 20) >= 40 else 5,

@@ -269,6 +269,31 @@ def uniones_del_guion(dispos_id: str):
     return _UNIONES_CACHE[clave]
 
 
+def _guion(dispos_id: str) -> str:
+    try:
+        with open(os.path.join(SCRIPTS_DIR, f"{(dispos_id or '').upper()}.lua"), "r", encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        return ""
+
+
+def emblemas_del_guion(dispos_id: str) -> dict:
+    """{pid: gid} de los anillos que el guion entrega al abrir el mapa con
+    UnitCreateGodUnit("PID_…", "GID_…") (M013: Timerra llega con Ike)."""
+    return {pid: gid for pid, gid in
+            re.findall(r'UnitCreateGodUnit\s*\(\s*"(PID_[^"]+)"\s*,\s*"(GID_[^"]+)"', _guion(dispos_id))}
+
+
+def movimientos_del_guion(dispos_id: str) -> dict:
+    """{pid: (X, Y)} en coordenadas del datamine de los aliados que el guion recoloca con
+    UnitMovePos("PID_…", X, Y) antes de unirlos (M013: la conversación del turno 1 mueve a
+    Timerra, Panette y Merrin y luego UnitJoin). Solo los que el guion une."""
+    unidos = uniones_del_guion(dispos_id) or set()
+    return {pid: (int(x), int(y)) for pid, x, y in
+            re.findall(r'UnitMovePos\s*\(\s*"(PID_[^"]+)"\s*,\s*(\d+)\s*,\s*(\d+)', _guion(dispos_id))
+            if pid in unidos}
+
+
 def tipo_de_aliado_verde(dispos_id: str, pid: str) -> str:
     """"inmediato", "conversacion" o "npc" (ver TIPO_ALIADO)."""
     clave = (dispos_id or "").upper()
@@ -616,7 +641,8 @@ class CargadorDisposEngage:
             # quitárselo cuando pasa a otra, ver REFUERZOS_POR_EVENTO "retira_emblemas")
             por_evento = {} if sin_emblemas_de_guion else EMBLEMA_POR_EVENTO.get(dispos_id.upper(), {})
             gid = (param.get("Gid", "") or por_evento.get(f"{pid}@{x_str},{y_str}", "")
-                   or por_evento.get(pid, ""))
+                   or por_evento.get(pid, "")
+                   or ("" if sin_emblemas_de_guion else emblemas_del_guion(dispos_id).get(pid, "")))
             emblema_id = gid if gid in self.catalogo.get("emblemas", {}) else ""
             emblema_info = self.catalogo.get("emblemas", {}).get(emblema_id, {}) if emblema_id else {}
             emblema_nombre = emblema_info.get("nombre", "")
@@ -678,6 +704,10 @@ class CargadorDisposEngage:
                 "union_pendiente": union_pendiente,   # verde que aún no se ha unido (hablar para reclutar)
                 "nunca_se_une": nunca_se_une,         # verde de la CPU que nunca se une (aldeanos)
                 "habla_con": habla_con,               # pids que pueden hablar con él
+                # casilla a la que el guion lo lleva al empezar la batalla, antes de unirlo
+                "pos_tras_guion": ([max(0, min(mapa_ancho - 1, movimientos_del_guion(dispos_id)[pid][0] - 1)),
+                                    max(0, min(mapa_alto - 1, mapa_alto - movimientos_del_guion(dispos_id)[pid][1]))]
+                                   if es_aliado and pid in movimientos_del_guion(dispos_id) else []),
                 "x": x,
                 "y": y,
                 "clase_id": jid,

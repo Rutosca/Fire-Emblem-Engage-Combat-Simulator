@@ -10,6 +10,7 @@ from motor_calculo import casillas_de_unidad, casillas_ocupadas_por, distancia_a
 from estado_tablero import EstadoTablero, FichaUnidad
 import pasivas
 import pasivas_temporales
+import visibilidad
 from lector_de_mapas import defensa_de_terreno, MapaTactico
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock, casillas_advance, mock_de_ficha
 
@@ -326,6 +327,48 @@ def obtener_estado():
 def listar_objetos_mapa():
     """Objetos de la capa de objetos (ballestas, destructibles, pozos de Emblema) con su estado."""
     return jsonify({"ok": True, "objetos": tablero.objetos_como_lista()})
+
+
+@app.route("/api/visibilidad", methods=["GET"])
+def obtener_visibilidad():
+    """Mapas a oscuras: casillas que se ven ahora y enemigos ocultos (con el turno en que se
+    les vio por última vez). {"oscuro": false} si el mapa no tiene oscuridad."""
+    return jsonify({"ok": True, **visibilidad.actualizar_visibilidad(tablero)})
+
+
+@app.route("/api/mapa/objeto/antorcha", methods=["POST"])
+def cambiar_antorcha_mapa():
+    """
+    Enciende o apaga una antorcha del mapa. Body: {"id", "encendida": bool, "unidad"?}.
+    Con `unidad` (adyacente), esta gasta su acción: el aliado que la enciende o el enemigo
+    que la apaga en su fase.
+    """
+    data = request.get_json(force=True) or {}
+    id_obj = str(data.get("id", ""))
+    if not id_obj:
+        return jsonify({"error": "Falta campo id"}), 400
+    tablero.guardar_snapshot()
+    est = tablero.cambiar_antorcha(id_obj, bool(data.get("encendida", True)), str(data.get("unidad", "") or ""))
+    if est is None:
+        tablero.historial.pop()
+        return jsonify({"error": tablero.ultimo_error_antorcha}), 400
+    return jsonify({"ok": True, "objeto": est, "objetos": tablero.objetos_como_lista(),
+                    "fichas": [f.como_dict() for f in tablero.fichas.values()],
+                    **visibilidad.actualizar_visibilidad(tablero)})
+
+
+@app.route("/api/unidad/antorcha_mano", methods=["POST"])
+def usar_antorcha_mano():
+    """Un aliado enciende su antorcha de mano (radio 7 a su alrededor, -1 por turno).
+    Gasta su acción y un uso. Body: {"nombre"}."""
+    nombre = (request.get_json(force=True) or {}).get("nombre", "")
+    tablero.guardar_snapshot()
+    luz = tablero.usar_antorcha_de_mano(nombre)
+    if luz is None:
+        tablero.historial.pop()
+        return jsonify({"error": tablero.ultimo_error_antorcha}), 400
+    return jsonify({"ok": True, "luz": luz, "fichas": [f.como_dict() for f in tablero.fichas.values()],
+                    **visibilidad.actualizar_visibilidad(tablero)})
 
 
 @app.route("/api/mapa/objeto/consumir", methods=["POST"])
@@ -1012,8 +1055,14 @@ def mover_unidad():
     umock = mock_de_ficha(ficha)
     # Soar (Camilla) deja cruzar el terreno como si volara, sin ser volador en combate
     umock.es_volador = ficha.es_volador or pasivas.cruza_terreno_como_volador(ficha)
+    # Mapas a oscuras: en su fase, un aliado no puede entrar en casillas sin luz (es un muro)
+    vetadas = (visibilidad.casillas_vetadas(tablero, ficha)
+               if tablero.fase == "jugador" and tablero.batalla_iniciada and ficha.controlable else set())
+    if (x, y) in vetadas:
+        return jsonify({"error": f"La casilla ({x},{y}) está a oscuras: ni un aliado ni una antorcha la iluminan, "
+                                 f"así que {nombre} no puede entrar."}), 400
     alcanzables = (analizador.calcular_anclas_alcanzables(umock) if (ficha.tamano or 1) > 1
-                   else analizador.calcular_casillas_alcanzables(umock))
+                   else analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=vetadas or None))
     via_advance = None
     if (x, y) not in alcanzables:
         via_advance = _casillas_advance_de(ficha, alcanzables).get((x, y))
@@ -1437,6 +1486,7 @@ def hablar_con_unidad():
                                arma=ArmaMock([1]))
             setattr(umock, 'tiene_pass', pasivas.tiene_sid(f_h, 'SID_すり抜け'))
             bloqueo = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.es_aliado != f_h.es_aliado)
+            bloqueo |= visibilidad.casillas_vetadas(tablero, f_h)
             if (x, y) not in analizador.calcular_casillas_alcanzables(umock, casillas_bloqueadas=bloqueo):
                 tablero.historial.pop()
                 return jsonify({"error": f"{f_h.nombre} no puede llegar a ({x},{y}) este turno"}), 400

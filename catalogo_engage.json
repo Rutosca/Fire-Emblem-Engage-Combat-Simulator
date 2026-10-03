@@ -18,6 +18,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -40,6 +41,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -62,6 +64,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -84,6 +87,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -106,6 +110,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -128,6 +133,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -150,6 +156,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -174,6 +181,7 @@
         "SID_鎧特効"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -198,6 +206,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -221,6 +230,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -243,6 +253,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -267,6 +278,7 @@
         "SID_竜特効"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -293,6 +305,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -317,6 +330,7 @@
         "SID_撃破時エンゲージカウント＋１"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -339,6 +353,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -362,6 +377,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -384,6 +400,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -408,6 +425,7 @@
         "SID_スマッシュ"
       ],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -432,6 +450,7 @@
         "SID_スマッシュ"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -456,6 +475,7 @@
         "SID_スマッシュ"
       ],
       "precio": 6000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -480,6 +500,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -504,6 +525,7 @@
         "SID_フォルクヴァング武器スキル"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -526,6 +548,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -550,6 +573,7 @@
         "SID_リベラシオン改"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -574,6 +598,7 @@
         "SID_リベラシオン改_ノーマル"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -596,6 +621,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -618,6 +644,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -640,6 +667,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -662,6 +690,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -685,6 +714,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1800,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -709,6 +739,7 @@
         "SID_馬特効"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -733,6 +764,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -756,6 +788,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -779,6 +812,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -803,6 +837,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -826,6 +861,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -850,6 +886,7 @@
         "SID_スマッシュ"
       ],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -874,6 +911,7 @@
         "SID_スマッシュ"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -898,6 +936,7 @@
         "SID_スマッシュ"
       ],
       "precio": 6000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -922,6 +961,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -944,6 +984,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -968,6 +1009,7 @@
         "SID_フェンサリル武器スキル"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -990,6 +1032,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1012,6 +1055,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1034,6 +1078,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1056,6 +1101,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1078,6 +1124,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1101,6 +1148,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1800,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1125,6 +1173,7 @@
         "SID_鎧特効"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1151,6 +1200,7 @@
         "SID_馬特効"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1175,6 +1225,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1198,6 +1249,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1222,6 +1274,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1244,6 +1297,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1268,6 +1322,7 @@
         "SID_スマッシュ"
       ],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1292,6 +1347,7 @@
         "SID_スマッシュ"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1316,6 +1372,7 @@
         "SID_スマッシュ"
       ],
       "precio": 6000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1341,6 +1398,7 @@
         "SID_飛行特効"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1367,6 +1425,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1389,6 +1448,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1411,6 +1471,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1435,6 +1496,7 @@
         "SID_ノーアトゥーン武器スキル"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1457,6 +1519,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1481,6 +1544,7 @@
         "SID_飛行特効"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1507,6 +1571,7 @@
         "SID_飛行特効"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1533,6 +1598,7 @@
         "SID_飛行特効"
       ],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1559,6 +1625,7 @@
         "SID_飛行特効"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1586,6 +1653,7 @@
         "SID_飛行特効"
       ],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1612,6 +1680,7 @@
         "SID_飛行特効"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1638,6 +1707,7 @@
         "SID_飛行特効"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1665,6 +1735,7 @@
         "SID_２回行動"
       ],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1691,6 +1762,7 @@
         "SID_飛行特効"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -1715,6 +1787,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1738,6 +1811,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1761,6 +1835,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1784,6 +1859,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1807,6 +1883,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1829,6 +1906,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1851,6 +1929,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1873,6 +1952,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1896,6 +1976,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1919,6 +2000,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1943,6 +2025,7 @@
         "SID_スマッシュ"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1966,6 +2049,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -1990,6 +2074,7 @@
         "SID_必中"
       ],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2015,6 +2100,7 @@
         "SID_業火発動可能"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2043,6 +2129,7 @@
         "SID_ダイムサンダ発動可能"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2069,6 +2156,7 @@
         "SID_旋風発動可能"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -2095,6 +2183,7 @@
         "SID_必中"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2120,6 +2209,7 @@
         "SID_業火発動可能"
       ],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2147,6 +2237,7 @@
         "SID_轟雷発動可能"
       ],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2172,6 +2263,7 @@
         "SID_飛行特効"
       ],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -2199,6 +2291,7 @@
         "SID_業火発動可能"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2226,6 +2319,7 @@
         "SID_轟雷発動可能"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2252,6 +2346,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2278,6 +2373,7 @@
         "SID_ギガスカリバー発動可能"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -2305,6 +2401,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -2332,6 +2429,7 @@
         "SID_２回行動"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2358,6 +2456,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2384,6 +2483,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2407,6 +2507,7 @@
       "elemento": "oscuridad",
       "equip_sids": [],
       "precio": 8000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2429,6 +2530,7 @@
       "elemento": "oscuridad",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2452,6 +2554,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2474,6 +2577,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 25,
       "efectividades": []
@@ -2496,6 +2600,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 20,
       "efectividades": []
@@ -2522,6 +2627,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 10,
       "efectividades": []
@@ -2553,6 +2659,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 10,
       "efectividades": []
@@ -2575,6 +2682,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 10,
       "efectividades": []
@@ -2601,6 +2709,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2625,6 +2734,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 10,
       "efectividades": []
@@ -2647,6 +2757,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2669,6 +2780,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2698,6 +2810,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2724,6 +2837,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -2751,6 +2865,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -2773,6 +2888,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 7,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2800,6 +2916,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2836,6 +2953,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -2863,6 +2981,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 5,
       "efectividades": []
@@ -2899,6 +3018,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -2928,6 +3048,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 10,
       "efectividades": []
@@ -2959,6 +3080,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 10,
       "efectividades": []
@@ -2990,6 +3112,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -3026,6 +3149,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -3302,6 +3426,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 6000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3324,6 +3449,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 20,
       "efectividades": []
@@ -3348,6 +3474,7 @@
         "SID_気功"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3373,6 +3500,7 @@
         "SID_２回行動"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3398,6 +3526,7 @@
         "SID_２回行動"
       ],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3423,6 +3552,7 @@
         "SID_２回行動"
       ],
       "precio": 4000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3447,6 +3577,7 @@
         "SID_気功"
       ],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -3476,6 +3607,7 @@
         "SID_被ダメージ＋５"
       ],
       "precio": 6000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3501,6 +3633,7 @@
         "SID_２回行動"
       ],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3523,6 +3656,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3550,6 +3684,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3575,6 +3710,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3599,6 +3735,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3623,6 +3760,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3650,6 +3788,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3675,6 +3814,7 @@
         "SID_命中１００"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3697,6 +3837,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3722,6 +3863,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3748,6 +3890,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 5000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3774,6 +3917,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3800,6 +3944,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -3828,6 +3973,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -3854,6 +4000,7 @@
         "SID_相手の防御力半減"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3879,6 +4026,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3905,6 +4053,7 @@
         "SID_追加アイテム1"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3929,6 +4078,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3958,6 +4108,7 @@
         "SID_命中１００"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -3983,6 +4134,7 @@
         "SID_命中１００"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4009,6 +4161,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4031,6 +4184,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4061,6 +4215,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 250,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4091,6 +4246,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 250,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4122,6 +4278,7 @@
         "SID_弾_フリーズ付与"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4153,6 +4310,7 @@
         "SID_弾_サイレス付与"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4184,6 +4342,7 @@
         "SID_弾_ブレイク付与"
       ],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4215,6 +4374,7 @@
         "SID_弾_毒付与"
       ],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4246,6 +4406,7 @@
         "SID_飛行特効"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -4279,6 +4440,7 @@
         "SID_鎧特効"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -4312,6 +4474,7 @@
         "SID_馬特効"
       ],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -4345,6 +4508,7 @@
         "SID_竜特効"
       ],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -4378,6 +4542,7 @@
         "SID_異形特効"
       ],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -4410,6 +4575,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4440,6 +4606,7 @@
         "SID_弾丸攻撃力"
       ],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4472,6 +4639,7 @@
         "SID_ブレス"
       ],
       "precio": 700,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4496,6 +4664,7 @@
         "SID_牙呪"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4522,6 +4691,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4549,6 +4719,7 @@
         "SID_異形飛竜_瘴気配置"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4574,6 +4745,7 @@
         "SID_相手の防御力無視"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4602,6 +4774,7 @@
         "SID_異形飛竜_瘴気配置"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4624,6 +4797,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4646,6 +4820,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4668,6 +4843,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -4690,6 +4866,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -4712,6 +4889,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -4734,6 +4912,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 800,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -4756,6 +4935,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -4778,6 +4958,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 7,
       "enhance": {},
       "usos_max": 3,
       "efectividades": []
@@ -4800,6 +4981,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4822,6 +5004,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4844,6 +5027,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4866,6 +5050,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4888,6 +5073,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4910,6 +5096,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4932,6 +5119,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4954,6 +5142,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4976,6 +5165,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -4998,6 +5188,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5020,6 +5211,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5042,6 +5234,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5064,6 +5257,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5086,6 +5280,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5108,6 +5303,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5130,6 +5326,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5152,6 +5349,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5174,6 +5372,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5196,6 +5395,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5218,6 +5418,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5240,6 +5441,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5262,6 +5464,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5284,6 +5487,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 40000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5306,6 +5510,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 90000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5328,6 +5533,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -5350,6 +5556,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -5372,6 +5579,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -5394,6 +5602,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5416,6 +5625,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5438,6 +5648,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5460,6 +5671,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5482,6 +5694,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5504,6 +5717,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5526,6 +5740,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5548,6 +5763,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5570,6 +5786,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5592,6 +5809,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5614,6 +5832,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5636,6 +5855,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5658,6 +5878,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5680,6 +5901,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5702,6 +5924,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5724,6 +5947,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5746,6 +5970,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5768,6 +5993,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5790,6 +6016,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5812,6 +6039,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5834,6 +6062,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5856,6 +6085,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5878,6 +6108,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5900,6 +6131,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5922,6 +6154,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5944,6 +6177,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5966,6 +6200,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -5988,6 +6223,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6010,6 +6246,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6032,6 +6269,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6054,6 +6292,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6076,6 +6315,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6098,6 +6338,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6120,6 +6361,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6142,6 +6384,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6164,6 +6407,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6186,6 +6430,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6208,6 +6453,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6230,6 +6476,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6252,6 +6499,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6274,6 +6522,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 50,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6296,6 +6545,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6318,6 +6568,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6340,6 +6591,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6362,6 +6614,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6384,6 +6637,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6406,6 +6660,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6428,6 +6683,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6450,6 +6706,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6472,6 +6729,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6494,6 +6752,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6516,6 +6775,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6538,6 +6798,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6560,6 +6821,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6582,6 +6844,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6604,6 +6867,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6626,6 +6890,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -6648,6 +6913,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6670,6 +6936,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 50,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6692,6 +6959,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6714,6 +6982,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6736,6 +7005,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6758,6 +7028,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6780,6 +7051,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6802,6 +7074,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6824,6 +7097,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6846,6 +7120,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6868,6 +7143,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6890,6 +7166,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6912,6 +7189,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6934,6 +7212,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 700,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6956,6 +7235,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 800,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -6978,6 +7258,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 900,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7000,6 +7281,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7022,6 +7304,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7044,6 +7327,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7066,6 +7350,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7088,6 +7373,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1400,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7110,6 +7396,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7132,6 +7419,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7154,6 +7442,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1700,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7176,6 +7465,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1800,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7198,6 +7488,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 1900,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7220,6 +7511,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 2000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7242,6 +7534,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 3000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7264,6 +7557,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 5000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7286,6 +7580,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 7000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7308,6 +7603,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7330,6 +7626,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7352,6 +7649,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 50000,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -7374,6 +7672,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7396,6 +7695,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7418,6 +7718,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7440,6 +7741,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7462,6 +7764,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7484,6 +7787,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7506,6 +7810,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7528,6 +7833,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7550,6 +7856,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7572,6 +7879,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7594,6 +7902,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7616,6 +7925,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7638,6 +7948,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7660,6 +7971,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7682,6 +7994,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7704,6 +8017,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7726,6 +8040,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7748,6 +8063,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7770,6 +8086,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7792,6 +8109,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7814,6 +8132,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7836,6 +8155,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7858,6 +8178,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7880,6 +8201,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7902,6 +8224,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7924,6 +8247,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7946,6 +8270,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7968,6 +8293,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -7990,6 +8316,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8012,6 +8339,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8034,6 +8362,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8056,6 +8385,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8078,6 +8408,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8100,6 +8431,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8122,6 +8454,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8144,6 +8477,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8166,6 +8500,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8188,6 +8523,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8210,6 +8546,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8232,6 +8569,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8254,6 +8592,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 300,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8276,6 +8615,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8298,6 +8638,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8320,6 +8661,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8342,6 +8684,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8364,6 +8707,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8386,6 +8730,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8408,6 +8753,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8430,6 +8776,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 200,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8452,6 +8799,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8474,6 +8822,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8496,6 +8845,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8518,6 +8868,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8540,6 +8891,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8562,6 +8914,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8584,6 +8937,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8606,6 +8960,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 150,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8628,6 +8983,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 350,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8650,6 +9006,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 20,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8672,6 +9029,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8694,6 +9052,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 600,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8716,6 +9075,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8738,6 +9098,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 40,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8760,6 +9121,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 700,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8782,6 +9144,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 700,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8804,6 +9167,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8826,6 +9190,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8848,6 +9213,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 350,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8870,6 +9236,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8892,6 +9259,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8914,6 +9282,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 400,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8936,6 +9305,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 450,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8958,6 +9328,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 10,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -8980,6 +9351,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9002,6 +9374,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 80,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9024,6 +9397,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9046,6 +9420,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9068,6 +9443,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9090,6 +9466,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9112,6 +9489,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 500,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9134,6 +9512,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 800,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -9159,6 +9538,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9187,6 +9567,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9214,6 +9595,7 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9238,6 +9620,7 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9262,6 +9645,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9288,6 +9672,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9314,6 +9699,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9340,6 +9726,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9366,6 +9753,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9392,6 +9780,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9416,6 +9805,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9438,6 +9828,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 5
       },
@@ -9462,6 +9853,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9487,6 +9879,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9514,6 +9907,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9538,6 +9932,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9560,6 +9955,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9583,6 +9979,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9606,6 +10003,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9629,6 +10027,7 @@
       "elemento": "luz",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9652,6 +10051,7 @@
       "elemento": "luz",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9677,6 +10077,7 @@
         "SID_リザイア"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9702,6 +10103,7 @@
         "SID_リザイア"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -9728,6 +10130,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -9757,6 +10160,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -10036,6 +10440,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10312,6 +10717,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10588,6 +10994,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10610,6 +11017,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10632,6 +11040,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10656,6 +11065,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -10682,6 +11092,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -10707,6 +11118,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5,
         "res": 5
@@ -10733,6 +11145,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5,
         "res": 5
@@ -10758,6 +11171,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10780,6 +11194,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10802,6 +11217,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10824,6 +11240,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10849,6 +11266,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10874,6 +11292,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10899,6 +11318,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10922,6 +11342,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "lck": 10
       },
@@ -10947,6 +11368,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "lck": 10
       },
@@ -10974,6 +11396,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -10999,6 +11422,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11027,6 +11451,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11055,6 +11480,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11083,6 +11509,7 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 5
       },
@@ -11112,6 +11539,7 @@
         "SID_経験値２倍"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 5
       },
@@ -11140,6 +11568,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11166,6 +11595,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11192,6 +11622,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11218,6 +11649,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11244,6 +11676,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11271,6 +11704,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11299,6 +11733,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11327,6 +11762,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11355,6 +11791,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11383,6 +11820,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 5
       },
@@ -11413,6 +11851,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 5
       },
@@ -11443,6 +11882,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11470,6 +11910,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11494,6 +11935,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 3
       },
@@ -11518,6 +11960,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 3
       },
@@ -11543,6 +11986,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -11568,6 +12012,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -11595,6 +12040,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11622,6 +12068,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11650,6 +12097,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11678,6 +12126,7 @@
         "SID_威力上昇速さ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11705,6 +12154,7 @@
         "SID_威力上昇速さ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11731,6 +12181,7 @@
         "SID_オフェンス時武器攻撃力上昇"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -11753,6 +12204,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -11780,6 +12232,7 @@
         "SID_オフェンス回避＋２０"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11805,6 +12258,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -11827,6 +12281,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": 1,
       "efectividades": []
@@ -11853,6 +12308,7 @@
         "SID_攻撃属性弱点変化"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -11879,6 +12335,7 @@
         "SID_攻撃属性弱点変化"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -11905,6 +12362,7 @@
         "SID_威力上昇魔力"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11933,6 +12391,7 @@
         "SID_威力上昇魔力"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11961,6 +12420,7 @@
         "SID_威力上昇魔力"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -11985,6 +12445,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12008,6 +12469,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12030,6 +12492,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12052,6 +12515,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12074,6 +12538,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12096,6 +12561,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12118,6 +12584,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12140,6 +12607,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12162,6 +12630,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12187,6 +12656,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12215,6 +12685,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12243,6 +12714,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12270,6 +12742,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12296,6 +12769,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12322,6 +12796,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12348,6 +12823,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "str": 5
       },
@@ -12376,6 +12852,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12402,6 +12879,7 @@
         "SID_異形特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12428,6 +12906,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12452,6 +12931,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12476,6 +12956,7 @@
         "SID_撃破時周囲エンゲージカウント＋１"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12500,6 +12981,7 @@
         "SID_撃破時周囲エンゲージカウント＋１"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12522,6 +13004,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12544,6 +13027,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12566,6 +13050,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12588,6 +13073,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12610,6 +13096,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12632,6 +13119,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12654,6 +13142,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12676,6 +13165,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12698,6 +13188,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12720,6 +13211,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12742,6 +13234,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12764,6 +13257,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12786,6 +13280,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12808,6 +13303,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12833,6 +13329,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12860,6 +13357,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12887,6 +13385,7 @@
         "SID_三級長_アラドヴァル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12912,6 +13411,7 @@
         "SID_三級長_アラドヴァル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -12939,6 +13439,7 @@
         "SID_オフェンス回避＋２０"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12969,6 +13470,7 @@
         "SID_オフェンス回避＋２０"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -12994,6 +13496,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13016,6 +13519,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13038,6 +13542,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13060,6 +13565,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13082,6 +13588,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13104,6 +13611,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13126,6 +13634,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13148,6 +13657,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13172,6 +13682,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13196,6 +13707,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13220,6 +13732,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13244,6 +13757,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13268,6 +13782,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13292,6 +13807,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13316,6 +13832,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13340,6 +13857,7 @@
         "SID_スマッシュ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13365,6 +13883,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13391,6 +13910,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13418,6 +13938,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13443,6 +13964,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13468,6 +13990,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13493,6 +14016,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13518,6 +14042,7 @@
         "SID_チキ_ブレス"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13544,6 +14069,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13572,6 +14098,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13600,6 +14127,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13628,6 +14156,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13656,6 +14185,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13680,6 +14210,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13702,6 +14233,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13724,6 +14256,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13746,6 +14279,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13768,6 +14302,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13790,6 +14325,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13812,6 +14348,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13834,6 +14371,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -13859,6 +14397,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13887,6 +14426,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13915,6 +14455,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13943,6 +14484,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13971,6 +14513,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -13999,6 +14542,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -14027,6 +14571,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -14055,6 +14600,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -14083,6 +14629,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -14111,6 +14658,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14136,6 +14684,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14161,6 +14710,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14186,6 +14736,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14211,6 +14762,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14236,6 +14788,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14261,6 +14814,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14285,6 +14839,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14313,6 +14868,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14341,6 +14897,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14369,6 +14926,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14397,6 +14955,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14425,6 +14984,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14453,6 +15013,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14481,6 +15042,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "def": 5
       },
@@ -14510,6 +15072,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14535,6 +15098,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14560,6 +15124,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14585,6 +15150,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14610,6 +15176,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14635,6 +15202,7 @@
         "SID_フリズスキャルヴ"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14663,6 +15231,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14691,6 +15260,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14716,6 +15286,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14741,6 +15312,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14766,6 +15338,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14791,6 +15364,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14816,6 +15390,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14841,6 +15416,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14866,6 +15442,7 @@
         "SID_エリヴァーガル"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14888,6 +15465,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14910,6 +15488,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14932,6 +15511,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14954,6 +15534,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -14976,6 +15557,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15007,6 +15589,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15038,6 +15621,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15069,6 +15653,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15100,6 +15685,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15126,6 +15712,7 @@
         "SID_追撃不可"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15149,6 +15736,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15172,6 +15760,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15197,6 +15786,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15224,6 +15814,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15251,6 +15842,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15278,6 +15870,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15305,6 +15898,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15333,6 +15927,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15359,6 +15954,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15383,6 +15979,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15409,6 +16006,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -15435,6 +16033,7 @@
       "elemento": "fuego",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15459,6 +16058,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15482,6 +16082,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15505,6 +16106,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15528,6 +16130,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15551,6 +16154,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15576,6 +16180,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15601,6 +16206,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15626,6 +16232,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15650,6 +16257,7 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 10
       },
@@ -15676,6 +16284,7 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 10
       },
@@ -15702,6 +16311,7 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 10
       },
@@ -15728,6 +16338,7 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 10
       },
@@ -15754,6 +16365,7 @@
         "SID_カミラの艶斧"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 10
       },
@@ -15779,6 +16391,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15802,6 +16415,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15825,6 +16439,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15848,6 +16463,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15871,6 +16487,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15894,6 +16511,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15917,6 +16535,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15940,6 +16559,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15963,6 +16583,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -15987,6 +16608,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16013,6 +16635,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16039,6 +16662,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16065,6 +16689,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16091,6 +16716,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16116,6 +16742,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 2,
         "lck": 10
@@ -16142,6 +16769,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "res": 4,
         "lck": 10
@@ -16169,6 +16797,7 @@
         "SID_竜特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16196,6 +16825,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16224,6 +16854,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16252,6 +16883,7 @@
         "SID_馬特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16280,6 +16912,7 @@
         "SID_ルーンソード"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16303,6 +16936,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16327,6 +16961,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 2
       },
@@ -16354,6 +16989,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 2
       },
@@ -16381,6 +17017,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 4
       },
@@ -16405,6 +17042,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16427,6 +17065,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16452,6 +17091,7 @@
         "SID_鎧特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 2
       },
@@ -16481,6 +17121,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": [
@@ -16507,6 +17148,7 @@
         "SID_飛行特効"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {
         "spd": 2
       },
@@ -16537,6 +17179,7 @@
         "SID_攻撃属性弱点変化"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16562,6 +17205,7 @@
         "SID_２回行動"
       ],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16585,6 +17229,7 @@
       "elemento": "trueno",
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16607,6 +17252,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16629,6 +17275,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16651,6 +17298,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16673,6 +17321,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16695,6 +17344,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16717,6 +17367,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16739,6 +17390,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16761,6 +17413,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16783,6 +17436,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16805,6 +17459,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16827,6 +17482,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16849,6 +17505,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16871,6 +17528,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16893,6 +17551,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16915,6 +17574,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16937,6 +17597,7 @@
       "elemento": null,
       "equip_sids": [],
       "precio": 100,
+      "radio_luz": 0,
       "enhance": {},
       "usos_max": null,
       "efectividades": []
@@ -16958,6 +17619,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -17052,6 +17714,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -17146,6 +17809,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -17244,6 +17908,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_神竜気",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -17340,6 +18005,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_邪竜気・闇",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -17438,6 +18104,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_神竜気",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -17536,6 +18203,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_邪竜気",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -17634,6 +18302,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_邪竜気・闇",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -17732,6 +18401,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_邪竜気・闇",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -17828,6 +18498,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -17924,6 +18595,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_邪竜気・闇",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -18018,6 +18690,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18116,6 +18789,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_金蓮",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18210,6 +18884,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18308,6 +18983,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_華炎",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18400,6 +19076,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18496,6 +19173,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_太陽",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18588,6 +19266,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18682,6 +19361,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_月光",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18779,6 +19459,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18878,6 +19559,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_虚空",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -18974,6 +19656,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19072,6 +19755,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_大樹",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19164,6 +19848,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19258,6 +19943,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_砂陣",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19352,6 +20038,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19450,6 +20137,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_水鏡",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19549,6 +20237,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_魔法剣",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -19641,6 +20330,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19735,6 +20425,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_切り抜け",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19829,6 +20520,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_助太刀",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -19921,6 +20613,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20015,6 +20708,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_挟撃",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20113,6 +20807,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_手助け",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20205,6 +20900,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20299,6 +20995,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_スマッシュ＋",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20395,6 +21092,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_無慈悲",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20487,6 +21185,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20581,6 +21280,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_集中",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20677,6 +21377,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_狙撃",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20771,6 +21472,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20865,6 +21567,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -20959,6 +21662,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21051,6 +21755,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_入れ替え",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21144,6 +21849,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_護衛",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21238,6 +21944,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21332,6 +22039,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21426,6 +22134,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21518,6 +22227,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_回り込み",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21614,6 +22324,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_足狙い",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21706,6 +22417,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21802,6 +22514,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_魔力増幅",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21898,6 +22611,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_背理の法",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -21992,6 +22706,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22088,6 +22803,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_気の拡散",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22186,6 +22902,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_自己回復",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22280,6 +22997,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22374,6 +23092,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22468,6 +23187,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22564,6 +23284,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_移動補助",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22657,6 +23378,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_急襲",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -22754,6 +23476,7 @@
       ],
       "learning_skill": "SID_すり抜け",
       "rank": 0,
+      "vision": 5,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -22851,6 +23574,7 @@
       ],
       "learning_skill": "SID_特別な踊り",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -22943,6 +23667,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23038,6 +23763,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23132,6 +23858,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23220,6 +23947,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23312,6 +24040,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23408,6 +24137,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23504,6 +24234,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23598,6 +24329,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23690,6 +24422,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23788,6 +24521,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23882,6 +24616,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -23976,6 +24711,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24070,6 +24806,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24164,6 +24901,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24258,6 +24996,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24350,6 +25089,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24451,6 +25191,7 @@
       ],
       "learning_skill": "SID_裏邪竜ノ娘_兵種スキル",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24552,6 +25293,7 @@
       ],
       "learning_skill": "SID_裏邪竜ノ子_兵種スキル",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24651,6 +25393,7 @@
       ],
       "learning_skill": "SID_裏邪竜ノ子_兵種スキル",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24750,6 +25493,7 @@
       ],
       "learning_skill": "SID_裏邪竜ノ子_兵種スキル",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24844,6 +25588,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -24943,6 +25688,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_魔法剣",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -25042,6 +25788,7 @@
       ],
       "learning_skill": "SID_輸送隊",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -25141,6 +25888,7 @@
       ],
       "learning_skill": "SID_全弾発射",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -25237,6 +25985,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_異形狼連携",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -25331,6 +26080,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_幻影狼連携",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -25429,6 +26179,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_瘴気の領域",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -25526,6 +26277,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_氷の領域",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -25625,6 +26377,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_金蓮",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -25725,6 +26478,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_華炎",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -25823,6 +26577,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_太陽",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -25919,6 +26674,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_月光",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -26019,6 +26775,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_虚空",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -26118,6 +26875,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_大樹",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -26214,6 +26972,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_砂陣",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -26313,6 +27072,7 @@
       "skills_innatas": [],
       "learning_skill": "SID_水鏡",
       "rank": 1,
+      "vision": 3,
       "max_level": 20,
       "es_especial": false,
       "nivel_habilidad_clase": 5,
@@ -26407,6 +27167,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -26499,6 +27260,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -26591,6 +27353,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -26685,6 +27448,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -26781,6 +27545,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -26875,6 +27640,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -26971,6 +27737,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -27067,6 +27834,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -27159,6 +27927,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -27253,6 +28022,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -27349,6 +28119,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -27447,6 +28218,7 @@
       "skills_innatas": [],
       "learning_skill": "",
       "rank": 0,
+      "vision": 3,
       "max_level": 40,
       "es_especial": true,
       "nivel_habilidad_clase": 25,
@@ -237063,7 +237835,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_進入不可": {
       "tid": "TID_進入不可",
@@ -237078,7 +237851,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_進入不可_M026": {
       "tid": "TID_進入不可_M026",
@@ -237093,7 +237867,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_平地": {
       "tid": "TID_平地",
@@ -237108,7 +237883,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_草原": {
       "tid": "TID_草原",
@@ -237123,7 +237899,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_甲板": {
       "tid": "TID_甲板",
@@ -237138,7 +237915,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_地面": {
       "tid": "TID_地面",
@@ -237153,7 +237931,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_道": {
       "tid": "TID_道",
@@ -237168,7 +237947,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_砂漠": {
       "tid": "TID_砂漠",
@@ -237183,7 +237963,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_砂浜": {
       "tid": "TID_砂浜",
@@ -237198,7 +237979,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_砂浜_M016": {
       "tid": "TID_砂浜_M016",
@@ -237213,7 +237995,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_流砂": {
       "tid": "TID_流砂",
@@ -237228,7 +238011,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": -3
+      "mov_inicial": -3,
+      "vision": 0
     },
     "TID_浅瀬": {
       "tid": "TID_浅瀬",
@@ -237243,7 +238027,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_川": {
       "tid": "TID_川",
@@ -237258,7 +238043,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_水路": {
       "tid": "TID_水路",
@@ -237273,7 +238059,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_海": {
       "tid": "TID_海",
@@ -237288,7 +238075,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_海_全戦禁": {
       "tid": "TID_海_全戦禁",
@@ -237303,7 +238091,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_海_影無": {
       "tid": "TID_海_影無",
@@ -237318,7 +238107,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_山": {
       "tid": "TID_山",
@@ -237333,7 +238123,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_崖": {
       "tid": "TID_崖",
@@ -237348,7 +238139,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_空": {
       "tid": "TID_空",
@@ -237363,7 +238155,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_岩": {
       "tid": "TID_岩",
@@ -237378,7 +238171,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_大岩": {
       "tid": "TID_大岩",
@@ -237393,7 +238187,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_土嚢": {
       "tid": "TID_土嚢",
@@ -237408,7 +238203,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_障害物": {
       "tid": "TID_障害物",
@@ -237423,7 +238219,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_低障害物": {
       "tid": "TID_低障害物",
@@ -237438,7 +238235,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_防柵": {
       "tid": "TID_防柵",
@@ -237453,7 +238251,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_防壁": {
       "tid": "TID_防壁",
@@ -237468,7 +238267,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_瓦礫": {
       "tid": "TID_瓦礫",
@@ -237483,7 +238283,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_瓦礫_全戦禁": {
       "tid": "TID_瓦礫_全戦禁",
@@ -237498,7 +238299,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_溶岩": {
       "tid": "TID_溶岩",
@@ -237513,7 +238315,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_階段": {
       "tid": "TID_階段",
@@ -237528,7 +238331,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_階段_戦禁": {
       "tid": "TID_階段_戦禁",
@@ -237543,7 +238347,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_魔法陣": {
       "tid": "TID_魔法陣",
@@ -237558,7 +238363,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_橋": {
       "tid": "TID_橋",
@@ -237573,7 +238379,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_船着き場": {
       "tid": "TID_船着き場",
@@ -237588,7 +238395,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_壊れた橋": {
       "tid": "TID_壊れた橋",
@@ -237603,7 +238411,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_上橋": {
       "tid": "TID_上橋",
@@ -237618,7 +238427,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_民家": {
       "tid": "TID_民家",
@@ -237633,7 +238443,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_民家入口": {
       "tid": "TID_民家入口",
@@ -237648,7 +238459,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_建物": {
       "tid": "TID_建物",
@@ -237663,7 +238475,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_風車": {
       "tid": "TID_風車",
@@ -237678,7 +238491,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_建物灯": {
       "tid": "TID_建物灯",
@@ -237693,7 +238507,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 3
     },
     "TID_船体": {
       "tid": "TID_船体",
@@ -237708,7 +238523,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_建造物": {
       "tid": "TID_建造物",
@@ -237723,7 +238539,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_建造物灯": {
       "tid": "TID_建造物灯",
@@ -237738,7 +238555,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 3
     },
     "TID_配置物": {
       "tid": "TID_配置物",
@@ -237753,7 +238571,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_石像": {
       "tid": "TID_石像",
@@ -237768,7 +238587,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_祭壇": {
       "tid": "TID_祭壇",
@@ -237783,7 +238603,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_石棺": {
       "tid": "TID_石棺",
@@ -237798,7 +238619,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_長椅子": {
       "tid": "TID_長椅子",
@@ -237813,7 +238635,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_茂み": {
       "tid": "TID_茂み",
@@ -237828,7 +238651,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_廃墟": {
       "tid": "TID_廃墟",
@@ -237843,7 +238667,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_砦": {
       "tid": "TID_砦",
@@ -237858,7 +238683,8 @@
       "es_antirruptura": true,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_林": {
       "tid": "TID_林",
@@ -237873,7 +238699,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_森": {
       "tid": "TID_森",
@@ -237888,7 +238715,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_植込": {
       "tid": "TID_植込",
@@ -237903,7 +238731,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_床": {
       "tid": "TID_床",
@@ -237918,7 +238747,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_床_全戦禁": {
       "tid": "TID_床_全戦禁",
@@ -237933,7 +238763,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_崩れた床": {
       "tid": "TID_崩れた床",
@@ -237948,7 +238779,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_回復床": {
       "tid": "TID_回復床",
@@ -237963,7 +238795,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_防衛床": {
       "tid": "TID_防衛床",
@@ -237978,7 +238811,8 @@
       "es_antirruptura": true,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_柱": {
       "tid": "TID_柱",
@@ -237993,7 +238827,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_大柱": {
       "tid": "TID_大柱",
@@ -238008,7 +238843,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_帆柱": {
       "tid": "TID_帆柱",
@@ -238023,7 +238859,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_台座": {
       "tid": "TID_台座",
@@ -238038,7 +238875,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_壁": {
       "tid": "TID_壁",
@@ -238053,7 +238891,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_低い壁": {
       "tid": "TID_低い壁",
@@ -238068,7 +238907,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_壊れる壁": {
       "tid": "TID_壊れる壁",
@@ -238083,7 +238923,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_壊れる壁_HP30": {
       "tid": "TID_壊れる壁_HP30",
@@ -238098,7 +238939,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_壊れる壁_HP50": {
       "tid": "TID_壊れる壁_HP50",
@@ -238113,7 +238955,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_壊れる壁_HP90_敵のみ": {
       "tid": "TID_壊れる壁_HP90_敵のみ",
@@ -238128,7 +238971,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_破壊可能_HP20": {
       "tid": "TID_破壊可能_HP20",
@@ -238143,7 +238987,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_破壊可能_HP30": {
       "tid": "TID_破壊可能_HP30",
@@ -238158,7 +239003,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_破壊可能_HP50": {
       "tid": "TID_破壊可能_HP50",
@@ -238173,7 +239019,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_防護柵": {
       "tid": "TID_防護柵",
@@ -238188,7 +239035,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_水晶": {
       "tid": "TID_水晶",
@@ -238203,7 +239051,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_扉": {
       "tid": "TID_扉",
@@ -238218,7 +239067,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_扉_HP30": {
       "tid": "TID_扉_HP30",
@@ -238233,7 +239083,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_屋根": {
       "tid": "TID_屋根",
@@ -238248,7 +239099,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_篝火": {
       "tid": "TID_篝火",
@@ -238263,7 +239115,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 3
     },
     "TID_篝火消": {
       "tid": "TID_篝火消",
@@ -238278,7 +239131,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_篝火常": {
       "tid": "TID_篝火常",
@@ -238293,7 +239147,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 3
     },
     "TID_燭台": {
       "tid": "TID_燭台",
@@ -238308,7 +239163,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 3
     },
     "TID_宝箱": {
       "tid": "TID_宝箱",
@@ -238323,7 +239179,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_空宝箱": {
       "tid": "TID_空宝箱",
@@ -238338,7 +239195,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_弓砲台": {
       "tid": "TID_弓砲台",
@@ -238353,7 +239211,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_弓砲台_S010": {
       "tid": "TID_弓砲台_S010",
@@ -238368,7 +239227,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_魔砲台": {
       "tid": "TID_魔砲台",
@@ -238383,7 +239243,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_火炎砲台": {
       "tid": "TID_火炎砲台",
@@ -238398,7 +239259,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_火炎砲台_M019": {
       "tid": "TID_火炎砲台_M019",
@@ -238413,7 +239275,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_火炎砲台_S013": {
       "tid": "TID_火炎砲台_S013",
@@ -238428,7 +239291,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_邪竜脈": {
       "tid": "TID_邪竜脈",
@@ -238443,7 +239307,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_シグルドの指輪": {
       "tid": "TID_シグルドの指輪",
@@ -238458,7 +239323,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_セリカの指輪": {
       "tid": "TID_セリカの指輪",
@@ -238473,7 +239339,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ミカヤの指輪": {
       "tid": "TID_ミカヤの指輪",
@@ -238488,7 +239355,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ロイの指輪": {
       "tid": "TID_ロイの指輪",
@@ -238503,7 +239371,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_リーフの指輪": {
       "tid": "TID_リーフの指輪",
@@ -238518,7 +239387,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ルキナの指輪": {
       "tid": "TID_ルキナの指輪",
@@ -238533,7 +239403,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_リンの指輪": {
       "tid": "TID_リンの指輪",
@@ -238548,7 +239419,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_アイクの指輪": {
       "tid": "TID_アイクの指輪",
@@ -238563,7 +239435,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ベレトの指輪": {
       "tid": "TID_ベレトの指輪",
@@ -238578,7 +239451,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_カムイの指輪": {
       "tid": "TID_カムイの指輪",
@@ -238593,7 +239467,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_エイリークの指輪": {
       "tid": "TID_エイリークの指輪",
@@ -238608,7 +239483,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_加勢マス": {
       "tid": "TID_加勢マス",
@@ -238623,7 +239499,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_砂場": {
       "tid": "TID_砂場",
@@ -238638,7 +239515,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_金貨の山": {
       "tid": "TID_金貨の山",
@@ -238653,7 +239531,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_泉": {
       "tid": "TID_泉",
@@ -238668,7 +239547,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_氷の床": {
       "tid": "TID_氷の床",
@@ -238683,7 +239563,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_弓砲台_対戦": {
       "tid": "TID_弓砲台_対戦",
@@ -238698,7 +239579,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_魔砲台_対戦": {
       "tid": "TID_魔砲台_対戦",
@@ -238713,7 +239595,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_火炎砲台_対戦": {
       "tid": "TID_火炎砲台_対戦",
@@ -238728,7 +239611,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_雪だるま": {
       "tid": "TID_雪だるま",
@@ -238743,7 +239627,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_干し草": {
       "tid": "TID_干し草",
@@ -238758,7 +239643,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_結晶": {
       "tid": "TID_結晶",
@@ -238773,7 +239659,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_サボテン": {
       "tid": "TID_サボテン",
@@ -238788,7 +239675,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ローズアーチ": {
       "tid": "TID_ローズアーチ",
@@ -238803,7 +239691,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_遺跡": {
       "tid": "TID_遺跡",
@@ -238818,7 +239707,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_荷車": {
       "tid": "TID_荷車",
@@ -238833,7 +239723,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_井戸": {
       "tid": "TID_井戸",
@@ -238848,7 +239739,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_積み荷": {
       "tid": "TID_積み荷",
@@ -238863,7 +239755,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_柵": {
       "tid": "TID_柵",
@@ -238878,7 +239771,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_動物像": {
       "tid": "TID_動物像",
@@ -238893,7 +239787,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ソラ像": {
       "tid": "TID_ソラ像",
@@ -238908,7 +239803,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_霧": {
       "tid": "TID_霧",
@@ -238923,7 +239819,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_炎上": {
       "tid": "TID_炎上",
@@ -238938,7 +239835,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 2,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_瘴気": {
       "tid": "TID_瘴気",
@@ -238953,7 +239851,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_アロマ": {
       "tid": "TID_アロマ",
@@ -238968,7 +239867,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ブロック": {
       "tid": "TID_ブロック",
@@ -238983,7 +239883,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 255,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_水溜まり": {
       "tid": "TID_水溜まり",
@@ -238998,7 +239899,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ツタ": {
       "tid": "TID_ツタ",
@@ -239013,7 +239915,8 @@
       "es_antirruptura": true,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_照明": {
       "tid": "TID_照明",
@@ -239028,7 +239931,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 5
     },
     "TID_土柱": {
       "tid": "TID_土柱",
@@ -239043,7 +239947,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_霧_永続": {
       "tid": "TID_霧_永続",
@@ -239058,7 +239963,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_炎上_永続": {
       "tid": "TID_炎上_永続",
@@ -239073,7 +239979,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 2,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_瘴気_永続": {
       "tid": "TID_瘴気_永続",
@@ -239088,7 +239995,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_アロマ_永続": {
       "tid": "TID_アロマ_永続",
@@ -239103,7 +240011,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ブロック_永続": {
       "tid": "TID_ブロック_永続",
@@ -239118,7 +240027,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 255,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_水溜まり_永続": {
       "tid": "TID_水溜まり_永続",
@@ -239133,7 +240043,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_ツタ_永続": {
       "tid": "TID_ツタ_永続",
@@ -239148,7 +240059,8 @@
       "es_antirruptura": true,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_土柱_永続": {
       "tid": "TID_土柱_永続",
@@ -239163,7 +240075,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_紋章氣": {
       "tid": "TID_紋章氣",
@@ -239178,7 +240091,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_扉_破壊不可": {
       "tid": "TID_扉_破壊不可",
@@ -239193,7 +240107,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_宝箱_氷結界": {
       "tid": "TID_宝箱_氷結界",
@@ -239208,7 +240123,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_床_氷結界": {
       "tid": "TID_床_氷結界",
@@ -239223,7 +240139,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_魔法陣_氷結界": {
       "tid": "TID_魔法陣_氷結界",
@@ -239238,7 +240155,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_謎の平地": {
       "tid": "TID_謎の平地",
@@ -239253,7 +240171,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_起動盤": {
       "tid": "TID_起動盤",
@@ -239268,7 +240187,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_水晶_味方破壊": {
       "tid": "TID_水晶_味方破壊",
@@ -239283,7 +240203,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_魔法障壁": {
       "tid": "TID_魔法障壁",
@@ -239298,7 +240219,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_床_ターゲット・ワープ禁": {
       "tid": "TID_床_ターゲット・ワープ禁",
@@ -239313,7 +240235,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_柱_ターゲット・ワープ禁": {
       "tid": "TID_柱_ターゲット・ワープ禁",
@@ -239328,7 +240251,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_防衛床_ターゲット・ワープ禁": {
       "tid": "TID_防衛床_ターゲット・ワープ禁",
@@ -239343,7 +240267,8 @@
       "es_antirruptura": true,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_瓦礫_ターゲット・ワープ禁": {
       "tid": "TID_瓦礫_ターゲット・ワープ禁",
@@ -239358,7 +240283,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜１": {
       "tid": "TID_竜１",
@@ -239373,7 +240299,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜２": {
       "tid": "TID_竜２",
@@ -239388,7 +240315,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜３": {
       "tid": "TID_竜３",
@@ -239403,7 +240331,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜４": {
       "tid": "TID_竜４",
@@ -239418,7 +240347,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜５": {
       "tid": "TID_竜５",
@@ -239433,7 +240363,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜６": {
       "tid": "TID_竜６",
@@ -239448,7 +240379,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_竜７": {
       "tid": "TID_竜７",
@@ -239463,7 +240395,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_湖": {
       "tid": "TID_湖",
@@ -239478,7 +240411,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_噴気孔": {
       "tid": "TID_噴気孔",
@@ -239493,7 +240427,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_池": {
       "tid": "TID_池",
@@ -239508,7 +240443,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_火山弾跡": {
       "tid": "TID_火山弾跡",
@@ -239523,7 +240459,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_噴火口": {
       "tid": "TID_噴火口",
@@ -239538,7 +240475,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_墓地": {
       "tid": "TID_墓地",
@@ -239553,7 +240491,8 @@
       "es_antirruptura": false,
       "combate_prohibido": true,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_氷床": {
       "tid": "TID_氷床",
@@ -239568,7 +240507,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 2
+      "mov_inicial": 2,
+      "vision": 0
     },
     "TID_煙": {
       "tid": "TID_煙",
@@ -239583,7 +240523,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_煙_G004": {
       "tid": "TID_煙_G004",
@@ -239598,7 +240539,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 1,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_氷床_永続": {
       "tid": "TID_氷床_永続",
@@ -239613,7 +240555,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 2
+      "mov_inicial": 2,
+      "vision": 0
     },
     "TID_瘴気の領域": {
       "tid": "TID_瘴気の領域",
@@ -239628,7 +240571,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 0
+      "mov_inicial": 0,
+      "vision": 0
     },
     "TID_氷の領域": {
       "tid": "TID_氷の領域",
@@ -239643,7 +240587,8 @@
       "es_antirruptura": false,
       "combate_prohibido": false,
       "coste_mov": 0,
-      "mov_inicial": 2
+      "mov_inicial": 2,
+      "vision": 0
     }
   },
   "estilos_combate": {

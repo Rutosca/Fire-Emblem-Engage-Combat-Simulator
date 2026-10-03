@@ -53,6 +53,9 @@ class FichaUnidad:
     es_verde: bool = False             # True para aliados que se unen en turno 1 (Alcryst, Citrinne, Lapis)
     union_pendiente: bool = False      # Verde que aún no se ha unido: lo mueve la CPU, no es controlable (Jade en Cap. 9)
     nunca_se_une: bool = False         # Verde de la CPU toda la batalla (aldeanos de Solm, Cap. 12): nunca controlable
+    # Casilla a la que la mueve el guion al empezar la batalla (UnitMovePos antes de
+    # UnitJoin, M013: la conversación de Timerra, Panette y Merrin)
+    pos_tras_guion: list = field(default_factory=list)
     habla_con: list = field(default_factory=list)   # pids que pueden reclutarlo hablando desde una casilla adyacente
     es_fijo: bool = False              # True si su posición no puede cambiarse en preparación (Alear, verdes)
     ha_actuado: bool = False           # True si ya consumió su acción de movimiento / ataque este turno
@@ -76,6 +79,12 @@ class FichaUnidad:
     # Último rival con el que combatió (nombre en el tablero): Single-Minded de Ivy da +20
     # Hit contra él (Skill.xml: 最終戦闘相手). Se actualiza con cada combate ejecutado.
     ultimo_rival: str = ""
+    # Mapas a oscuras (visibilidad.py): antorcha de mano encendida por esta unidad
+    # ({"radio": 7, "turno": T}, se encoge 1 por turno); en enemigos, si ahora no se ven
+    # (`oculto`) y el último turno en que se vieron (su ficha sigue donde se les vio)
+    luz_antorcha: dict = field(default_factory=dict)
+    oculto: bool = False
+    turno_visto: int = 0
     dificultad: str = ""               # Dificultad con la que se resolvieron sus stats (enemigos/refuerzos): "Extremo" | "Hard" | "Normal"
     mov_base: int = 0                  # Mov SIN el bono de Fusión (Gallop de Sigurd); `mov` = mov_base + bono
     invocador: str = ""                # Nombre de quien la invocó: doble de Call Doubles (SID_残像) de Lyn
@@ -187,6 +196,22 @@ class FichaUnidad:
             return None
         return {"nombre": p["nombre"], "tipos_arma": p["tipos_arma"], "stat_boosts": p["stat_boosts"],
                 "usado": bool(self.ataque_emblema_usado), "en_guardia": pasivas.estado_de_postura(self) is not None}
+
+    def objeto_antorcha(self) -> Optional[dict]:
+        """La antorcha de mano (Torch, Item.xml UseType 19) del inventario con usos, si la lleva:
+        {"nombre", "radio"}."""
+        from catalogo_loader import _arma_desde_item, _catalogo
+        for it in (self.inventario or []):
+            if not isinstance(it, dict) or (it.get("usos") is not None and int(it.get("usos") or 0) <= 0):
+                continue
+            info = (_catalogo.get("armas", {}) or {}).get(it.get("id") or it.get("iid") or "")
+            if not info:
+                nombre = str(it.get("nombre") or it.get("arma") or "")
+                info = next((a for a in (_catalogo.get("armas", {}) or {}).values()
+                             if a.get("nombre") == nombre and a.get("radio_luz") and a.get("tipo") == "Objeto"), None)
+            if info and info.get("radio_luz") and info.get("tipo") == "Objeto":
+                return {"nombre": info.get("nombre"), "radio": int(info["radio_luz"])}
+        return None
 
     def usa_ultimo_rival(self) -> bool:
         """Tiene alguna habilidad que depende de su último rival (最終戦闘相手): el modal
@@ -454,6 +479,7 @@ class FichaUnidad:
             "union_pendiente": self.union_pendiente,
             "nunca_se_une": self.nunca_se_une,
             "habla_con": list(self.habla_con or []),
+            "pos_tras_guion": list(self.pos_tras_guion or []),
             "habla_con_nombres": self._nombres_de_pids(self.habla_con),
             "controlable": self.controlable,
             "es_fijo": self.es_fijo,
@@ -461,6 +487,10 @@ class FichaUnidad:
             "accion_turno": self.accion_turno,
             "sin_mover_turno": self.sin_mover_turno,
             "ultimo_rival": self.ultimo_rival,
+            "luz_antorcha": dict(self.luz_antorcha or {}),
+            "oculto": bool(self.oculto),
+            "turno_visto": int(self.turno_visto or 0),
+            "antorcha_de_mano": self.objeto_antorcha(),
             "usa_ultimo_rival": self.usa_ultimo_rival(),
             "postura_emblema": self.postura_emblema_info(),
             "reactivaciones": self.tipos_reactivacion(),
@@ -862,6 +892,9 @@ class EstadoTablero:
                 "usos_max": int(usos) if usos is not None else None,
                 "vida": int(vida) if vida is not None else None,   # HP de los destructibles
                 "vida_max": int(vida) if vida is not None else None,
+                # antorchas de los mapas a oscuras: empiezan encendidas salvo que el mapa diga otra cosa
+                **({"encendida": bool(ent.propiedades.get("encendida", True))}
+                   if str(ent.tipo).lower() == "antorcha" else {}),
                 "tipo": str(ent.tipo).lower(),
                 "nombre": ent.nombre,
             }
@@ -916,6 +949,77 @@ class EstadoTablero:
         est["abierto_por"] = nombre_unidad
         self.sincronizar_objetos_mapa()
         return {**ent.como_dict(), **est}
+
+    def cambiar_antorcha(self, id_objeto: str, encendida: bool, nombre_unidad: str = "") -> Optional[dict]:
+        """
+        Enciende o apaga una antorcha del mapa. Con `nombre_unidad`, quien lo hace (en una
+        casilla adyacente) gasta su acción: un aliado en su fase, o el enemigo que la apaga en
+        la suya (el jugador lo refleja). Las de las casas (`permanente`) no se apagan.
+        Devuelve el estado o None con el motivo en `self.ultimo_error_antorcha`.
+        """
+        self.ultimo_error_antorcha = ""
+        est = self.objetos.get(str(id_objeto))
+        ent = next((e for e in (self.mapa.objetos_mapa() if self.mapa and hasattr(self.mapa, 'objetos_mapa') else [])
+                    if e.id_entidad == str(id_objeto)), None)
+        if not est or not ent or str(ent.tipo).lower() != "antorcha":
+            self.ultimo_error_antorcha = f"'{id_objeto}' no es una antorcha de este mapa"
+            return None
+        if (ent.propiedades or {}).get("permanente"):
+            self.ultimo_error_antorcha = f"{ent.nombre or 'Esa antorcha'} no se apaga"
+            return None
+        if bool(est.get("encendida", True)) == bool(encendida):
+            self.ultimo_error_antorcha = f"{ent.nombre or 'La antorcha'} ya está {'encendida' if encendida else 'apagada'}"
+            return None
+        if nombre_unidad:
+            f = self.fichas.get(nombre_unidad)
+            if not f or not f.viva:
+                self.ultimo_error_antorcha = f"'{nombre_unidad}' no está en el tablero"
+                return None
+            if not any(distancia_a_unidad(f, cx, cy) == 1 for (cx, cy) in ent.casillas):
+                self.ultimo_error_antorcha = f"{f.nombre} debe estar en una casilla adyacente a la antorcha"
+                return None
+            if f.es_aliado and f.controlable:
+                if not self.puede_usar_comando(f):
+                    self.ultimo_error_antorcha = f"{f.nombre} ya ha actuado este turno"
+                    return None
+                f.ha_actuado = True
+                f.accion_turno = "antorcha"
+            elif not f.es_aliado:
+                f.ha_actuado = True
+        est["encendida"] = bool(encendida)
+        est["cambiada_por"] = nombre_unidad
+        self.sincronizar_objetos_mapa()
+        self._marcar_ocultos()
+        return {**ent.como_dict(), **est}
+
+    def usar_antorcha_de_mano(self, nombre: str) -> Optional[dict]:
+        """
+        Un aliado enciende su antorcha de mano (Torch: radio 7 alrededor de él, le sigue y se
+        encoge 1 por turno). Gasta su acción y un uso. Devuelve {"radio", "turno"} o None con
+        el motivo en `self.ultimo_error_antorcha`.
+        """
+        self.ultimo_error_antorcha = ""
+        f = self.fichas.get(nombre)
+        if not f or not f.viva or not f.es_aliado:
+            self.ultimo_error_antorcha = f"'{nombre}' no es un aliado del tablero"
+            return None
+        antorcha = f.objeto_antorcha()
+        if not antorcha:
+            self.ultimo_error_antorcha = f"{f.nombre} no lleva una antorcha con usos"
+            return None
+        if not self.puede_usar_comando(f):
+            self.ultimo_error_antorcha = f"{f.nombre} ya ha actuado este turno"
+            return None
+        for it in (f.inventario or []):
+            if isinstance(it, dict) and str(it.get("nombre") or it.get("arma") or "") == antorcha["nombre"] \
+                    and it.get("usos") is not None:
+                it["usos"] = max(0, int(it["usos"]) - 1)
+                break
+        f.luz_antorcha = {"radio": antorcha["radio"], "turno": int(self.turno_actual)}
+        f.ha_actuado = True
+        f.accion_turno = "objeto"
+        self._marcar_ocultos()
+        return dict(f.luz_antorcha)
 
     def consumir_objeto_mapa(self, id_objeto: str) -> bool:
         """
@@ -1127,6 +1231,7 @@ class EstadoTablero:
         # Sale al tablero sobre su casilla (Preset, refuerzos, modal): si son arenas
         # movedizas, ya empieza su fase con −3
         ficha.mov_extra_turno = self._mov_por_casilla(ficha)
+        self._marcar_ocultos()
 
     def registrar_muerte(self, nombre: str) -> None:
         """
@@ -1188,7 +1293,14 @@ class EstadoTablero:
         self.refuerzos_desplegados_ultimo = self.comprobar_refuerzos_por_evento()
         # El +2 de la vena de hielo depende de dónde está la unidad, no de la fase
         self.refrescar_hielo_deslizante()
+        self._marcar_ocultos()
         return True
+
+    def _marcar_ocultos(self) -> None:
+        """Mapas a oscuras: quién se ve ahora (visibilidad.marcar_ocultos)."""
+        if self.mapa is not None and getattr(self.mapa, "casillas_oscuras", None):
+            import visibilidad
+            visibilidad.marcar_ocultos(self)
 
     def aplicar_recarga_emblema_en_casilla(self, nombre: str) -> Optional[dict]:
         """
@@ -2040,6 +2152,17 @@ class EstadoTablero:
             if f.es_aliado and f.es_verde and not f.union_pendiente and not f.nunca_se_une:
                 f.es_verde = False
                 f.es_fijo = False
+        # El guion los recoloca antes de unirlos (si la casilla está libre)
+        ocupadas = {(o.x, o.y) for o in self.fichas.values() if o.viva}
+        for f in self.fichas.values():
+            if f.viva and f.pos_tras_guion:
+                destino = tuple(f.pos_tras_guion)
+                if destino not in ocupadas:
+                    ocupadas.discard((f.x, f.y))
+                    f.x, f.y = destino
+                    ocupadas.add(destino)
+                f.pos_tras_guion = []
+        self._marcar_ocultos()
         import pasivas_temporales
         self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=True)
         return self.estados_inicio_fase_ultimo
@@ -2074,6 +2197,11 @@ class EstadoTablero:
         # Buffs temporales que caducan al entrar en la fase de jugador (p.ej. Self-Improver)
         for f in self.fichas.values():
             f.purgar_estados_temporales("jugador", self.turno_actual)
+        # Antorchas de mano: el radio baja 1 por turno; a 0 se apagan
+        import visibilidad
+        for f in self.fichas.values():
+            if f.luz_antorcha and visibilidad.radio_antorcha_mano(f, self.turno_actual) <= 0:
+                f.luz_antorcha = {}
         # Pasivas de inicio de fase (Timing 27: Geosphere, Fortify Def…), ya con los viejos purgados
         import pasivas_temporales
         self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=True)
@@ -2092,6 +2220,7 @@ class EstadoTablero:
 
         # Refuerzos enemigos programados para este turno (aparecen al inicio de la fase de jugador)
         self.desplegar_refuerzos(self.turno_actual)
+        self._marcar_ocultos()
 
     def iniciar_fase_enemigo(self) -> None:
         """Marca que estamos en la fase de movimiento enemigo y limpia la ruptura de enemigos."""
@@ -2115,6 +2244,7 @@ class EstadoTablero:
             f.purgar_estados_temporales("enemigo", self.turno_actual)
         import pasivas_temporales
         self.estados_inicio_fase_ultimo = pasivas_temporales.al_empezar_fase(self, es_aliado=False)
+        self._marcar_ocultos()
 
     # ── Serialización ────────────────────────────────────────────────────
 

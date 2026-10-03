@@ -2082,6 +2082,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         union_pendiente=union_pendiente,
         nunca_se_une=nunca_se_une,
         habla_con=habla_con,
+        pos_tras_guion=list(data.get("pos_tras_guion", getattr(unidad_previa, 'pos_tras_guion', []) if unidad_previa else []) or []),
         es_fijo=es_fijo,
         x=x,
         y=y,
@@ -2120,6 +2121,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
         accion_turno=str(data.get("accion_turno", getattr(unidad_previa, 'accion_turno', "") if unidad_previa else "") or ""),
         sin_mover_turno=bool(data.get("sin_mover_turno", getattr(unidad_previa, 'sin_mover_turno', False) if unidad_previa else False)),
         ultimo_rival=str(data.get("ultimo_rival", getattr(unidad_previa, 'ultimo_rival', "") if unidad_previa else "") or ""),
+        luz_antorcha=dict(data.get("luz_antorcha", getattr(unidad_previa, 'luz_antorcha', {}) if unidad_previa else {}) or {}),
+        turno_visto=int(data.get("turno_visto", getattr(unidad_previa, 'turno_visto', 0) if unidad_previa else 0) or 0),
         dificultad=str(data.get("dificultad") or (getattr(unidad_previa, 'dificultad', "") if unidad_previa else "") or ""),
         estados_temporales=list(data.get("estados_temporales", getattr(unidad_previa, 'estados_temporales', []) if unidad_previa else []) or []),
         # Huella en el mapa (BmapSize): del personaje del catálogo; el payload no la cambia

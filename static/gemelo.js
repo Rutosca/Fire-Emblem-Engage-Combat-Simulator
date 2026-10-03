@@ -447,6 +447,94 @@ function actualizarTokens(fichas) {
     });
   }
   autoGuardarLocal();
+  refrescarOscuridad();
+}
+
+// ─── Oscuridad (Cap. 6, 13, 20): solo se ve lo que alumbran aliados y antorchas ───
+// El servidor calcula la luz (visibilidad.py); aquí se oscurece el resto y se marcan los
+// enemigos ocultos (siguen donde se les vio por última vez).
+let _oscuridadPendiente = null;
+function refrescarOscuridad() {
+  clearTimeout(_oscuridadPendiente);
+  _oscuridadPendiente = setTimeout(pintarOscuridad, 60);
+}
+
+let _oscuridadSeq = 0;
+async function pintarOscuridad() {
+  const seq = ++_oscuridadSeq;
+  const v = await api("/api/visibilidad");
+  if (seq !== _oscuridadSeq) return;   // llegó una respuesta más nueva: esta ya no vale
+  const celdas = document.querySelectorAll(".celda");
+  if (!v || !v.oscuro) {
+    celdas.forEach(c => c.classList.remove("a-oscuras"));
+    document.querySelectorAll(".token.oculto").forEach(t => t.classList.remove("oculto"));
+    state.ocultos = {};
+    return;
+  }
+  const luz = new Set((v.iluminadas || []).map(([x, y]) => `${x},${y}`));
+  celdas.forEach(c => c.classList.toggle("a-oscuras", !luz.has(`${c.dataset.x},${c.dataset.y}`)));
+  state.ocultos = v.ocultos || {};
+  for (const [nombre, f] of Object.entries(state.fichas || {})) {
+    const tok = document.querySelector(`.token[data-nombre="${CSS.escape(nombre)}"]`);
+    if (!tok) continue;
+    const oculto = !f.es_aliado && !!state.ocultos[nombre];
+    tok.classList.toggle("oculto", oculto);
+    const base = tok.title.split("\n[OCULTO")[0];
+    tok.title = oculto
+      ? `${base}\n[OCULTO: a oscuras, no se puede atacar. Visto por última vez en el turno ${state.ocultos[nombre].turno_visto || "?"}; puede haberse movido]`
+      : base;
+  }
+}
+
+// Antorcha del mapa: se enciende (un aliado adyacente gasta su acción) o se apaga (el
+// enemigo adyacente que lo hace en su fase). Sin nadie adyacente solo cambia el estado.
+async function alternarAntorcha(idObjeto) {
+  const obj = (state.objetosMapa || []).find(o => String(o.id) === String(idObjeto));
+  if (!obj) return;
+  if ((obj.propiedades || {}).permanente) { mostrarToast(`${obj.nombre || "Esa antorcha"} no se apaga`, "info"); return; }
+  const encender = obj.encendida === false;
+  const adyacentes = Object.values(state.fichas || {}).filter(f =>
+    f.viva && (encender ? (f.es_aliado && !f.ha_actuado && f.controlable !== false) : !f.es_aliado) &&
+    (obj.casillas || []).some(([cx, cy]) => Math.abs(f.x - cx) + Math.abs(f.y - cy) === 1));
+  let unidad = "";
+  if (adyacentes.length) {
+    const quien = prompt(`${encender ? "Encender" : "Apagar"} ${obj.nombre || "la antorcha"}. ¿Quién lo hace? ` +
+      `(gasta su acción; deja vacío para cambiarla sin más)\n${adyacentes.map(f => f.nombre).join(", ")}`,
+      adyacentes[0].nombre);
+    if (quien === null) return;
+    unidad = quien.trim();
+  } else if (!confirm(`${encender ? "¿Encender" : "¿Apagar"} ${obj.nombre || "la antorcha"}?`)) {
+    return;
+  }
+  const res = await api("/api/mapa/objeto/antorcha", "POST", { id: idObjeto, encendida: encender, unidad });
+  if (!res || !res.ok) { mostrarToast((res && res.error) || "No se pudo cambiar la antorcha", "error"); return; }
+  renderObjetosMapa(res.objetos);
+  actualizarTokens(res.fichas);
+  mostrarToast(`🔥 ${obj.nombre || "Antorcha"} ${encender ? "encendida" : "apagada"}${unidad ? ` por ${unidad}` : ""}`, "ok");
+  setTimeout(lanzarAnalisis, 250);
+}
+
+// Antorcha de mano (Torch): alumbra 7 alrededor de quien la usa, le sigue y se encoge 1 por turno
+function actualizarBotonAntorcha(ficha) {
+  const btn = $("btn-modal-antorcha");
+  if (!btn) return;
+  state.fichaAntorcha = ficha;
+  const a = ficha && ficha.antorcha_de_mano;
+  const puede = !!(a && ficha.es_aliado && (!ficha.ha_actuado || !ficha.accion_turno));
+  btn.classList.toggle("hidden", !puede);
+  if (puede) btn.title = `${a.nombre}: alumbra ${a.radio} casillas alrededor de ${ficha.nombre} y le sigue; ` +
+    `el radio baja 1 por turno. Gasta la acción y un uso.`;
+}
+
+async function usarAntorchaDeMano() {
+  const ficha = state.fichaAntorcha;
+  if (!ficha) return;
+  const res = await api("/api/unidad/antorcha_mano", "POST", { nombre: ficha.nombre });
+  if (!res || !res.ok) { mostrarToast((res && res.error) || "No se pudo usar la antorcha", "error"); return; }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  mostrarToast(`🔥 ${ficha.nombre} enciende su antorcha (radio ${res.luz.radio})`, "ok");
+  setTimeout(lanzarAnalisis, 250);
 }
 
 // ─── Drag & Drop con Rango de Movimiento Táctico ───────────────────────────
@@ -564,6 +652,11 @@ function onCeldaClick(e) {
   if (e.currentTarget.dataset.objetoId &&
       (e.currentTarget.classList.contains("obj-destructible") || e.currentTarget.classList.contains("obj-arma_usable"))) {
     abrirModalObjeto(e.currentTarget.dataset.objetoId);
+    return;
+  }
+  // Antorcha de un mapa a oscuras: encender / apagar
+  if (e.currentTarget.classList.contains("obj-antorcha") && e.currentTarget.dataset.objetoId) {
+    alternarAntorcha(e.currentTarget.dataset.objetoId);
     return;
   }
   // Cofre: lo abre una unidad aliada adyacente que aún no haya actuado (gasta su acción)
@@ -1506,6 +1599,7 @@ function abrirModalEdicion(ficha) {
   actualizarBotonUnion(ficha);
   actualizarBotonReactivar(ficha);
   actualizarBotonPostura(ficha);
+  actualizarBotonAntorcha(ficha);
   $("modal-backdrop").classList.remove("hidden");
 }
 
@@ -2400,6 +2494,7 @@ function initModalEvents() {
   if ($("btn-modal-unir")) $("btn-modal-unir").addEventListener("click", unirUnidadHablada);
   if ($("btn-modal-reactivar")) $("btn-modal-reactivar").addEventListener("click", mostrarOpcionesReactivar);
   if ($("btn-modal-postura")) $("btn-modal-postura").addEventListener("click", () => usarPosturaEmblema(state.fichaPostura));
+  if ($("btn-modal-antorcha")) $("btn-modal-antorcha").addEventListener("click", usarAntorchaDeMano);
 
   // Botones rápidos de ajuste de HP en el modal
   $("btn-hp-pocion").addEventListener("click", () => {
@@ -3899,7 +3994,7 @@ function initNavCapitulo() {
 
 // ─── Objetos de mapa y casillas objetivo ───────────────────────────────────
 
-const ETIQUETA_OBJETO = { recarga_emblema: "Pozo de Emblema (recarga 100% al terminar la acción aquí)", arma_usable: "Arma usable", destructible: "Destructible", cofre: "Cofre" };
+const ETIQUETA_OBJETO = { recarga_emblema: "Pozo de Emblema (recarga 100% al terminar la acción aquí)", arma_usable: "Arma usable", destructible: "Destructible", cofre: "Cofre", antorcha: "Antorcha" };
 
 function renderObjetosMapa(objetos) {
   state.objetosMapa = Array.isArray(objetos) ? objetos : [];
@@ -3907,17 +4002,24 @@ function renderObjetosMapa(objetos) {
   document.querySelectorAll(".celda .obj-marca, .celda .obj-usos").forEach(el => el.remove());
   document.querySelectorAll(".celda").forEach(c => {
     c.classList.remove("obj-recarga_emblema", "obj-arma_usable", "obj-destructible", "obj-cofre",
-                       "obj-cofre-abierto", "obj-agotado");
+                       "obj-cofre-abierto", "obj-agotado", "obj-antorcha", "obj-antorcha-apagada");
     delete c.dataset.objetoId;
   });
   for (const o of objetos || []) {
     // El cofre abierto y el arma de mapa agotada siguen ahí (mobiliario): se marcan en vez de desaparecer
     if (!o.activo && o.tipo !== "cofre" && o.tipo !== "arma_usable") continue;   // destruido: desaparece icono y efecto
-    for (const [x, y] of o.casillas || []) {
+    // Un objeto de varias casillas es uno solo (comparte vida / usos): su indicador sale una
+    // vez, en la casilla más cercana a su centro; el resto conserva el icono y el tooltip
+    const cas = o.casillas || [];
+    const cx = cas.reduce((s, c) => s + c[0], 0) / (cas.length || 1);
+    const cy = cas.reduce((s, c) => s + c[1], 0) / (cas.length || 1);
+    const etiqueta = cas.reduce((mejor, c) => (!mejor || Math.hypot(c[0] - cx, c[1] - cy) < Math.hypot(mejor[0] - cx, mejor[1] - cy)) ? c : mejor, null);
+    for (const [x, y] of cas) {
       const celda = $(`c-${x}-${y}`);
       if (!celda) continue;
       celda.classList.add(`obj-${o.tipo}`);
       if (o.tipo === "cofre" && !o.activo) celda.classList.add("obj-cofre-abierto");
+      if (o.tipo === "antorcha" && o.encendida === false) celda.classList.add("obj-antorcha-apagada");
       if (o.tipo === "arma_usable" && !o.activo) celda.classList.add("obj-agotado");
       celda.dataset.objetoId = o.id;
       // El pozo de Emblema es de 1 uso: basta el marco azul (está o no está).
@@ -3930,7 +4032,7 @@ function renderObjetosMapa(objetos) {
         if (o.usos !== null && o.usos !== undefined) detalle = o.usos > 0 ? `${o.usos} uso${o.usos === 1 ? "" : "s"}` : "agotada";
         if (o.vida !== null && o.vida !== undefined) detalle = `${o.vida}/${o.vida_max} HP`;
       }
-      if (detalle) {
+      if (detalle && etiqueta && etiqueta[0] === x && etiqueta[1] === y) {
         const usos = document.createElement("div");
         usos.className = "obj-usos";
         usos.textContent = detalle;
@@ -3941,6 +4043,8 @@ function renderObjetosMapa(objetos) {
       if (o.tipo === "arma_usable") desc += ` (${p.arma_permitida || "Arco"}, alcance ${p.distancia_min || 3}-${p.distancia_max || 7}, Hit +20, 1 golpe sin contraataque) — clic para anotar los usos restantes`;
       else if (o.tipo === "recarga_emblema") desc += ` — ${ETIQUETA_OBJETO.recarga_emblema}`;
       else if (o.tipo === "cofre") desc += o.activo ? " — clic para abrirlo con una unidad adyacente (gasta su acción)" : " (abierto)";
+      else if (o.tipo === "antorcha") desc += (o.propiedades || {}).permanente ? " (siempre encendida)"
+        : (o.encendida === false ? " apagada — clic para encenderla" : " encendida — clic para apagarla");
       celda.title = detalle ? `${desc} · ${detalle}` : desc;
     }
   }
