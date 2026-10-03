@@ -1357,6 +1357,40 @@ def reactivar_unidad():
                     "fichas": [x.como_dict() for x in tablero.fichas.values()]})
 
 
+@app.route("/api/unidad/postura_emblema", methods=["POST"])
+def postura_emblema():
+    """
+    Great Aether: `nombre` (moviéndose antes a `x`, `y` si se indica; mover + el Ataque de
+    Emblema es UNA acción) se pone en guardia. Si aún no está fusionado y tiene el medidor
+    lleno, se fusiona antes (como en el juego). Body: {"nombre", "x"?, "y"?}
+    """
+    data = request.get_json(force=True) or {}
+    f = tablero.obtener_ficha(data.get("nombre", ""))
+    if not f:
+        return jsonify({"error": "Unidad no encontrada"}), 404
+    tablero.guardar_snapshot()
+    if data.get("x") is not None and data.get("y") is not None:
+        pos = (int(data["x"]), int(data["y"]))
+        if pos != (f.x, f.y):
+            from motor_analisis import casillas_para_comando
+            if pos not in casillas_para_comando(tablero, _mapa, f):
+                tablero.historial.pop()
+                return jsonify({"error": f"{f.nombre} no puede llegar a ({pos[0]},{pos[1]}) este turno"}), 400
+            tablero.mover_unidad(f.nombre, *pos)
+    if not (f.en_fusion or f.turnos_fusion > 0) and pasivas.postura_de_emblema(f):
+        error_fusion = _activar_fusion(f)
+        if error_fusion:
+            tablero.deshacer()
+            return jsonify({"error": error_fusion}), 400
+    estado, error = tablero.activar_postura_emblema(f.nombre)
+    if error:
+        tablero.deshacer()
+        return jsonify({"error": error}), 400
+    return jsonify({"ok": True, "estado": estado,
+                    "mensaje": f"{f.nombre} usa {estado['nombre'].split(' (')[0]}: en guardia hasta su próxima fase",
+                    "fichas": [x.como_dict() for x in tablero.fichas.values()]})
+
+
 @app.route("/api/unidad/unir", methods=["POST"])
 def unir_unidad():
     """Botón "Ha hablado" del modal: el jugador ya ha hablado con este aliado verde por su
@@ -1661,6 +1695,11 @@ def ejecutar_combate():
 
     es_engage_attack = bool(data.get("es_engage_attack", False) or es_engage_attack)
     engage_attack_nombre = str(data.get("engage_attack_nombre", "") or engage_attack_nombre)
+    # Great Aether no ataca a un objetivo: es la guardia (botón del modal / recomendación)
+    postura_atk = pasivas.postura_de_emblema(f_atk) if es_engage_attack else None
+    if postura_atk and normalizar_texto(postura_atk["nombre"]) in normalizar_texto(engage_attack_nombre or postura_atk["nombre"]):
+        return jsonify({"error": f"{postura_atk['nombre']} no se lanza contra un enemigo: usa el botón "
+                                 f"'{postura_atk['nombre']}' del modal de {f_atk.nombre}"}), 400
 
     # 2c. Ataques de área: Ataques de Emblema (Override / Blazing Lion) y alientos de Tiki.
     # La geometría se resuelve ANTES del combate, con todos los objetivos aún vivos, y se
@@ -1857,6 +1896,11 @@ def ejecutar_combate():
 
     # Los dos combatientes recuerdan contra quién han combatido (Single-Minded de Ivy)
     f_atk.fijar_ultimo_rival(f_def.nombre)
+    # En guardia de Great Aether: cuenta las veces que la atacan (la variante Dragón las
+    # suma al golpe del turno siguiente)
+    guardia = pasivas.estado_de_postura(f_def)
+    if guardia is not None:
+        guardia["veces_atacado"] = int(guardia.get("veces_atacado") or 0) + 1
     f_def.fijar_ultimo_rival(f_atk.nombre)
 
     # Tras un Ataque de Emblema la unidad sigue con el arma con la que lo lanzó: el "arma"
@@ -2147,6 +2191,7 @@ def iniciar_fase_enemigo():
         "casillas_fuego": tablero.casillas_fuego_lista(),
         "terrenos_temporales": tablero.terrenos_temporales_lista(),
         "estados_otorgados": [{"unidad": n, **e} for n, e in estados_otorgados],
+        "posturas_resueltas": tablero.posturas_resueltas_ultimo,
         "recargas_emblema": recargas,
         "objetos": tablero.objetos_como_lista(),
         "fichas": [f.como_dict() for f in tablero.fichas.values()]
@@ -2162,6 +2207,7 @@ def fin_turno():
     return jsonify({
         "ok": True, "fase": tablero.fase, "turno": tablero.turno_actual,
         "estados_otorgados": [{"unidad": n, **e} for n, e in tablero.estados_inicio_fase_ultimo],
+        "posturas_resueltas": tablero.posturas_resueltas_ultimo,
         "dobles_disipados": tablero.dobles_disipados_ultimo,
         "quemados": [{"unidad": n, "daño": d} for n, d in tablero.quemados_ultimo],
         "curados_terreno": [{"unidad": n, "curacion": c} for n, c in tablero.curados_ultimo],

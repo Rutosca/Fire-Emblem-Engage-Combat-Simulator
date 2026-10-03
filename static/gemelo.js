@@ -1505,6 +1505,7 @@ function abrirModalEdicion(ficha) {
   actualizarBotonAccion(ficha);
   actualizarBotonUnion(ficha);
   actualizarBotonReactivar(ficha);
+  actualizarBotonPostura(ficha);
   $("modal-backdrop").classList.remove("hidden");
 }
 
@@ -1592,6 +1593,54 @@ async function ejecutarReactivacion(ficha, op) {
   actualizarTokens(res.fichas);
   mostrarToast(`🔄 ${res.mensaje}`, "ok");
   setTimeout(lanzarAnalisis, 250);
+}
+
+// Great Aether (Ike): la unidad gasta su acción y el Ataque de Emblema en ponerse en guardia
+// (Def/Res +5, sin contraataque); al empezar el turno siguiente, si sigue viva, golpea a los
+// enemigos a 2 casillas o menos. Si no está fusionada y tiene el medidor lleno, se fusiona antes.
+function actualizarBotonPostura(ficha) {
+  const btn = $("btn-modal-postura");
+  if (!btn) return;
+  state.fichaPostura = ficha;
+  const p = ficha && ficha.postura_emblema;
+  const maxE = ficha ? (ficha.max_energia_emblema || 6) : 6;
+  const fusionada = !!(ficha && (ficha.en_fusion || ficha.turnos_fusion > 0));
+  const puede = !!(p && ficha.es_aliado && !p.usado && (!ficha.ha_actuado || !ficha.accion_turno) &&
+                   (fusionada || (ficha.energia_emblema ?? maxE) >= maxE));
+  btn.classList.toggle("hidden", !puede);
+  if (!puede) return;
+  const bonos = Object.entries(p.stat_boosts || {}).map(([k, v]) => `${ETIQUETA_BONO_STAT[k] || k} +${v}`).join(" / ");
+  btn.textContent = fusionada ? p.nombre : `⚡ Fusionar y ${p.nombre}`;
+  btn.title = `${p.nombre}: gasta la acción y el Ataque de Emblema. En guardia (${bonos}, sin contraataque) ` +
+    `hasta su próximo turno; entonces, si sigue viva, golpea a todos los enemigos a 2 casillas o menos ` +
+    `y se cura el 30 % de lo que quita. Solo con ${(p.tipos_arma || []).join(" o ").toLowerCase()}.`;
+}
+
+async function usarPosturaEmblema(ficha, pos) {
+  if (!ficha) return;
+  const payload = { nombre: ficha.nombre };
+  if (pos) { payload.x = pos[0]; payload.y = pos[1]; }
+  const res = await api("/api/unidad/postura_emblema", "POST", payload);
+  if (!res || !res.ok) {
+    mostrarToast((res && res.error) || "No se pudo usar el Ataque de Emblema", "error");
+    return;
+  }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  mostrarToast(`🛡️ ${res.mensaje}`, "ok");
+  setTimeout(lanzarAnalisis, 250);
+}
+
+// Golpes de Great Aether al empezar la fase (los aplica el servidor; Cronogema para deshacer)
+function notificarPosturas(res) {
+  for (const p of (res && res.posturas_resueltas) || []) {
+    if (!p.golpes.length) {
+      mostrarToast(`${p.unidad}: ${p.ataque} sin nadie a 2 casillas — el ataque se pierde`, "info");
+      continue;
+    }
+    const golpes = p.golpes.map(g => `${g.enemigo} -${g.daño}${g.muere ? " ☠" : ""}`).join(", ");
+    mostrarToast(`🛡️ ${p.unidad} — ${p.ataque}: ${golpes}${p.curado ? ` · se cura ${p.curado}` : ""}`, "ok");
+  }
 }
 
 // Aliado verde conversacional (Jade en el Cap. 9): el botón "Ha hablado" lo une cuando
@@ -2350,6 +2399,7 @@ function initModalEvents() {
   if ($("btn-modal-accion")) $("btn-modal-accion").addEventListener("click", registrarAccionDeUnidad);
   if ($("btn-modal-unir")) $("btn-modal-unir").addEventListener("click", unirUnidadHablada);
   if ($("btn-modal-reactivar")) $("btn-modal-reactivar").addEventListener("click", mostrarOpcionesReactivar);
+  if ($("btn-modal-postura")) $("btn-modal-postura").addEventListener("click", () => usarPosturaEmblema(state.fichaPostura));
 
   // Botones rápidos de ajuste de HP en el modal
   $("btn-hp-pocion").addEventListener("click", () => {
@@ -2923,6 +2973,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
     mostrarToast("Fase Enemiga: puedes aplicar los ataques enemigos previstos o mover sus tokens.", "info");
     avisarRefuerzosProximoTurno();
     notificarEstadosOtorgados(res);
+    notificarPosturas(res);
     notificarRecargaEmblema(res);
     notificarEfectosArea(res);
     refrescarObjetosMapa(res);
@@ -2943,6 +2994,7 @@ $("btn-turno-fin").addEventListener("click", async () => {
     notificarRefuerzos(res);
     notificarEfectosArea(res);
     notificarEstadosOtorgados(res);   // pasivas de inicio de fase (Geosphere, Fortify Def…)
+    notificarPosturas(res);           // golpes de Great Aether
     notificarDoblesDisipados(res && res.dobles_disipados);
     refrescarRefuerzosPendientes();
     setTimeout(lanzarAnalisis, 350);
@@ -3176,6 +3228,8 @@ function renderResultado(container, r) {
     headerText = `🏁 ${r.aliado} → Casilla de victoria`;
   } else if (r.tipo_analisis === "reactivacion") {
     headerText = `🔄 ${r.aliado}: ${r.comando} → ${(r.objetivos || []).join(", ")}`;
+  } else if (r.tipo_analisis === "postura_emblema") {
+    headerText = `🛡️ ${r.aliado}: ${r.comando} (${(r.objetivos || []).length} al alcance si le atacan)`;
   } else if (r.plan_jefe) {
     headerText = `👑 ${r.aliado} vs ${r.enemigo} (Asalto al jefe ${r.plan_jefe.orden}/${r.plan_jefe.total})`;
   } else if (r.plan_baja) {
@@ -3385,6 +3439,19 @@ function renderResultado(container, r) {
     btnReact.addEventListener("click", () => ejecutarReactivacion({ nombre: r.aliado },
       { tipo: r.tipo, pos: r.pos_sugerida, objetivos: r.objetivos }));
     actionBar.appendChild(btnReact);
+    card.appendChild(actionBar);
+  } else if (r.tipo_analisis === "postura_emblema") {
+    const actionBar = document.createElement("div");
+    actionBar.className = "card-action-bar";
+    const btnPost = document.createElement("button");
+    btnPost.type = "button";
+    btnPost.className = "btn-ejecutar-jugada";
+    btnPost.style.background = "linear-gradient(135deg, #7a5a1c, #c99a2e)";
+    const irA = (r.pos_sugerida && state.fichas[r.aliado] && (state.fichas[r.aliado].x !== r.pos_sugerida[0] || state.fichas[r.aliado].y !== r.pos_sugerida[1]))
+      ? ` (ir a ${r.pos_sugerida[0]},${r.pos_sugerida[1]})` : "";
+    btnPost.innerHTML = `🛡️ <b>${r.fusionar ? "Fusionar y " : ""}${r.comando}</b>${irA}`;
+    btnPost.addEventListener("click", () => usarPosturaEmblema({ nombre: r.aliado }, r.pos_sugerida));
+    actionBar.appendChild(btnPost);
     card.appendChild(actionBar);
   } else if (r.tipo_analisis === "conversacion") {
     const actionBar = document.createElement("div");

@@ -1404,13 +1404,17 @@ class CalculadoraEngage:
     # Engage Attack Guard (SID_敵エンゲージ技ダメージ軽減, "daño de Ataques de Emblema -20 %") y
     # la otra habilidad de clase con la misma forma, ambas sin Condition (Flag 129).
     FLAG_SOLO_ATAQUE_EMBLEMA = 1 << 7
+    # Bit 9: el efecto es contra objetos del mapa, no contra unidades. Lo llevan Demolish
+    # (SID_破壊, "相手のダメージ = 相手のHP": rompe estructuras de un golpe) y los
+    # SID_弾丸* de los proyectiles; aplicado a unidades mataba de un golpe a cualquiera.
+    FLAG_SOLO_OBJETOS_MAPA = 1 << 9
 
     @classmethod
     def _efectos_por_golpe(cls, sids_golpeador, sids_receptor, ctx_golpeador, ctx_receptor,
                            golpeador_inicia: bool, es_engage_attack: bool, reparte_golpes: bool = False):
         """
         Habilidades de Timing 12 que dependen del golpe en curso y no se pueden decidir antes:
-          - del que golpea (golpes propios): 相手のダメージ = … (Mercy: nunca mata; Demolish) y
+          - del que golpea (golpes propios): 相手のダメージ = … (Mercy: nunca mata) y
             回復 + … (robo de vida: Renewal de Flare, "min(相手のダメージ, 相手のHP) × 0.5");
           - del que recibe: ダメージ ×/=/−/+ … (Damage Reduction, Damage Nullify, Engage Attack
             Guard, Special Guard…), con su Stand (1 si él inició, 2 si defiende).
@@ -1434,6 +1438,8 @@ class CalculadoraEngage:
                 continue
             if not _vale_stand(info, golpeador_inicia):
                 continue
+            if int(info.get("flag") or 0) & cls.FLAG_SOLO_OBJETOS_MAPA:
+                continue   # Demolish: solo contra estructuras
             if any((n == "相手のダメージ" and op == "=" and not reparte_golpes) or (n == "回復" and op == "+")
                    for n, op, _ in _acts(info)):
                 propios.append(info)
@@ -1612,7 +1618,8 @@ class CalculadoraEngage:
         # de respuesta (Adaptable puede cambiarla)
         atacante = cls._con_enhance(atacante, arma_atk)
         defensor = cls._con_enhance(defensor, arma_def)
-        puede_contra = (not es_engage_attack) and (not es_ballesta) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango)
+        puede_contra = (not es_engage_attack) and (not es_ballesta) and (not defensor_en_ruptura) and (arma_def is not None) and (distancia in arma_def.rango) \
+            and not pasivas.sin_contraataque_por_estado(defensor)   # en guardia de Great Aether
         # Los Ataques de Emblema no admiten Chain Attacks, salvo All for One de Lucina, que
         # obliga a encadenar a los aliados cercanos (verificado en juego: Houses Unite)
         if es_engage_attack and not pasivas.chain_attack_forzado(atacante, nombre_ataque=engage_attack_nombre):

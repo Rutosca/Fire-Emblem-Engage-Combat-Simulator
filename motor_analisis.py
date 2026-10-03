@@ -10,6 +10,7 @@ Contiene:
     4. Táctica de Fusión de Emblema (Burst vs Conservar).
 """
 
+import copy
 import math
 from collections import deque
 from motor_calculo import CalculadoraEngage, Terreno, Arma, QI_ADEPT_CLASSES, es_unidad_qi_adept, resolver_estilo_combate
@@ -447,7 +448,9 @@ def _armas_aliado(aliado):
             getattr(aliado, "ataque_emblema_usado", False)
             or (hasattr(aliado, "stats") and getattr(aliado.stats, "ataque_emblema_usado", False))
         )
-        if not atk_ya_usado:
+        # Great Aether no ataca a un objetivo (es una guardia): lo propone aparte
+        # _recomendaciones_postura
+        if not atk_ya_usado and not pasivas.postura_de_emblema(aliado):
             from catalogo_loader import ATAQUES_ENGAGE_MAP, ATAQUES_ENGAGE_CONFIG
             nombre_atk_engage = None
             for k_map, v_map in ATAQUES_ENGAGE_MAP.items():
@@ -1229,6 +1232,141 @@ def _recomendaciones_de_reactivacion(tablero, mapa, perfil, cronogema, condicion
                 "veredicto": {"nivel_riesgo": "alto" if expo.get("letal") else "bajo", "motivos": motivos},
                 "recomendacion": f"DAR ACCIÓN: {actor.nombre} usa {op['comando']} con {', '.join(op['objetivos'])} ({desde}).",
             })
+    recs.sort(key=lambda r: r["score_tactico"], reverse=True)
+    return recs
+
+
+class _EnGuardia:
+    """Pone a `f` en guardia de Great Aether (el estado de verdad, con sus bonos y sin
+    contraataque) mientras se simula la fase enemiga contra ella."""
+
+    def __init__(self, f, postura: dict):
+        self.f, self.postura = f, postura
+
+    def __enter__(self):
+        self.previos = list(self.f.estados_temporales or [])
+        self.f.estados_temporales = self.previos + [{
+            "sid": self.postura["sid_base"], "nombre": f"{self.postura['nombre']} (en guardia)",
+            "stat_boosts": dict(self.postura["stat_boosts"]), "expira_fase": "jugador", "expira_turno": 0,
+            "postura": True, "sin_contraataque": True, "veces_atacado": 0}]
+        self.f._sincronizar_estados_temporales()
+        return self
+
+    def __exit__(self, *exc):
+        self.f.estados_temporales = self.previos
+        self.f._sincronizar_estados_temporales()
+        return False
+
+
+_NOMBRE_STAT = {"str": "Fue", "mag": "Mag", "dex": "Des", "spd": "Vel", "def": "Def", "res": "Res",
+                "lck": "Sue", "bld": "Com"}
+
+
+def _golpe_de_postura(f, postura, enemigo) -> dict:
+    """El golpe de Great Aether de `f` (en guardia) contra `enemigo` con su HP actual:
+    {"daño", "mata", "cura"}."""
+    arma = copy.copy(f.arma)
+    arma.rango = sorted(set(arma.rango or [1]) | {1})
+    try:
+        r = CalculadoraEngage.simular_combate(f.stats, enemigo.stats, arma, enemigo.arma, Terreno(), Terreno(), 1,
+                                              es_engage_attack=True, engage_attack_nombre=postura["nombre"])
+    except Exception:
+        return {"daño": 0, "mata": False, "cura": 0}
+    hp_e = _hp_de(enemigo)
+    hp_tras = int(r["resultado"].get("hp_defensor_final", hp_e))
+    daño = max(0, hp_e - hp_tras)
+    return {"daño": daño, "mata": hp_tras <= 0 and not getattr(enemigo, "hp_stock", 0),
+            "cura": max(0, int(r["resultado"].get("hp_atacante_final", _hp_de(f))) - _hp_de(f))}
+
+
+def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
+    """
+    Great Aether (Ike): la unidad gasta su acción y su Ataque de Emblema en ponerse en
+    guardia (Def/Res +5, sin contraataque) y, si sigue viva al empezar el turno siguiente,
+    golpea a todos los enemigos a 2 casillas o menos. El enemigo lo sabe y va a por ella:
+    Chain Attacks entre varios, o arcos y magia desde 3+ casillas para quedar fuera del área.
+    Por eso solo se propone donde sobrevive al PEOR caso (todos los que la alcanzan la
+    atacan, con los Chain Attacks de los de estilo Apoyo) y donde los que la atacarían
+    tienen que ponerse a 2 casillas o menos (sus armas no llegan más lejos): dos o más
+    golpes, o al menos una baja. Una recomendación por unidad: la mejor casilla.
+    """
+    recs = []
+    enemigos = {e.nombre: e for e in tablero.obtener_enemigos() if e.viva}
+    for f in [x for x in tablero.fichas.values() if x.es_aliado and tablero.puede_usar_comando(x)]:
+        postura = pasivas.postura_de_emblema(f)
+        if not postura or f.ataque_emblema_usado or not f.arma:
+            continue
+        fusionada = _en_fusion(f)
+        if not fusionada and not puede_fusionar(f):
+            continue
+        if postura["tipos_arma"] and getattr(f.arma, 'tipo', '') not in postura["tipos_arma"]:
+            continue
+        hp, hp_max = _hp_de(f), int(getattr(f, 'hp_max', 0) or _hp_de(f))
+        chain = max(1, math.floor(hp_max * 0.10))
+        mejor = None
+        with _ComoFusionada(f, not fusionada), _EnGuardia(f, postura):
+            peligro_g, golpe = {}, {}
+            for pos in sorted(casillas_para_comando(tablero, mapa, f),
+                              key=lambda c: (c != (f.x, f.y), abs(c[0] - f.x) + abs(c[1] - f.y), c)):
+                atacantes = [n for n, zona in (zonas_amenaza_enemigos or {}).items() if pos in zona and n in enemigos]
+                if not atacantes:
+                    continue
+                for n in atacantes:
+                    if n not in peligro_g:
+                        peligro_g[n] = peligro_de_enemigo(enemigos[n], f)
+                apoyo = [n for n in atacantes if es_unidad_backup(enemigos[n])]
+                peor = sum(peligro_g[n]["daño"] or 0 for n in atacantes)
+                peor += sum(len([b for b in apoyo if b != n]) for n in atacantes) * chain
+                if peor >= hp:
+                    continue
+                # Los que solo pueden atacarla desde 2 casillas o menos acaban en el área
+                dentro = [n for n in atacantes if max(rangos_de_ataque(enemigos[n])) <= 2]
+                fuera = [n for n in atacantes if n not in dentro]
+                for n in dentro:
+                    if n not in golpe:
+                        golpe[n] = _golpe_de_postura(f, postura, enemigos[n])
+                bajas = [n for n in dentro if golpe[n]["mata"]]
+                if len(dentro) < 2 and not bajas:
+                    continue
+                daño = sum(min(golpe[n]["daño"], _hp_de(enemigos[n])) for n in dentro)
+                score = 400 * len(bajas) + daño - peor // 4
+                clave = (score, -peor)
+                if mejor is None or clave > mejor[0]:
+                    mejor = (clave, pos, atacantes, dentro, fuera, bajas, peor, score)
+        if not mejor:
+            continue
+        _clave, pos, atacantes, dentro, fuera, bajas, peor, score = mejor
+        desde = "desde su casilla" if pos == (f.x, f.y) else f"en ({pos[0]},{pos[1]})"
+        fusion_txt = "se fusiona y " if not fusionada else ""
+        motivos = [
+            f"{f.nombre} {fusion_txt}usa {postura['nombre']} {desde}: "
+            + " / ".join(f"{_NOMBRE_STAT.get(k, k)} +{v}" for k, v in postura["stat_boosts"].items())
+            + " y no contraataca hasta su próximo turno.",
+            f"Peor caso si le atacan todos los que llegan ({', '.join(atacantes)}"
+            + (", con sus Chain Attacks" if len(atacantes) > 1 and any(es_unidad_backup(enemigos[n]) for n in atacantes) else "")
+            + f"): {peor} de daño con {hp} HP. Sobrevive.",
+            "Si le atacan, al empezar el turno golpea a "
+            + ", ".join(f"{n} ({golpe[n]['daño']}{', muere' if golpe[n]['mata'] else ''})" for n in dentro)
+            + " y se cura un 30 % de lo que quita.",
+        ]
+        if fuera:
+            motivos.append(f"Pueden atacarle desde fuera del área (3+ casillas): {', '.join(fuera)}.")
+        motivos.append("Si nadie se pone a 2 casillas o menos, el ataque se pierde.")
+        recs.append({
+            "tipo_analisis": "postura_emblema",
+            "aliado": f.nombre,
+            "comando": postura["nombre"],
+            "enemigo": "",
+            "objetivos": dentro,
+            "bajas_esperadas": bajas,
+            "fusionar": not fusionada,
+            "pos_sugerida": list(pos),
+            "daño_peor_caso": peor,
+            "score_tactico": score,
+            "veredicto": {"nivel_riesgo": "medio" if peor * 2 >= hp else "bajo", "motivos": motivos},
+            "recomendacion": f"GUARDIA: {f.nombre} {fusion_txt}usa {postura['nombre']} {desde}"
+                             + (f" (golpea a {len(dentro)} si le atacan" + (f", {len(bajas)} bajas" if bajas else "") + ")"),
+        })
     recs.sort(key=lambda r: r["score_tactico"], reverse=True)
     return recs
 
@@ -2647,6 +2785,8 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         resultados = resultados + _recomendaciones_de_reactivacion(
             tablero, mapa, perfil, cronogema, condicion_victoria,
             lambda pos, aliado_p: exposicion(pos, aliado_p))
+        if getattr(tablero, "fase", "jugador") == "jugador":
+            resultados = resultados + _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos)
 
     # Amenazas serias sobre las casillas ACTUALES de los aliados que aún no han actuado
     # (en fase de jugador): quien se quede donde está y pueda morir, o perder la mitad del

@@ -322,6 +322,24 @@ def extraer_terrenos(trans):
         }
     return terrenos
 
+def extraer_rangos() -> dict:
+    """
+    Range.xml: {grupo: [[v1..v8], ...]}, la cuadrícula de cada forma tal cual (filas de
+    arriba abajo). La fila con nombre abre el grupo y las siguientes, sin nombre, son su
+    cuadrícula. 1 / 4 marcan a la unidad; 2 y 3, las casillas del efecto (アイク我慢範囲_攻撃:
+    rombo de radio 2 alrededor de quien usa Great Aether).
+    """
+    rangos, actual = {}, None
+    for fila in parsear_xml_generico(ruta_datamine("fe_assets_gamedata", "Range.xml")):
+        grupo = fila.get("Group", "")
+        if grupo:
+            actual = rangos.setdefault(grupo, [])
+            continue
+        if actual is not None:
+            actual.append([to_int(fila.get(f"Value{i}")) for i in range(1, 9)])
+    return rangos
+
+
 def _cargar_nombres_dlc() -> dict:
     """
     Nombres del contenido de DLC. El romfs del juego trae sus datos pero no sus textos
@@ -1104,6 +1122,10 @@ def compilar():
     terrenos = extraer_terrenos(trans)
     print(f"Terrenos procesados: {len(terrenos)}")
 
+    # 7. Formas de área (Range.xml): las que nombran AttackRange / OverlapRange de Skill.xml
+    rangos = extraer_rangos()
+    print(f"Formas de área procesadas: {len(rangos)}")
+
     # Guardar catálogo maestro compilado
     catalogo_final = {
         "armas": armas,
@@ -1113,6 +1135,7 @@ def compilar():
         "emblemas": emblemas,
         "terrenos": terrenos,
         "estilos_combate": ESTILOS_COMBATE,
+        "rangos": rangos,
     }
 
     output_path = os.path.join(BASE_DIR, "catalogo_engage.json")

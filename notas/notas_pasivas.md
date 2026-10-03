@@ -676,3 +676,28 @@ Sigurd (`IID_シグルド_ナイトキラー`, Mt 10 / Hit 75 / Wt 6) se resolv�
 7 de peso de más. Los cuatro golden se regeneraron por esto — **172 combates, todos de
 "Ridersbane (Emblema)"**, sin ninguno nuevo ni desaparecido.
 
+
+## Emblema de Ike (2026-10-03)
+
+- **Resolve / Resolve+** (`SID_勇将` → `SID_勇将_効果`): único bono de stats condicionado del
+  datamine (SyncCondition `HP*100 <= MaxHP * 75`, Def/Res +5 / +7). El juego lo enseña en la
+  pantalla de estado, igual que los estados temporales (Self-Improver…): el modal muestra los
+  stats con ellos, se guardan sin ellos (`FichaUnidad.bonos_en_pantalla`) y el combate los suma
+  con el HP con el que empieza (`pasivas.bonos_stats_condicionales`).
+- **Demolish** (`SID_破壊`, `相手のダメージ = 相手のHP`): Flag **bit 9** = efecto contra objetos
+  del mapa (también los `SID_弾丸*`). Se aplicaba a unidades y mataba de un golpe; ahora se
+  ignora en combate. Romper estructuras sigue siendo manual (modal del destructible).
+- **Great Aether** (`SID_アイクエンゲージ技`): Flag **bit 50** = Ataque de Emblema de postura (sin
+  objetivo; también el de Hector, que no se ha tocado). Con `AttackRange` (Range.xml
+  `アイク我慢範囲_攻撃`, compilado en `catalogo["rangos"]`): `pasivas.postura_de_emblema`.
+  WeaponProhibit 1013 = solo Espada / Hacha (un bit por Kind de Item.xml).
+  - Usarlo (`/api/unidad/postura_emblema`, botón del modal o recomendación): gasta la acción y
+    el Ataque de Emblema; estado temporal con `postura`, `sin_contraataque` y `veces_atacado`
+    (la variante Dragón suma `被攻撃累積数` al Mt). Bonos de la variante de estilo.
+  - Al empezar su siguiente fase (`Tablero.resolver_posturas`, antes de restar turnos de
+    Fusión): si sigue viva, un golpe a cada rival del rombo de radio 2 simulado como Ataque de
+    Emblema (Hit 100, Crit 0, sin contraataque); la curación del 30 % sale sola del SID
+    `_回復` sincronizado. Sin nadie en el área, se pierde.
+  - Recomendación (`_recomendaciones_postura`): solo donde sobrevive al peor caso (todos los
+    que llegan atacan, + Chain Attacks de los de Apoyo) y donde los que le atacarían tienen
+    armas de alcance <= 2 (los de 3+ pueden quedarse fuera del área): 2+ golpes o una baja.

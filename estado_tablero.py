@@ -175,6 +175,19 @@ class FichaUnidad:
                     extra[k] = extra.get(k, 0) + int(v)
         return extra, bonos_cond
 
+    def postura_emblema_info(self) -> Optional[dict]:
+        """Great Aether para el modal: {nombre, tipos_arma, usado, en_guardia} o None si su
+        Ataque de Emblema no es de postura."""
+        try:
+            import pasivas
+            p = pasivas.postura_de_emblema(self)
+        except Exception:
+            return None
+        if not p:
+            return None
+        return {"nombre": p["nombre"], "tipos_arma": p["tipos_arma"], "stat_boosts": p["stat_boosts"],
+                "usado": bool(self.ataque_emblema_usado), "en_guardia": pasivas.estado_de_postura(self) is not None}
+
     def usa_ultimo_rival(self) -> bool:
         """Tiene alguna habilidad que depende de su último rival (最終戦闘相手): el modal
         le enseña el campo para fijarlo a mano."""
@@ -346,7 +359,7 @@ class FichaUnidad:
         return any(e.get("sid") == sid for e in self.estados_temporales)
 
     def otorgar_estado_temporal(self, sid: str, nombre: str, stat_boosts: dict,
-                                expira_fase: str, expira_turno: int, origen: str = "") -> dict:
+                                expira_fase: str, expira_turno: int, origen: str = "", **extra) -> dict:
         """
         Otorga (o refresca) un buff temporal. Como en el juego, un mismo SID no se
         acumula: si ya estaba activo se sustituye por el nuevo, extendiendo su caducidad.
@@ -359,6 +372,7 @@ class FichaUnidad:
             "expira_fase": expira_fase,
             "expira_turno": int(expira_turno),
             "origen": origen,
+            **extra,
         }
         self.estados_temporales.append(estado)
         self._sincronizar_estados_temporales()
@@ -448,6 +462,7 @@ class FichaUnidad:
             "sin_mover_turno": self.sin_mover_turno,
             "ultimo_rival": self.ultimo_rival,
             "usa_ultimo_rival": self.usa_ultimo_rival(),
+            "postura_emblema": self.postura_emblema_info(),
             "reactivaciones": self.tipos_reactivacion(),
             "es_refuerzo": self.es_refuerzo,
             "invocador": self.invocador,
@@ -560,6 +575,7 @@ class EstadoTablero:
         self.quemados_ultimo: list = []   # [(nombre, daño)] del último inicio de fase
         self.estados_inicio_fase_ultimo: list = []   # [(nombre, estado)] de Geosphere, Fortify Def… (Timing 27)
         self.dobles_disipados_ultimo: list = []      # dobles que se desvanecieron al acabar una Fusión con Lyn
+        self.posturas_resueltas_ultimo: list = []    # golpes de Great Aether del último inicio de fase
         # False mientras el jugador coloca la formación del turno 1; empezar_batalla() dispara
         # el inicio de la primera fase de jugador (las fases siguientes lo hacen solas)
         self.batalla_iniciada: bool = False
@@ -1347,6 +1363,97 @@ class EstadoTablero:
         herramienta, arrastrar la ficha gasta la acción; en el juego se mueve y luego baila)."""
         return bool(f and f.viva and f.controlable and (not f.ha_actuado or not f.accion_turno))
 
+    def activar_postura_emblema(self, nombre: str):
+        """
+        Great Aether: `nombre` (fusionado, con el Ataque de Emblema sin gastar y una espada o
+        un hacha equipada) gasta su acción en ponerse en guardia: Def/Res +5 (según estilo) y
+        sin contraataques hasta su siguiente fase, en la que golpea a todos los rivales del
+        área (ver resolver_posturas). Devuelve (estado, "") o (None, motivo).
+        """
+        import pasivas
+        f = self.fichas.get(nombre)
+        if f is None or not f.viva:
+            return None, f"'{nombre}' no está en el tablero"
+        p = pasivas.postura_de_emblema(f)
+        if not p:
+            return None, f"{f.nombre} no tiene un Ataque de Emblema de guardia"
+        if f.es_aliado and not self.puede_usar_comando(f):
+            return None, f"{f.nombre} ya ha actuado este turno"
+        if not (f.en_fusion or f.turnos_fusion > 0):
+            return None, f"{f.nombre} no está fusionado"
+        if f.ataque_emblema_usado:
+            return None, f"{f.nombre} ya usó su Ataque de Emblema en esta Fusión"
+        tipo = getattr(f.arma, 'tipo', '') if f.arma else ''
+        if p["tipos_arma"] and tipo not in p["tipos_arma"]:
+            return None, f"{p['nombre']} necesita {' o '.join(p['tipos_arma']).lower()} equipada ({f.nombre} lleva {tipo or 'nada'})"
+        f.ataque_emblema_usado = True
+        if f.stats:
+            setattr(f.stats, 'ataque_emblema_usado', True)
+        f.ha_actuado = True
+        f.accion_turno = "postura_emblema"
+        fase = "jugador" if f.es_aliado else "enemigo"
+        estado = f.otorgar_estado_temporal(
+            sid=p["sid_base"], nombre=f"{p['nombre']} (en guardia)", stat_boosts=p["stat_boosts"],
+            expira_fase=fase, expira_turno=int(self.turno_actual) + 1, origen=f.nombre,
+            postura=True, sin_contraataque=True, veces_atacado=0)
+        return estado, ""
+
+    def resolver_posturas(self, es_aliado: bool) -> list:
+        """
+        Al empezar la fase de `es_aliado`: quien sigue vivo en guardia de Great Aether golpea
+        una vez a cada rival de su área (rombo de radio 2), sin contraataque, Hit 100 y sin
+        crítico, y se cura el 30 % de lo que quita en cada golpe (lo hacen las habilidades
+        del propio ataque al simularlo). Si no hay nadie en el área no pasa nada: el ataque
+        ya se gastó. [{unidad, golpes: [{enemigo, daño, hp_tras, muere}], curado}]
+        """
+        import copy
+        import pasivas
+        from motor_calculo import CalculadoraEngage, Terreno
+        from lector_de_mapas import defensa_de_terreno
+        resultados = []
+        for f in [x for x in self.fichas.values() if x.viva and x.es_aliado == es_aliado]:
+            estado = pasivas.estado_de_postura(f)
+            p = pasivas.postura_de_emblema(f) if estado else None
+            if not estado or not p:
+                continue
+            area = {(f.x + dx, f.y + dy) for dx, dy in p["casillas"]}
+            objetivos = sorted((e for e in self.fichas.values()
+                                if e.viva and e.es_aliado != f.es_aliado and not e.invocador
+                                and any(c in area for c in casillas_ocupadas_por([e]))),
+                               key=lambda e: (distancia_entre_unidades(f, e), e.y, e.x))
+            golpes, hp_inicial = [], f.hp_actual
+
+            def terreno(u):
+                if not self.mapa:
+                    return Terreno()
+                t = self.mapa.grid[u.x][u.y]
+                return Terreno(avo=t.avo, dfn=defensa_de_terreno(t, u.es_aliado))
+            for e in objetivos:
+                if not f.viva:
+                    break
+                # El área llega a 2 casillas aunque el arma sea de 1: el golpe sale del ataque
+                d = distancia_entre_unidades(f, e)
+                arma = copy.copy(f.arma)
+                arma.rango = sorted(set(arma.rango or [1]) | {d})
+                try:
+                    r = CalculadoraEngage.simular_combate(
+                        f.stats, e.stats, arma, e.arma, terreno(f), terreno(e), d,
+                        es_engage_attack=True, engage_attack_nombre=p["nombre"])
+                except Exception:
+                    continue
+                res = r["resultado"]
+                hp_e = int(res.get("hp_defensor_final", e.hp_actual))
+                daño = max(0, e.hp_actual - hp_e)
+                e.sincronizar_hp(hp_e)
+                muere = hp_e <= 0 and not e.gastar_piedra_si_cae()
+                f.sincronizar_hp(int(res.get("hp_atacante_final", f.hp_actual)))
+                golpes.append({"enemigo": e.nombre, "daño": daño, "hp_tras": e.hp_actual, "muere": muere})
+            f.estados_temporales = [x for x in f.estados_temporales if x is not estado]
+            f._sincronizar_estados_temporales()
+            resultados.append({"unidad": f.nombre, "ataque": p["nombre"], "golpes": golpes,
+                               "curado": max(0, f.hp_actual - hp_inicial)})
+        return resultados
+
     def objetivos_de_reactivacion(self, actor, tipo: str) -> list:
         """Aliados a los que `actor` puede devolver la acción con `tipo` desde su casilla actual:
         controlables, vivos, que ya actuaron y adyacentes (en cruz)."""
@@ -1947,6 +2054,8 @@ class EstadoTablero:
         self.fase = "jugador"
         self.batalla_iniciada = True
         self.reiniciar_acciones_turno()
+        # Great Aether: quien sigue en guardia golpea a los rivales de su área
+        self.posturas_resueltas_ultimo = self.resolver_posturas(es_aliado=True)
 
         # Decremento canonico de turnos de Fusion de Emblema para aliados
         for f in self.obtener_aliados():
@@ -1989,6 +2098,7 @@ class EstadoTablero:
         self.guardar_snapshot()
         self.fase = "enemigo"
         self.batalla_iniciada = True
+        self.posturas_resueltas_ultimo = self.resolver_posturas(es_aliado=False)
         # Fuego (Blazing Lion): quema a los enemigos que empiezan su fase encima
         self.quemados_ultimo = self.quemar_unidades_en_fuego(es_aliado=False)
         # Curación de terreno para los enemigos que empiezan su fase sobre ella

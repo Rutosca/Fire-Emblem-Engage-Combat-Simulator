@@ -520,6 +520,79 @@ def forma_ataque_emblema(unidad, sid_ataque: str = "", nombre_ataque: str = "") 
     }
 
 
+# ── Ataques de Emblema "de postura": Great Aether (SID_アイクエンゲージ技) ─────────
+# Flag bit 50 en Skill.xml (Great Aether y el de Hector): el ataque no tiene objetivo; la
+# unidad se queda en guardia. Great Aether además trae AttackRange (アイク我慢範囲_攻撃): al
+# empezar su siguiente fase golpea a todos los rivales de esa área, si sigue viva.
+FLAG_POSTURA_EMBLEMA = 1 << 50
+
+
+def casillas_de_rango(grupo: str, valores=(2, 3)) -> list:
+    """Desplazamientos (dx, dy) de las casillas de una forma de Range.xml con alguno de
+    `valores`, respecto a la casilla de la unidad (la marcada con 1 o 4)."""
+    try:
+        from catalogo_loader import _catalogo
+        rejilla = (_catalogo.get("rangos") or {}).get(grupo) or []
+    except Exception:
+        rejilla = []
+    origen = next(((x, y) for y, fila in enumerate(rejilla) for x, v in enumerate(fila) if v in (1, 4)), None)
+    if origen is None:
+        return []
+    return [(x - origen[0], y - origen[1]) for y, fila in enumerate(rejilla) for x, v in enumerate(fila)
+            if v in valores and (x, y) != origen]
+
+
+def tipos_de_arma_permitidos(info: dict) -> list:
+    """WeaponProhibit de Skill.xml: un bit por Kind de Item.xml (1 Espada … 9 Especial);
+    las que no tienen el bit puesto son las que admite (Great Aether, 1013: Espada y Hacha)."""
+    from constants import TIPO_ARMA_KIND
+    prohibidas = int(info.get("weapon_prohibit") or 0)
+    if not prohibidas:
+        return []
+    return [TIPO_ARMA_KIND[str(k)] for k in range(1, 10) if not (prohibidas >> k) & 1 and str(k) in TIPO_ARMA_KIND]
+
+
+def postura_de_emblema(unidad) -> Optional[dict]:
+    """
+    Great Aether si es el Ataque de Emblema de la unidad, con la variante de su estilo:
+    {sid, sid_base, nombre, stat_boosts, casillas, tipos_arma}. `stat_boosts` es la guardia
+    (Def/Res +5; Acorazado Def +10 / Res +5; Volador Def +5 / Res +10), `casillas` el área
+    del golpe del turno siguiente y `tipos_arma` las armas con las que se puede usar.
+    """
+    stats = getattr(unidad, "stats", None) or unidad
+    sid = getattr(stats, "sid_ataque_emblema", "") or getattr(unidad, "sid_ataque_emblema", "")
+    if not sid or sid not in HABILIDADES:
+        return None
+    variante = variante_por_estilo(sid, getattr(stats, "estilo_combate", "") or getattr(unidad, "estilo_combate", ""))
+    info = HABILIDADES.get(variante) or HABILIDADES.get(sid) or {}
+    if not (int(info.get("flag") or 0) & FLAG_POSTURA_EMBLEMA) or not info.get("attack_range"):
+        return None
+    return {
+        "sid": variante,
+        "sid_base": sid,
+        "nombre": str(info.get("nombre") or sid),
+        "stat_boosts": {k: int(v) for k, v in (info.get("stat_boosts") or {}).items() if int(v or 0)},
+        "casillas": casillas_de_rango(info["attack_range"]),
+        "tipos_arma": tipos_de_arma_permitidos(info),
+    }
+
+
+def estado_de_postura(unidad) -> Optional[dict]:
+    """El estado temporal de guardia (Great Aether) si la unidad lo tiene activo."""
+    stats = getattr(unidad, "stats", None) or unidad
+    for e in (getattr(unidad, "estados_temporales", None) or getattr(stats, "estados_temporales", None) or []):
+        if isinstance(e, dict) and e.get("postura"):
+            return e
+    return None
+
+
+def sin_contraataque_por_estado(unidad) -> bool:
+    """En guardia de Great Aether la unidad no contraataca (lo dice el juego al usarlo)."""
+    stats = getattr(unidad, "stats", None) or unidad
+    return any(isinstance(e, dict) and e.get("sin_contraataque")
+               for e in (getattr(stats, "estados_temporales", None) or getattr(unidad, "estados_temporales", None) or []))
+
+
 # Chain Attack fuera del estilo Apoyo: Skill.xml lo concede con el SID oculto
 # SID_チェインアタック許可 ("Chain Attack Allowed"), que sincronizan Dual Strike de Lucina
 # (SID_絆の力) y cualquier otra habilidad que lo dé.
@@ -901,6 +974,9 @@ def _aplicar_sid(sid: str, ctx, mods: Modificadores, profundidad: int = 0, de: s
     info = HABILIDADES.get(sid)
     if info is None:
         mods.ignoradas.append((sid, "no está en el catálogo"))
+        return
+    # Flag bit 9: efecto contra objetos del mapa (Demolish rompe estructuras), no contra unidades
+    if int(info.get("flag") or 0) & (1 << 9):
         return
     # Stand (Skill.xml): 1 = solo cuando la unidad inicia el combate, 2 = solo cuando defiende
     stand = int(info.get("stand") or 0)

@@ -447,6 +447,10 @@ def _proc(ctx: ContextoCombate, prob) -> bool:
 
 
 VARIABLES = {
+    # 被攻撃累積数: veces que la han atacado estando en guardia de Great Aether (la variante
+    # Dragón suma ese número al Mt del golpe del turno siguiente)
+    "被攻撃累積数": lambda ctx: next((int(e.get("veces_atacado") or 0) for e in (getattr(ctx.unidad, "estados_temporales", None) or [])
+                                 if isinstance(e, dict) and e.get("postura")), 0),
     "HP": lambda ctx: _hp(ctx.unidad),
     "MaxHP": lambda ctx: _hp_max(ctx.unidad),
     "相手のHP": lambda ctx: _hp(ctx.rival),
