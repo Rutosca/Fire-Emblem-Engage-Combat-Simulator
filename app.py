@@ -1643,6 +1643,16 @@ def ejecutar_combate():
     # Guardar snapshot antes de la acción para la Cronogema
     tablero.guardar_snapshot()
 
+    # Mapas a oscuras (antes de moverse: descubrirlo al llegar no basta): en tu fase no se
+    # puede atacar a quien no se ve, ni ir a una casilla sin luz
+    if tablero.fase == "jugador" and f_atk.es_aliado and not f_def.es_aliado:
+        visibilidad.marcar_ocultos(tablero)
+        if getattr(f_def, "oculto", False):
+            return jsonify({"error": f"{f_def.nombre} está a oscuras: hay que iluminarlo (con un aliado o una "
+                                     f"antorcha) antes de poder atacarle."}), 400
+        if pos_destino and tablero.batalla_iniciada and                 tuple(int(v) for v in pos_destino) in visibilidad.casillas_vetadas(tablero, f_atk):
+            return jsonify({"error": f"La casilla ({pos_destino[0]},{pos_destino[1]}) está a oscuras: "
+                                     f"{f_atk.nombre} no puede entrar."}), 400
     # 1. Posición de ataque: si viene pos_destino válida, mover al atacante tras validar ocupación
     distancia_movida = 0
     if pos_destino and isinstance(pos_destino, (list, tuple)) and len(pos_destino) == 2:

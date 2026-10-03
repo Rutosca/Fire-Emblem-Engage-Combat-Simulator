@@ -152,6 +152,25 @@ class TestOscuridad(unittest.TestCase):
             self.client.post("/api/turno/fin", json={})
         self.assertEqual(tablero.obtener_ficha("Alear").luz_antorcha, {})
 
+    def test_no_se_ataca_a_quien_no_se_ve(self):
+        # Bandido (6,1) está a oscuras: aunque Alear llegaría a pegarle, no se propone ni se deja
+        self._unidad("Bandido", "Axe Fighter", 5, 2, aliado=False)   # a 5 de Alear: oscuro
+        tablero.obtener_ficha("Bandido").sincronizar_hp(1)
+        res = self.client.post("/api/analizar", json={"perfil": "seguro"}).get_json()["resultados"]
+        self.assertFalse([r for r in res if r.get("enemigo") == "Bandido" and r.get("tipo_analisis") != "peligro_aliado"], res)
+        # sigue avisando de que puede atacar, sin proponer matarlo antes
+        peligro = [r for r in res if r.get("tipo_analisis") == "peligro_aliado"]
+        if peligro:
+            self.assertIn("oscuras", peligro[0]["recomendacion"])
+        r = self.client.post("/api/combate/ejecutar", json={"atacante": "Alear", "defensor": "Bandido",
+                                                             "pos_destino": [4, 2]})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("oscuras", r.get_json()["error"])
+        # en cuanto otro aliado lo ilumina, ya es un objetivo
+        self._unidad("Lapis", "Sword Fighter", 3, 3)
+        res = self.client.post("/api/analizar", json={"perfil": "seguro"}).get_json()["resultados"]
+        self.assertTrue([r for r in res if r.get("enemigo") == "Bandido"])
+
     def test_sin_oscuridad_se_ve_todo(self):
         self.client.post("/api/mapa/seleccionar", json={"capitulo": 7})
         self.assertFalse(self._vis()["oscuro"])

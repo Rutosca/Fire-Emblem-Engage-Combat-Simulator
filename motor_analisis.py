@@ -1508,6 +1508,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         aliados_activos = [a for a in aliados_activos if a.nombre in solo_aliados]
     enemigos_activos = [e for e in tablero.obtener_enemigos() if e.stats and e.arma and e.viva]
     enemigos_que_actuan = [e for e in enemigos_activos if actua_por_su_cuenta(e)]
+    # Mapas a oscuras: un enemigo que no se ve no se puede atacar (ni aunque se descubra al
+    # moverse). Sigue contando como amenaza desde su última posición conocida.
+    visibilidad.marcar_ocultos(tablero)
+    enemigos_objetivo = [e for e in enemigos_activos if not getattr(e, "oculto", False)]
 
     for a in aliados_activos:
         if a.stats:
@@ -1608,7 +1612,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         alcanzables_con_fusion = casillas_mov_fusion.get(aliado.nombre)
         mov_extra_fusion = (len(alcanzables_con_fusion) - len(alcanzables_normales)) if alcanzables_con_fusion else 0
 
-        for enemigo in enemigos_activos:
+        for enemigo in enemigos_objetivo:
             dist = distancia_entre_unidades(aliado, enemigo)
 
             mejor_veredicto = None
@@ -2237,7 +2241,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
         and op.get("score_tactico", 0) > 0
     }
 
-    for enemigo in (enemigos_activos if USAR_COMBOS_PAREJA else []):
+    for enemigo in (enemigos_objetivo if USAR_COMBOS_PAREJA else []):
         if enemigo.nombre in enemigos_con_solo_kill:
             continue
         hp_ene = getattr(enemigo.stats, 'hp', enemigo.hp_actual)
@@ -2624,7 +2628,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     plan_jefe = None
     modo_defensa = False
     aliados_planificados = set()
-    for jefe in [e for e in enemigos_activos if _es_jefe(e)]:
+    for jefe in [e for e in enemigos_objetivo if _es_jefe(e)]:
         res_plan = _planificar_baja(jefe, [op for op in oportunidades_jugador if op.get("enemigo") == jefe.nombre], tablero)
         if res_plan:
             plan, acumulado, hp_total_j = res_plan
@@ -2683,7 +2687,7 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
     for op in oportunidades_jugador:
         if op.get("categoria") in ("kill_seguro", "kill_probable") and int(op.get("score_tactico", 0) or 0) >= 800:
             aliados_planificados.add(op["aliado"])
-    candidatos_plan = [e for e in enemigos_activos if not _es_jefe(e) and e.nombre not in con_kill_solo]
+    candidatos_plan = [e for e in enemigos_objetivo if not _es_jefe(e) and e.nombre not in con_kill_solo]
     candidatos_plan.sort(key=lambda e: (0 if e.nombre in enemigos_peligrosos_pre else 1, int(getattr(e, "hp_actual", 0) or 0)))
     for ene in candidatos_plan:
         ops_ene = [op for op in oportunidades_jugador if op.get("enemigo") == ene.nombre]
@@ -2808,7 +2812,12 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
             if hp_a <= 0 or not expo["enemigos"] or not (expo["letal"] or expo["daño"] * 2 >= hp_a):
                 continue
             detalle = sorted(((peligro(e, a)["daño"] or 0, e) for e in expo["enemigos"]), reverse=True)
-            partes = [f"{e} {d}" for d, e in detalle if d > 0]
+            # Los ocultos (a oscuras) amenazan desde su última posición conocida, pero no se
+            # pueden atacar: no se propone "acabar con ellos" antes
+            ocultos_a = {e for _, e in detalle if getattr(tablero.obtener_ficha(e), "oculto", False)}
+            partes = [f"{e} {d}" + (" (oculto: última posición conocida)" if e in ocultos_a else "")
+                      for d, e in detalle if d > 0]
+            atacables = [e for _, e in detalle if e not in ocultos_a]
             letal = expo["letal"]
             amenazas_serias.append({
                 "tipo_analisis": "peligro_aliado",
@@ -2824,8 +2833,10 @@ def analizar_situacion_tactica(tablero, mapa, perfil="seguro", cronogema=False, 
                 "recomendacion": (
                     (f"LETAL si {a.nombre} se queda en ({a.x},{a.y}): " if letal
                      else f"{a.nombre} perdería más de la mitad del HP en ({a.x},{a.y}): ")
-                    + "muévelo fuera de alcance, interpón a otra unidad o acaba antes con quien más daño hace ("
-                    + detalle[0][1] + ")."
+                    + ("muévelo fuera de alcance, interpón a otra unidad o acaba antes con quien más daño hace ("
+                       + atacables[0] + ")." if atacables else
+                       "muévelo fuera de alcance o interpón a otra unidad (le amenazan enemigos a oscuras, "
+                       "que no se pueden atacar).")
                 ),
             })
         amenazas_serias.sort(key=lambda x: (x["veredicto"]["nivel_riesgo"] != "critico", -x["daño_amenazas"]))

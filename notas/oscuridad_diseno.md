@@ -26,6 +26,11 @@ propone lo que el juego permite con lo que el jugador ve).
   una casilla iluminada. Los voladores (y otros) van a apagar las antorchas del mapa al empezar
   su fase (IA `AI_MI_Torch`); empiezan todas encendidas.
 - **Refuerzos**: el juego no los enseña (no hay cámara). Si existen, no se puede saber.
+- **Efectos de área sobre ocultos**: el fuego de Dark Inferno quema al empezar la fase enemiga a
+  un enemigo que sigue oculto (verificado en el Cap. 13). Dark Inferno se puede lanzar sin
+  apuntar a un enemigo. Sin verificar: si el golpe directo de Override, Blazing Lion o los
+  alientos de Tiki alcanza a un oculto (probar en el Cap. 20). La herramienta, de momento,
+  los cuenta como alcanzados.
 
 ## Capítulo 13 en el datamine (dificultad Extremo, coordenadas de la herramienta)
 
