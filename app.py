@@ -14,6 +14,7 @@ import visibilidad
 from lector_de_mapas import defensa_de_terreno, MapaTactico
 from motor_de_movimiento_y_amenaza import AnalizadorAmenaza, UnidadMock, ArmaMock, casillas_advance, mock_de_ficha
 
+import copy
 import os
 import re
 import math
@@ -30,7 +31,8 @@ from catalogo_loader import (
     normalizar_texto, round_half_up, cargar_catalogo,
     _catalogo, GRABADOS_EMBLEMA, REFINES_GENERICOS,
     parsear_arma_string, _buscar_en_catalogo, _arma_desde_item,
-    resolver_unidad_con_catalogo, puede_usar_arma_de_mapa, arma_de_mapa_desde, tipo_arma_de_objeto
+    resolver_unidad_con_catalogo, puede_usar_arma_de_mapa, arma_de_mapa_desde, tipo_arma_de_objeto,
+    personajes_de_genero_elegible, _personaje_por_nombre,
 )
 from motor_analisis import (
     BACKUP_CLASSES, es_unidad_backup, obtener_aliados_backup,
@@ -539,6 +541,21 @@ def buscar_catalogo():
 
             if q_norm in nombre_norm or q_norm in key_norm or (ascii_norm and q_norm in ascii_norm):
                 display_nombre = nombre
+
+                # Fichas de pantalla de título ("Title Alear (M)"): no son unidades
+                if cat == "personajes" and nombre.startswith("Title ") and not item.get("jid_default"):
+                    continue
+                # Personajes de género elegible (Alear): una entrada por género, "Alear (M)" /
+                # "Alear (F)", con el personaje jugable; el resto de variantes no se ofrece
+                if cat == "personajes" and nombre in personajes_de_genero_elegible():
+                    pid_jug, info_jug = _personaje_por_nombre(nombre, True)
+                    for letra, genero in (("M", 1), ("F", 2)):
+                        etiqueta = f"{nombre} ({letra})"
+                        if (cat, etiqueta) not in vistos:
+                            vistos.add((cat, etiqueta))
+                            resultados.append({"categoria": cat, "id": pid_jug, "nombre": etiqueta,
+                                               "datos": dict(info_jug or item, nombre=etiqueta, genero=genero)})
+                    continue
 
                 # Deduplicar en la lista devuelta
                 dedup_key = (cat, display_nombre)
@@ -1431,12 +1448,79 @@ def postura_emblema():
         if error_fusion:
             tablero.deshacer()
             return jsonify({"error": error_fusion}), 400
-    estado, error = tablero.activar_postura_emblema(f.nombre)
+    from motor_analisis import arma_para_postura
+    postura = pasivas.postura_de_emblema(f)
+    arma = arma_para_postura(f, postura, str(data.get("arma", "") or "")) if postura else None
+    estado, error = tablero.activar_postura_emblema(f.nombre, arma)
     if error:
         tablero.deshacer()
         return jsonify({"error": error}), 400
-    return jsonify({"ok": True, "estado": estado,
-                    "mensaje": f"{f.nombre} usa {estado['nombre'].split(' (')[0]}: en guardia hasta su próxima fase",
+    return jsonify({"ok": True, "estado": estado, "arma": f.arma.nombre if f.arma else "",
+                    "mensaje": f"{f.nombre} usa {estado['nombre'].split(' (')[0]} con {f.arma.nombre if f.arma else '?'}: "
+                               f"en guardia hasta su próxima fase",
+                    "fichas": [x.como_dict() for x in tablero.fichas.values()]})
+
+
+@app.route("/api/unidad/infierno_oscuro", methods=["POST"])
+def infierno_oscuro_sin_objetivo():
+    """
+    Dark Inferno (Camilla) lanzado sin objetivo, desde la casilla de la unidad: golpea a los
+    enemigos VISIBLES de su área y prende fuego en ella (a los ocultos solo les quemará el
+    fuego al empezar su fase, verificado en el juego). Gasta la acción y el Ataque de Emblema;
+    si no está fusionada y tiene el medidor lleno, se fusiona antes. Body: {"nombre"}.
+    """
+    from catalogo_loader import ATAQUES_ENGAGE_CONFIG
+    f = tablero.obtener_ficha((request.get_json(force=True) or {}).get("nombre", ""))
+    if not f or not f.viva:
+        return jsonify({"error": "Unidad no encontrada"}), 404
+    nombre_atk = f.ataque_emblema_nombre().split(" (")[0]
+    if tipo_ataque_area(nombre_atk) != "dark_inferno":
+        return jsonify({"error": f"{f.nombre} no tiene Dark Inferno (Emblema de Camilla)"}), 400
+    if f.es_aliado and not tablero.puede_usar_comando(f):
+        return jsonify({"error": f"{f.nombre} ya ha actuado este turno"}), 400
+    if f.ataque_emblema_usado:
+        return jsonify({"error": f"{f.nombre} ya usó su Ataque de Emblema en esta Fusión"}), 400
+    tipos = (ATAQUES_ENGAGE_CONFIG.get(nombre_atk) or {}).get("tipos_permitidos") or []
+    if tipos and getattr(f.arma, "tipo", "") not in tipos:
+        return jsonify({"error": f"{nombre_atk} necesita {' o '.join(tipos).lower()} equipada"}), 400
+    tablero.guardar_snapshot()
+    if not (f.en_fusion or f.turnos_fusion > 0):
+        error_fusion = _activar_fusion(f)
+        if error_fusion:
+            tablero.deshacer()
+            return jsonify({"error": error_fusion}), 400
+    visibilidad.marcar_ocultos(tablero)
+    area = resolver_ataque_area(nombre_atk, (f.x, f.y), None, f, tablero, _mapa)
+    t_atk = _mapa.grid[f.x][f.y]
+    golpes = []
+    for e in area.get("objetivos") or []:
+        if not e.viva or not e.stats:
+            continue
+        t_e = _mapa.grid[e.x][e.y]
+        arma = copy.copy(f.arma)
+        d = distancia_entre_unidades(f, e)
+        arma.rango = sorted(set(arma.rango or [1]) | {d})
+        r = CalculadoraEngage.simular_combate(
+            f.stats, e.stats, arma, e.arma,
+            Terreno(avo=t_atk.avo, dfn=defensa_de_terreno(t_atk, f.es_aliado)),
+            Terreno(avo=t_e.avo, dfn=defensa_de_terreno(t_e, e.es_aliado)), distancia=d,
+            es_engage_attack=True, engage_attack_nombre=nombre_atk, pos_atk=(f.x, f.y), pos_def=(e.x, e.y))
+        daño = int(r["atacante"].get("daño_total_ronda", 0) or 0)
+        nuevo_hp = max(0, e.hp_actual - daño)
+        tablero.modificar_hp(e.nombre, nuevo_hp)
+        golpes.append({"nombre": e.nombre, "daño": daño, "hp_tras": nuevo_hp, "muere": nuevo_hp <= 0})
+    fuego = [list(c) for c in tablero.encender_fuego(area.get("casillas_fuego") or [])]
+    if area.get("casillas_luz"):
+        tablero.aplicar_terreno_temporal(area["casillas_luz"], "brillo")
+    f.ataque_emblema_usado = True
+    if f.stats:
+        setattr(f.stats, 'ataque_emblema_usado', True)
+    f.ha_actuado = True
+    f.accion_turno = "combate"
+    groundswell = tablero.aplicar_groundswell(f.nombre)
+    return jsonify({"ok": True, "golpes": golpes, "fuego_encendido": fuego, "groundswell": groundswell,
+                    "casillas_fuego": tablero.casillas_fuego_lista(),
+                    "terrenos_temporales": tablero.terrenos_temporales_lista(),
                     "fichas": [x.como_dict() for x in tablero.fichas.values()]})
 
 
@@ -1650,7 +1734,7 @@ def ejecutar_combate():
         if getattr(f_def, "oculto", False):
             return jsonify({"error": f"{f_def.nombre} está a oscuras: hay que iluminarlo (con un aliado o una "
                                      f"antorcha) antes de poder atacarle."}), 400
-        if pos_destino and tablero.batalla_iniciada and                 tuple(int(v) for v in pos_destino) in visibilidad.casillas_vetadas(tablero, f_atk):
+        if pos_destino and tablero.batalla_iniciada and tuple(int(v) for v in pos_destino) in visibilidad.casillas_vetadas(tablero, f_atk):
             return jsonify({"error": f"La casilla ({pos_destino[0]},{pos_destino[1]}) está a oscuras: "
                                      f"{f_atk.nombre} no puede entrar."}), 400
     # 1. Posición de ataque: si viene pos_destino válida, mover al atacante tras validar ocupación
@@ -2169,7 +2253,9 @@ def resolver_unidad_preview():
 
     # Buscar si existe el personaje en el catálogo para rellenar clase_default y nivel_base
     p_info = None
-    n_norm = normalizar_texto(nombre)
+    from catalogo_loader import separar_genero
+    base_genero, genero_elegido = separar_genero(nombre)
+    n_norm = normalizar_texto(base_genero)
     for cpid, cperson in _catalogo.get("personajes", {}).items():
         if normalizar_texto(cperson.get("nombre", "")) == n_norm or normalizar_texto(cpid) == n_norm:
             p_info = cperson
@@ -2186,7 +2272,7 @@ def resolver_unidad_preview():
         nivel = max(1, int(nivel_raw))
 
     payload = dict(data)
-    payload["nombre"] = p_info.get("nombre", nombre) if p_info else nombre
+    payload["nombre"] = nombre if genero_elegido else (p_info.get("nombre", nombre) if p_info else nombre)
     payload["clase_nombre"] = clase_nombre
     payload["nivel"] = nivel
 

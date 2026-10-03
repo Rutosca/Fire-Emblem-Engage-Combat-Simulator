@@ -56,5 +56,34 @@ class TestCapitulo13(unittest.TestCase):
         self.assertEqual({n: (tablero.obtener_ficha(n).x, tablero.obtener_ficha(n).y) for n in antes}, antes)
 
 
+class TestAuraDeAlearCap13(unittest.TestCase):
+    """Partida del jugador (Cap. 13, T3): Etie en (8,9) recibía el aura de otro aliado y la
+    herramienta daba esa casilla por buena; junto a Alear (Divinely Inspiring, +1 por golpe
+    de Astra Storm) mata al Ruffian (14,12): 5 x 9 = 45 contra 43 HP."""
+
+    @classmethod
+    def setUpClass(cls):
+        app.config["TESTING"] = True
+        cls.client = app.test_client()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.post("/api/mapa/seleccionar", json={"capitulo": 7})
+
+    def test_astra_storm_junto_a_alear(self):
+        import json
+        if self.client.post("/api/mapa/seleccionar", json={"capitulo": 13}).status_code != 200:
+            self.skipTest("sin mapa del capítulo 13")
+        ruta = os.path.join(os.path.dirname(__file__), "fixtures", "partida_cap13_turno3.json")
+        with open(ruta, encoding="utf-8") as f:
+            self.assertEqual(self.client.post("/api/partida/importar", json=json.load(f)).status_code, 200)
+        res = self.client.post("/api/analizar", json={"perfil": "seguro"}).get_json()["resultados"]
+        etie = next(r for r in res if r.get("aliado") == "Etie" and r.get("enemigo") == "Ruffian (14,12)")
+        self.assertTrue(etie["arma_recomendada"].startswith("Astra Storm"))
+        self.assertEqual(etie["categoria"], "kill_seguro")
+        alear = tablero.obtener_ficha("Alear")
+        self.assertEqual(abs(etie["pos_sugerida"][0] - alear.x) + abs(etie["pos_sugerida"][1] - alear.y), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

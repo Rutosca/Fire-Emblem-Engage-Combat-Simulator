@@ -242,6 +242,10 @@ class Arma:
     sids: list = field(default_factory=list)  # SIDs que otorga el arma (Item.xml EquipSids): SID_２回行動 Brave, SID_追撃不可…
     # Bonos de stats mientras está equipada (Item.xml Enhance.*): {"res": 10} en Camilla's Axe
     enhance: dict = field(default_factory=dict)
+    # El alcance viene de la entrada concreta del catálogo (por IID): no se vuelve a deducir
+    # por el nombre, que coge la primera arma que se llama igual (Thoron de Chrom 1-2 frente
+    # al Thoron normal 1-3)
+    rango_fijo: bool = False
 
     @property
     def es_brave(self) -> bool:
@@ -253,7 +257,8 @@ class Arma:
             self.efectividades = list(self.efectivo_contra)
         elif self.efectividades and not self.efectivo_contra:
             self.efectivo_contra = list(self.efectividades)
-        self.rango = inferir_rango_arma(self.nombre, self.tipo, self.rango)
+        if not (self.rango_fijo and self.rango):
+            self.rango = inferir_rango_arma(self.nombre, self.tipo, self.rango)
 
 
 @dataclass

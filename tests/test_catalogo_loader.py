@@ -122,5 +122,15 @@ class TestAtaqueDeEmblemaEnElModal(unittest.TestCase):
         self.assertEqual(_catalogo["emblemas"]["GID_マルス"]["engage_attack"], "SID_マルスエンゲージ技")
 
 
+class TestAlcancePorIID(unittest.TestCase):
+    """Un arma resuelta por su IID usa el alcance de SU entrada del catálogo, no el de la
+    primera que se llama igual: el Thoron de Chrom (IID_クロム_トロン) es 1-2; el normal, 1-3."""
+
+    def test_thoron_de_chrom(self):
+        from catalogo_loader import _arma_desde_item
+        self.assertEqual(_arma_desde_item({"nombre": "Thoron (Emblema)", "id": "IID_クロム_トロン"}).rango, [1, 2])
+        self.assertEqual(_arma_desde_item({"nombre": "Thoron"}).rango, [1, 2, 3])
+
+
 if __name__ == "__main__":
     unittest.main()

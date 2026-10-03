@@ -360,11 +360,12 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
             "objetivos": [objetivo] if objetivo is not None else [], "pos_final": None, "casillas_fuego": [],
             "sabor": "", "casillas_dano": [], "casillas_niebla": [], "casillas_hielo": [],
             "casillas_luz": []}
-    if tipo is None or objetivo is None or mapa is None:
+    # Infierno Oscuro se puede lanzar sin objetivo: su área está centrada en la unidad
+    if tipo is None or mapa is None or (objetivo is None and tipo != "dark_inferno"):
         return base
 
     pos_atk = (int(pos_atk[0]), int(pos_atk[1]))
-    pos_obj = (int(objetivo.x), int(objetivo.y))
+    pos_obj = (int(objetivo.x), int(objetivo.y)) if objetivo is not None else None
     es_aliado_atk_di = bool(getattr(atacante, "es_aliado", True))
 
     if tipo == "cataclysm":
@@ -383,14 +384,17 @@ def resolver_ataque_area(nombre_ataque: str, pos_atk, objetivo, atacante, tabler
         estilo = estilo_de_combate_de(atacante)
         fuego, luz = casillas_de_infierno_oscuro(pos_atk, estilo, mapa)
         dentro = set(fuego)
-        if pos_obj not in dentro:
+        if pos_obj is not None and pos_obj not in dentro:
             base.update(valido=False, motivo="el objetivo no está en el área de Infierno Oscuro")
             return base
-        objetivos = [objetivo] + [
-            u for c in sorted(dentro) if c != pos_obj
-            for u in [_unidad_en(tablero, *c)]
-            if u is not None and u.viva and bool(getattr(u, "es_aliado", False)) != es_aliado_atk_di
-        ]
+        # El golpe no alcanza a los enemigos a oscuras (verificado en el Cap. 13: solo les
+        # quema el fuego al empezar su fase)
+        objetivos = [objetivo] if objetivo is not None else []
+        for c in sorted(dentro):
+            u = _unidad_en(tablero, *c)
+            if (u is not None and u.viva and c != pos_obj and u not in objetivos and not getattr(u, "oculto", False)
+                    and bool(getattr(u, "es_aliado", False)) != es_aliado_atk_di):
+                objetivos.append(u)
         base.update(objetivos=objetivos, casillas_dano=fuego, casillas_luz=luz,
                     casillas_fuego=[c for c in fuego if es_terreno_llano(_terreno_natural(mapa, *c))])
         return base

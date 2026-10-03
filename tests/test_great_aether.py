@@ -100,12 +100,21 @@ class TestGreatAether(_BaseGreatAether):
         r = CalculadoraEngage.simular_combate(ike.stats, ene.stats, ike.arma, ene.arma, Terreno(), Terreno(), 1)
         self.assertLess(r["atacante"]["daño_por_golpe"], 40)
 
-    def test_rechazos(self):
-        self._ike(arma="Iron Lance")
+    def test_con_lanza_usa_el_arma_de_emblema(self):
+        # Timerra (Sentinel) solo usa lanzas, pero fusionada con Ike tiene la Hammer: el juego
+        # deja usar Great Aether con ella (verificado), y el golpe sale con esa arma
+        r = self.client.post("/api/unidad/guardar", json={
+            "nombre": "Timerra", "clase_nombre": "Sentinel", "es_aliado": True, "x": 6, "y": 9, "nivel": 10,
+            "hp_max": 40, "hp_actual": 40, "stats": STATS, "emblema_nombre": "Ike", "nivel_vinculo": 5,
+            "en_fusion": True, "arma_nombre": "Silver Lance", "inventario": [{"arma": "Silver Lance", "equipada": True}]})
+        self.assertEqual(r.status_code, 200, r.get_json())
         r = self._usar()
-        self.assertEqual(r.status_code, 400)
-        self.assertIn("espada o hacha", r.get_json()["error"])
-        self._ike()
+        self.assertEqual(r.status_code, 200, r.get_json())
+        t = tablero.obtener_ficha("Timerra")
+        self.assertIn("Hammer", t.arma.nombre)
+        self.assertEqual([it for it in t.inventario if it.get("equipada")][0].get("nombre"), t.arma.nombre)
+
+    def test_rechazos(self):
         self.assertEqual(self._usar().status_code, 200)
         tablero.obtener_ficha("Timerra").ha_actuado = False
         tablero.obtener_ficha("Timerra").accion_turno = ""

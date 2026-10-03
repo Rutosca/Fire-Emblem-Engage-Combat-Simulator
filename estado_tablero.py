@@ -129,6 +129,17 @@ class FichaUnidad:
         except Exception:
             return False
 
+    def ataque_emblema_nombre(self) -> str:
+        """Nombre del Ataque de Emblema de su anillo ("Dark Inferno (Infierno Oscuro)"), o ""."""
+        try:
+            from catalogo_loader import _catalogo, nombre_ataque_engage
+            emblemas = _catalogo.get("emblemas", {}) or {}
+            gid = self.emblema_id or next((k for k, v in emblemas.items()
+                                           if self.emblema_nombre and v.get("nombre") == self.emblema_nombre), "")
+            return nombre_ataque_engage(gid, emblemas.get(gid) or {}) if gid else ""
+        except Exception:
+            return ""
+
     def _emblema_base(self) -> str:
         """Nombre del Emblema sin el "(Oscuro)": el que se escribe en el modal."""
         if not self.emblema_id:
@@ -493,6 +504,7 @@ class FichaUnidad:
             "antorcha_de_mano": self.objeto_antorcha(),
             "usa_ultimo_rival": self.usa_ultimo_rival(),
             "postura_emblema": self.postura_emblema_info(),
+            "ataque_emblema_nombre": self.ataque_emblema_nombre(),
             "reactivaciones": self.tipos_reactivacion(),
             "es_refuerzo": self.es_refuerzo,
             "invocador": self.invocador,
@@ -1475,7 +1487,7 @@ class EstadoTablero:
         herramienta, arrastrar la ficha gasta la acción; en el juego se mueve y luego baila)."""
         return bool(f and f.viva and f.controlable and (not f.ha_actuado or not f.accion_turno))
 
-    def activar_postura_emblema(self, nombre: str):
+    def activar_postura_emblema(self, nombre: str, arma=None):
         """
         Great Aether: `nombre` (fusionado, con el Ataque de Emblema sin gastar y una espada o
         un hacha equipada) gasta su acción en ponerse en guardia: Def/Res +5 (según estilo) y
@@ -1495,9 +1507,24 @@ class EstadoTablero:
             return None, f"{f.nombre} no está fusionado"
         if f.ataque_emblema_usado:
             return None, f"{f.nombre} ya usó su Ataque de Emblema en esta Fusión"
-        tipo = getattr(f.arma, 'tipo', '') if f.arma else ''
+        arma = arma or f.arma
+        tipo = getattr(arma, 'tipo', '') if arma else ''
         if p["tipos_arma"] and tipo not in p["tipos_arma"]:
-            return None, f"{p['nombre']} necesita {' o '.join(p['tipos_arma']).lower()} equipada ({f.nombre} lleva {tipo or 'nada'})"
+            return None, (f"{p['nombre']} necesita {' o '.join(p['tipos_arma']).lower()} "
+                          f"(o un arma de Emblema de ese tipo); {f.nombre} no tiene ninguna")
+        if arma is not f.arma:
+            # Se equipa el arma con la que lo usa (la de Emblema si hace falta): el golpe del
+            # turno siguiente sale con ella
+            f.arma = arma
+            n = str(arma.nombre)
+            item = next((it for it in (f.inventario or []) if isinstance(it, dict)
+                         and str(it.get("nombre") or it.get("arma") or "") == n), None)
+            if item is None and (getattr(arma, 'es_engage', False) or "(emblema)" in n.lower()):
+                item = {"nombre": n, "es_engage": True}
+                f.inventario.append(item)
+            for it in (f.inventario or []):
+                if isinstance(it, dict):
+                    it["equipada"] = it is item
         f.ataque_emblema_usado = True
         if f.stats:
             setattr(f.stats, 'ataque_emblema_usado', True)

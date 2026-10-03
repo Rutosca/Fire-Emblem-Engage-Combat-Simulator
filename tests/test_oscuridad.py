@@ -171,6 +171,33 @@ class TestOscuridad(unittest.TestCase):
         res = self.client.post("/api/analizar", json={"perfil": "seguro"}).get_json()["resultados"]
         self.assertTrue([r for r in res if r.get("enemigo") == "Bandido"])
 
+    def test_dark_inferno_sin_objetivo(self):
+        # Camilla en (5,5): su área llega a las esquinas (±2,±2), a distancia 4, fuera de su
+        # visión de 3. El golpe solo da al visible; el oculto solo se quema al empezar su fase.
+        r = self.client.post("/api/unidad/guardar", json={
+            "nombre": "Chloé", "clase_nombre": "Axe Fighter", "es_aliado": True, "x": 5, "y": 5, "nivel": 10,
+            "emblema_nombre": "Camilla", "en_fusion": True,
+            "inventario": [{"arma": "Steel Axe", "equipada": True}]})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        visible = self._unidad("Visible", "Axe Fighter", 7, 5, aliado=False)
+        oculto = self._unidad("Oculto", "Axe Fighter", 7, 7, aliado=False)
+        self.assertTrue(oculto.oculto and not visible.oculto)
+        hp_v, hp_o = visible.hp_actual, oculto.hp_actual
+        r = self.client.post("/api/unidad/infierno_oscuro", json={"nombre": "Chloé"})
+        self.assertEqual(r.status_code, 200, r.get_json())
+        self.assertEqual([g["nombre"] for g in r.get_json()["golpes"]], ["Visible"])
+        self.assertLess(tablero.obtener_ficha("Visible").hp_actual, hp_v)
+        self.assertEqual(tablero.obtener_ficha("Oculto").hp_actual, hp_o)
+        self.assertIn([7, 7], r.get_json()["fuego_encendido"])
+        chloe = tablero.obtener_ficha("Chloé")
+        self.assertTrue(chloe.ataque_emblema_usado and chloe.ha_actuado)
+        # al empezar la fase enemiga le quema el fuego aunque siga oculto
+        self.client.post("/api/turno/inicio_fase_enemigo", json={})
+        self.assertLess(tablero.obtener_ficha("Oculto").hp_actual, hp_o)
+        # una sola vez por Fusión
+        tablero.obtener_ficha("Chloé").ha_actuado = False
+        self.assertEqual(self.client.post("/api/unidad/infierno_oscuro", json={"nombre": "Chloé"}).status_code, 400)
+
     def test_sin_oscuridad_se_ve_todo(self):
         self.client.post("/api/mapa/seleccionar", json={"capitulo": 7})
         self.assertFalse(self._vis()["oscuro"])

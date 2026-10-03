@@ -375,6 +375,19 @@ def _rango_canonico_catalogo(nom_low: str):
     return _RANGOS_CATALOGO_CACHE.get(clave)
 
 
+def _rango_valido(rango):
+    return isinstance(rango, (list, tuple)) and bool(rango) and all(isinstance(x, int) and x > 0 for x in rango)
+
+
+def rango_de_info(ainfo: dict, nombre: str, tipo: str) -> list:
+    """Alcance de un arma resuelta por su IID: el de SU entrada del catálogo (Item.xml
+    Range). Buscar por el nombre cogía la primera arma que se llama igual: el Thoron de
+    Chrom (IID_クロム_トロン, 1-2) salía con el 1-3 del Thoron normal. Si la entrada no trae
+    un alcance válido (bastones, objetos), se deduce como siempre."""
+    r = (ainfo or {}).get("rango")
+    return sorted(set(r)) if _rango_valido(r) else inferir_rango_arma(nombre, tipo, r)
+
+
 def inferir_rango_arma(nombre: str, tipo: str, rango_existente=None) -> list:
     """
     Garantiza el rango canónico estricto de las armas en Fire Emblem Engage:
@@ -598,7 +611,7 @@ def growths_totales(nombre_personaje: str, clase_nombre: str) -> dict:
     hay datos del personaje ni de la clase.
     """
     total = {}
-    _pid, p_info = _buscar_en_catalogo("personajes", nombre_personaje or "")
+    _pid, p_info = _buscar_en_catalogo("personajes", separar_genero(nombre_personaje or "")[0])
     _jid, j_info = _buscar_en_catalogo("clases", clase_nombre or "")
     for fuente in ((p_info or {}).get("growths") or {}, (j_info or {}).get("growths") or {}):
         for k, v in fuente.items():
@@ -849,7 +862,7 @@ def parsear_arma_string(raw_str, es_arma_emblema: bool = False):
         "avo_bonus": avo_bonus,
         "ddg_bonus": ddg_bonus,
         "tipo": ainfo.get("tipo", "Espada"),
-        "rango": inferir_rango_arma(ainfo.get("nombre", base_aid), ainfo.get("tipo", "Espada"), ainfo.get("rango")),
+        "rango": rango_de_info(ainfo, ainfo.get("nombre", base_aid), ainfo.get("tipo", "Espada")),
         "es_magica": ainfo.get("es_magica", False),
         "es_smash": bool(ainfo.get("es_smash", False)),
         # Los alientos de Tiki ceden el primer golpe y no permiten seguimiento, pero no empujan
@@ -887,7 +900,10 @@ def _arma_desde_item(item_dict):
             crit=parsed["crit"],
             es_magica=parsed["es_magica"],
             tipo=parsed["tipo"],
-            rango=inferir_rango_arma(parsed["nombre"], parsed["tipo"], parsed["rango"]),
+            # parsear_arma_string ya trae el alcance de la entrada concreta del catálogo
+            rango=(list(parsed["rango"]) if _rango_valido(parsed.get("rango"))
+                   else inferir_rango_arma(parsed["nombre"], parsed["tipo"], parsed["rango"])),
+            rango_fijo=_rango_valido(parsed.get("rango")),
             efectividades=parsed["efectividades"],
             avo_bonus=parsed["avo_bonus"],
             ddg_bonus=parsed["ddg_bonus"],
@@ -1120,6 +1136,34 @@ def _tipo_arma_equipada(data) -> str:
     return ""
 
 
+_SUFIJO_GENERO = re.compile(r"^(.*?)\s*\(([MF])\)$")
+_GENERO_ELEGIBLE: Optional[set] = None
+
+
+def personajes_de_genero_elegible() -> set:
+    """Nombres de personaje que el jugador elige hombre o mujer: los que en Person.xml tienen
+    variantes explícitas `_男性` / `_女性` (Alear: PID_青リュール_男性 / _女性). Las tropas
+    genéricas usan `_男` / `_女` y no entran."""
+    global _GENERO_ELEGIBLE
+    if _GENERO_ELEGIBLE is None:
+        por_nombre = {}
+        for pid, p in (_catalogo.get("personajes", {}) or {}).items():
+            if p.get("nombre") and (pid.endswith("_男性") or pid.endswith("_女性")):
+                por_nombre.setdefault(p["nombre"], set()).add(pid[-2:])
+        _GENERO_ELEGIBLE = {n for n, sufijos in por_nombre.items() if {"男性", "女性"} <= sufijos}
+    return _GENERO_ELEGIBLE
+
+
+def separar_genero(nombre: str):
+    """("Alear", 2) para "Alear (F)", ("Alear", 1) para "Alear (M)"; (nombre, 0) si no lleva
+    sufijo o el personaje no tiene género elegible. La ficha conserva el nombre con el
+    sufijo, así el género viaja con ella (partidas, escuadrón, Cronogema)."""
+    m = _SUFIJO_GENERO.match(str(nombre or "").strip())
+    if m and m.group(1) in personajes_de_genero_elegible():
+        return m.group(1), (1 if m.group(2) == "M" else 2)
+    return str(nombre or ""), 0
+
+
 def _personaje_por_nombre(nombre: str, es_aliado: bool, tipo_arma: str = ""):
     """
     (pid, info) del personaje llamado `nombre`. Un enemigo se queda con la primera ficha
@@ -1129,7 +1173,7 @@ def _personaje_por_nombre(nombre: str, es_aliado: bool, tipo_arma: str = ""):
     con sus armas "_通常" y sus habilidades). Si el Emblema tiene varias (Lyn roja con Mani
     Katti, blanca con arcos: SummonColor), la que admite el arma equipada.
     """
-    n = normalizar_texto(nombre)
+    n = normalizar_texto(separar_genero(nombre)[0])
     candidatos = [(pid, p) for pid, p in (_catalogo.get("personajes", {}) or {}).items()
                   if normalizar_texto(p.get("nombre", "")) == n or normalizar_texto(pid) == n]
     if not candidatos:
@@ -1710,7 +1754,9 @@ def resolver_unidad_con_catalogo(data, tablero=None):
     setattr(stats_obj, 'sid_ataque_emblema', (emblema_info or {}).get("engage_attack", "") or "")
     # Arma favorita del Emblema equipado (God.xml GoodWeapon): la mira Weapon Sync
     setattr(stats_obj, 'arma_favorita_emblema', (emblema_info or {}).get("arma_favorita", "") or "")
-    genero_val = int(data.get("genero", 0) or (p_info.get("genero", p_info.get("gender", 0)) if p_info else 0) or 0)
+    # Alear (M) / Alear (F): el género lo elige el jugador y va en el nombre
+    genero_val = int(data.get("genero", 0) or separar_genero(nombre)[1]
+                     or (p_info.get("genero", p_info.get("gender", 0)) if p_info else 0) or 0)
     setattr(stats_obj, 'genero', genero_val)
     if not getattr(stats_obj, 'clase_nombre', ''):
         setattr(stats_obj, 'clase_nombre', clase_info.get("nombre", "") if clase_info else (data.get("clase_nombre") or ""))
@@ -1986,7 +2032,7 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                     "wt": ainfo.get("wt", 5),
                     "hit": ainfo.get("hit", 80),
                     "crit": ainfo.get("crit", 0),
-                    "rango": inferir_rango_arma(nombre_final, tipo_w, ainfo.get("rango")),
+                    "rango": rango_de_info(ainfo, nombre_final, tipo_w),
                     "es_magica": ainfo.get("es_magica", False),
                     "es_smash": es_smash_val,
                     "efectividades": ainfo.get("efectividades", ["volador"] if tipo_w == "Arco" else []),
@@ -2008,7 +2054,8 @@ def resolver_unidad_con_catalogo(data, tablero=None):
                         crit=ainfo.get("crit", 0),
                         es_magica=ainfo.get("es_magica", False),
                         tipo=tipo_w,
-                        rango=inferir_rango_arma(nombre_final, tipo_w, ainfo.get("rango")),
+                        rango=rango_de_info(ainfo, nombre_final, tipo_w),
+                        rango_fijo=_rango_valido(ainfo.get("rango")),
                         efectividades=ainfo.get("efectividades", []),
                         es_smash=es_smash_val,
                         sids=list(ainfo.get("equip_sids", []) or []),

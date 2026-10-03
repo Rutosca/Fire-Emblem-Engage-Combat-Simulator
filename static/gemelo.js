@@ -514,6 +514,39 @@ async function alternarAntorcha(idObjeto) {
   setTimeout(lanzarAnalisis, 250);
 }
 
+// Dark Inferno (Camilla) sin objetivo: área centrada en la unidad; golpea a los enemigos
+// que se ven y prende fuego (a los ocultos solo les quema el fuego al empezar su fase).
+// No se recomienda: lanzarlo a ciegas es una apuesta que decide el jugador.
+function actualizarBotonInfierno(ficha) {
+  const btn = $("btn-modal-infierno");
+  if (!btn) return;
+  state.fichaInfierno = ficha;
+  const maxE = ficha ? (ficha.max_energia_emblema || 6) : 6;
+  const fusionada = !!(ficha && (ficha.en_fusion || ficha.turnos_fusion > 0));
+  const puede = !!(ficha && ficha.es_aliado && /dark inferno/i.test(ficha.ataque_emblema_nombre || "") &&
+                   !ficha.ataque_emblema_usado && (!ficha.ha_actuado || !ficha.accion_turno) &&
+                   (fusionada || (ficha.energia_emblema ?? maxE) >= maxE));
+  btn.classList.toggle("hidden", !puede);
+  if (!puede) return;
+  btn.textContent = fusionada ? "Dark Inferno (sin objetivo)" : "⚡ Fusionar y Dark Inferno";
+  btn.title = "Lanza Dark Inferno desde su casilla sin elegir enemigo: golpea a los enemigos visibles del área " +
+    "y prende fuego en ella. Gasta la acción y el Ataque de Emblema. Necesita un hacha equipada.";
+}
+
+async function lanzarInfiernoSinObjetivo() {
+  const ficha = state.fichaInfierno;
+  if (!ficha) return;
+  const res = await api("/api/unidad/infierno_oscuro", "POST", { nombre: ficha.nombre });
+  if (!res || !res.ok) { mostrarToast((res && res.error) || "No se pudo lanzar Dark Inferno", "error"); return; }
+  cerrarModal();
+  actualizarTokens(res.fichas);
+  if (Array.isArray(res.terrenos_temporales)) renderTerrenosTemporales(res.terrenos_temporales);
+  const golpes = (res.golpes || []).map(g => `${g.nombre} -${g.daño}${g.muere ? " ☠" : ""}`).join(", ");
+  mostrarToast(`🔥 ${ficha.nombre} — Dark Inferno: ${golpes || "sin enemigos visibles en el área"} · ` +
+    `${(res.fuego_encendido || []).length} casillas en llamas`, "ok");
+  setTimeout(lanzarAnalisis, 250);
+}
+
 // Antorcha de mano (Torch): alumbra 7 alrededor de quien la usa, le sigue y se encoge 1 por turno
 function actualizarBotonAntorcha(ficha) {
   const btn = $("btn-modal-antorcha");
@@ -1600,6 +1633,7 @@ function abrirModalEdicion(ficha) {
   actualizarBotonReactivar(ficha);
   actualizarBotonPostura(ficha);
   actualizarBotonAntorcha(ficha);
+  actualizarBotonInfierno(ficha);
   $("modal-backdrop").classList.remove("hidden");
 }
 
@@ -1707,7 +1741,8 @@ function actualizarBotonPostura(ficha) {
   btn.textContent = fusionada ? p.nombre : `⚡ Fusionar y ${p.nombre}`;
   btn.title = `${p.nombre}: gasta la acción y el Ataque de Emblema. En guardia (${bonos}, sin contraataque) ` +
     `hasta su próximo turno; entonces, si sigue viva, golpea a todos los enemigos a 2 casillas o menos ` +
-    `y se cura el 30 % de lo que quita. Solo con ${(p.tipos_arma || []).join(" o ").toLowerCase()}.`;
+    `y se cura el 30 % de lo que quita. Solo con ${(p.tipos_arma || []).join(" o ").toLowerCase()} ` +
+    `(las armas de Emblema valen aunque su clase no las use).`;
 }
 
 async function usarPosturaEmblema(ficha, pos) {
@@ -2495,6 +2530,7 @@ function initModalEvents() {
   if ($("btn-modal-reactivar")) $("btn-modal-reactivar").addEventListener("click", mostrarOpcionesReactivar);
   if ($("btn-modal-postura")) $("btn-modal-postura").addEventListener("click", () => usarPosturaEmblema(state.fichaPostura));
   if ($("btn-modal-antorcha")) $("btn-modal-antorcha").addEventListener("click", usarAntorchaDeMano);
+  if ($("btn-modal-infierno")) $("btn-modal-infierno").addEventListener("click", lanzarInfiernoSinObjetivo);
 
   // Botones rápidos de ajuste de HP en el modal
   $("btn-hp-pocion").addEventListener("click", () => {

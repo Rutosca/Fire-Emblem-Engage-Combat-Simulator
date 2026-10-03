@@ -1265,6 +1265,31 @@ _NOMBRE_STAT = {"str": "Fue", "mag": "Mag", "dex": "Des", "spd": "Vel", "def": "
                 "lck": "Sue", "bld": "Com"}
 
 
+def arma_para_postura(f, postura, nombre: str = ""):
+    """
+    El arma con la que `f` puede usar Great Aether (WeaponProhibit: espada o hacha): la
+    equipada si vale; si no, la de más Mt entre las que tiene. Las armas de Emblema (Hammer,
+    Urvan, Ragnell según el vínculo) valen aunque su clase no use ese tipo: fusionada con
+    Ike, Timerra (solo lanzas) usa la Hammer. Con `nombre` elige esa en concreto. None si
+    no hay ninguna.
+    """
+    from catalogo_loader import puede_usar_tipo_arma
+    tipos = postura.get("tipos_arma") or []
+
+    def vale(a):
+        return (a is not None and getattr(a, 'mt', 0) > 0 and not getattr(a, 'es_engage_attack', False)
+                and (not tipos or getattr(a, 'tipo', '') in tipos)
+                and (getattr(a, 'es_engage', False) or "(emblema)" in str(a.nombre).lower()
+                     or puede_usar_tipo_arma(f, a.tipo)))
+    candidatas = [a for a, _eng, _nota in _armas_aliado(f) if vale(a)]
+    if nombre:
+        n = normalizar_texto(nombre)
+        return next((a for a in candidatas if normalizar_texto(a.nombre) == n or n in normalizar_texto(a.nombre)), None)
+    if vale(getattr(f, 'arma', None)):
+        return f.arma
+    return max(candidatas, key=lambda a: (a.mt, a.hit), default=None)
+
+
 def _golpe_de_postura(f, postura, enemigo) -> dict:
     """El golpe de Great Aether de `f` (en guardia) contra `enemigo` con su HP actual:
     {"daño", "mata", "cura"}."""
@@ -1302,9 +1327,13 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
         fusionada = _en_fusion(f)
         if not fusionada and not puede_fusionar(f):
             continue
-        if postura["tipos_arma"] and getattr(f.arma, 'tipo', '') not in postura["tipos_arma"]:
+        with _ComoFusionada(f, not fusionada):
+            arma_g = arma_para_postura(f, postura)
+        if arma_g is None:
             continue
         hp, hp_max = _hp_de(f), int(getattr(f, 'hp_max', 0) or _hp_de(f))
+        arma_previa = f.arma
+        f.arma = arma_g
         chain = max(1, math.floor(hp_max * 0.10))
         mejor = None
         with _ComoFusionada(f, not fusionada), _EnGuardia(f, postura):
@@ -1336,6 +1365,7 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
                 clave = (score, -peor)
                 if mejor is None or clave > mejor[0]:
                     mejor = (clave, pos, atacantes, dentro, fuera, bajas, peor, score)
+        f.arma = arma_previa
         if not mejor:
             continue
         _clave, pos, atacantes, dentro, fuera, bajas, peor, score = mejor
@@ -1344,7 +1374,7 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
         motivos = [
             f"{f.nombre} {fusion_txt}usa {postura['nombre']} {desde}: "
             + " / ".join(f"{_NOMBRE_STAT.get(k, k)} +{v}" for k, v in postura["stat_boosts"].items())
-            + " y no contraataca hasta su próximo turno.",
+            + f" y no contraataca hasta su próximo turno (con {arma_g.nombre}).",
             f"Peor caso si le atacan todos los que llegan ({', '.join(atacantes)}"
             + (", con sus Chain Attacks" if len(atacantes) > 1 and any(es_unidad_backup(enemigos[n]) for n in atacantes) else "")
             + f"): {peor} de daño con {hp} HP. Sobrevive.",
@@ -1364,6 +1394,7 @@ def _recomendaciones_postura(tablero, mapa, zonas_amenaza_enemigos) -> list:
             "bajas_esperadas": bajas,
             "fusionar": not fusionada,
             "pos_sugerida": list(pos),
+            "arma": arma_g.nombre,
             "daño_peor_caso": peor,
             "score_tactico": score,
             "veredicto": {"nivel_riesgo": "medio" if peor * 2 >= hp else "bajo", "motivos": motivos},
@@ -1422,12 +1453,15 @@ def _mejor_casilla_por_aura(aliado, enemigo, arma, pos, casillas_alcanzables, ta
     elegida no, o si hace más daño sin quedar más expuesto.
     """
     con_aura = casillas_con_aura(tablero, aliado)
-    if not con_aura or tuple(pos) in con_aura:
+    if not con_aura:
         return pos
+    # Aunque la casilla elegida ya reciba un aura, puede ser de otra que no da daño (Cap. 13:
+    # Etie en (8,9) con el aura de otro aliado, y la de Alear en (8,10) le daba la baja): se
+    # comparan todas por el resultado
     ocupadas = casillas_ocupadas_por(f for f in tablero.fichas.values() if f.viva and f.nombre != aliado.nombre)
     rango = set(arma.rango or [1])
     candidatas = [c for c in (casillas_alcanzables or ()) if c in con_aura and c not in ocupadas
-                  and distancia_a_unidad(enemigo, c[0], c[1]) in rango]
+                  and c != tuple(pos) and distancia_a_unidad(enemigo, c[0], c[1]) in rango]
     if not candidatas:
         return pos
 
